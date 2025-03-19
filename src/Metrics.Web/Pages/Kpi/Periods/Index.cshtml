@@ -1,0 +1,73 @@
+﻿@page
+@model Metrics.Web.Pages.Kpi.Periods.IndexModel
+@{
+}
+
+
+<div class="d-flex align-items-center p-2">
+    <h3>KPI Periods</h3>
+    <div class="mx-4">
+        <a class="btn btn-primary" 
+            asp-page="Create"
+            asp-route-returnUrl="@Url.Page("Index")">
+            <i class="bi bi-plus-circle-fill"> </i>New
+        </a>
+    </div>
+</div>
+
+@* ========================================================================== *@
+@if (!ModelState.IsValid)
+{
+    <div class="form bg-light p-4">
+        <div class="alert alert-danger">
+            <h4>There were some errors:</h4>
+            <ul>
+                @foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    <li>@error.ErrorMessage</li>
+                }
+            </ul>
+        </div>
+    </div>
+}
+
+@* =============== Filter Bar =============================================== *@
+<div id="filter-bar" class="d-flex bg-light p-4 mt-2">
+  <div class="col-sm-4 mx-2">
+    <input class="form-control" placeholder="Filter..." />
+  </div>
+    <div class="col-sm-4 mx-2"><input class="form-control" placeholder="" /></div>
+</div>
+
+@* =============== Table ==================================================== *@
+<div class="bg-light p-4">
+    <table id="itemsTable" class="table">
+        <thead>
+            <tr>
+                <th>KPI Periods Name</th>
+                <th>Submission Start Date</th>
+                <th>Submission End Date</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.KpiPeriods != null)
+            {
+
+                @foreach (var period in Model.KpiPeriods)
+                {
+                    <tr>
+                        <td>@period.PeriodName</td>
+                        <td>@period.SubmissionStartDate.LocalDateTime</td>
+                        <td>@period.SubmissionEndDate.LocalDateTime</td>
+                        <td>
+                            <button class="btn btn-success">
+                                Edit
+                            </button>
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>

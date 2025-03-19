@@ -1,0 +1,144 @@
+{
+  "folders": [
+    {
+      "path": "."
+    }
+  ],
+  "settings": {
+    // WORKBENCH
+    // ---------------------------------------------------
+    // "workbench.iconTheme": "vscode-icons",
+    // "workbench.colorCustomizations": {
+    // 	"editorRuler.foreground": "#8f458d"
+    // },
+    // TERMINAL
+    // ---------------------------------------------------
+    // "terminal.integrated.tabs.defaultColor": "terminal.ansiCyan",
+    // EXPLORER
+    // ---------------------------------------------------
+    // "explorer.openEditors.minVisible": 2,
+    // "explorer.openEditors.visible": 1,
+    // "explorer.openEditors.visible": 20,
+    // EDITOR
+    // ---------------------------------------------------
+    "prettier.singleQuote": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.minimap.enabled": false,
+    "workbench.editor.enablePreview": true,
+    "editor.fontLigatures": true,
+    "editor.fontFamily": "Fira Code, Menlo, Monaco, 'Courier New', monospace",
+    "editor.fontSize": 14,
+    "editor.letterSpacing": 0.25,
+    "editor.lineHeight": 22,
+    "editor.renderWhitespace": "trailing",
+    "editor.formatOnSave": true,
+    "editor.formatOnPaste": true,
+    "editor.suggestSelection": "first",
+    "editor.tabCompletion": "on",
+    "editor.wordWrap": "off",
+    "editor.rulers": [80],
+    // FORMATTERS
+    // ---------------------------------------------------
+    "black-formatter.args": ["--line-length", "79"],
+    "isort.args": [],
+    "[csharp]": {
+      "editor.maxTokenizationLineLength": 2500,
+      "editor.inlineSuggest.suppressSuggestions": false,
+      "editor.defaultFormatter": "ms-dotnettools.csharp"
+    },
+    "[python]": {
+      "editor.guides.indentation": true,
+      "editor.tabSize": 4,
+      "editor.renderWhitespace": "trailing",
+      // "editor.wordBasedSuggestions": false,
+      "editor.defaultFormatter": "ms-python.black-formatter",
+      "editor.foldingImportsByDefault": false,
+      "editor.codeActionsOnSave": {
+        "source.organizeImports": "explicit"
+      }
+    },
+    // "isort.args": ["--profile", "black", "--settings-file", ".isort.cfg"],
+    // PYTHON
+    // ---------------------------------------------------
+    // "python.terminal.activateEnvironment": false,
+    // "isort.args": [
+    //   "--trailing-comma",
+    //   "--force-grid-wrap",
+    //   "0",
+    //   "--use-parentheses",
+    //   "--force-single-line-imports",
+    //   "--line-width",
+    //   "88",
+    //   "--multi-line",
+    //   "3",
+    //   "--float-to-top",
+    //   "--profile",
+    //   "autopep8"
+    // ],
+    // "python.analysis.extraPaths": [],
+
+    // LINTING
+    // "flake8.args": [
+    // 	"--config=./src/.flake8"
+    // ],
+    // "python.analysis.autoImportCompletions": false,
+    "[django-html]": {
+      "editor.tabSize": 4,
+      // "editor.quickSuggestions": {
+      //   "other": true,
+      //   "comments": true,
+      //   "strings": true
+      // },
+      "editor.defaultFormatter": "esbenp.prettier-vscode",
+      "editor.formatOnSave": false
+    },
+    "[javascriptreact]": {
+      "editor.tabSize": 2,
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[javascript]": {
+      "editor.tabSize": 2
+    },
+    "[typescriptreact]": {
+      "editor.tabSize": 2,
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[json]": {
+      "editor.defaultFormatter": "vscode.json-language-features",
+      "editor.quickSuggestions": {
+        "strings": true
+      },
+      "editor.suggest.insertMode": "replace"
+    },
+    // EMMET
+    // ---------------------------------------------------
+    "emmet.includeLanguages": {
+      "django-html": "html"
+    },
+
+    // FILES ASSOCIATIONS
+    // ---------------------------------------------------
+    "files.associations": {
+      "**/*.html": "html",
+      "**/templates/**/*.html": "django-html",
+      "**/templates/*.html": "django-html",
+      "**/templates/*.md": "markdown",
+      "**/requirements{/**,*}.{txt,in}": "pip-requirements"
+    },
+    "[xml]": {
+      "editor.defaultFormatter": "redhat.vscode-xml"
+    }
+    // EXCLUDE FILES (hide from explorer)
+    // ---------------------------------------------------
+    // "files.exclude": {
+    //   "**/__pycache__": true,
+    //   "**/.pytest_cache": true,
+    //   "**/*.pyc": true,
+    //   "**/.git": true,
+    //   "**/.svn": true,
+    //   "**/.hg": true,
+    //   "**/CVS": true,
+    //   "**/.DS_Store": true
+    // }
+  }
+}

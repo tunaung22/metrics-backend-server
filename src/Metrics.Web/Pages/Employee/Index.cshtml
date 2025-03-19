@@ -1,0 +1,47 @@
+﻿@page
+@model Metrics.Web.Pages.Employee.IndexModel
+@{
+}
+
+<h3>Employee (admin)</h3>
+
+<div class="mt-4">
+    <a class="btn btn-success" asp-area="" asp-page="/Employee/Register">Register</a>
+</div>
+
+<div class="mt-4">
+    <table id="itemsTable" class="table">
+        <thead>
+            <tr>
+                <th>Employee Code</th>
+                <th>Full Name</th>
+                <th>Address</th>
+                <th>Phone Number</th>
+                <th>Department</th>
+                <th>Account</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.EmployeeList != null)
+            {
+
+                @foreach (var e in Model.EmployeeList)
+                {
+                    <tr>
+                        <td>@e.EmployeeCode</td>
+                        <td>@e.FullName</td>
+                        <td>@e.Address</td>
+                        <td>@e.PhoneNumber</td>
+                        <td>@e.DepartmentId : @e.DepartmentName</td>
+                        <td>@e.ApplicationUserId</td>
+                        <td>
+                            <button class="btn btn-success">
+                                Edit
+                            </button>
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>

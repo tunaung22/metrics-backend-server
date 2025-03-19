@@ -1,0 +1,129 @@
+﻿@page
+@model Metrics.Web.Pages.Kpi.Periods.CreateModel
+@{
+    var currentYear = DateTime.Now.ToString("yyyy");
+    var currentMonth = DateTime.Now.ToString("MM");
+}
+
+
+<h3>New KPI Periods</h3>
+
+@* ========================================================================== *@
+@if (!ModelState.IsValid)
+{
+    <div class="form bg-light p-4">
+        <div class="alert alert-danger">
+            <h4>There were some errors:</h4>
+            <ul>
+                @foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    <li>@error.ErrorMessage</li>
+                }
+            </ul>
+        </div>
+    </div>
+}
+@* <div>Start Date: <input type="text" value="@Model.FormInput.SubmissionStartDate" /></div>
+<div>End Date: <input type="text" value="@Model.FormInput.SubmissionEndDate" /></div> *@
+@* =============== Form ===================================================== *@
+<form method="post" asp-route-returnUrl="">
+    <div class="row row-lg-6">
+        
+        <div class="form-group col-md-6">
+            <label asp-for="FormInput.PeriodName" class="col-sm-6 col-form-label">Periods Name</label>
+            <small>(example: @currentYear-@currentMonth)</small>
+            <span class="d-flex">
+                <div class="px-2">
+                    <input asp-for="FormInput.PeriodName" class="form-control" />
+                </div>
+                <div class="px-2">
+                    <input type="number" 
+                            id="periodname-year" 
+                            name="year" step="1" 
+                            value="@DateTime.UtcNow.Year" 
+                            class="form-control" 
+                            onchange="validateInput(event)
+                            formnovalidate />
+                </div>
+                <div class="px-2">
+                    <select class="form-select" aria-label="Period Name Helper form Month" formnovalidate>
+                        <option selected>Choose Month</option>
+                        <option value="01">January</option>
+                        <option value="02">February</option>
+                        <option value="03">March</option>
+                        <option value="04">April</option>
+                        <option value="05">May</option>
+                        <option value="06">June</option>
+                        <option value="07">July</option>
+                        <option value="08">August</option>
+                        <option value="09">September</option>
+                        <option value="10">October</option>
+                        <option value="11">November</option>
+                        <option value="12">December</option>
+                    </select>
+                </div>
+            </span>
+            <div>
+                <span asp-validation-for="FormInput.PeriodName" class="text-danger"></span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="form-group col-md-4">
+            <label asp-for="FormInput.SubmissionStartDate">Start Date</label>
+            <input asp-for="FormInput.SubmissionStartDate"
+                class="form-control" 
+                type="datetime-local" 
+                value="@Model.FormInput.SubmissionStartDate.ToString("yyyy-MM-ddTHH:mm")"
+                required />
+            <div>
+                <span asp-validation-for="FormInput.SubmissionStartDate" class="text-danger">
+                </span>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="form-group col-md-4">
+            <label asp-for="FormInput.SubmissionEndDate">End Date</label>
+            <input asp-for="FormInput.SubmissionEndDate" 
+                    class="form-control" 
+                    type="datetime-local"
+                    value="@Model.FormInput.SubmissionEndDate.ToString("yyyy-MM-ddTHH:mm")" 
+                    required  />
+            <div>
+                <span asp-validation-for="FormInput.SubmissionEndDate" class="text-danger">
+                </span>
+            </div>
+            @* <input asp-for="FormInput.SubmissionEndDate" asp-format="{0:yyyy-MM-dd}" type="date" class="form-control" /> *@
+        </div>
+    </div>
+    <div class="row mt-4">
+        <div class="form-group col-md d-flex align-items-center">
+            <button type="submit" class="btn btn-success me-2">
+                <i class="bi bi-check-circle"> </i>Save
+            </button>
+            <button type="submit" class="btn btn-warning mx-2"
+                asp-page-handler="Cancel" formnovalidate>
+                <i class="bi bi-x-circle"> </i>Cancel
+            </button>
+        </div> 
+    </div>
+</form>
+
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        function validateInput(event) {
+            const input = event.target;
+            const value = input.value;
+
+            // Allow only numbers and control characters (like backspace)
+            if (!/^\d*$/.test(value)) {
+                input.value = value.replace(/[^\d]/g, ''); // Remove non-numeric characters
+            }
+        }
+    </script>
+}

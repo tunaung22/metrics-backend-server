@@ -1,0 +1,126 @@
+﻿@page
+@model IndexModel
+@{
+    var currentUrl = HttpContext.Request.Path;
+    var a = @Url.Page(ViewContext.RouteData.Values["page"]?.ToString(), null, null, Request.Scheme);
+}
+
+
+
+<div class="d-flex align-items-center p-2">
+    <h3>Departments</h3>
+    <div class="mx-4">
+        <a class="btn btn-primary" 
+            asp-page="Create"
+            asp-route-returnUrl="@Url.Page("Index")">New</a>
+    </div>
+</div>
+
+
+@* ========================================================================== *@
+@if (!ModelState.IsValid)
+{
+    <div class="form bg-light p-4">
+        <div class="alert alert-danger">
+            <h4>There were some errors:</h4>
+            <ul>
+                @foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    <li>@error.ErrorMessage</li>
+                }
+            </ul>
+        </div>
+    </div>
+}
+
+
+@* =============== Filter Bar =============================================== *@
+<div id="filter-bar" class="d-flex bg-light p-4 mt-2">
+  <div class="col-sm-4 mx-2">
+    <input class="form-control" placeholder="Filter..." />
+  </div>
+    <div class="col-sm-4 mx-2"><input class="form-control" placeholder="" /></div>
+</div>
+
+@* ================ Table =================================================== *@
+<div class="bg-light p-4">
+    <table id="itemsTable" class="table">
+        <thead>
+            <tr>
+                <th>Department Code</th>
+                <th>Department Name</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.Departments != null)
+            {
+
+                @foreach (var department in Model.Departments)
+                {
+                    <tr>
+                        <td>@department.DepartmentCode</td>
+                        <td>@department.DepartmentName</td>
+                        <td>
+                            <form method="post" style="display:inline;">
+                                @* <input type="hidden" name="departmentId" value="@department.Id" /> *@
+                                <input type="hidden" name="departmentCode" value="@department.DepartmentCode" />
+                                <a asp-page="Edit" 
+                                    asp-route-departmentCode="@department.DepartmentCode" 
+                                    asp-route-returnUrl="@HttpContext.Request.Path">
+                                    Edit
+                                </a>
+                                <button class="btn btn-success" 
+                                    asp-route-departmentCode="@department.DepartmentCode"
+                                    asp-page-handler="Edit"
+                                    asp-route-returnUrl="@Url.Page("Index")">Edit</button>
+                                <button type="submit" class="btn btn-danger" asp-page-handler="Delete">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>
+
+
+@section Scripts {
+    @* <partial name="_ValidateScriptsPartial" /> *@
+    <script>
+        @* function editProduct(departmentCode, departmentName) {
+            document.querySelector('[name="FormData.DepartmentName"]').value = departmentCode;
+            document.querySelector('[name="FormData.DepartmentName"]').value = departmentName;
+            
+
+        } *@
+
+
+
+        @* function editItem(departmentCode, departmentName) {
+            document.getElementById("Department_Code").value = departmentCode;
+            document.getElementById("Department_Name").value = departmentName;
+        } *@
+
+        @* $(document).ready(function () {
+            $('#edit_data').click(function (e) {
+                e.preventDefault();
+                console.log("DATAAAAAAAAAAAAAAAA");
+                console.log($(this).data(departmentCode)); *@
+                @* var itemId = $(this).data('departmentCode');
+
+                $.ajax({
+                    url: '@Url.Page("Detail")', // URL to the detail page
+                    type: 'GET',
+                    data: { id: itemId },
+                    success: function (data) {
+                        $('#detailView').html(data);
+                    },
+                    error: function () {
+                        $('#detailView').html('<p>Error loading detail view.</p>');
+                    }
+                }); *@
+            @* });
+        }); *@
+    </script>
+}

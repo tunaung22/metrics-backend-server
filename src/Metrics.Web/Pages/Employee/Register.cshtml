@@ -1,0 +1,131 @@
+﻿@page
+@model Metrics.Web.Pages.Employee.CreateModel
+@{
+}
+
+<div class="form">
+    <form id="registerForm" method="post" asp-page-handler="">
+        
+        <h2>Create a new account.</h2>
+
+         <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+         
+        <div class="row">
+            <div class="mb-3 col-md-3">
+                <label asp-for="FormInput.UserName">Username</label>
+                <div>
+                    <span asp-validation-for="FormInput.UserName" class="text-danger"></span>
+                </div>
+                <input asp-for="FormInput.UserName" class="form-control" />
+            </div>
+            <div class="mb-3 col-md-3">
+                <label asp-for="FormInput.Email">Email</label>
+                <div>
+                    <span asp-validation-for="FormInput.Email" class="text-danger"></span>
+                </div>
+                <input asp-for="FormInput.Email" class="form-control" type=""  />
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="mb-3 col-md-3">
+                <label asp-for="FormInput.Password">Password</label>
+                <div>
+                    <span asp-validation-for="FormInput.Password" class="text-danger"></span>
+                </div>
+                <input asp-for="FormInput.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password"/>
+            </div>
+            <div class="mb-3 col-md-3">
+                <label asp-for="FormInput.ConfirmPassword">Confirm Password</label>
+                <div>
+                    <span asp-validation-for="FormInput.ConfirmPassword" class="text-danger">
+                    </span>
+                </div>
+                <input asp-for="FormInput.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password"  />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="mb-3 col-md-3">
+                <label asp-for="FormInput.EmployeeCode">Employee Code</label>
+                <div>
+                    <span asp-validation-for="FormInput.EmployeeCode" class="text-danger"></span>
+                </div>
+                <input asp-for="FormInput.EmployeeCode" class="form-control" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="mb-3 col-md-3">
+                <label asp-for="FormInput.FullName">Full Name</label>
+                <div>
+                    <span asp-validation-for="FormInput.FullName" class="text-danger"></span>
+                </div>
+                <input asp-for="FormInput.FullName" class="form-control" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="mb-3 col-md-3">
+                <label asp-for="FormInput.Address">Address</label>
+                <div>
+                    <span asp-validation-for="FormInput.Address" class="text-danger"></span>
+                </div>
+                <textarea asp-for="FormInput.Address" class="form-control"></textarea>
+            </div>
+            <div class="mb-3 col-md-3">
+                <label asp-for="FormInput.PhoneNumber">Phone</label>
+                <div>
+                    <span asp-validation-for="FormInput.PhoneNumber" class="text-danger"></span>
+                </div>
+                <input asp-for="FormInput.PhoneNumber" class="form-control" />
+            </div>
+        </div>
+
+        @* ==========  ========== *@
+        <div class="row">
+             @* <div class="mb-3 col-md-3">
+                <label asp-for="FormInput.PhoneNumber">Phone</label>
+                <div>
+                    <span asp-validation-for="FormInput.PhoneNumber" class="text-danger"></span>
+                </div>
+                <input asp-for="FormInput.PhoneNumber" class="form-control" />
+            </div> *@
+
+            <div class="mb-3 col-md-3">
+                <select asp-for="FormInput.DepartmentId" 
+                        asp-items="Model.DepartmentListItems"
+                        class="form-select" 
+                        aria-label="Select Department">
+                  <option value="">Select a Department</option>
+                </select>
+
+                    @* @foreach (var department in Model.Departments)
+                    {
+                        <option value="@department.Id">@department.DepartmentName</option>
+                    } *@
+                    @* <option selected>Select Department</option>
+                    <option value="2">Two</option>
+                    <option value="3">Three</option> *@
+                @* </select> *@
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="mb-3 col-md d-flex align-items-center">
+                <button id="registerSubmit" type="submit" class="w-50 btn btn-lg btn-primary">
+                    <i class="fas fa-plus">Register</i>
+                </button>
+            </div> 
+        </div>
+
+
+
+        @* <div class="row">
+            <div class="mb-3 col-md-3"><small>Format:- YYYY-mm</small></div>
+            <div class="mb-3 col-md-3"></div>
+            <div class="mb-3 col-md-3"></div>
+            <div class="mb-3 col-md-3"></div>
+        </div> *@
+    </form>
+</div>
