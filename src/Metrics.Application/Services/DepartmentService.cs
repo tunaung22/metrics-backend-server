@@ -316,6 +316,9 @@ public class DepartmentService : IDepartmentService
     {
         try
         {
+            if (string.IsNullOrEmpty(departmentCode) || string.IsNullOrWhiteSpace(departmentCode))
+                throw new ArgumentNullException(nameof(departmentCode), "Department code is required.");
+
             // Validate existence
             var targetDepartment = await _departmentRepository.FindByDepartmentCodeAsync(departmentCode);
             if (targetDepartment == null)
@@ -341,7 +344,7 @@ public class DepartmentService : IDepartmentService
             {
                 _logger.LogError(ex, pgEx.MessageText);
                 // TODO: DuplicateEntityException
-                throw new Exception("Duplicate entry exception occurred.");
+                throw new DuplicateContentException("Duplicate entry exception occurred.");
             }
             else
             {
@@ -371,7 +374,7 @@ public class DepartmentService : IDepartmentService
 
             if (department == null)
                 // TODO: NotFoundException
-                throw new Exception("Department not found.");
+                throw new NotFoundException("Department not found.");
 
             _departmentRepository.Delete(department);
             await _context.SaveChangesAsync();

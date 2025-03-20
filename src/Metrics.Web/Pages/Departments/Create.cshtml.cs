@@ -54,7 +54,7 @@ namespace Metrics.Web.Pages.Departments
                 ModelState.AddModelError("Input.DepartmentName", ex.Message);
                 return Page();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
 
                 // ModelState.AddModelError("Input.DepartmentName", "Duplicate department.");

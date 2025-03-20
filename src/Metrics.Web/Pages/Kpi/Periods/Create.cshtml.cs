@@ -47,7 +47,7 @@ public class CreateModel : PageModel
             return RedirectToPage("Index");
 
         }
-        catch (DuplicateContentException ex)
+        catch (DuplicateContentException)
         {
             ModelState.AddModelError("DuplicateContent", "Duplicate KPI Period");
         }

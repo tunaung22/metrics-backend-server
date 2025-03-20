@@ -11,11 +11,22 @@ using Metrics.Infrastructure.Repositories;
 using Metrics.Infrastructure.Repositories.IRepositories;
 using Metrics.Infrastructure.Data;
 using Metrics.Domain.Entities;
+using Metrics.Web.Exceptions;
+using Serilog;
 
 
 // ========== Load .env =========================================================== 
 var dotenv = Path.Combine(Directory.GetCurrentDirectory(), ".env");
 DotenvLoader.Load(dotenv);
+
+// ========== Serilog ==================================================
+var log = new LoggerConfiguration()
+    .MinimumLevel.Debug()
+    .WriteTo.Console()
+    .WriteTo.File("Logs/log.txt", rollingInterval: RollingInterval.Day)
+    .CreateLogger();
+Log.Logger = log;
+
 
 // ========== BUILDER =============================================================
 var builder = WebApplication.CreateBuilder(args);
@@ -83,7 +94,8 @@ try
                     o.MigrationsHistoryTable("__ef_migrations_history", pgConfig.PgSchema);
                 }
             )
-            .UseSnakeCaseNamingConvention();
+            .UseSnakeCaseNamingConvention()
+            .LogTo(Console.WriteLine, LogLevel.Information);
     });
 
 }
@@ -135,6 +147,10 @@ builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 builder.Services.AddScoped<IUserAccountService, UserAccountService>();
 builder.Services.AddScoped<IKpiSubmissionService, KpiSubmissionService>();
 
+// ========== Exception Handling ===============================================
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+
+
 // ========== APPLICATION ======================================================
 var app = builder.Build();
 
@@ -170,6 +186,6 @@ app.MapControllers();
 app.MapOpenApi();
 
 app.UseStatusCodePagesWithReExecute("/errors/{0}");
-// app.UseStatusCodePages();
+app.UseStatusCodePages();
 
 app.Run();

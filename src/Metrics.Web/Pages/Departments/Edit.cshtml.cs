@@ -22,12 +22,12 @@ public class EditModel : PageModel
 
 
     [BindProperty]
-    public InputModel Input { get; set; }
+    public InputModel Input { get; set; } = new InputModel();
 
     [BindProperty]
-    public string DepartmentCode { get; set; }
+    public string DepartmentCode { get; set; } = string.Empty;
 
-    public string ReturnUrl { get; set; }
+    public string ReturnUrl { get; set; } = string.Empty;
 
     public async Task<IActionResult> OnGet(string departmentCode)
     {

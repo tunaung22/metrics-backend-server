@@ -1,7 +1,9 @@
 ﻿using Metrics.Application.DTOs.DepartmentDtos;
 using Metrics.Application.Mappers.DtoMappers;
 using Metrics.Application.Services.IServices;
+using Metrics.Domain.Exceptions;
 using Microsoft.AspNetCore.Mvc;
+using SQLitePCL;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -29,10 +31,10 @@ namespace Metrics.Web.ApiControllers
 
         // GET api/<DepartmentsController>/ICU
         [HttpGet("{departmentCode}")]
-        public async Task<IActionResult> Get(string departmentCode)
+        public async Task<IActionResult> GetAsync(string departmentCode)
         {
             //var result = await _departmentService.FindByIdAsync(id);
-            var result = await _departmentService.FindByDepartmentCodeAsync(departmentCode);
+            var result = await _departmentService.FindByDepartmentCode_Async(departmentCode);
             if (result != null)
             {
                 return Ok(result);
@@ -43,35 +45,42 @@ namespace Metrics.Web.ApiControllers
 
         // POST api/<DepartmentsController>
         [HttpPost]
-        public async Task<ActionResult<DepartmentGetDto>> Post(DepartmentCreateDto createDto)
+        public async Task<ActionResult<DepartmentGetDto>> PostAsync(DepartmentCreateDto createDto)
         {
             var entity = createDto.ToEntity();
-            var newDepartment = await _departmentService.CreateAsync(entity);
+            var newDepartment = await _departmentService.Create_Async(createDto);
 
-            //var createdDepartment = DepartmentDtoMapper.ToGetDto(createdEntity);
-            var uri = Url.Action(nameof(Post), new { id = newDepartment.Data.DepartmentCode });
+            if (newDepartment == null)
+            {
+                return BadRequest();
+            }
+            var uri = Url.Action(nameof(PostAsync), new { id = newDepartment.DepartmentCode });
 
             return Created(uri, newDepartment);
         }
 
         // PUT api/<DepartmentsController>/5
         [HttpPut("{departmentCode}")]
-        public async Task<IActionResult> Put(string departmentCode, DepartmentUpdateDto updateDto)
+        public async Task<IActionResult> PutAsync(string departmentCode, DepartmentUpdateDto updateDto)
         {
             // if (departmentCode == updateDto.DepartmentCode.ToString())
             //     return BadRequest();
 
             try
             {
-                var entity = updateDto.ToEntity();
-                var updatedDepartment = await _departmentService.UpdateAsync(entity);
-                //var department = DepartmentDtoMapper.ToEntity(updateDto);
-                //var updatedEntity = await _departmentService.UpdateAsync(departmentCode, entity);
-                //var updatedDepartment = DepartmentDtoMapper.ToGetDto(updatedEntity);
+                var updatedDepartment = await _departmentService.Update_Async(departmentCode, updateDto);
 
                 return Ok(updatedDepartment);
             }
-            catch (Exception ex)
+            catch (ArgumentNullException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (DuplicateContentException ex)
+            {
+                return Conflict(ex.Message);
+            }
+            catch (Exception)
             {
                 return NotFound();
             }
@@ -97,7 +106,7 @@ namespace Metrics.Web.ApiControllers
 
         // DELETE api/<DepartmentsController>/5
         [HttpDelete("{departmentCode}")]
-        public async Task<IActionResult> Delete(string departmentCode)
+        public async Task<IActionResult> DeleteAsync(string departmentCode)
         {
             try
             {
@@ -105,10 +114,14 @@ namespace Metrics.Web.ApiControllers
                 return NoContent();
 
             }
+            catch (NotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
             catch (Exception ex)
             {
                 //throw new ArgumentNullException(nameof(departmentCode), "Department code argument must be provided.");
-                return NotFound();
+                return StatusCode(500, ex.Message);
             }
 
         }

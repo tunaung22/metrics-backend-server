@@ -16,8 +16,8 @@ public enum ErrorType
 public class Result<T>
 {
     public bool Success { get; set; }
-    public T Data { get; set; }
-    public string ErrorMessage { get; set; }
+    public T? Data { get; set; }
+    public string ErrorMessage { get; set; } = null!;
     public ErrorType ErrorType { get; set; }
 
     public static Result<T> Ok(T data)

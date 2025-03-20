@@ -42,36 +42,30 @@ public class KpiPeriodApiController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> PostAsync(KpiPeriodCreateDto createDto)
     {
-        var result = await _kpiPeriodService.CreateAsync(createDto.ToEntity());
-        if (!result.Success)
-        {
-            switch (result.ErrorType)
-            {
-                case ErrorType.NotFound:
-                    return NotFound(result.ErrorMessage);
-                case ErrorType.ConcurrencyConflict:
-                    return Conflict(result.ErrorMessage);
-                case ErrorType.DatabaseError:
-                    return StatusCode(500, result.ErrorMessage);
-                case ErrorType.ValidationError:
-                    return BadRequest(result.ErrorMessage);
-                default:
-                    return StatusCode(500, "An unexpected error occurred.");
-            }
+        var newKpiPeriod = await _kpiPeriodService.Create_Async(createDto);
+        // case ErrorType.NotFound:
+        //     return NotFound(result.ErrorMessage);
+        // case ErrorType.ConcurrencyConflict:
+        //     return Conflict(result.ErrorMessage);
+        // case ErrorType.DatabaseError:
+        //     return StatusCode(500, result.ErrorMessage);
+        // case ErrorType.ValidationError:
+        //     return BadRequest(result.ErrorMessage);
+        // default:
+        //     return StatusCode(500, "An unexpected error occurred.");
 
-            // return result.ErrorType switch
-            // {
-            //     ErrorType.NotFound => NotFound(result.ErrorMessage),
-            //     ErrorType.ConcurrencyConflict => Conflict(result.ErrorMessage),
-            //     ErrorType.DatabaseError => StatusCode(500, result.ErrorMessage),
-            //     ErrorType.ValidationError => BadRequest(result.ErrorMessage),
-            //     _ => StatusCode(500, "An unexpected error occurred.")
-            // };
-        }
+        // return result.ErrorType switch
+        // {
+        //     ErrorType.NotFound => NotFound(result.ErrorMessage),
+        //     ErrorType.ConcurrencyConflict => Conflict(result.ErrorMessage),
+        //     ErrorType.DatabaseError => StatusCode(500, result.ErrorMessage),
+        //     ErrorType.ValidationError => BadRequest(result.ErrorMessage),
+        //     _ => StatusCode(500, "An unexpected error occurred.")
+        // };
+        var uri = Url.Action(nameof(PostAsync), new { periodName = newKpiPeriod.PeriodName });
 
-        var uri = Url.Action(nameof(PostAsync), new { periodName = result.Data.PeriodName });
+        return Created(uri, newKpiPeriod);
 
-        return Created(uri, result.Data);
     }
 
     [HttpPut("{periodName}")]
