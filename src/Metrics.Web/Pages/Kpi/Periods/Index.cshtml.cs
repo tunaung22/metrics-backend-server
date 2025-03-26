@@ -1,7 +1,7 @@
 using Metrics.Application.DTOs.KpiPeriodDtos;
 using Metrics.Application.Services.IServices;
 using Metrics.Web.Mappers.ViewModelMappers;
-using Metrics.Web.ViewModels.KpiPeriodViewModels;
+using Metrics.Web.Models.KpiPeriodViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.ComponentModel.DataAnnotations;

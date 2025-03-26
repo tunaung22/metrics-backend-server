@@ -46,6 +46,7 @@ public class KpiSubmissionRepository : IKpiSubmissionRepository
                         && e.EmployeeId == employeeId);
     }
 
+
     public IQueryable<KpiSubmission> FindAllAsQueryable()
     {
         return _context.KpiSubmissions
@@ -57,6 +58,19 @@ public class KpiSubmissionRepository : IKpiSubmissionRepository
         return await _context.KpiSubmissions
             .OrderBy(e => e.SubmissionDate)
             .ToListAsync();
+    }
+
+    public IQueryable<KpiSubmission> FindAsQueryable(long kpiPeriodId, long departmentId, long employeeId)
+    {
+        var result = _context.KpiSubmissions
+            .Where(e => e.KpiPeriodId == kpiPeriodId)
+            .Where(e => e.DepartmentId == departmentId)
+            .Where(e => e.EmployeeId == employeeId);
+
+        if (result == null)
+            throw new NotFoundException("Submission not found.");
+
+        return result;
     }
 
     public async Task<KpiSubmission> FindByIdAsync(long id)

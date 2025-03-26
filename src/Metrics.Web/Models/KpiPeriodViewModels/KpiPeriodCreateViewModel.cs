@@ -1,7 +1,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace Metrics.Web.ViewModels.KpiPeriodViewModels;
+namespace Metrics.Web.Models.KpiPeriodViewModels;
 
 public class KpiPeriodCreateViewModel
 {

@@ -436,6 +436,46 @@ public class DepartmentService : IDepartmentService
         }
     }
 
+    public async Task<IEnumerable<DepartmentDto>> FindAllInsecure_Async(int pageNumber = 1, int pageSize = 20)
+    {
+        try
+        {
+            var departments = await _departmentRepository.FindAllAsQueryable()
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return departments.Select(e => new DepartmentDto
+            {
+                Id = e.Id,
+                DepartmentCode = e.DepartmentCode,
+                DepartmentName = e.DepartmentName
+            }).ToList();
+        }
+        catch (Exception ex)
+        {
+            // Log unexpected errors
+            _logger.LogError(ex, "Unexpected error while querying departments.");
+            // throw; // Propagate to global exception handler
+            throw new Exception("An unexpected error occurred. Please try again later.");
+        }
+    }
+
+    public async Task<int> FindCount_Async()
+    {
+        try
+        {
+            var count = await _departmentRepository.FindCountAsync();
+
+            return count;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while counting departments.");
+            throw new Exception("An unexpected error occurred. Please try again later.");
+        }
+
+    }
 
 
 

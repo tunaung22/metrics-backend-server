@@ -14,6 +14,7 @@ public interface IKpiPeriodService
     Task<Result<bool>> DeleteAsync(string periodName);
     Task<Result<IEnumerable<KpiPeriod>>> FindAllAsync();
 
+    Task<long> FindIdByKpiPeriodName_Async(string periodName);
     Task<KpiPeriodGetDto> FindByKpiPeriodName_Async(string periodName);
     Task<KpiPeriodGetDto> FindById_Async(long id);
     Task<KpiPeriodGetDto> Create_Async(KpiPeriodCreateDto createDto);

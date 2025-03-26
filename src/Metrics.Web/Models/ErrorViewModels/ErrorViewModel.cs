@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Metrics.Web.ViewModels.ErrorViewModels;
+namespace Metrics.Web.Models.ErrorViewModels;
 
 public class ErrorViewModel
 {

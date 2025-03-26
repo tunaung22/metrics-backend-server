@@ -190,7 +190,7 @@ public class EmployeeService : IEmployeeService
         catch (Exception ex)
         {
             // Log unexpected errors
-            _logger.LogError(ex, "Unexpected error while querying department by department code.");
+            _logger.LogError(ex, "Unexpected error while querying employee by employee id.");
             // throw; // Propagate to global exception handler
             throw new Exception("An unexpected error occurred. Please try again later.");
         }
@@ -245,6 +245,30 @@ public class EmployeeService : IEmployeeService
             _logger.LogError(ex, "Unexpected error while updating employee.");
             throw new Exception("An unexpected error occurred. Please try again later.");
 
+        }
+    }
+
+    public async Task<long> FindEmployeeId_Async(string userId)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(userId) || string.IsNullOrWhiteSpace(userId))
+                throw new Exception("Parameter userId is required.");
+
+            var employeeId = await _employeeRepository.FindAllAsQueryable()
+                .Where(e => e.ApplicationUserId == userId)
+                .Select(e => e.Id)
+                .FirstOrDefaultAsync();
+
+            if (employeeId <= 0)
+                throw new NotFoundException("Employee not found.");
+
+            return employeeId;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while querying employee id by user id.");
+            throw new Exception("An unexpected error occurred. Please try again later.");
         }
     }
 }

@@ -17,6 +17,7 @@ public interface IKpiPeriodRepository // : IGenericRepository<KpiPeriod>
     // Task<KpiPeriod?> FindByPeriodName(string periodname);
 
     // Task<bool> IsPeriodNameExist(string periodName);
+
     IQueryable<KpiPeriod> FindAllAsQueryable();
 
 }

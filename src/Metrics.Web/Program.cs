@@ -84,6 +84,7 @@ var connectionString = new NpgsqlConnectionStringBuilder()
 // ========== DbContext ========================================================
 try
 {
+    // Register DbContext with Scoped lieftime by default
     builder.Services.AddDbContext<MetricsDbContext>(options =>
     {
         // options.UseNpgsql(builder.Configuration.GetConnectionString());
@@ -96,7 +97,7 @@ try
             )
             .UseSnakeCaseNamingConvention()
             .LogTo(Console.WriteLine, LogLevel.Information);
-    });
+    }, ServiceLifetime.Scoped);
 
 }
 catch (Exception e)
@@ -117,16 +118,26 @@ builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
 //    .AddEntityFrameworkStores<MetricsDbContext>();
 builder.Services.ConfigureApplicationCookie(options =>
 {
-    options.LoginPath = "/login";
+    options.LoginPath = "/account/login";
 });
 
 // ========== CONTROLLER, RAZOR PAGES===========================================
 builder.Services.AddRazorPages(options =>
 {
-    options.Conventions.AddPageRoute("/manage", "kpi/");
-    options.Conventions.AddPageRoute("/manage", "departments/");
+    options.Conventions.AddPageRoute("/Kpi/Index", "/manage/kpi");
+    options.Conventions.AddPageRoute("/Departments/Index", "/manage/departments");
 });
 builder.Services.AddControllers();
+
+// ----- Session -----
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromSeconds(30);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
+
 
 builder.Services.AddOpenApi();
 
@@ -148,16 +159,20 @@ builder.Services.AddScoped<IUserAccountService, UserAccountService>();
 builder.Services.AddScoped<IKpiSubmissionService, KpiSubmissionService>();
 
 // ========== Exception Handling ===============================================
-builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+// builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
 
 // ========== APPLICATION ======================================================
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment())
+{
+    app.UseDeveloperExceptionPage();
+}
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Home/Error");
+    app.UseExceptionHandler("/Error");
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
@@ -168,6 +183,8 @@ app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseSession();
 
 app.MapStaticAssets();
 

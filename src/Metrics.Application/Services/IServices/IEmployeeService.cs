@@ -15,6 +15,7 @@ public interface IEmployeeService
     Task<IEnumerable<EmployeeGetDto>> FindAll_Async();
     Task<IEnumerable<EmployeeGetAllDto>> FindAll2_Async();
 
+    Task<long> FindEmployeeId_Async(string userId);
 
     // Task<Employee?> GetByEmployeeCodeAsync(string employeeCode);
     // Task<EmployeeGetDto?> GetByIdAsync(long id);
