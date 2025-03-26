@@ -58,7 +58,7 @@ public class KpiPeriodRepository : IKpiPeriodRepository //: GenericRepository<Kp
         var kpiPeriod = await _context.KpiPeriods
             // .Include(e => e.KpiSubmissions)
             .OrderBy(e => e.PeriodName)
-            .Where(e => e.PeriodName == periodName)
+            .Where(e => e.PeriodName.Trim().ToLower() == periodName.Trim().ToLower())
             .FirstOrDefaultAsync();
 
         if (kpiPeriod == null)

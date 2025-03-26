@@ -5,7 +5,7 @@ using Metrics.Application.DTOs.DepartmentDtos;
 using Metrics.Application.Services.IServices;
 using Metrics.Domain.Entities;
 using Metrics.Web.Mappers.ViewModelMappers;
-using Metrics.Web.ViewModels.DepartmentViewModels;
+using Metrics.Web.Models.DepartmentViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.CodeAnalysis.CSharp.Syntax;

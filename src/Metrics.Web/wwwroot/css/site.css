@@ -50,13 +50,40 @@ ul.dashboard__quickaccess .nav-link:hover {
 }
 
 /* #metrics-main-navbar */
-ul#metrics__main-navbar .nav-item .nav-link {
-  background-color: #ffffff;
+/* ul#metrics__main-navbar .nav-item .nav-link {
   color: #0057ba;
+  } */
+ul#metrics__main-navbar .nav-item .nav-link {
+  /* background-color: #ffffff; */
   border-radius: 0.2em;
+  margin-left: 0.2em;
+  margin-right: 0.2em;
 }
-ul#metrics__main-navbar .nav-link:hover {
-  background-color: #e9e9e9;
-  color: #1980ff;
-  border-radius: 0.2em;
+/* ul#metrics__main-navbar .nav-link:hover { */
+/* background-color: #c0c0c0; */
+/* color: #1980ff; */
+/* border-radius: 0.2em; */
+/* } */
+.navbar-nav .nav-item .nav-link:hover {
+  color: #007bff; /* Change this to your desired hover color */
+}
+
+button#goToTop {
+  display: none;
+  position: fixed;
+  bottom: 45px;
+  right: 20px;
+  z-index: 20;
+}
+
+#submissionStatusBar {
+  background: rgba(245, 245, 245, 0.652);
+  z-index: 10;
+}
+
+.radio__kpiscore {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
 }

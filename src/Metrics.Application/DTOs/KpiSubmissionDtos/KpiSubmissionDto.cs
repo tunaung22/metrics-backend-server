@@ -6,6 +6,7 @@ public class KpiSubmissionDto
 {
     // public long Id { get; set; }
     public DateTimeOffset SubmissionTime { get; set; }
+    public DateOnly SubmissionDate { get; set; } // Generated Field
     public decimal KpiScore { get; set; }
     public string? Comments { get; set; }
 

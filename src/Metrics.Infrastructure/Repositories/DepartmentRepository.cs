@@ -74,6 +74,12 @@ namespace Metrics.Infrastructure.Repositories
             return department;
         }
 
+        public async Task<int> FindCountAsync()
+        {
+            return await _context.Departments.CountAsync();
+        }
+
+
         public void Update(Department entity)
         {
             _context.Entry(entity).State = EntityState.Modified;

@@ -1,7 +1,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace Metrics.Web.ViewModels.DepartmentViewModels;
+namespace Metrics.Web.Models.DepartmentViewModels;
 
 public class DepartmentFormViewModel
 {

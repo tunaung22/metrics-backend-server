@@ -174,6 +174,30 @@ public class KpiPeriodService : IKpiPeriodService
 
 
     // ================ DTO ===============================================
+    public async Task<long> FindIdByKpiPeriodName_Async(string periodName)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(periodName))
+                // TODO: ValidationException
+                throw new Exception("Parameter periodName is required.");
+
+            var kpiPeriod = await _kpiPeriodRepository.FindByPeriodNameAsync(periodName);
+
+            if (kpiPeriod == null)
+                // TODO: NotFoundException
+                // throw new NotFoundException($"KPI Period with name {periodName} not found.");
+                return 0;
+
+            return kpiPeriod.Id;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while querying department by department code.");
+            throw new Exception("An unexpected error occurred. Please try again later.");
+        }
+    }
+
     public async Task<KpiPeriodGetDto> FindByKpiPeriodName_Async(string periodName)
     {
         try

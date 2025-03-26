@@ -15,8 +15,9 @@ public interface IDepartmentRepository //: IGenericRepository<Department>
     void Delete(Department entity);
     Task<IEnumerable<Department>> FindAllAsync();
     Task<bool> DepartmentExistsAsync(string departmentCode);
+    Task<int> FindCountAsync();
 
     // ========== Experimental ========================================
-    [Obsolete("Experimental! Use FindAllAsync() instead.", false)]
+    // [Obsolete("Experimental! Use FindAllAsync() instead.", false)]
     IQueryable<Department> FindAllAsQueryable();
 }

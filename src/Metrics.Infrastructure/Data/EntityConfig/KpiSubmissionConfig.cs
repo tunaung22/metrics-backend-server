@@ -52,7 +52,7 @@ namespace Metrics.Infrastructure.Data.EntityConfig
                 .IsRequired();
 
             // ===== Index =====
-            builder.HasIndex(e => e.SubmissionDate).IsUnique();
+            // builder.HasIndex(e => e.SubmissionDate).IsUnique();
             builder.HasIndex(e => new
             {
                 e.KpiPeriodId,

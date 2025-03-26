@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Npgsql;
 using System;
+using Metrics.Application.DTOs.DepartmentDtos;
 
 namespace Metrics.Application.Services;
 
@@ -88,7 +89,7 @@ public class KpiSubmissionService : IKpiSubmissionService
         }
     }
 
-    public async Task<List<KpiSubmissionDto>> CreateRange_Async(List<KpiSubmissionCreateDto> createDtos)
+    public async Task<int> CreateRange_Async(List<KpiSubmissionCreateDto> createDtos)
     {
         using var transaction = await _context.Database.BeginTransactionAsync();
 
@@ -105,20 +106,20 @@ public class KpiSubmissionService : IKpiSubmissionService
             }).ToList();
 
             _kpiSubmissionRepository.CreateRange(entities);
-            await _context.SaveChangesAsync();
+            var affectedRows = await _context.SaveChangesAsync();
             await transaction.CommitAsync();
 
-            var result = createDtos.Select(dto => new KpiSubmissionDto
-            {
-                SubmissionTime = dto.SubmissionTime,
-                KpiScore = dto.KpiScore,
-                Comments = dto.Comments,
-                KpiPeriodId = dto.KpiPeriodId,
-                DepartmentId = dto.DepartmentId,
-                EmployeeId = dto.EmployeeId
-            }).ToList();
+            // var result = createDtos.Select(dto => new KpiSubmissionDto
+            // {
+            //     SubmissionTime = dto.SubmissionTime,
+            //     KpiScore = dto.KpiScore,
+            //     Comments = dto.Comments,
+            //     KpiPeriodId = dto.KpiPeriodId,
+            //     DepartmentId = dto.DepartmentId,
+            //     EmployeeId = dto.EmployeeId
+            // }).ToList();
 
-            return result;
+            return affectedRows;
         }
         catch (DbUpdateException ex)
         {
@@ -155,7 +156,7 @@ public class KpiSubmissionService : IKpiSubmissionService
 
             if (kpiSubmission == null)
                 // TODO: NotFoundException
-                throw new Exception("KPI Submission not found.");
+                throw new NotFoundException("KPI Submission not found.");
 
             _kpiSubmissionRepository.Delete(kpiSubmission);
             await _context.SaveChangesAsync();
@@ -299,6 +300,179 @@ public class KpiSubmissionService : IKpiSubmissionService
             _logger.LogError(ex, "Unexpected error while updating submission.");
             throw new Exception("An unexpected error occurred. Please try again later.");
 
+        }
+    }
+
+    // public async Task<IEnumerable<KpiSubmissionGetDto>> FindAll_Async(long employeeId, long kpiPeriodId, long departmentId)
+    public async Task<KpiSubmissionGetDto?> Find_Async(long employeeId, long kpiPeriodId, long departmentId)
+    {
+        try
+        {
+            var submission = await _kpiSubmissionRepository.FindAsQueryable(kpiPeriodId, departmentId, employeeId)
+                .Include(e => e.KpiPeriod)
+                .Include(e => e.TargetDepartment)
+                .Include(e => e.Candidate)
+                .OrderBy(e => e.SubmissionDate)
+                .FirstOrDefaultAsync();
+
+            if (submission != null)
+            {
+                return new KpiSubmissionGetDto
+                {
+                    SubmissionTime = submission.SubmissionTime,
+                    SubmissionDate = submission.SubmissionDate,
+                    KpiScore = submission.KpiScore,
+                    KpiPeriod = submission.KpiPeriod.PeriodName,
+                    Department = submission.TargetDepartment.DepartmentName,
+                    Candidate = submission.Candidate.FullName
+                };
+            }
+            return null;
+        }
+        catch (NotFoundException)
+        {
+            // throw new NotFoundException("Submission does not exist.");
+            return null;
+        }
+        catch (Exception ex)
+        {
+            // Log unexpected errors
+            _logger.LogError(ex, "Unexpected error while querying department.");
+            // throw; // Propagate to global exception handler
+            throw new Exception("An unexpected error occurred. Please try again later.");
+        }
+    }
+
+    public async Task<IEnumerable<KpiSubmissionDto>> Find_Async(long employeeId, long kpiPeriodId, List<long> departmentIds)
+    {
+        try
+        {
+            var submissions = await _kpiSubmissionRepository.FindAllAsQueryable()
+                .Include(e => e.KpiPeriod)
+                .Include(e => e.TargetDepartment)
+                .Include(e => e.Candidate)
+                .OrderBy(e => e.SubmissionDate)
+                .Where(e => e.EmployeeId == employeeId
+                    && e.KpiPeriodId == kpiPeriodId
+                    && departmentIds.Any(d => e.DepartmentId == d))
+                .ToListAsync();
+
+            if (submissions != null)
+            {
+                return submissions.Select(s => new KpiSubmissionDto
+                {
+                    SubmissionTime = s.SubmissionTime,
+                    SubmissionDate = s.SubmissionDate,
+                    KpiScore = s.KpiScore,
+                    KpiPeriodId = s.KpiPeriodId,
+                    DepartmentId = s.DepartmentId,
+                    EmployeeId = s.EmployeeId
+                    // KpiPeriod = s.KpiPeriod.PeriodName,
+                    // Department = s.TargetDepartment.DepartmentName,
+                    // Candidate = s.Candidate.FullName
+                }).ToList();
+            }
+            return [];
+        }
+        catch (NotFoundException)
+        {
+            // throw new NotFoundException("Submission does not exist.");
+            return [];
+        }
+        catch (Exception ex)
+        {
+            // Log unexpected errors
+            _logger.LogError(ex, "Unexpected error while querying department.");
+            // throw; // Propagate to global exception handler
+            throw new Exception("An unexpected error occurred. Please try again later.");
+        }
+    }
+
+
+    public async Task<IEnumerable<KpiSubmissionDto>> FindAllInsecure_Async(long employeeId, long kpiPeriodId, long departmentId)
+    {
+        try
+        {
+            var departments = await _kpiSubmissionRepository.FindAllAsQueryable()
+                .Include(e => e.KpiPeriod)
+                .Include(e => e.TargetDepartment)
+                .Include(e => e.Candidate)
+                .OrderBy(e => e.SubmissionDate)
+                .Where(e => e.EmployeeId == employeeId
+                    && e.KpiPeriodId == kpiPeriodId
+                    && e.DepartmentId == departmentId)
+                .ToListAsync();
+            if (departments.Count > 0)
+            {
+
+
+                // return departments.ToGetDto();
+                return departments.Select(e => new KpiSubmissionDto
+                {
+                    SubmissionTime = e.SubmissionTime,
+                    SubmissionDate = e.SubmissionDate,
+                    KpiScore = e.KpiScore,
+                    KpiPeriodId = e.KpiPeriodId,
+                    // KpiPeriod = e.KpiPeriod.PeriodName,
+                    DepartmentId = e.DepartmentId,
+                    // Department = e.TargetDepartment.DepartmentName,
+                    EmployeeId = e.EmployeeId
+                    // Candidate = e.Candidate.FullName
+                }).ToList();
+            }
+
+            return [];
+        }
+        catch (Exception ex)
+        {
+            // Log unexpected errors
+            _logger.LogError(ex, "Unexpected error while querying departments.");
+            // throw; // Propagate to global exception handler
+            throw new Exception("An unexpected error occurred. Please try again later.");
+        }
+    }
+
+    public async Task<IEnumerable<KpiSubmissionDto>> FindAllInsecure_Async()
+    {
+        try
+        {
+            var departments = await _kpiSubmissionRepository.FindAllAsQueryable()
+                .Include(e => e.KpiPeriod)
+                .Include(e => e.TargetDepartment)
+                .Include(e => e.Candidate)
+                .OrderBy(e => e.SubmissionDate)
+                // .Where(e => e.EmployeeId == employeeId
+                // && e.KpiPeriodId == kpiPeriodId
+                // && e.DepartmentId == departmentId)
+                .AsNoTracking()
+                .ToListAsync();
+            if (departments.Count > 0)
+            {
+
+
+                // return departments.ToGetDto();
+                return departments.Select(e => new KpiSubmissionDto
+                {
+                    SubmissionTime = e.SubmissionTime,
+                    SubmissionDate = e.SubmissionDate,
+                    KpiScore = e.KpiScore,
+                    KpiPeriodId = e.KpiPeriodId,
+                    // KpiPeriod = e.KpiPeriod.PeriodName,
+                    DepartmentId = e.DepartmentId,
+                    // Department = e.TargetDepartment.DepartmentName,
+                    EmployeeId = e.EmployeeId
+                    // Candidate = e.Candidate.FullName
+                }).ToList();
+            }
+
+            return [];
+        }
+        catch (Exception ex)
+        {
+            // Log unexpected errors
+            _logger.LogError(ex, "Unexpected error while querying departments.");
+            // throw; // Propagate to global exception handler
+            throw new Exception("An unexpected error occurred. Please try again later.");
         }
     }
 }

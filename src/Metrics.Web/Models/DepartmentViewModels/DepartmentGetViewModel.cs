@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Metrics.Web.ViewModels.DepartmentViewModels;
+namespace Metrics.Web.Models.DepartmentViewModels;
 
 public class DepartmentGetViewModel : DepartmentViewModel
 {

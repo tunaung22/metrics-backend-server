@@ -22,6 +22,10 @@ public interface IDepartmentService
     Task<bool> Delete_Async(string departmentCode);
     Task<IEnumerable<DepartmentGetDto>> FindAll_Async();
     Task<IEnumerable<DepartmentDto>> FindAllInsecure_Async();
+    Task<IEnumerable<DepartmentDto>> FindAllInsecure_Async(int pageNumber = 1, int pageSize = 20);
+
+
+    Task<int> FindCount_Async();
     // Task<Department?> GetBy_DepartmentCode_Async(string departmentCode);
     // Task<IEnumerable<Department>> Search_Async(string keyword);
     // Task<Department?> GetBy_IdAsync(long id);

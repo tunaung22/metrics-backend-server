@@ -1,0 +1,16 @@
+﻿@page
+@model Metrics.Web.Pages.Kpi.Submissions.SuccessModel
+@{
+}
+
+<h3>Success!</h3>
+<div class="alert alert-success my-4 py-4">
+    <h4 class="my-4">Thank you, Your KPI Score Submissions form has submitted successfully. <strong>@Model.TargetKpiPeriodName</strong>.</h4>
+    <p>
+        Please check other periods for <a class="alert-link" asp-page="/Kpi/Submissions/Index">Avaiable Submissions</a>.
+    </p>
+</div>
+
+<div class="mx-2 my-4 px-2 py-4">
+    <span>Go back to <a class="nav-link" asp-page="/Index">Home</a></span>
+</div>

@@ -17,5 +17,6 @@ public interface IKpiSubmissionRepository
 
     // ========== Use IEnumerable types in most cases ==================
     IQueryable<KpiSubmission> FindByIdAsQueryable(long id);
+    IQueryable<KpiSubmission> FindAsQueryable(long kpiPeriodId, long departmentId, long employeeId);
     IQueryable<KpiSubmission> FindAllAsQueryable();
 }
