@@ -1,5 +1,5 @@
 using Metrics.Application.DTOs.KpiPeriodDtos;
-using Metrics.Application.Services.IServices;
+using Metrics.Application.Interfaces.IServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -21,6 +21,15 @@ public class IndexModel : PageModel
     public List<KpiPeriodGetDto> KpiPeriodList { get; set; } = [];
     public bool IsSubmissionAvaiable { get; set; } = false;
 
+    [BindProperty(SupportsGet = true)]
+    public int CurrentPage { get; set; } = 1;
+    public int PageSize { get; set; } = 10;
+    public long TotalSubmissions { get; set; } // Count
+
+    public int TotalPages => (int)Math.Ceiling(decimal.Divide(TotalSubmissions, PageSize));
+    public bool ShowPrevious => CurrentPage > 1;
+    public bool ShowNext => CurrentPage < TotalPages;
+
 
     public async Task<IActionResult> OnGet()
     {
@@ -41,7 +50,7 @@ public class IndexModel : PageModel
 
     private async Task<List<KpiPeriodGetDto>> LoadKpiPeriodListItems()
     {
-        var kpiPeriods = await _kpiPeriodService.FindAllByValidDate_Async(SubmissionTime = DateTimeOffset.UtcNow);
+        var kpiPeriods = await _kpiPeriodService.FindAllByDateAsync(SubmissionTime = DateTimeOffset.UtcNow);
 
         if (!kpiPeriods.Any())
             return [];

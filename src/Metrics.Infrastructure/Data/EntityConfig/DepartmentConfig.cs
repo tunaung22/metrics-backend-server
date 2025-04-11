@@ -1,12 +1,7 @@
-﻿using Metrics.Domain.Entities;
+﻿using Metrics.Application.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Npgsql.EntityFrameworkCore.PostgreSQL.ValueGeneration;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Metrics.Infrastructure.Data.EntityConfig;
 

@@ -1,16 +1,11 @@
-using Metrics.Application.DTOs.DepartmentDtos;
 using Metrics.Application.DTOs.KpiSubmissionDtos;
-using Metrics.Application.Services.IServices;
-using Metrics.Domain.Entities;
-using Metrics.Domain.Exceptions;
-using Metrics.Infrastructure.Data;
+using Metrics.Application.Entities;
+using Metrics.Application.Exceptions;
+using Metrics.Application.Interfaces.IServices;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using System.ComponentModel.DataAnnotations;
-using System.Net.Http.Headers;
 using System.Security.Claims;
 
 namespace Metrics.Web.Pages.Kpi.Submissions;
@@ -22,7 +17,7 @@ public class ApplyModel : PageModel
     private readonly IKpiPeriodService _kpiPeriodService;
     private readonly IEmployeeService _employeeService;
 
-    public ApplyModel(MetricsDbContext context,
+    public ApplyModel(
                         IDepartmentService departmentService,
                         IKpiPeriodService kpiPeriodService,
                         IKpiSubmissionService kpiSubmissionService,
@@ -50,8 +45,33 @@ public class ApplyModel : PageModel
     // var totalDepartments = await _departmentService.FindCount_Async();
     // TotalPages = (int)Math.Ceiling(totalDepartments / (double)PageSize);
 
-    // =========================================================================
 
+    // =============== MODELS ==================================================
+    public class SubmissionInputModel
+    {
+        // public long Id { get; set; }
+        public DateTimeOffset SubmissionTime { get; set; }
+        [Required(ErrorMessage = "KPI Score is required.")]
+        [Range(1, 10, ErrorMessage = "KPI Score is required and choose between 1 to 10.")]
+        public decimal KpiScore { get; set; }
+        public string? Comments { get; set; }
+        // Foreign Keys
+        public long KpiPeriodId { get; set; }
+        [Required(ErrorMessage = "Department ID is required.")]
+        public long DepartmentId { get; set; }
+        public long EmployeeId { get; set; }
+        // Reference Navigational Properties
+        // public KpiPeriod KpiPeriod { get; set; } = null!;
+        // public Department TargetDepartment { get; set; } = null!;
+        // public Employee Candidate { get; set; } = null!;
+    }
+    public class DepartmentModel
+    {
+        public long Id { get; set; }
+        public Guid DepartmentCode { get; set; }
+        public string DepartmentName { get; set; } = null!;
+    }
+    // =========================================================================
 
     [BindProperty]
     public List<SubmissionInputModel> SubmissionInput { get; set; } = [];
@@ -69,6 +89,7 @@ public class ApplyModel : PageModel
     // public bool IsSubmissionAvaiable { get; set; } = false;
 
 
+    // =============== HANDLERS ================================================
     public async Task<IActionResult> OnGetAsync(string periodName)
     {
         TargetKpiPeriodName = periodName;
@@ -240,10 +261,8 @@ public class ApplyModel : PageModel
 
             DepartmentList = await UpdateDepartmentList(DepartmentList, existingSubmissions);
         }
+
         // no previous submissions found (continue)
-
-
-
         if (!ModelState.IsValid)
         {
             ModelState.AddModelError("", "Form invalid");
@@ -251,18 +270,16 @@ public class ApplyModel : PageModel
             return Page();
         }
 
-
         // if (DepartmentList.Count != SubmissionInput.Count)
         // {
         //     ModelState.AddModelError("", "Department list and submission list mismatch. There will be chances of changes in departments data while you're filling the form. Please try again.");
         //     return Page();
         // }
 
-        var createDto = new List<KpiSubmissionCreateDto>();
-
+        var submissionList = new List<KpiSubmission>();
         for (int i = 0; i < SubmissionInput.Count; i++)
         {
-            var dto = new KpiSubmissionCreateDto
+            var submission = new KpiSubmission
             {
                 SubmissionTime = DateTimeOffset.UtcNow,
                 EmployeeId = EmployeeId,
@@ -271,13 +288,12 @@ public class ApplyModel : PageModel
                 KpiScore = SubmissionInput[i].KpiScore.Equals(0) ? 1 : SubmissionInput[i].KpiScore,
                 Comments = SubmissionInput[i].Comments ?? ""
             };
-
-            createDto.Add(dto);
+            submissionList.Add(submission);
         }
 
         try
         {
-            var appliedRecords = await _kpiSubmissionService.CreateRange_Async(createDto);
+            var appliedRecords = await _kpiSubmissionService.CreateRangeAsync(submissionList);
 
             HttpContext.Session.SetString("SubmissionSuccessful", "true");
             HttpContext.Session.SetString("TargetKpiPeriodName", TargetKpiPeriodName);
@@ -300,7 +316,7 @@ public class ApplyModel : PageModel
     // ========== Methods ==================================================
     private async Task<bool> GetKpiPeriodId(string kpiPeriodName)
     {
-        var periodId = await _kpiPeriodService.FindIdByKpiPeriodName_Async(kpiPeriodName);
+        var periodId = await _kpiPeriodService.FindIdByKpiPeriodNameAsync(kpiPeriodName);
 
         if (periodId > 0)
         {
@@ -318,7 +334,7 @@ public class ApplyModel : PageModel
 
     private async Task<bool> GetIsSubmissionValid(DateTimeOffset submissionTime)
     {
-        var kpiPeriods = await _kpiPeriodService.FindAllByValidDate_Async(submissionTime.UtcDateTime);
+        var kpiPeriods = await _kpiPeriodService.FindAllByDateAsync(submissionTime.UtcDateTime);
 
         if (!kpiPeriods.Any())
         {
@@ -338,12 +354,12 @@ public class ApplyModel : PageModel
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)
             ?? throw new Exception("User not found. Please login again.");
 
-        return await _employeeService.FindEmployeeId_Async(userId);
+        return await _employeeService.FindByUserIdAsync(userId);
     }
 
     private async Task<List<DepartmentModel>> GetDepartmentList()
     {
-        var departments = await _departmentService.FindAllInsecure_Async();
+        var departments = await _departmentService.FindAllAsync();
         if (departments.Any())
         {
             return departments.Select(e => new DepartmentModel
@@ -358,18 +374,22 @@ public class ApplyModel : PageModel
         return [];
     }
 
-    private async Task<List<KpiSubmissionDto>> GetExistingSubmissions(List<DepartmentModel> departments)
+    private async Task<List<KpiSubmission>> GetExistingSubmissions(List<DepartmentModel> departments)
     {
         var departmentIDs = departments.Select(department => department.Id).ToList<long>();
-        var existingSubmissions = await _kpiSubmissionService.Find_Async(EmployeeId, TargetKpiPeriodId, departmentIDs);
+        var existingSubmissions = await _kpiSubmissionService
+            .FindByEmployeeAndKpiPeriodAndDepartmentListAsync(
+                EmployeeId,
+                TargetKpiPeriodId,
+                departmentIDs);
 
-        return existingSubmissions.ToList();
+        return existingSubmissions;
     }
 
 
     private Task<List<DepartmentModel>> UpdateDepartmentList(
         List<DepartmentModel> departmentList,
-        List<KpiSubmissionDto> existingSubmissions)
+        List<KpiSubmission> existingSubmissions)
     {
         // ============================================================
         // var a = from d in DepartmentList
@@ -391,47 +411,23 @@ public class ApplyModel : PageModel
     }
 
     // TODO: Unused method
-    private async Task<List<SelectListItem>> LoadKpiPeriodListItems()
-    {
-        var kpiPeriods = await _kpiPeriodService.FindAllByValidDate_Async(DateTimeOffset.UtcNow);
+    // private async Task<List<SelectListItem>> LoadKpiPeriodListItems()
+    // {
+    //     var kpiPeriods = await _kpiPeriodService.FindAllByDateAsync(DateTimeOffset.UtcNow);
 
-        if (!kpiPeriods.Any())
-            return [];
+    //     if (!kpiPeriods.Any())
+    //         return [];
 
-        return kpiPeriods.Select(e => new SelectListItem
-        {
-            Value = e.Id.ToString(),
-            Text = $"{e.PeriodName} ({e.SubmissionStartDate:dd/MMM/yyyy} - {e.SubmissionEndDate:dd/MMM/yyyy})"
-        }).ToList();
-    }
-
-
+    //     return kpiPeriods.Select(e => new SelectListItem
+    //     {
+    //         Value = e.Id.ToString(),
+    //         Text = $"{e.PeriodName} ({e.SubmissionStartDate:dd/MMM/yyyy} - {e.SubmissionEndDate:dd/MMM/yyyy})"
+    //     }).ToList();
+    // }
 
 
 
-    // ========== Models ==========
-    public class SubmissionInputModel
-    {
-        // public long Id { get; set; }
-        public DateTimeOffset SubmissionTime { get; set; }
-        [Required(ErrorMessage = "KPI Score is required.")]
-        [Range(1, 10, ErrorMessage = "KPI Score is required and choose between 1 to 10.")]
-        public decimal KpiScore { get; set; }
-        public string? Comments { get; set; }
-        // Foreign Keys
-        public long KpiPeriodId { get; set; }
-        [Required(ErrorMessage = "Department ID is required.")]
-        public long DepartmentId { get; set; }
-        public long EmployeeId { get; set; }
-        // Reference Navigational Properties
-        // public KpiPeriod KpiPeriod { get; set; } = null!;
-        // public Department TargetDepartment { get; set; } = null!;
-        // public Employee Candidate { get; set; } = null!;
-    }
-    public class DepartmentModel
-    {
-        public long Id { get; set; }
-        public Guid DepartmentCode { get; set; }
-        public string DepartmentName { get; set; } = null!;
-    }
+
+
+
 }

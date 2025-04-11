@@ -1,5 +1,4 @@
-using Metrics.Domain.Entities;
-using System;
+using Metrics.Application.Entities;
 
 namespace Metrics.Application.DTOs.EmployeeDtos;
 

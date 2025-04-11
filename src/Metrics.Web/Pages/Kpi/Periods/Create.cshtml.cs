@@ -1,6 +1,7 @@
 using Metrics.Application.DTOs.KpiPeriodDtos;
-using Metrics.Application.Services.IServices;
-using Metrics.Domain.Exceptions;
+using Metrics.Application.Entities;
+using Metrics.Application.Exceptions;
+using Metrics.Application.Interfaces.IServices;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.ComponentModel.DataAnnotations;
@@ -37,13 +38,20 @@ public class CreateModel : PageModel
 
         try
         {
-            var createDto = new KpiPeriodCreateDto
+            // var createDto = new KpiPeriodCreateDto
+            // {
+            //     PeriodName = FormInput.PeriodName,
+            //     SubmissionStartDate = FormInput.SubmissionStartDate,
+            //     SubmissionEndDate = FormInput.SubmissionEndDate
+            // };
+            // await _kpiPeriodService.Create_Async(createDto);
+            var entity = new KpiPeriod
             {
                 PeriodName = FormInput.PeriodName,
-                SubmissionStartDate = FormInput.SubmissionStartDate,
-                SubmissionEndDate = FormInput.SubmissionEndDate
+                SubmissionStartDate = FormInput.SubmissionStartDate.UtcDateTime,
+                SubmissionEndDate = FormInput.SubmissionEndDate.UtcDateTime
             };
-            await _kpiPeriodService.Create_Async(createDto);
+            await _kpiPeriodService.CreateAsync(entity);
             return RedirectToPage("Index");
 
         }

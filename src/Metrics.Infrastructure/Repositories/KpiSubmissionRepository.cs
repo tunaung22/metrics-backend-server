@@ -1,9 +1,8 @@
-using Metrics.Domain.Entities;
-using Metrics.Domain.Exceptions;
+using Metrics.Application.Entities;
+using Metrics.Application.Exceptions;
+using Metrics.Application.Interfaces.IRepositories;
 using Metrics.Infrastructure.Data;
-using Metrics.Infrastructure.Repositories.IRepositories;
 using Microsoft.EntityFrameworkCore;
-using System;
 
 namespace Metrics.Infrastructure.Repositories;
 
@@ -32,13 +31,13 @@ public class KpiSubmissionRepository : IKpiSubmissionRepository
         _context.KpiSubmissions.Remove(entity);
     }
 
-    public async Task<bool> KpiSubmissionExistsAsync(DateOnly submissionDate)
-    {
-        return await _context.KpiSubmissions
-            .AnyAsync(e => e.SubmissionDate == submissionDate);
-    }
+    // public async Task<bool> KpiSubmissionExistsAsync_(DateOnly submissionDate)
+    // {
+    //     return await _context.KpiSubmissions
+    //         .AnyAsync(e => e.SubmissionDate == submissionDate);
+    // }
 
-    public async Task<bool> KpiSubmissionExists2Async(long kpiPeriodId, long departmentId, long employeeId)
+    public async Task<bool> KpiSubmissionExistsAsync(long kpiPeriodId, long departmentId, long employeeId)
     {
         return await _context.KpiSubmissions
             .AnyAsync(e => e.KpiPeriodId == kpiPeriodId
@@ -108,5 +107,6 @@ public class KpiSubmissionRepository : IKpiSubmissionRepository
     public void Update(KpiSubmission entity)
     {
         _context.Entry(entity).State = EntityState.Modified;
+        _context.KpiSubmissions.Update(entity);
     }
 }

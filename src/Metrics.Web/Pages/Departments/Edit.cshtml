@@ -5,26 +5,61 @@
 
 <h3>Edit Department</h3>
 
-<form method="post">
-    <div class="row">
-        <div class="form-group col-md-3">
-            
-            @* <input type="" name="Id" value="@Model.UpdateModel.Id" /> *@
-            @* <input type="" name="DepartmentCode" value="@Model.UpdateModel.DepartmentCode" /> *@
+@* @if (!ModelState.IsValid)
+{
+    <div class="form bg-light p-4">
+        <div class="alert alert-danger">
+            <h4>There were some errors:</h4>
+            <ul>
+                @foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    <li>@error.ErrorMessage</li>
+                }
+            </ul>
+        </div>
+    </div>
+} *@
 
-            <label asp-for="Input.DepartmentName">Department Name</label>
-            <input asp-for="Input.DepartmentName" class="form-control" />
-            <div>
-                <span asp-validation-for="Input.DepartmentName" class="text-danger">
-                </span>
+<div class="container mt-2">
+    <form method="post">
+
+        <div class="col-6 justify-content-center">
+            <div class="form-group row my-2">
+                <label asp-for="Input.DepartmentName" class="mb-4">Department Name</label>
+            </div>
+
+            <div class="form-group row my-2">
+                <input asp-for="Input.DepartmentName" id="input__departmentName" class="form-control" />
+            </div>
+
+            <div class="form-group row my-2">
+                <span asp-validation-for="Input.DepartmentName" class="text-danger"></span>
+            </div>
+            
+            <div class="form-group row my-2">
+                <div class="d-flex justify-content-end">
+                    <button asp-page-handler="Update" 
+                            type="submit" 
+                            class="btn btn-primary ms-2">Update</button>
+                    <button asp-page-handler="Cancel" 
+                            type="submit" 
+                            class="btn btn-warning ms-2">Cancel</button>
+                </div>
+                @* <input type="" name="Id" value="@Model.UpdateModel.Id" /> *@
+                @* <input type="" name="DepartmentCode" value="@Model.UpdateModel.DepartmentCode" /> *@
             </div>
         </div>
 
-        <div class="form-group col-md-3 mt-4 d-flex align-items-bottom">
-            <button type="submit" class="btn btn-primary mx-2" 
-                asp-page-handler="Update">Update</button>
-            <button type="submit" class="btn btn-warning mx-2"
-                asp-page-handler="Cancel">Cancel</button>
-        </div>
-    </div>
-</form>
+    </form>
+</div>
+
+@section Scripts
+{
+    <script>
+        $(document).ready(function() {
+            @* document.getElementById("input__departmentName").focus(); *@
+            $("#input__departmentName").focus().select();
+        });
+
+    </script>
+}

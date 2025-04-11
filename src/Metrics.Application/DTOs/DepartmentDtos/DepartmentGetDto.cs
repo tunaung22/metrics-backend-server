@@ -1,19 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace Metrics.Application.DTOs.DepartmentDtos;
 
-namespace Metrics.Application.DTOs.DepartmentDtos
+public class DepartmentGetDto
 {
-    public class DepartmentGetDto
-    {
-        //public long Id { get; set; }
-        public Guid DepartmentCode { get; set; }
-        public string DepartmentName { get; set; } = null!;
+    //public long Id { get; set; }
+    public Guid DepartmentCode { get; set; }
+    public string DepartmentName { get; set; } = null!;
 
-        // Collection Navigational Properties
-        //public List<Employee> Employees { get; set; } = [];
-        //public List<KpiSubmission> KpiSubmissions { get; set; } = [];
-    }
+    // Collection Navigational Properties
+    //public List<Employee> Employees { get; set; } = [];
+    //public List<KpiSubmission> KpiSubmissions { get; set; } = [];
 }

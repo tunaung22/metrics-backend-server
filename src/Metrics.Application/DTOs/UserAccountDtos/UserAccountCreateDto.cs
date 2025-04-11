@@ -1,7 +1,6 @@
-using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace Metrics.Application.DTOs;
+namespace Metrics.Application.DTOs.UserAccountDtos;
 
 public class UserAccountCreateDto
 {

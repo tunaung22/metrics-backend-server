@@ -1,7 +1,5 @@
-using Metrics.Application.DTOs;
-using Metrics.Application.DTOs.EmployeeDtos;
-using Metrics.Domain.Entities;
-using System;
+using Metrics.Application.DTOs.UserAccountDtos;
+using Metrics.Application.Entities;
 
 namespace Metrics.Application.Mappers.DtoMappers;
 

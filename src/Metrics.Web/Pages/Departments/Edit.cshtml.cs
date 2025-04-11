@@ -1,10 +1,8 @@
 using Metrics.Application.DTOs.DepartmentDtos;
-using Metrics.Application.Services.IServices;
-using Metrics.Domain.Entities;
+using Metrics.Application.Exceptions;
+using Metrics.Application.Interfaces.IServices;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using System.ComponentModel.DataAnnotations;
 
 namespace Metrics.Web.Pages.Departments;
@@ -32,7 +30,7 @@ public class EditModel : PageModel
     public async Task<IActionResult> OnGet(string departmentCode)
     {
         DepartmentCode = departmentCode;
-        var result = await _departmentService.FindByDepartmentCode_Async(departmentCode);
+        var result = await _departmentService.FindByDepartmentCodeAsync(departmentCode);
         if (result == null)
         {
             ModelState.AddModelError("Input.DepartmentName", "Department not found.");
@@ -56,11 +54,29 @@ public class EditModel : PageModel
             return Page();
         }
 
-        var updateDto = new DepartmentUpdateDto
+        try
         {
-            DepartmentName = Input.DepartmentName
-        };
-        await _departmentService.Update_Async(DepartmentCode, updateDto);
+            // var updateDto = new DepartmentUpdateDto
+            // {
+            //     DepartmentName = Input.DepartmentName
+            // };
+            var entity = new Application.Entities.Department
+            {
+                DepartmentName = Input.DepartmentName
+            };
+            await _departmentService.UpdateAsync(DepartmentCode, entity);
+        }
+        catch (DuplicateContentException)
+        {
+            ModelState.AddModelError("Input.DepartmentName", "Department already exist.");
+            return Page();
+        }
+        catch (System.Exception)
+        {
+            ModelState.AddModelError("", "Unexpected error occured. Please try again.");
+            return Page();
+        }
+
 
         // Redirect to return URL or default to Index
         if (!string.IsNullOrEmpty(ReturnUrl))

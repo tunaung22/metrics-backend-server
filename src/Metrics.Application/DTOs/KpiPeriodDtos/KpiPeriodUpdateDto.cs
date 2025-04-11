@@ -1,6 +1,3 @@
-using Metrics.Common.Utils;
-using System;
-
 namespace Metrics.Application.DTOs.KpiPeriodDtos;
 
 public class KpiPeriodUpdateDto

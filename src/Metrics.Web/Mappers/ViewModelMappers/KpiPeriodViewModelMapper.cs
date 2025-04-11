@@ -1,7 +1,6 @@
 using Metrics.Application.DTOs.KpiPeriodDtos;
-using Metrics.Domain.Entities;
+using Metrics.Application.Entities;
 using Metrics.Web.Models.KpiPeriodViewModels;
-using System;
 
 namespace Metrics.Web.Mappers.ViewModelMappers;
 

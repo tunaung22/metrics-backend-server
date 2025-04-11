@@ -1,15 +1,10 @@
-﻿using Metrics.Common.Configurations;
-using Metrics.Common.Utils;
+﻿using Metrics.Application.Entities;
 using Metrics.Infrastructure.Data.EntityConfig;
-using Metrics.Domain.Entities;
+using Metrics.Shared.Configurations;
+using Metrics.Shared.Utils;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Metrics.Infrastructure.Data;
 

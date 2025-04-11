@@ -1,8 +1,6 @@
-using Metrics.Application.Services.IServices;
-using Metrics.Domain.Entities;
+using Metrics.Application.Interfaces.IServices;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using System.Threading.Tasks;
 
 namespace Metrics.Web.Pages.Employee
 {
@@ -28,7 +26,7 @@ namespace Metrics.Web.Pages.Employee
 
         public async Task<IActionResult> OnGet()
         {
-            var result = await _employeeService.FindAll2_Async();
+            var result = await _employeeService.FindAllAsync();
             EmployeeList = result.Select(e => new EmployeeModel
             {
                 EmployeeCode = e.EmployeeCode,

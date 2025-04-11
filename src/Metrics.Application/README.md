@@ -6,3 +6,12 @@
 - Command and query handlers (if using CQRS)
 - Validation logic
 - Application exceptions
+
+## Domain
+
+- Core domain entities
+- Value objects
+- Domain events
+- Domain interfaces
+- Aggregates
+- Domain exceptions

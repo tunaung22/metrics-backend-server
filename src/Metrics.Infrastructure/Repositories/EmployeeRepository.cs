@@ -1,13 +1,12 @@
-using Metrics.Domain.Entities;
-using Metrics.Domain.Exceptions;
+using Metrics.Application.Entities;
+using Metrics.Application.Exceptions;
+using Metrics.Application.Interfaces.IRepositories;
 using Metrics.Infrastructure.Data;
-using Metrics.Infrastructure.Repositories.IRepositories;
 using Microsoft.EntityFrameworkCore;
-using System;
 
 namespace Metrics.Infrastructure.Repositories;
 
-public class EmployeeRepository : IEmployeeRepository //: GenericRepository<Employee>, IEmployeeRepository
+public class EmployeeRepository : IEmployeeRepository
 {
     private readonly MetricsDbContext _context;
 
@@ -72,29 +71,7 @@ public class EmployeeRepository : IEmployeeRepository //: GenericRepository<Empl
     public void Update(Employee entity)
     {
         _context.Entry(entity).State = EntityState.Modified;
+        _context.Employees.Update(entity);
     }
-
-
-
-
-
-    // public EmployeeRepository(MetricsDbContext context) : base(context)
-    // { }
-
-
-    // public async Task<bool> EmployeeExistAsync(string employeeCode)
-    // {
-    //     return await _dbSet.AnyAsync(e => e.EmployeeCode.ToString() == employeeCode);
-    // }
-
-    // public async Task<Employee> FindByEmployeeCodeAsync(string employeeCode)
-    // {
-    //     var result = await _dbSet.FirstOrDefaultAsync(e => e.EmployeeCode.ToString() == employeeCode);
-    //     if (result == null)
-    //         throw new Exception($"Employee with code {employeeCode} not found.");
-    //     // throw new Exception($"Employee with code {employeeCode} does not exist.");
-
-    //     return result;
-    // }
 
 }

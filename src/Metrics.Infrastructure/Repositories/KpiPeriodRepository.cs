@@ -1,12 +1,11 @@
-using Metrics.Domain.Entities;
+using Metrics.Application.Entities;
+using Metrics.Application.Interfaces.IRepositories;
 using Metrics.Infrastructure.Data;
-using Metrics.Infrastructure.Repositories.IRepositories;
 using Microsoft.EntityFrameworkCore;
-using System;
 
 namespace Metrics.Infrastructure.Repositories;
 
-public class KpiPeriodRepository : IKpiPeriodRepository //: GenericRepository<KpiPeriod>, IKpiPeriodRepository
+public class KpiPeriodRepository : IKpiPeriodRepository
 {
     private readonly MetricsDbContext _context;
 
@@ -20,22 +19,15 @@ public class KpiPeriodRepository : IKpiPeriodRepository //: GenericRepository<Kp
         _context.KpiPeriods.Add(entity);
     }
 
+    public void Update(KpiPeriod enitiy)
+    {
+        _context.Entry(enitiy).State = EntityState.Modified;
+        _context.KpiPeriods.Update(enitiy);
+    }
+
     public void Delete(KpiPeriod entity)
     {
         _context.KpiPeriods.Remove(entity);
-    }
-
-    public async Task<IEnumerable<KpiPeriod>> FindAllAsync()
-    {
-        return await _context.KpiPeriods
-            .OrderBy(e => e.PeriodName)
-            .ToListAsync();
-    }
-
-    public IQueryable<KpiPeriod> FindAllAsQueryable()
-    {
-        return _context.KpiPeriods
-            .OrderBy(e => e.PeriodName);
     }
 
     public async Task<KpiPeriod> FindByIdAsync(long id)
@@ -69,29 +61,28 @@ public class KpiPeriodRepository : IKpiPeriodRepository //: GenericRepository<Kp
         return kpiPeriod;
     }
 
+    public async Task<IEnumerable<KpiPeriod>> FindAllAsync()
+    {
+        return await _context.KpiPeriods
+            .OrderBy(e => e.PeriodName)
+            .ToListAsync();
+    }
+
     public async Task<bool> KpiPeriodExistsAsync(string periodName)
     {
         return await _context.KpiPeriods
             .AnyAsync(e => e.PeriodName == periodName);
     }
 
-    public void Update(KpiPeriod enitiy)
+    public async Task<long> FindCountAsync()
     {
-        _context.Entry(enitiy).State = EntityState.Modified;
+        return await _context.KpiPeriods.CountAsync();
     }
 
-
-    // public KpiPeriodRepository(MetricsDbContext context) : base(context)
-    // { }
-
-    // public async Task<KpiPeriod?> FindByPeriodName(string periodName)
-    // {
-    //     return await _dbSet.FirstOrDefaultAsync(e => e.PeriodName == periodName);
-    // }
-
-    // public async Task<bool> IsPeriodNameExist(string periodName)
-    // {
-    //     return await _dbSet.AnyAsync(e => e.PeriodName == periodName);
-    // }
+    public IQueryable<KpiPeriod> FindAllAsQueryable()
+    {
+        return _context.KpiPeriods
+            .OrderBy(e => e.PeriodName);
+    }
 
 }
