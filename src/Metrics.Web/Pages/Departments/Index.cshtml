@@ -1,10 +1,9 @@
 ﻿@page
-@model IndexModel
+@model Metrics.Web.Pages.Departments.IndexModel
 @{
     var currentUrl = HttpContext.Request.Path;
-    var a = @Url.Page(ViewContext.RouteData.Values["page"]?.ToString(), null, null, Request.Scheme);
+    @* var a = @Url.Page(ViewContext.RouteData.Values["page"]?.ToString(), null, null, Request.Scheme); *@
 }
-
 
 
 <div class="d-flex align-items-center p-2">
@@ -35,19 +34,18 @@
 
 
 @* =============== Filter Bar =============================================== *@
-<div id="filter-bar" class="d-flex bg-light p-4 mt-2">
+@* <div id="filter-bar" class="d-flex bg-light p-4 mt-2">
   <div class="col-sm-4 mx-2">
     <input class="form-control" placeholder="Filter..." />
   </div>
     <div class="col-sm-4 mx-2"><input class="form-control" placeholder="" /></div>
-</div>
+</div> *@
 
 @* ================ Table =================================================== *@
 <div class="bg-light p-4">
     <table id="itemsTable" class="table">
         <thead>
             <tr>
-                <th>Department Code</th>
                 <th>Department Name</th>
                 <th>Actions</th>
             </tr>
@@ -59,21 +57,20 @@
                 @foreach (var department in Model.Departments)
                 {
                     <tr>
-                        <td>@department.DepartmentCode</td>
                         <td>@department.DepartmentName</td>
                         <td>
                             <form method="post" style="display:inline;">
-                                @* <input type="hidden" name="departmentId" value="@department.Id" /> *@
                                 <input type="hidden" name="departmentCode" value="@department.DepartmentCode" />
-                                <a asp-page="Edit" 
+                                <a class="btn btn-success"
+                                    asp-page="Edit"
                                     asp-route-departmentCode="@department.DepartmentCode" 
                                     asp-route-returnUrl="@HttpContext.Request.Path">
                                     Edit
                                 </a>
-                                <button class="btn btn-success" 
+                                @* <button class="btn btn-success" 
                                     asp-route-departmentCode="@department.DepartmentCode"
                                     asp-page-handler="Edit"
-                                    asp-route-returnUrl="@Url.Page("Index")">Edit</button>
+                                    asp-route-returnUrl="@Url.Page("Index")">Edit</button> *@
                                 <button type="submit" class="btn btn-danger" asp-page-handler="Delete">Delete</button>
                             </form>
                         </td>
@@ -82,8 +79,43 @@
             }
         </tbody>
     </table>
+
 </div>
 
+@if(Model.TotalPages > 0)
+{
+    <div class="p-4">
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+
+                <li class="page-item @(!Model.ShowPrevious? "disabled":"")">
+                    <a class="page-link"
+                        asp-page="./Index"
+                        asp-route-currentPage="@(Model.CurrentPage -1)">Previous</a>
+                </li>
+
+                @for(int i = 1; i <= Model.TotalPages; i++)
+                {
+                    @* Model.Pagination.Page = i; *@
+
+                    <li class="page-item">
+                        <a class="page-link"
+                            asp-page="./Index"
+                            asp-route-currentPage="@i"
+                            >@i</a>
+                    </li>
+                }
+
+                <li class="page-item @(!Model.ShowNext? "disabled":"")">
+                    <a class="page-link" 
+                        asp-page="./Index"
+                        asp-route-currentPage="@(Model.CurrentPage + 1)">Next</a>
+                </li>
+
+            </ul>
+        </nav>
+    </div>
+}
 
 @section Scripts {
     @* <partial name="_ValidateScriptsPartial" /> *@

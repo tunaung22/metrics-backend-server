@@ -7,8 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Metrics.Common\Metrics.Common.csproj" />
-    <ProjectReference Include="..\Metrics.Domain\Metrics.Domain.csproj" />
+    <ProjectReference Include="../Metrics.Shared/Metrics.Shared.csproj" />
+    <ProjectReference Include="..\Metrics.Application\Metrics.Application.csproj" />
   </ItemGroup>
 
   <ItemGroup>

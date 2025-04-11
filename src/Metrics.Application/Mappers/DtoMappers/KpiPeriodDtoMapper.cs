@@ -1,6 +1,5 @@
 using Metrics.Application.DTOs.KpiPeriodDtos;
-using Metrics.Domain.Entities;
-using System;
+using Metrics.Application.Entities;
 
 namespace Metrics.Application.Mappers.DtoMappers;
 

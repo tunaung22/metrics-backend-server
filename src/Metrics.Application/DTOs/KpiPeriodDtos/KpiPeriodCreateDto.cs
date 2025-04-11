@@ -1,5 +1,3 @@
-using System;
-
 namespace Metrics.Application.DTOs.KpiPeriodDtos;
 
 public class KpiPeriodCreateDto

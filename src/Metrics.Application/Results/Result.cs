@@ -1,5 +1,3 @@
-using System;
-
 namespace Metrics.Application.Results;
 
 public enum ErrorType
@@ -7,6 +5,7 @@ public enum ErrorType
     None = 0,
     NotFound,
     ConcurrencyConflict,
+    InvalidArgument,
     ValidationError,
     DatabaseError,
     DuplicateKey,

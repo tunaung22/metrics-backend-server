@@ -21,7 +21,6 @@
     // "explorer.openEditors.visible": 20,
     // EDITOR
     // ---------------------------------------------------
-    "prettier.singleQuote": true,
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.minimap.enabled": false,
     "workbench.editor.enablePreview": true,

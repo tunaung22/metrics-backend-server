@@ -1,6 +1,6 @@
 using Metrics.Application.DTOs.KpiSubmissionDtos;
-using Metrics.Application.Services.IServices;
-using Microsoft.AspNetCore.Http;
+using Metrics.Application.Entities;
+using Metrics.Application.Interfaces.IServices;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Metrics.Web.ApiControllers;
@@ -19,7 +19,7 @@ public class KpiSubmissionApiController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAllAsync()
     {
-        var result = await _kpiSubmissionService.FindAll_Async();
+        var result = await _kpiSubmissionService.FindAllAsync();
 
         return Ok(result);
     }
@@ -27,7 +27,16 @@ public class KpiSubmissionApiController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> PostAsync(KpiSubmissionCreateDto createDto)
     {
-        var newSubmission = await _kpiSubmissionService.Create_Async(createDto);
+        var submission = new KpiSubmission
+        {
+            KpiPeriodId = createDto.KpiPeriodId,
+            EmployeeId = createDto.EmployeeId,
+            DepartmentId = createDto.DepartmentId,
+            KpiScore = createDto.KpiScore,
+            SubmissionTime = createDto.SubmissionTime,
+            Comments = createDto.Comments
+        };
+        var newSubmission = await _kpiSubmissionService.CreateAsync(submission);
 
         var uri = Url.Action(nameof(PostAsync), new { id = newSubmission.SubmissionDate });
 
@@ -37,7 +46,16 @@ public class KpiSubmissionApiController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> PostListAsync(List<KpiSubmissionCreateDto> createDtos)
     {
-        var newSubmission = await _kpiSubmissionService.CreateRange_Async(createDtos);
+        var submissionList = createDtos.Select(dto => new KpiSubmission
+        {
+            KpiPeriodId = dto.KpiPeriodId,
+            EmployeeId = dto.EmployeeId,
+            DepartmentId = dto.DepartmentId,
+            KpiScore = dto.KpiScore,
+            SubmissionTime = dto.SubmissionTime,
+            Comments = dto.Comments
+        }).ToList();
+        var newSubmission = await _kpiSubmissionService.CreateRangeAsync(submissionList);
 
         // var uri = Url.Action(nameof(PostAsync), new { id = newSubmission.SubmissionDate });
 

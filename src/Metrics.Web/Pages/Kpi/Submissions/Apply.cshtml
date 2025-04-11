@@ -16,18 +16,21 @@
 
 @if (!ModelState.IsValid)
 {
-    <div class="form bg-light p-4">
-        <div class="alert alert-danger">
-            <h5>There were some errors in the form.</h5>
-            <ul>
-                @* @foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
-                {
-                    <li>@error.ErrorMessage</li>
-                } *@
-                <li>@ModelState.Values.SelectMany(v => v.Errors).First().ErrorMessage</li>
-            </ul>
+    if(!Model.IsSubmissionsExist)
+    {
+        <div class="form bg-light p-4">
+            <div class="alert alert-danger">
+                <h5>There were some errors in the form.</h5>
+                <ul>
+                    @* @foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
+                    {
+                        <li>@error.ErrorMessage</li>
+                    } *@
+                    <li>@ModelState.Values.SelectMany(v => v.Errors).First().ErrorMessage</li>
+                </ul>
+            </div>
         </div>
-    </div>
+    }
 }
 
 @if(Model.IsSubmissionValid)
@@ -124,10 +127,10 @@
     }
     else
     {
-        <h4 class="my-4">You already submitted for this Period <strong>@Model.TargetKpiPeriodName</strong>.</h4>
+        <h4 class="my-4">You already submitted for this period <strong>@Model.TargetKpiPeriodName</strong>.</h4>
         <div class="alert alert-success my-4 py-4">
             <div>
-                Please check other periods for <a class="alert-link" asp-page="/Kpi/Submissions/Index">Avaiable Submissions</a>.
+                Please check other <a class="alert-link" asp-page="/Kpi/Submissions/Index">Submissions</a>.
             </div>
         </div>
     }

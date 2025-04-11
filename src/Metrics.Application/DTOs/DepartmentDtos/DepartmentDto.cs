@@ -1,5 +1,3 @@
-using System;
-
 namespace Metrics.Application.DTOs.DepartmentDtos;
 
 public class DepartmentDto

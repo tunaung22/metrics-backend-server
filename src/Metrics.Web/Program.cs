@@ -1,18 +1,21 @@
-using Metrics.Application.Services.IServices;
-using Metrics.Application.Services;
-using Metrics.Common.Configurations;
-using Metrics.Common.Utils;
 using Microsoft.AspNetCore.Identity;
 using System.Text.Json;
 using Npgsql;
 using Microsoft.EntityFrameworkCore;
-using Metrics.Infrastructure;
-using Metrics.Infrastructure.Repositories;
-using Metrics.Infrastructure.Repositories.IRepositories;
-using Metrics.Infrastructure.Data;
-using Metrics.Domain.Entities;
-using Metrics.Web.Exceptions;
 using Serilog;
+
+using Metrics.Shared.Utils;
+using Metrics.Shared.Configurations;
+using Metrics.Infrastructure.Data;
+using Metrics.Application.Entities;
+using Metrics.Infrastructure;
+using Metrics.Application.Interfaces.IUnitOfWork;
+using Metrics.Application.Interfaces.IRepositories;
+using Metrics.Infrastructure.Repositories;
+using Metrics.Application.Interfaces.IServices;
+using Metrics.Infrastructure.Services;
+using Metrics.Web.Middleware;
+using Metrics.Application.Exceptions;
 
 
 // ========== Load .env =========================================================== 
@@ -20,12 +23,11 @@ var dotenv = Path.Combine(Directory.GetCurrentDirectory(), ".env");
 DotenvLoader.Load(dotenv);
 
 // ========== Serilog ==================================================
-var log = new LoggerConfiguration()
+Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Debug()
     .WriteTo.Console()
     .WriteTo.File("Logs/log.txt", rollingInterval: RollingInterval.Day)
     .CreateLogger();
-Log.Logger = log;
 
 
 // ========== BUILDER =============================================================
@@ -62,7 +64,8 @@ Console.WriteLine("JWT SECRET: " + pgDb["PgSchema"]);
 var pgConfig = builder.Configuration
     .GetSection("DatabaseSettings:PostgresDb")
     .Get<PostgresDbConfig>()
-    ?? throw new InvalidOperationException("PostgresDb section is not configured properly.");
+    // ?? throw new InvalidOperationException("PostgresDb section is not configured properly.");
+    ?? throw new MetricsInvalidConfigurationException("PostgresDb section is not configured properly.");
 
 builder.Services.Configure<PostgresDbConfig>(options =>
 {
@@ -82,28 +85,22 @@ var connectionString = new NpgsqlConnectionStringBuilder()
 
 
 // ========== DbContext ========================================================
-try
+// Register DbContext with Scoped lieftime by default
+builder.Services.AddDbContext<MetricsDbContext>(options =>
 {
-    // Register DbContext with Scoped lieftime by default
-    builder.Services.AddDbContext<MetricsDbContext>(options =>
-    {
-        // options.UseNpgsql(builder.Configuration.GetConnectionString());
-        options
-            .UseNpgsql(connectionString, o =>
-                {
-                    o.MigrationsAssembly("Metrics.Web");
-                    o.MigrationsHistoryTable("__ef_migrations_history", pgConfig.PgSchema);
-                }
-            )
-            .UseSnakeCaseNamingConvention()
-            .LogTo(Console.WriteLine, LogLevel.Information);
-    }, ServiceLifetime.Scoped);
+    // options.UseNpgsql(builder.Configuration.GetConnectionString());
+    options
+        .UseNpgsql(connectionString, o =>
+            {
+                o.MigrationsAssembly("Metrics.Web");
+                o.MigrationsHistoryTable("__ef_migrations_history", pgConfig.PgSchema);
+            }
+        )
+        .UseSnakeCaseNamingConvention()
+        .LogTo(Console.WriteLine, LogLevel.Information);
+}, ServiceLifetime.Scoped);
 
-}
-catch (Exception e)
-{
-    Console.WriteLine("essfsdsfsdfsfd;', ", e);
-}
+
 
 
 
@@ -124,8 +121,8 @@ builder.Services.ConfigureApplicationCookie(options =>
 // ========== CONTROLLER, RAZOR PAGES===========================================
 builder.Services.AddRazorPages(options =>
 {
-    options.Conventions.AddPageRoute("/Kpi/Index", "/manage/kpi");
-    options.Conventions.AddPageRoute("/Departments/Index", "/manage/departments");
+    // options.Conventions.AddPageRoute("/Kpi/Index", "/manage/kpi");
+    // options.Conventions.AddPageRoute("/Departments/Index", "/manage/departments");
 });
 builder.Services.AddControllers();
 
@@ -159,7 +156,7 @@ builder.Services.AddScoped<IUserAccountService, UserAccountService>();
 builder.Services.AddScoped<IKpiSubmissionService, KpiSubmissionService>();
 
 // ========== Exception Handling ===============================================
-// builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
 
 // ========== APPLICATION ======================================================
@@ -169,10 +166,16 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
+    // app.UseExceptionHandler("/Error");
+    // app.UseStatusCodePagesWithReExecute("/Error/{0}");
+    // app.UseStatusCodePages();
+    // app.UseHsts();
 }
-if (!app.Environment.IsDevelopment())
+else
 {
     app.UseExceptionHandler("/Error");
+    app.UseStatusCodePagesWithReExecute("/Error/{0}");
+    app.UseStatusCodePages();
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
@@ -202,7 +205,22 @@ app.MapControllers();
 
 app.MapOpenApi();
 
-app.UseStatusCodePagesWithReExecute("/errors/{0}");
-app.UseStatusCodePages();
-
 app.Run();
+
+// try
+// {
+//     app.Run();
+// }
+// catch (Exception ex)
+// {
+//     // Log the exception
+//     // var logger = app.Services.GetRequiredService<ILogger<Program>>();
+//     // logger.LogError(ex, "An unhandled exception occurred during application startup");
+//     Log.Fatal(ex, "Application terminated unexpectedly");
+//     throw;
+// }
+// finally
+// {
+//     Log.CloseAndFlush();
+// }
+

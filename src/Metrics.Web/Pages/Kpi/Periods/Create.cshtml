@@ -27,16 +27,18 @@
 <div>End Date: <input type="text" value="@Model.FormInput.SubmissionEndDate" /></div> *@
 @* =============== Form ===================================================== *@
 <form method="post" asp-route-returnUrl="">
-    <div class="row row-lg-6">
-        
-        <div class="form-group col-md-6">
-            <label asp-for="FormInput.PeriodName" class="col-sm-6 col-form-label">Periods Name</label>
+    <div class="row ">
+        <div class="form-group col-md-4">
+            <label asp-for="FormInput.PeriodName" class="col-sm-6 col-form-label">
+                Periods Name
+            </label>
             <small>(example: @currentYear-@currentMonth)</small>
-            <span class="d-flex">
-                <div class="px-2">
-                    <input asp-for="FormInput.PeriodName" class="form-control" />
-                </div>
-                <div class="px-2">
+            
+            <input asp-for="FormInput.PeriodName" class="form-control" />
+            @* <span class="d-flex">
+                <div class="">
+                </div> *@
+                @* <div class="px-2">
                     <input type="number" 
                             id="periodname-year" 
                             name="year" step="1" 
@@ -61,8 +63,7 @@
                         <option value="11">November</option>
                         <option value="12">December</option>
                     </select>
-                </div>
-            </span>
+                </div> *@
             <div>
                 <span asp-validation-for="FormInput.PeriodName" class="text-danger"></span>
             </div>

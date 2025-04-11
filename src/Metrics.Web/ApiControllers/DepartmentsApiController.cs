@@ -1,9 +1,8 @@
 ﻿using Metrics.Application.DTOs.DepartmentDtos;
+using Metrics.Application.Exceptions;
+using Metrics.Application.Interfaces.IServices;
 using Metrics.Application.Mappers.DtoMappers;
-using Metrics.Application.Services.IServices;
-using Metrics.Domain.Exceptions;
 using Microsoft.AspNetCore.Mvc;
-using SQLitePCL;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -34,7 +33,7 @@ namespace Metrics.Web.ApiControllers
         public async Task<IActionResult> GetAsync(string departmentCode)
         {
             //var result = await _departmentService.FindByIdAsync(id);
-            var result = await _departmentService.FindByDepartmentCode_Async(departmentCode);
+            var result = await _departmentService.FindByDepartmentCodeAsync(departmentCode);
             if (result != null)
             {
                 return Ok(result);
@@ -48,7 +47,7 @@ namespace Metrics.Web.ApiControllers
         public async Task<ActionResult<DepartmentGetDto>> PostAsync(DepartmentCreateDto createDto)
         {
             var entity = createDto.ToEntity();
-            var newDepartment = await _departmentService.Create_Async(createDto);
+            var newDepartment = await _departmentService.CreateAsync(entity);
 
             if (newDepartment == null)
             {
@@ -68,7 +67,8 @@ namespace Metrics.Web.ApiControllers
 
             try
             {
-                var updatedDepartment = await _departmentService.Update_Async(departmentCode, updateDto);
+                var entity = updateDto.ToEntity();
+                var updatedDepartment = await _departmentService.UpdateAsync(departmentCode, entity);
 
                 return Ok(updatedDepartment);
             }

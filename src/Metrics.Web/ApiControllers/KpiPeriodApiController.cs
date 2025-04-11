@@ -1,11 +1,8 @@
 using Metrics.Application.DTOs.KpiPeriodDtos;
-using Metrics.Application.Mappers.DtoMappers;
-using Metrics.Application.Results;
-using Metrics.Application.Services.IServices;
-using Metrics.Domain.Entities;
+using Metrics.Application.Entities;
+using Metrics.Application.Interfaces.IServices;
+using Metrics.Web.Models;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore.Migrations.Operations;
-using System;
 
 namespace Metrics.Web.ApiControllers;
 
@@ -22,9 +19,9 @@ public class KpiPeriodApiController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAllAsync()
+    public async Task<IActionResult> GetAllAsync(PaginationModel pagination)
     {
-        var result = await _kpiPeriodService.FindAllAsync();
+        var result = await _kpiPeriodService.FindAllAsync(pagination.Page, pagination.Display);
 
         return Ok(result);
     }
@@ -42,7 +39,13 @@ public class KpiPeriodApiController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> PostAsync(KpiPeriodCreateDto createDto)
     {
-        var newKpiPeriod = await _kpiPeriodService.Create_Async(createDto);
+        var entity = new KpiPeriod
+        {
+            PeriodName = createDto.PeriodName,
+            SubmissionStartDate = createDto.SubmissionStartDate,
+            SubmissionEndDate = createDto.SubmissionEndDate
+        };
+        var newKpiPeriod = await _kpiPeriodService.CreateAsync(entity);
         // case ErrorType.NotFound:
         //     return NotFound(result.ErrorMessage);
         // case ErrorType.ConcurrencyConflict:
@@ -83,11 +86,11 @@ public class KpiPeriodApiController : ControllerBase
 
         try
         {
-            var updatedData = await _kpiPeriodService.UpdateAsync(entity);
+            var updatedData = await _kpiPeriodService.UpdateAsync(periodName, entity);
 
-            return Ok(updatedData.Data);
+            return Ok(updatedData);
         }
-        catch (System.Exception)
+        catch (Exception)
         {
             throw;
         }
@@ -101,7 +104,7 @@ public class KpiPeriodApiController : ControllerBase
 
             return NoContent();
         }
-        catch (System.Exception)
+        catch (Exception)
         {
             throw;
         }

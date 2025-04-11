@@ -1,13 +1,9 @@
-using Metrics.Application.DTOs;
-using Metrics.Application.Services.IServices;
-using Metrics.Domain.Entities;
-using Metrics.Web.Models.DepartmentViewModels;
-using Microsoft.AspNetCore.Identity;
+using Metrics.Application.DTOs.UserAccountDtos;
+using Metrics.Application.Interfaces.IServices;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.ComponentModel.DataAnnotations;
-using System.Threading.Tasks;
 
 namespace Metrics.Web.Pages.Employee;
 
@@ -52,7 +48,7 @@ public class CreateModel : PageModel
 
     public async Task<IActionResult> OnGetAsync()
     {
-        var departments = await _departmentService.FindAllInsecure_Async();
+        var departments = await _departmentService.FindAllAsync();
 
         // 
         // Departments = departments.Select(e => new DepartmentModel

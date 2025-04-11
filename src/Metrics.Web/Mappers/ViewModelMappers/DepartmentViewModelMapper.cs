@@ -1,6 +1,5 @@
 ﻿using Metrics.Application.DTOs.DepartmentDtos;
-using Metrics.Common.Utils;
-using Metrics.Domain.Entities;
+using Metrics.Application.Entities;
 using Metrics.Web.Models.DepartmentViewModels;
 
 namespace Metrics.Web.Mappers.ViewModelMappers;
