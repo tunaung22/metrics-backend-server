@@ -36,6 +36,17 @@ body {
   text-align: start;
 }
 
+nav.metrics-main-navbar {
+  /* background: #2770c4; */
+}
+nav.metrics-branding {
+  /* color: #2770c4; */
+}
+
+.navbar-nav .nav-item .nav-link:hover {
+  color: #007bff; /* Change this to your desired hover color */
+}
+
 /* Custom Link UI */
 ul.dashboard__quickaccess .nav-item .nav-link {
   background-color: #ffffff;
@@ -64,9 +75,6 @@ ul#metrics__main-navbar .nav-item .nav-link {
 /* color: #1980ff; */
 /* border-radius: 0.2em; */
 /* } */
-.navbar-nav .nav-item .nav-link:hover {
-  color: #007bff; /* Change this to your desired hover color */
-}
 
 button#goToTop {
   display: none;
@@ -86,4 +94,11 @@ button#goToTop {
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
+}
+
+.no-select {
+  user-select: none; /* For modern browsers */
+  -webkit-user-select: none; /* For Safari */
+  -moz-user-select: none; /* For Firefox */
+  -ms-user-select: none; /* For Internet Explorer/Edge */
 }

@@ -1,75 +1,84 @@
+using Metrics.Application.Domains;
 using Metrics.Application.Interfaces.IServices;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace Metrics.Web.Pages.Employee
+namespace Metrics.Web.Pages.Employee;
+
+[Authorize(Roles = "Admin")]
+public class IndexModel : PageModel
 {
-    public class IndexModel : PageModel
+    private readonly IEmployeeService _employeeService;
+    private readonly IDepartmentService _departmentService;
+    private readonly UserManager<ApplicationUser> _userManager;
+    private readonly RoleManager<ApplicationRole> _roleManager;
+
+    public IndexModel(
+        UserManager<ApplicationUser> userManager,
+        RoleManager<ApplicationRole> roleManager,
+        IEmployeeService employeeService,
+        IDepartmentService departmentService)
     {
-        private readonly IEmployeeService _employeeService;
-        private readonly IDepartmentService _departmentService;
-
-        public IndexModel(IEmployeeService employeeService, IDepartmentService departmentService)
-        {
-            _employeeService = employeeService;
-            _departmentService = departmentService;
-            EmployeeList = [];
-        }
-
-
-        // ===== Models =====
-
-
-
-        [BindProperty]
-        public List<EmployeeModel> EmployeeList { get; set; }
-
-        public async Task<IActionResult> OnGet()
-        {
-            var result = await _employeeService.FindAllAsync();
-            EmployeeList = result.Select(e => new EmployeeModel
-            {
-                EmployeeCode = e.EmployeeCode,
-                FullName = e.FullName,
-                Address = e.Address,
-                PhoneNumber = e.PhoneNumber,
-                DepartmentId = e.DepartmentId,
-                DepartmentName = e.CurrentDepartment.DepartmentName,
-                ApplicationUserId = e.ApplicationUserId
-            }).ToList();
-
-            // var result = await _employeeService.FindAll_Async();
-            // var loadData = result.Select(async dto =>
-            // {
-            //     var department = await _departmentService.FindById_Async(dto.DepartmentId);
-            //     return new EmployeeModel
-            //     {
-            //         EmployeeCode = dto.EmployeeCode,
-            //         FullName = dto.FullName,
-            //         Address = dto.Address,
-            //         PhoneNumber = dto.PhoneNumber,
-            //         DepartmentId = dto.DepartmentId,
-            //         DepartmentName = department.DepartmentName,
-            //         ApplicationUserId = dto.ApplicationUserId
-            //     };
-            // });
-            // EmployeeList = (await Task.WhenAll(loadData)).ToList();
-
-            return Page();
-        }
-
-        public class EmployeeModel
-        {
-            public string EmployeeCode { get; set; } = null!;
-            public string FullName { get; set; } = null!;
-            public string? Address { get; set; }
-            public string? PhoneNumber { get; set; }
-            public long DepartmentId { get; set; }
-            public string DepartmentName { get; set; } = null!;
-            public string ApplicationUserId { get; set; } = null!;
-            // public Department CurrentDepartment { get; set; } = null!;
-            // public ApplicationUser UserAccount { get; set; } = null!;
-            // public List<KpiSubmission> KpiSubmissions { get; set; } = [];
-        }
+        _userManager = userManager;
+        _roleManager = roleManager;
+        _employeeService = employeeService;
+        _departmentService = departmentService;
     }
+
+
+    // =============== MODELS ==================================================
+    public class EmployeeModel
+    {
+        public required string EmployeeCode { get; set; }
+        public required string FullName { get; set; }
+        public string? Address { get; set; }
+        public string? PhoneNumber { get; set; }
+        public long DepartmentId { get; set; }
+        public required string DepartmentName { get; set; }
+        public required string ApplicationUserId { get; set; }
+        // public Department CurrentDepartment { get; set; } = null!;
+        public required ApplicationUser UserAccount { get; set; }
+        // public List<KpiSubmission> KpiSubmissions { get; set; } = [];
+        // public required ApplicationRole UserRole { get; set; }
+        public List<string> UserRoles { get; set; } = [];
+    }
+
+    public List<EmployeeModel> EmployeeList { get; set; } = [];
+
+
+    // =============== HANDLERS ================================================
+    public async Task<IActionResult> OnGet()
+    {
+        var employees = await _employeeService.FindAllAsync();
+
+        if (employees.Any())
+        {
+            foreach (var employee in employees)
+            {
+                var roles = await _userManager.GetRolesAsync(employee.UserAccount);
+                var employeeModel = new EmployeeModel
+                {
+                    EmployeeCode = employee.EmployeeCode,
+                    FullName = employee.FullName,
+                    Address = employee.Address,
+                    PhoneNumber = employee.PhoneNumber,
+                    DepartmentId = employee.DepartmentId,
+                    DepartmentName = employee.CurrentDepartment.DepartmentName,
+                    ApplicationUserId = employee.ApplicationUserId,
+                    UserAccount = employee.UserAccount,
+                    // UserRole = roles
+                    UserRoles = roles.ToList()
+                };
+
+                EmployeeList.Add(employeeModel);
+
+            }
+        }
+
+        return Page();
+    }
+
+
 }

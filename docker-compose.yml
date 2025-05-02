@@ -1,8 +1,21 @@
 name: metrics-backend
 
 services:
-  # app:
-  #   image: ...
+  # web_app:
+  #   image: mcr.microsoft.com/dotnet/aspnet:9.0.4-bookworm-slim  # Replace with your ASP.NET Core image
+  #   ports:
+  #     - "5000:5000"  # Expose the ASP.NET Core app on port 5000
+  #   networks:
+  #     - metrics-network
+  # nginx:
+  #   image: nginx:stable-bookworm-otel
+  #   port: "80:80"
+  #   volumes:
+  #     - ./nginx.conf:/etc/nginx/nginx.conf
+  #     - ./html:/usr/share/nginx/html
+  #   restart: unless-stopped
+  #   networks:
+  #     - metrics-network
   postgresdb:
     image: postgres:17-bookworm
     environment:
@@ -10,9 +23,11 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: metricsdb
     ports:
-      - '5432:5432'
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - metrics-network
   # pgadmin:
   #   image: dpage/pgadmin4:8.14.0
   #   ports:
@@ -22,6 +37,11 @@ services:
   #     PGADMIN_DEFAULT_PASSWORD: abc123
   #   depends_on:
   #     - postgresdb
+  #   networks:
+  #     - metrics-network
 volumes:
   postgres_data:
   # pgadmin_data:
+networks:
+  metrics-network:
+    - driver: bridge

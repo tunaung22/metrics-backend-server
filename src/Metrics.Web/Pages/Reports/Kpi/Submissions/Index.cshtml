@@ -1,0 +1,54 @@
+﻿@page
+@model Metrics.Web.Pages.Reports.Kpi.Submissions.IndexModel
+@{
+}
+
+<h3>KPI Submissions Report Index</h3>
+
+<div class="bg-light p-4">
+    <table id="reportIndexTable" class="table table-striped" style="width:100%">
+        <thead>
+            <tr>
+                <th>Period Name</th>
+                <th>Start Date</th>
+                <th>End Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.KpiPeriodList.Any())
+            {
+                @foreach(var p in Model.KpiPeriodList)
+                {
+                    <tr>
+                        <td>
+                            <a asp-page="View/Index" 
+                                asp-route-periodName="@p.PeriodName"
+                                class="link-primary link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover">@p.PeriodName</a>
+                        </td>
+                        <td>@p.SubmissionStartDate.ToLocalTime().UtcDateTime.ToString("MMM dd, yyyy hh:mm:ss tt")</td>
+                        <td>@p.SubmissionEndDate.ToLocalTime().UtcDateTime.ToString("MMM dd, yyyy hh:mm:ss tt")</td>
+                    </tr>
+                }
+            }
+        </tbody>
+
+        <tfoot>
+            <tr>
+                <th>Period Name</th>
+                <th>Start Date</th>
+                <th>End Date</th>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+
+
+@section Scripts {
+    <script>
+        new DataTable('#reportIndexTable', {
+            paging: false,
+            info: false,
+            searching: false 
+        });
+    </script>
+}

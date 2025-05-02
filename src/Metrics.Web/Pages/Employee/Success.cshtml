@@ -1,10 +1,47 @@
 ﻿@page
 @model Metrics.Web.Pages.Employee.SuccessModel
 @{
+    ViewData["Title"]= "Registration Successful";
 }
 
-<h3>Success</h3>
+@if (@Model.Username != null)
+{
+    <h3>Success</h3>
+    <div class="alert alert-success my-4 py-4">
+        <h4 class="my-4">A new Employee created successfully!</h4>
+    </div>
 
-<div>
-    <h4>A New Employee was created successfully!</h4>
-</div>
+    <div>
+        <div class="m-4">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Name</th>
+                    </tr>
+                </thead>
+               <tbody>
+                    <tr>
+                        <td>@Model.Username</td>
+                        <td>@Model.FullName</td>
+                    </tr>
+               </tbody>
+            </table>
+        </div>
+
+        <div>
+            <p>
+                Add another <a class="alert-link" asp-page="/Employee/Registe">Register</a>.
+            </p>
+        </div>
+    </div>
+}
+else
+{
+    <div>
+        <span>
+            <h5>To add more employee, use the Registration Page.</h5>
+            <a class="btn btn-link" asp-page="/Employee/Register">Register</a>
+        </span>
+    </div>
+}

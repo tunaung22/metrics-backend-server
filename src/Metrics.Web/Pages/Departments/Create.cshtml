@@ -1,6 +1,7 @@
 ﻿@page
 @model Metrics.Web.Pages.Departments.CreateModel
 @{
+    ViewData["Title"] = "Add New Department";
 }
 
 <h3>Create New Department</h3>
@@ -47,5 +48,9 @@
 
 @* =============== Scripts ================================================== *@
 @section Scripts {
-    <partial name="_ValidationScriptsPartial" />
+    @* <partial name="_ValidationScriptsPartial" /> *@
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+
+    <script>
+    </script>
 }

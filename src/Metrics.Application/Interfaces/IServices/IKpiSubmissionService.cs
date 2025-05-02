@@ -1,5 +1,5 @@
 using Metrics.Application.DTOs.KpiSubmissionDtos;
-using Metrics.Application.Entities;
+using Metrics.Application.Domains;
 
 namespace Metrics.Application.Interfaces.IServices;
 
@@ -12,7 +12,9 @@ public interface IKpiSubmissionService
     Task<bool> DeleteBySubmissionDateAsync(DateOnly submissionDate);
     Task<KpiSubmission> FindByIdAsync(long id);
     Task<KpiSubmission> FindBySubmissionDateAsync(DateOnly submissionDate);
-    Task<List<KpiSubmission>> FindByEmployeeAndKpiPeriodAndDepartmentListAsync(long employeeId, long kpiPeriodId, List<long> departmentIds); // find by Employee & KpiPeriod & Department
+    Task<List<KpiSubmission>> FindByEmployeeAndKpiPeriodAndDepartmentListAsync(long employeeId, long kpiPeriodId, List<long> departmentIdList); // find by Employee & KpiPeriod & Department ID list
+    Task<List<KpiSubmission>> FindByKpiPeriodAndDepartmentListAsync(long kpiPeriodId, List<long> departmentIdList); // find by KpiPeriod & Department ID List
+    Task<List<KpiSubmission>> FindByKpiPeriodAndDepartmentAsync(long kpiPeriodId, long departmentId); // find by KpiPeriod & Department
     Task<IEnumerable<KpiSubmission>> FindAllAsync();
     // Task<IEnumerable<Department>> FindAsync(string keyword); // Search feature
 

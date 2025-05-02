@@ -1,4 +1,4 @@
-using Metrics.Application.Entities;
+using Metrics.Application.Domains;
 using Metrics.Application.Exceptions;
 using Metrics.Application.Interfaces.IServices;
 using Microsoft.AspNetCore.Mvc;

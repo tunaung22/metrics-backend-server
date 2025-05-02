@@ -1,76 +1,122 @@
+using Metrics.Application.Domains;
 using Metrics.Application.DTOs.UserAccountDtos;
 using Metrics.Application.Interfaces.IServices;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 
 namespace Metrics.Web.Pages.Employee;
 
-public class CreateModel : PageModel
+[Authorize(Roles = "Admin")]
+public class RegisterModel : PageModel
 {
+    private readonly RoleManager<ApplicationRole> _roleManager;
     private readonly IUserAccountService _userAccountService;
     private readonly IDepartmentService _departmentService;
 
-    public CreateModel(IUserAccountService userAccountService, IDepartmentService departmentService)
+    public RegisterModel(
+        RoleManager<ApplicationRole> roleManager,
+        IUserAccountService userAccountService,
+        IDepartmentService departmentService)
     {
+        _roleManager = roleManager;
         _userAccountService = userAccountService;
         _departmentService = departmentService;
-        FormInput = new FormInputModel();
-        DepartmentListItems = [];
     }
 
-    // ===== Models =====
-
-
-    public class UserAccount
+    // ========== MODELS ===============
+    public class FormInputModel
     {
-        public string Username { get; set; } = null!;
+        [Required(ErrorMessage = "Username is required.")]
+        [Display(Name = "Username")]
+        public required string UserName { get; set; } // Use username instead of email
+
+        [Required(ErrorMessage = "Email address is required.")]
+        [EmailAddress(ErrorMessage = "Invalid email address.")]
+        [Display(Name = "Email")]
+        public required string Email { get; set; }
+
+        [Required(ErrorMessage = "Password is required.")]
+        [StringLength(20, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 6)]
+        [DataType(DataType.Password)]
+        [Display(Name = "Password")]
+        public required string Password { get; set; }
+
+        [Required(ErrorMessage = "Confirm-password is required.")]
+        [StringLength(20, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 6)]
+        [DataType(DataType.Password)]
+        [Display(Name = "Confirm-password")]
+        [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
+        public required string ConfirmPassword { get; set; }
+
+        [Required(ErrorMessage = "Employee Code is required.")]
+        [Display(Name = "Employee Code")]
+        public required string EmployeeCode { get; set; }
+
+        [Required(ErrorMessage = "Employee name is required.")]
+        [Display(Name = "Full Name")]
+        public required string FullName { get; set; }
+
+        public string? Address { get; set; }
+
+        public string? PhoneNumber { get; set; }
+
+        [Required(ErrorMessage = "Department is required.")]
+        public long DepartmentId { get; set; }
+
+        [Required(ErrorMessage = "User Role is required.")]
+        public required string RoleId { get; set; }
     }
 
     [BindProperty]
-    public FormInputModel FormInput { get; set; }
-
-    // [BindProperty]
-    // public List<DepartmentGetViewModel> DepartmentList { get; set; }
-
-    // [BindProperty]
-    // public List<DepartmentModel> Departments { get; set; }
-
+    public FormInputModel FormInput { get; set; } = new FormInputModel()
+    {
+        UserName = string.Empty,
+        Email = string.Empty,
+        Password = string.Empty,
+        ConfirmPassword = string.Empty,
+        EmployeeCode = string.Empty,
+        FullName = string.Empty,
+        RoleId = string.Empty
+    };
     [BindProperty]
-    public List<SelectListItem> DepartmentListItems { get; set; }
-
+    public List<SelectListItem> DepartmentListItems { get; set; } = [];
     [BindProperty]
-    public long SelectedDepartmentId { get; set; }
-    // [BindProperty]
-    // public IList<UserAccount> UserAccountList { get; set; }
+    public List<SelectListItem> RoleListItems { get; set; } = [];
+    // public long SelectedDepartmentId { get; set; }
+    // public string SelectedRoleId { get; set; } = string.Empty;
 
 
+    // ========== HANDLERS ==============================
     public async Task<IActionResult> OnGetAsync()
     {
-        var departments = await _departmentService.FindAllAsync();
+        DepartmentListItems = await LoadDepartmentList();
+        if (DepartmentListItems.Count <= 0)
+            return Page();
 
-        // 
-        // Departments = departments.Select(e => new DepartmentModel
-        // {
-        //     Id = e.Id,
-        //     DepartmentCode = e.DepartmentCode,
-        //     DepartmentName = e.DepartmentName
-        // }).ToList();
-        DepartmentListItems = departments.Select(e => new SelectListItem
-        {
-            Value = e.Id.ToString(),
-            Text = e.DepartmentName
-        }).ToList();
+        RoleListItems = await LoadRoleList();
+        if (RoleListItems.Count <= 0)
+            return Page();
 
         return Page();
     }
 
     public async Task<IActionResult> OnPostAsync()
     {
-        Console.WriteLine($"SelectedDepartmentId: {SelectedDepartmentId}");
         if (!ModelState.IsValid)
         {
+            DepartmentListItems = await LoadDepartmentList();
+            if (DepartmentListItems.Count <= 0)
+                return Page();
+
+            RoleListItems = await LoadRoleList();
+            if (RoleListItems.Count <= 0)
+                return Page();
+
             return Page();
 
         }
@@ -96,68 +142,53 @@ public class CreateModel : PageModel
 
             var result = await _userAccountService.RegisterUserAsync(createDto);
             if (result.Succeeded)
-                return RedirectToPage("Success");
+            {
+                TempData["Username"] = createDto.UserName.ToString();
+                TempData["FullName"] = createDto.FullName.ToString();
 
-            // ModelState.AddModelError("", "")
-            // throw new Exception("Account registration failed!");
+                return RedirectToPage("Success");
+            }
+
             return Page();
         }
-        catch (System.Exception e)
+        catch (Exception e)
         {
-            // foreach (var error in result.Errors)
-            // {
-            //     ModelState.AddModelError(string.Empty, error.Description);
-            // }
             ModelState.AddModelError(string.Empty, e.Message);
 
             return Page();
         }
     }
 
-    public class DepartmentModel
+    // ========== METHODS ==========
+    private async Task<List<SelectListItem>> LoadDepartmentList()
     {
-        public long Id { get; set; }
+        var departments = await _departmentService.FindAllAsync();
+        if (departments.Any())
+        {
+            return departments.Select(e => new SelectListItem
+            {
+                Value = e.Id.ToString(),
+                Text = e.DepartmentName
+            }).ToList();
+        }
 
-        [Required]
-        // [StringLength(100)]
-        public Guid DepartmentCode { get; set; }
-
-        [Required]
-        [StringLength(200)]
-        public string DepartmentName { get; set; } = null!;
-
-        // UI-specific properties
-        // public bool IsSelected { get; set; }
-        // ...
-    }
-    public class FormInputModel
-    {
-        [Required]
-        [Display(Name = "Username")]
-        public string UserName { get; set; } = null!; // Use username instead of email
-        [Required]
-        [EmailAddress]
-        [Display(Name = "Email")]
-        public string Email { get; set; } = null!;
-        [Required]
-        [StringLength(100, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 6)]
-        [DataType(DataType.Password)]
-        [Display(Name = "Password")]
-        public string Password { get; set; } = null!;
-        [DataType(DataType.Password)]
-        [Display(Name = "Confirm password")]
-        [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
-        public string ConfirmPassword { get; set; } = null!;
-        [Required]
-        [Display(Name = "Employee Code")]
-        public string EmployeeCode { get; set; } = null!;
-        [Required]
-        [Display(Name = "Full Name")]
-        public string FullName { get; set; } = null!;
-        public string? Address { get; set; } = string.Empty;
-        public string? PhoneNumber { get; set; } = string.Empty;
-        public long DepartmentId { get; set; }
-        public string ApplicationUserId { get; set; } = new Guid().ToString();
+        ModelState.AddModelError("", "Departments not exist. Try to add department and continue.");
+        return [];
     }
 
+    private async Task<List<SelectListItem>> LoadRoleList()
+    {
+        var roles = await _roleManager.Roles.ToListAsync();
+        if (roles.Any())
+        {
+            return roles.Select(e => new SelectListItem
+            {
+                Value = e.Id,
+                Text = e.Name
+            }).ToList();
+        }
+
+        ModelState.AddModelError("", "Roles does not exist.");
+        return [];
+    }
 }

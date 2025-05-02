@@ -52,11 +52,14 @@ public class IndexModel : PageModel
 
 
     // =============== HANDLERS ================================================
-    public async Task<IActionResult> OnGetAsync()
+    public async Task<IActionResult> OnGetAsync(int display)
     {
         // try
         // {
-        PageSize = _config.GetValue<int>("Pagination:PageSize");
+        if (display <= 0)
+            PageSize = _config.GetValue<int>("Pagination:PageSize");
+        else
+            PageSize = display;
         TotalKpiPeriods = await _kpiPeriodService.FindCountAsync();
         var result = await _kpiPeriodService.FindAllAsync(CurrentPage, PageSize);
         KpiPeriods = result.Select(e => new KpiPeriodModel

@@ -1,4 +1,4 @@
-﻿using Metrics.Application.Entities;
+﻿using Metrics.Application.Domains;
 using Metrics.Application.Results;
 
 namespace Metrics.Application.Interfaces.IServices;
@@ -11,6 +11,7 @@ public interface IDepartmentService
     Task<bool> DeleteAsync(string departmentCode);
     Task<Department> FindByIdAsync(long id);
     Task<Department> FindByDepartmentCodeAsync(string departmentCode);
+    Task<Department?> FindByDepartmentNameAsync(string departmentName);
     Task<IEnumerable<Department>> FindAllAsync();
     Task<IEnumerable<Department>> FindAllAsync(int pageNumber = 1, int pageSize = 20);
     Task<long> FindCountAsync();

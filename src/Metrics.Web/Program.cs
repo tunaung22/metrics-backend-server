@@ -7,22 +7,22 @@ using Serilog;
 using Metrics.Shared.Utils;
 using Metrics.Shared.Configurations;
 using Metrics.Infrastructure.Data;
-using Metrics.Application.Entities;
-using Metrics.Infrastructure;
-using Metrics.Application.Interfaces.IUnitOfWork;
+using Metrics.Application.Domains;
 using Metrics.Application.Interfaces.IRepositories;
 using Metrics.Infrastructure.Repositories;
 using Metrics.Application.Interfaces.IServices;
 using Metrics.Infrastructure.Services;
 using Metrics.Web.Middleware;
 using Metrics.Application.Exceptions;
+using Metrics.Infrastructure.Data.Seedings;
+using Microsoft.AspNetCore.Authorization;
 
 
-// ========== Load .env =========================================================== 
+// ========== Load .env ===========================================
 var dotenv = Path.Combine(Directory.GetCurrentDirectory(), ".env");
 DotenvLoader.Load(dotenv);
 
-// ========== Serilog ==================================================
+// ========== Serilog ================
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Debug()
     .WriteTo.Console()
@@ -30,7 +30,7 @@ Log.Logger = new LoggerConfiguration()
     .CreateLogger();
 
 
-// ========== BUILDER =============================================================
+// ========== BUILDER ===========================
 var builder = WebApplication.CreateBuilder(args);
 
 /* Configuration loading orders: 
@@ -53,19 +53,19 @@ builder.Services.ConfigureHttpJsonOptions(o =>
 });
 
 
-var jwtSettings = builder.Configuration.GetSection("DatabaseSettings");
-var pgDb = jwtSettings.GetSection("PostgresDb");
-Console.WriteLine("JWT SECRET: " + pgDb["PgSchema"]);
+// TODO: Test only  (to remove)
+var securitySection = builder.Configuration.GetSection("Security");
+var jwtSettings = securitySection.GetSection("JwtSettings");
+// Console.WriteLine("JWT SECRET: " + jwtSettings["SecretKey"]);
 
 
 
 
-// ========== PostgreSQL =======================================================
+// ========== PostgreSQL ===========
 var pgConfig = builder.Configuration
-    .GetSection("DatabaseSettings:PostgresDb")
+    .GetSection("DatabaseSettings:PostgresDbConfig")
     .Get<PostgresDbConfig>()
-    // ?? throw new InvalidOperationException("PostgresDb section is not configured properly.");
-    ?? throw new MetricsInvalidConfigurationException("PostgresDb section is not configured properly.");
+    ?? throw new MetricsInvalidConfigurationException("PostgresDbConfig section is not configured properly.");
 
 builder.Services.Configure<PostgresDbConfig>(options =>
 {
@@ -84,7 +84,7 @@ var connectionString = new NpgsqlConnectionStringBuilder()
 }.ConnectionString;
 
 
-// ========== DbContext ========================================================
+// ========== DbContext =============================
 // Register DbContext with Scoped lieftime by default
 builder.Services.AddDbContext<MetricsDbContext>(options =>
 {
@@ -104,10 +104,17 @@ builder.Services.AddDbContext<MetricsDbContext>(options =>
 
 
 
-// ========== Identity =========================================================
+// ========== Identity ==================================================
 builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
     {
         options.User.RequireUniqueEmail = false;
+        options.Password.RequireDigit = false; // Allow passwords without digits
+        options.Password.RequireLowercase = false; // Allow passwords without lowercase letters
+        options.Password.RequireUppercase = false; // Allow passwords without uppercase letters
+        options.Password.RequireNonAlphanumeric = false; // Allow passwords without special characters
+        options.Password.RequiredLength = 6;
+        // options.Password.RequiredLength = 8; // Set the minimum length to 8
+        options.Password.RequiredUniqueChars = 1; // Set the number of unique characters required
     })
     .AddEntityFrameworkStores<MetricsDbContext>()
     .AddDefaultTokenProviders();
@@ -116,9 +123,10 @@ builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.LoginPath = "/account/login";
+    options.AccessDeniedPath = "/error/unauthorized";
 });
 
-// ========== CONTROLLER, RAZOR PAGES===========================================
+// ========== CONTROLLER, RAZOR PAGES ==========
 builder.Services.AddRazorPages(options =>
 {
     // options.Conventions.AddPageRoute("/Kpi/Index", "/manage/kpi");
@@ -135,10 +143,19 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
+builder.Services.AddAuthorization(options =>
+{
+    options.FallbackPolicy = new AuthorizationPolicyBuilder()
+                .RequireAuthenticatedUser()
+                .Build();
+    options.AddPolicy("Admin", policy => policy.RequireRole("Admin"));
+    options.AddPolicy("Employee", policy => policy.RequireRole("Employee"));
+});
+
 
 builder.Services.AddOpenApi();
 
-// ========== Register services and repositories ===============================
+// ========== Register services and repositories ==========
 // builder.Services.AddScoped<>();
 // ===== Unit of Work =======
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -149,18 +166,36 @@ builder.Services.AddScoped<IKpiPeriodRepository, KpiPeriodRepository>();
 builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
 builder.Services.AddScoped<IKpiSubmissionRepository, KpiSubmissionRepository>();
 // ===== Service ============
+builder.Services.AddScoped<ISeedingService, SeedingService>();
 builder.Services.AddScoped<IDepartmentService, DepartmentService>();
 builder.Services.AddScoped<IKpiPeriodService, KpiPeriodService>();
 builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 builder.Services.AddScoped<IUserAccountService, UserAccountService>();
+builder.Services.AddScoped<IUserRoleService, UserRoleService>();
 builder.Services.AddScoped<IKpiSubmissionService, KpiSubmissionService>();
 
-// ========== Exception Handling ===============================================
+// ========== Exception Handling ==============================
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
 
-// ========== APPLICATION ======================================================
+// ========== APPLICATION ==========
 var app = builder.Build();
+
+// ----- DATA SEEDING -----
+// ----- Run Identity Seeding -----
+// if (args.Length == 1 && args[0].ToLower() == "seed")
+// {
+using (var scope = app.Services.CreateScope())
+{
+    // var initialSeedingDataConfig = builder.Configuration
+    //     .GetSection("InitialSeedingData")
+    //     .Get<InitialSeedingDataConfig>()
+    //     ?? throw new MetricsInvalidConfigurationException("InitialSeedingData > DefaultUserData section is not configured properly. Check your configuration files.");
+    // await InitialUserSeeder.InitAsync(scope.ServiceProvider, initialSeedingDataConfig);
+    await InitialUserSeeder.InitAsync(scope.ServiceProvider);
+}
+// }
+
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

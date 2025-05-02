@@ -1,5 +1,5 @@
 using Metrics.Application.DTOs.KpiPeriodDtos;
-using Metrics.Application.Entities;
+using Metrics.Application.Domains;
 using Metrics.Application.Interfaces.IServices;
 using Metrics.Web.Models;
 using Microsoft.AspNetCore.Mvc;

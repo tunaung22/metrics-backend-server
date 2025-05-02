@@ -1,6 +1,4 @@
-using Metrics.Application.DTOs.KpiPeriodDtos;
-using Metrics.Application.Entities;
-using Metrics.Application.Results;
+using Metrics.Application.Domains;
 
 namespace Metrics.Application.Interfaces.IServices;
 
@@ -13,10 +11,11 @@ public interface IKpiPeriodService
     Task<KpiPeriod> FindByIdAsync(long id);
     Task<KpiPeriod> FindByKpiPeriodNameAsync(string periodName);
     Task<long> FindIdByKpiPeriodNameAsync(string periodName);
-    Task<IEnumerable<KpiPeriod>> FindAllAsync(int pageNumber, int pageSize);
+    Task<IEnumerable<KpiPeriod>> FindAllAsync();
+    Task<IEnumerable<KpiPeriod>> FindAllAsync(int pageNumber = 1, int pageSize = 20);
     // Task<IEnumerable<KpiPeriod>> FindAllByDateAsync(int pageNumber, int pageSize, DateTimeOffset todayDate);
     Task<IEnumerable<KpiPeriod>> FindAllByDateAsync(DateTimeOffset todayDate);
-
+    Task<bool> KpiPeriodNameExistsAsync(string kpiName);
     Task<long> FindCountAsync();
 
     // ========== Operation Result Pattern =====================================

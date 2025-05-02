@@ -1,39 +1,60 @@
 ﻿@page
 @model Metrics.Web.Pages.Dashboard.IndexModel
 @{
+    ViewData["Title"] = "Dashboard";
 }
 
 <h3>Dashboard</h3>
 
-<div class="container d-flex">
-    <div>
-        <ul class="dashboard__quickaccess nav flex-column d-inline-block">
-            @* ========================== Admin Area ========================== *@
-            <li class="nav-item">
-                <a class="nav-link" asp-area="" asp-page="/Departments/Index">Departments</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" asp-area="" asp-page="/Kpi/Index">KPI Summary</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" asp-area="" asp-page="/Kpi/Periods/Index">KPI Periods</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" asp-area="" asp-page="/Kpi/Submissions/Index">Submissions</a>
-            </li>
-            
-        </ul>
+<div class="container">
+    <div class="row">
+        <div class="col col-xs-12 col-sm-12 col-md-4 col-xl-3">
+            <div class="card my-4">
+                <div class="card-header">
+                    Company
+                </div>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item p-2"><a class="" asp-area="" asp-page="/Departments/Index">Departments</a></li>
+                    <li class="list-group-item p-2"><a class="" asp-area="" asp-page="/Employee/Index">Employee</a></li>
+                    <li class="list-group-item p-2"><a class="" asp-area="" asp-page="/Account/Role/Index">Roles</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="col col-xs-12 col-sm-12 col-md-4 col-xl-3">
+            <div class="card my-4">
+                <div class="card-header">
+                    KPI
+                </div>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item p-2"><a class="" asp-area="" asp-page="/Kpi/Periods/Index">Period list-group</a></li>
+                    <li class="list-group-item p-2"><a class="" asp-area="" asp-page="/Kpi/Submissions/Index">Submissions</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="col col-xs-12 col-sm-12 col-md-4 col-xl-3">
+            <div class="card my-4">
+                <div class="card-header">
+                    Reports
+                </div>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item p-2"><a class="" asp-area="" asp-page="/Reports/Kpi/Submissions/Index">KPI Submissions</a></li>
+                </ul>
+            </div>
+        </div>
     </div>
-
-    <div>
-        <ul class="dashboard__quickaccess nav flex-column d-inline-block">
-            <li class="nav-item">
-                <a class="nav-link" asp-area="" asp-page="/Account/Register">Register User</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" asp-area="" asp-page="/Employee/Index">Employee</a>
-            </li>
-        </ul>
-    </div>
-
 </div>
+
+@section Styles {
+    <style>
+        .card .list-group-item > a {
+            color: #0057ba;
+            border-radius: 0.4em;
+            padding: .4em;
+        }
+        .card .list-group-item > a:hover {
+            background: #3465a443;
+            color: #3465a4;
+            border-radius: 0.4em;
+        }
+    </style>
+}

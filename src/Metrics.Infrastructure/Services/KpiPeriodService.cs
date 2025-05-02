@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using Metrics.Application.Interfaces.IServices;
 using Metrics.Application.Interfaces.IRepositories;
-using Metrics.Application.Entities;
+using Metrics.Application.Domains;
 using Metrics.Application.Exceptions;
 
 namespace Metrics.Infrastructure.Services;
@@ -165,6 +165,22 @@ public class KpiPeriodService : IKpiPeriodService
         }
     }
 
+    public async Task<IEnumerable<KpiPeriod>> FindAllAsync()
+    {
+        try
+        {
+            var kpiPeriods = await _kpiPeriodRepository.FindAllAsQueryable()
+                .ToListAsync();
+
+            return kpiPeriods;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while querying KPI Periods.");
+            throw new Exception("An unexpected error occurred. Please try again later.");
+        }
+    }
+
     public async Task<IEnumerable<KpiPeriod>> FindAllAsync(int pageNumber, int pageSize)
     {
         try
@@ -203,6 +219,20 @@ public class KpiPeriodService : IKpiPeriodService
             throw new Exception("An unexpected error occurred. Please try again later.");
         }
     }
+
+    public async Task<bool> KpiPeriodNameExistsAsync(string kpiName)
+    {
+        try
+        {
+            return await _kpiPeriodRepository.KpiPeriodExistsAsync(kpiName);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while checking kpi period name exist.");
+            throw new Exception("An unexpected error occurred. Please try again later.");
+        }
+    }
+
 
     public async Task<long> FindCountAsync()
     {

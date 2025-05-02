@@ -1,4 +1,4 @@
-using Metrics.Application.Entities;
+using Metrics.Application.Domains;
 
 namespace Metrics.Application.Interfaces.IServices;
 

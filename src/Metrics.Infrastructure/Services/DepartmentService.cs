@@ -1,4 +1,4 @@
-﻿using Metrics.Application.Entities;
+﻿using Metrics.Application.Domains;
 using Metrics.Application.Exceptions;
 using Metrics.Application.Interfaces.IRepositories;
 using Metrics.Application.Interfaces.IServices;
@@ -154,6 +154,25 @@ public class DepartmentService : IDepartmentService
             var department = await _departmentRepository.FindByDepartmentCodeAsync(departmentCode);
             if (department == null)
                 throw new NotFoundException($"Department with code {departmentCode} not found.");
+
+            return department;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while querying department by department code.");
+            throw new Exception("An unexpected error occurred. Please try again later.");
+        }
+    }
+    public async Task<Department?> FindByDepartmentNameAsync(string departmentName)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(departmentName) || string.IsNullOrWhiteSpace(departmentName))
+                throw new ArgumentNullException("Parameter departmentCode is required.");
+
+            var department = await _departmentRepository.FindByDepartmentNameAsync(departmentName);
+            // if (department == null)
+            //     throw new NotFoundException($"Department with code {departmentName} not found.");
 
             return department;
         }

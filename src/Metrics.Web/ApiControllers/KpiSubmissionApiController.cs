@@ -1,5 +1,5 @@
 using Metrics.Application.DTOs.KpiSubmissionDtos;
-using Metrics.Application.Entities;
+using Metrics.Application.Domains;
 using Metrics.Application.Interfaces.IServices;
 using Microsoft.AspNetCore.Mvc;
 
