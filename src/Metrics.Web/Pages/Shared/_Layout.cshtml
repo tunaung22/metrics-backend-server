@@ -5,27 +5,45 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Metrics Backend</title>
     <script type="importmap"></script>
+    <link rel="icon" type="image/svg" href="~/favicon.svg" />
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/RazorApp.styles.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/lib/bootstrap-icons/font/bootstrap-icons.css" />
+    <link rel="stylesheet" href="~/lib/datatables/datatables.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="~/lib/jquery-ui-1.14.1.custom/jquery-ui.css" rel="stylesheet" />
+
+    @* <link rel="stylesheet" href="~/lib/tempus-dominus/tempus-dominus.min.css" /> *@
+    @* <link rel="stylesheet" href="~/metrics-backend.styles.css" asp-append-version="true" /> *@
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     @* ========== CSS Section ========== *@
     @RenderSection("Styles", required: false)
 </head>
 <body>
     <header>
-
-        <nav class="navbar fixed-top navbar-light bg-body-tertiary
-                        navbar-collapse-md 
-                        navbar-expand-lg 
-                        navbar-toggleable-lg 
-                        border-bottom box-shadow mb-3" aria-label="Main navigation">
         @* <nav class="navbar navbar-expand-lg bg-body-tertiary" aria-label="Main navigation"> *@
-            <div class="container">
-
-                <a class="navbar-brand" asp-area="" asp-page="/Index">Metrics Backend</a>
-
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <nav class="navbar fixed-top bg-body-tertiary
+                        navbar-collapse-xs
+                        navbar-collapse-sm
+                        navbar-expand-md 
+                        navbar-expand-lg 
+                        border-bottom 
+                        box-shadow 
+                        mb-3
+                        metrics-main-navbar" 
+                aria-label="Main navigation">
+            <div class="container-fluid">
+                <span class="d-flex align-items-center no-select pe-4">
+                    <img src="~/images/logo.svg" alt="Logo" 
+                            width="38" height="38" 
+                            class="border border-3 border-white rounded d-inline-block align-text-top me-2" >
+                    <strong class="metrics-branding">Metrics</strong>
+                </span>
+                <button class="navbar-toggler" 
+                        type="button" 
+                        data-bs-toggle="collapse" 
+                        data-bs-target="#navbarSupportedContent" 
+                        aria-controls="navbarSupportedContent" 
+                        aria-expanded="false" 
+                        aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
 
@@ -37,17 +55,16 @@
                         </li>
 
                         @* ========================== Admin Area ========================== *@
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-page="/Dashboard/Index">Dashboard</a>
-                            
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-page="/Reports/Index">Reports</a>
-                        </li>
-                        
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link " asp-area="" asp-page="/Dashboard/Index">Dashboard</a>
+                            </li>
+                        }
+
                         @* ========================== Member Area ========================== *@
                         <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-page="/Kpi/Submissions/Index">KPI Score Submissions</a>
+                            <a class="nav-link" asp-area="" asp-page="/Kpi/Submissions/Index">KPI Submissions</a>
                         </li>
 
 
@@ -66,21 +83,24 @@
             </div>
         </nav>
     </header>
-    
-    <div class="container" style="padding-top: 4em;">
+
+    <div class="container-fluid" style="padding-top: 4em;">
         <main role="main" class="pb-3">
             @RenderBody()
         </main>
     </div>
 
     <footer class="border-top footer text-muted">
-        <div class="container">
+        <div class="container-fluid">
             &copy; 2025 - Metrics Backend - <a asp-area="" asp-page="/Privacy">Privacy</a>
         </div>
     </footer>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/lib/datatables/datatables.min.js"></script>
+    @* <script src="~/lib/tempus-dominus/tempus-dominus.min.js"></script> *@
+    <script src="~/lib/jquery-ui-1.14.1.custom/jquery-ui.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
 
     @await RenderSectionAsync("Scripts", required: false)

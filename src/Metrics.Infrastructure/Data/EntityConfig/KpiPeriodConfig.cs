@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore;
-using Metrics.Application.Entities;
+using Metrics.Application.Domains;
 
 namespace Metrics.Infrastructure.Data.EntityConfig;
 

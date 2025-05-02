@@ -1,4 +1,4 @@
-﻿using Metrics.Application.Entities;
+﻿using Metrics.Application.Domains;
 
 namespace Metrics.Application.Interfaces.IRepositories;
 
@@ -10,6 +10,7 @@ public interface IDepartmentRepository
     Task<IEnumerable<Department>> FindAllAsync();
     Task<Department> FindByIdAsync(long id);
     Task<Department> FindByDepartmentCodeAsync(string departmentCode);
+    Task<Department?> FindByDepartmentNameAsync(string departmentName);
     Task<bool> DepartmentExistsAsync(string departmentCode);
     Task<long> FindCountAsync();
 

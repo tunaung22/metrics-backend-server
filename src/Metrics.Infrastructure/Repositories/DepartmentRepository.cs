@@ -1,4 +1,4 @@
-﻿using Metrics.Application.Entities;
+﻿using Metrics.Application.Domains;
 using Metrics.Application.Exceptions;
 using Metrics.Application.Interfaces.IRepositories;
 using Metrics.Infrastructure.Data;
@@ -34,11 +34,26 @@ public class DepartmentRepository : IDepartmentRepository
     {
         var department = await _context.Departments
             // .Include(e => e.Employees)
-            .Where(e => e.DepartmentCode.ToString() == departmentCode)
+            .Where(e => e.DepartmentCode.ToString().ToLower() == departmentCode.ToLower())
             .FirstOrDefaultAsync();
 
         if (department == null)
             throw new NotFoundException("Department not found.");
+
+        return department;
+    }
+
+    public async Task<Department?> FindByDepartmentNameAsync(string departmentName)
+    {
+        var department = await _context.Departments
+            // .Include(e => e.Employees)
+            // .Where(e => string.Equals(departmentName, e.DepartmentName, StringComparison.OrdinalIgnoreCase))
+            // .Where(e => e.DepartmentName.Equals(departmentName, StringComparison.CurrentCultureIgnoreCase))
+            .Where(e => e.DepartmentName.ToLower() == departmentName.ToLower())
+            .FirstOrDefaultAsync();
+
+        // if (department == null)
+        //     throw new NotFoundException("Department not found.");
 
         return department;
     }

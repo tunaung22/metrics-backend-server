@@ -1,4 +1,4 @@
-using Metrics.Application.DTOs.DepartmentDtos;
+using Metrics.Application.Domains;
 using Metrics.Application.Exceptions;
 using Metrics.Application.Interfaces.IServices;
 using Microsoft.AspNetCore.Mvc;
@@ -18,15 +18,24 @@ public class EditModel : PageModel
     }
 
 
+    // ========== MODELS ==========
+    public class DepartmentInputModel
+    {
+        [Required(ErrorMessage = "Department name is needed.")]
+        [StringLength(200)]
+        public string DepartmentName { get; set; } = null!;
+    }
 
     [BindProperty]
-    public InputModel Input { get; set; } = new InputModel();
+    public DepartmentInputModel FormInput { get; set; } = new DepartmentInputModel();
 
     [BindProperty]
     public string DepartmentCode { get; set; } = string.Empty;
 
     public string ReturnUrl { get; set; } = string.Empty;
 
+
+    // ========== HANDLERS ========================================
     public async Task<IActionResult> OnGet(string departmentCode)
     {
         DepartmentCode = departmentCode;
@@ -38,7 +47,7 @@ public class EditModel : PageModel
         else
         {
             // dto to inputmodel
-            Input = new InputModel
+            FormInput = new DepartmentInputModel
             {
                 DepartmentName = result.DepartmentName
             };
@@ -60,9 +69,10 @@ public class EditModel : PageModel
             // {
             //     DepartmentName = Input.DepartmentName
             // };
-            var entity = new Application.Entities.Department
+            var entity = new Department
             {
-                DepartmentName = Input.DepartmentName
+                DepartmentCode = Guid.Parse(DepartmentCode),
+                DepartmentName = FormInput.DepartmentName
             };
             await _departmentService.UpdateAsync(DepartmentCode, entity);
         }
@@ -71,7 +81,7 @@ public class EditModel : PageModel
             ModelState.AddModelError("Input.DepartmentName", "Department already exist.");
             return Page();
         }
-        catch (System.Exception)
+        catch (Exception)
         {
             ModelState.AddModelError("", "Unexpected error occured. Please try again.");
             return Page();
@@ -95,12 +105,7 @@ public class EditModel : PageModel
         return RedirectToPage("./Index");
     }
 
-    public class InputModel
-    {
-        [Required(ErrorMessage = "Department name is needed.")]
-        [StringLength(200)]
-        public string DepartmentName { get; set; } = null!;
-    }
+
 }
 // public async Task<IActionResult> OnPostUpdate()
 // {

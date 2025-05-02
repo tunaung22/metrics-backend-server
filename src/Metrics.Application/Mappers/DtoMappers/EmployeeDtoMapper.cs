@@ -1,5 +1,5 @@
 using Metrics.Application.DTOs.EmployeeDtos;
-using Metrics.Application.Entities;
+using Metrics.Application.Domains;
 
 namespace Metrics.Application.Mappers.DtoMappers;
 

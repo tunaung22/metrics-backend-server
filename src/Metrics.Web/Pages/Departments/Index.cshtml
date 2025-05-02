@@ -1,6 +1,7 @@
 ﻿@page
 @model Metrics.Web.Pages.Departments.IndexModel
 @{
+    ViewData["Title"] = "Departments";
     var currentUrl = HttpContext.Request.Path;
     @* var a = @Url.Page(ViewContext.RouteData.Values["page"]?.ToString(), null, null, Request.Scheme); *@
 }
@@ -43,7 +44,7 @@
 
 @* ================ Table =================================================== *@
 <div class="bg-light p-4">
-    <table id="itemsTable" class="table">
+    <table id="departmentsTable" class="table">
         <thead>
             <tr>
                 <th>Department Name</th>
@@ -118,41 +119,11 @@
 }
 
 @section Scripts {
-    @* <partial name="_ValidateScriptsPartial" /> *@
     <script>
-        @* function editProduct(departmentCode, departmentName) {
-            document.querySelector('[name="FormData.DepartmentName"]').value = departmentCode;
-            document.querySelector('[name="FormData.DepartmentName"]').value = departmentName;
-            
-
-        } *@
-
-
-
-        @* function editItem(departmentCode, departmentName) {
-            document.getElementById("Department_Code").value = departmentCode;
-            document.getElementById("Department_Name").value = departmentName;
-        } *@
-
-        @* $(document).ready(function () {
-            $('#edit_data').click(function (e) {
-                e.preventDefault();
-                console.log("DATAAAAAAAAAAAAAAAA");
-                console.log($(this).data(departmentCode)); *@
-                @* var itemId = $(this).data('departmentCode');
-
-                $.ajax({
-                    url: '@Url.Page("Detail")', // URL to the detail page
-                    type: 'GET',
-                    data: { id: itemId },
-                    success: function (data) {
-                        $('#detailView').html(data);
-                    },
-                    error: function () {
-                        $('#detailView').html('<p>Error loading detail view.</p>');
-                    }
-                }); *@
-            @* });
-        }); *@
+        new DataTable('#departmentsTable', {
+            paging: false,
+            info: false,
+            searching: false
+        });
     </script>
 }

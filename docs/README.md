@@ -31,37 +31,6 @@ Project Documentation
 | PostgreSQL Database Provider | [Npgsql.EntityFrameworkCore.PostgreSQL](https://www.nuget.org/packages/Npgsql.EntityFrameworkCore.PostgreSQL)                         |
 | EF Core Naming Conventions   | [EFCore.NamingConventions](https://www.nuget.org/packages/EFCore.NamingConventions)                                                   |
 
-## Infrastructure
-
-![Infrastructure](./images/infrastructure.png)
-
-### Project Structure (draft)
-
-- Project.App
-- Project.Application
-- Project.Api
-- Project.Web
-- Project.Common
-- Project.Domain
-- Project.Infrastructure
-- Project.Persistence
-- Project.Presentation
-
-## Table Design
-
-![ERD](./images/erd_v1.0.png)
-
-## Clients
-
-- Web browser
-- Mobile applicaiton
-
-### UI Mockup
-
-![ui mock](./images/ui_mockup__submission_form.png)
-![ui mock v1](./images/ui__submission_form_v1.png)
-![ui mock v1.1](./images/ui__submission_form_v1.1.png)
-
 ## URL Routes
 
 ### Razor Pages
@@ -92,3 +61,50 @@ Project Documentation
 | /about   | info page    |
 | /contact | contact page |
 |          |              |
+
+## Infrastructure
+
+![Infrastructure](./images/infrastructure.png)
+
+### Clearn Architecture
+
+Reference from the Microsoft's Common web application architectures article, section [Clean Architecture](https://learn.microsoft.com/en-us/dotnet/architecture/modern-web-apps-azure/common-web-application-architectures#clean-architecture)
+
+![onion view of clean architecture layers](./images/clean_archi_layers_onion_view.png)
+![clean architecture layers](./images/clean_archi_layers.png)
+
+### Project Structure
+
+- Metrics.Application (application core)
+  - Domains/Entities
+  - Interfaces
+  - DTOs
+  - Exceptions
+- Metrics.Infrastructure
+  - DbContext
+  - FluentAPI Entity Configurations
+  - Data Seedings
+  - Repositories
+  - Services
+- Metrics.Shared
+  - Filters
+  - Utils
+- Metrics.Web
+  - Main ASP.NET app
+
+## ERD Diagrams
+
+![ERD](./images/erd_v0.1.png)
+![ERD](./images/erd_v0.2.png)
+![ERD](./images/erd_v0.3.png)
+
+## Client UIs
+
+- Web browser
+- Mobile applicaiton
+
+### UI Mockup
+
+![ui mock](./images/ui_mockup__submission_form.png)
+![ui mock v1](./images/ui__submission_form_v1.png)
+![ui mock v1.1](./images/ui__submission_form_v1.1.png)

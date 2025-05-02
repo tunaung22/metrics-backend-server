@@ -1,5 +1,5 @@
 using Metrics.Application.DTOs.UserAccountDtos;
-using Metrics.Application.Entities;
+using Metrics.Application.Domains;
 using Metrics.Application.Interfaces.IRepositories;
 using Metrics.Application.Interfaces.IServices;
 using Metrics.Application.Mappers.DtoMappers;
@@ -13,15 +13,18 @@ public class UserAccountService : IUserAccountService
 {
     private readonly MetricsDbContext _context;
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly RoleManager<ApplicationRole> _roleManager;
     private readonly IEmployeeRepository _employeeRepository;
 
     public UserAccountService(
         MetricsDbContext context,
         UserManager<ApplicationUser> userManager,
+        RoleManager<ApplicationRole> roleManager,
         IEmployeeRepository employeeRepository)
     {
         _context = context;
         _userManager = userManager;
+        _roleManager = roleManager;
         _employeeRepository = employeeRepository;
     }
 
@@ -41,10 +44,26 @@ public class UserAccountService : IUserAccountService
             // await _userStore.SetUserNameAsync(userInstance, dto.UserName, CancellationToken.None);
             // await _emailStore.SetEmailAsync(userInstance, dto.Email, CancellationToken.None);
 
-            var newUser = await _userManager.CreateAsync(userInstance, dto.Password);
+            var newUserIdentityResult = await _userManager.CreateAsync(userInstance, dto.Password);
 
-            if (!newUser.Succeeded)
-                return newUser;
+            if (!newUserIdentityResult.Succeeded)
+                // return newUser;
+                throw new Exception("User account creation failed.");
+
+            var newUser = await _userManager.FindByNameAsync(dto.UserName);
+
+            // Assign Role
+            // check employee role exist
+            var employeeRole = await _roleManager.FindByNameAsync("Employee");
+
+            if (employeeRole == null)
+                throw new Exception("No such role, Employee.");
+
+
+
+            if (employeeRole != null && newUser != null && !string.IsNullOrEmpty(employeeRole.Name))
+                await _userManager.AddToRoleAsync(newUser, employeeRole.Name);
+
 
             // ========== STEP 2 - Employee (User Profile) =====================
             // ** UserAccountCreateDto to Employee
@@ -58,6 +77,7 @@ public class UserAccountService : IUserAccountService
             transaction.Complete();
 
             return IdentityResult.Success;
+
         }
         catch (Exception)
         {

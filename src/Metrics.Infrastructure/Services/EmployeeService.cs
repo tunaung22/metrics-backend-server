@@ -1,13 +1,10 @@
-using Metrics.Application.DTOs.EmployeeDtos;
-using Metrics.Application.Entities;
+using Metrics.Application.Domains;
 using Metrics.Application.Exceptions;
 using Metrics.Application.Interfaces.IRepositories;
 using Metrics.Application.Interfaces.IServices;
-using Metrics.Application.Mappers.DtoMappers;
 using Metrics.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Npgsql;
 
 namespace Metrics.Infrastructure.Services;
 
@@ -174,7 +171,7 @@ public class EmployeeService : IEmployeeService
         {
             var employees = await _employeeRepository.FindAllAsQueryable()
                 .Include(e => e.CurrentDepartment)
-                // .Include(e => e.UserAccount)
+                .Include(e => e.UserAccount)
                 .Include(e => e.KpiSubmissions)
                 .ToListAsync();
 

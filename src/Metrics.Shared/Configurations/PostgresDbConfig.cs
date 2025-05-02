@@ -8,7 +8,7 @@ namespace Metrics.Shared.Configurations;
 
 public class PostgresDbConfig
 {
-    public string PgSchema { get; set; } = null!;
+    public required string PgSchema { get; set; }
     public int PgPoolSize { get; set; } = 100;
 }
 

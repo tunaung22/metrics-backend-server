@@ -6,48 +6,69 @@
 }
 
 
-<div style="height: 70vh;" class="row d-flex justify-content-center align-items-center">
-    <div class="col col-4">
-        <h1>@ViewData["Title"]</h1>
-        <div>
-            <form id="account" method="post">
-                <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
-                <div class="form-floating mb-3">
-                    <input asp-for="Input.Username" class="form-control" autocomplete="username" aria-required="true" placeholder=" " />
-                    <label asp-for="Input.Username" class="form-label">Username</label>
-                    <span asp-validation-for="Input.Username" class="text-danger"></span>
+<div class="wrapper__login-container row px-4">
+    <div class="col-lg-12 col-xl-12">
+        <div class="login-container">
+            <div class="row g-0">
+                <!-- Welcome Section (Left Column) -->
+                <div class="col-lg-6 d-none d-lg-block">
+                    <div class="welcome-section h-100">
+                        <h5 class="display-6 fw-bold mb-4">Welcome to Metrics HRM</h5>
+                        <p class="lead">Please login to access your account.</p>
+                    </div>
                 </div>
-                @* <div class="form-floating mb-3">
-                    <input asp-for="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
-                    <label asp-for="Input.Email" class="form-label">Email</label>
-                    <span asp-validation-for="Input.Email" class="text-danger"></span>
-                </div> *@
-                <div class="form-floating mb-3">
-                    <input asp-for="Input.Password" class="form-control" autocomplete="current-password" aria-required="true" placeholder=" " />
-                    <label asp-for="Input.Password" class="form-label">Password</label>
-                    <span asp-validation-for="Input.Password" class="text-danger"></span>
+                <!-- Login Form Section (Right Column) -->
+                <div class="col-lg-6">
+                    <div class="login-section">
+                        <div class="text-center mb-5">
+                            <span class="d-flex align-items-end justify-content-center no-select mb-2">
+                                <img src="~/images/logo.svg" alt="Logo" 
+                                width="38" height="38" 
+                                class="rounded-3 d-inline-block align-text-top me-2" />
+                                <h4 class="">Metrics Login</h4>
+                            </span>
+                            <p class="text-muted">Enter your credentials to access your account</p>
+                        </div>
+                        <form id="account" method="post">
+
+                            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                            <div class="mb-3">
+                                <label asp-for="Input.Username" class="form-label">Username</label>
+                                <input asp-for="Input.Username" 
+                                    autocomplete="username"
+                                    class="form-control"
+                                    placeholder="Enter your username" 
+                                    aria-required="true"
+                                    required />
+                                <span asp-validation-for="Input.Username" class="text-danger"></span>
+                            </div>
+
+                            <div class="mb-4">
+                                <label asp-for="Input.Password" class="form-label">Password</label>
+                                <input asp-for="Input.Password" 
+                                        type="password"
+                                        class="form-control" 
+                                        @* autocomplete="current-password"  *@
+                                        aria-required="true" 
+                                        placeholder="Enter your password"
+                                        required />
+                                <span asp-validation-for="Input.Password" class="text-danger"></span>
+                            </div>
+
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                @* <a id="forgot-password" class="text-decoration-none" asp-page="./ForgotPassword">Forgot your password?</a> *@
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="rememberMe">
+                                    <label class="form-check-label" for="rememberMe">Remember me</label>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-login btn-primary mb-3">Login</button>
+                        </form>
+                    </div>
                 </div>
-                @* <div class="checkbox mb-3"> *@
-                @*     <label asp-for="Input.RememberMe" class="form-label"> *@
-                @*         <input class="form-check-input" asp-for="Input.RememberMe" /> *@
-                @*         @Html.DisplayNameFor(m => m.Input.RememberMe) *@
-                @*     </label> *@
-                @* </div> *@
-                <div>
-                    <button id="login-submit" type="submit" class="w-100 btn btn-lg btn-primary">Log in</button>
-                </div>
-                @* <div> *@
-                @*     <p> *@
-                @*         <a id="forgot-password" asp-page="./ForgotPassword">Forgot your password?</a> *@
-                @*     </p> *@
-                @*     <p> *@
-                @*         <a asp-page="./Register" asp-route-returnUrl="@Model.ReturnUrl">Register as a new user</a> *@
-                @*     </p> *@
-                @*     <p> *@
-                @*         <a id="resend-confirmation" asp-page="./ResendEmailConfirmation">Resend email confirmation</a> *@
-                @*     </p> *@
-                @* </div> *@
-            </form>
+            </div>
         </div>
     </div>
 </div>
@@ -55,4 +76,47 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script></script>
+}
+
+@section Styles {
+    <style>
+        .wrapper__login-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+        }
+        .login-container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            margin: 0 auto;
+        }
+        .welcome-section {
+            background: linear-gradient(128deg, #0076baba, #0057ba);
+            color: white;
+            padding: 3rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            height: 100%;
+        }
+        .login-section {
+            padding: 3rem;
+        }
+        @* .form-control:focus {
+            border-color: #0057ba;
+            box-shadow: 0 0 0 0.25rem rgba(119, 184, 227, 0.25);
+        } *@
+        .btn-login {
+            @* background: linear-gradient(135deg, #6e8efb, #0057ba); *@
+            border: none;
+            width: 100%;
+            padding: 10px;
+        }
+        .btn-login:hover {
+            @* background: linear-gradient(135deg, #5d7dea, #0057ba); *@
+        }
+    </style>
 }

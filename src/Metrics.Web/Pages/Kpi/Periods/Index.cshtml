@@ -1,6 +1,7 @@
 ﻿@page
 @model Metrics.Web.Pages.Kpi.Periods.IndexModel
 @{
+    ViewData["Title"] = "KPI Periods";
 }
 
 
@@ -32,19 +33,26 @@
 }
 
 @* =============== Filter Bar =============================================== *@
-<div id="filter-bar" class="d-flex bg-light p-4 mt-2">
-  <div class="col-sm-4 mx-2">
+@* <div id="filter-bar" class="d-flex bg-light p-4 mt-2"> *@
+  @* <div class="col-sm-4 mx-2">
     <input class="form-control" placeholder="Filter..." />
-  </div>
-    <div class="col-sm-4 mx-2"><input class="form-control" placeholder="" /></div>
-</div>
+  </div> *@
+    @* <div class="col-auto mx-2">
+        <select id="myDropdown" class="form-control">
+            <option value=""></option>
+            <option value="5">5</option>
+            <option value="10">10</option>
+            <option value="20">20</option>
+        </select>
+    </div>
+</div> *@
 
 @* =============== Table ==================================================== *@
 <div class="bg-light p-4">
-    <table id="itemsTable" class="table">
+    <table id="kpiPeriodTable" class="table table-striped">
         <thead>
             <tr>
-                <th>KPI Periods Name</th>
+                <th>Periods Name</th>
                 <th>Submission Start Date</th>
                 <th>Submission End Date</th>
                 <th>Actions</th>
@@ -58,8 +66,8 @@
                 {
                     <tr>
                         <td>@period.PeriodName</td>
-                        <td>@period.SubmissionStartDate.LocalDateTime</td>
-                        <td>@period.SubmissionEndDate.LocalDateTime</td>
+                        <td>@period.SubmissionStartDate.LocalDateTime.ToString("MMM dd, yyyy")</td>
+                        <td>@period.SubmissionEndDate.LocalDateTime.Date.ToString("MMM dd, yyyy")</td>
                         <td>
                             <button class="btn btn-success">
                                 Edit
@@ -103,4 +111,26 @@
             </ul>
         </nav>
     </div>
+}
+
+@section Scripts {
+    <script>
+        new DataTable('#kpiPeriodTable', {
+            paging: false,
+            info: false,
+            searching: false
+        });
+
+        $(function() {
+            // update QueryString On Selection Changed
+            $('#myDropdown').on('change', function() {
+                var selectedValue = $(this).val();
+                var currentUrl = window.location.href.split('?')[0]; // Get the base URL without query string
+                var newUrl = currentUrl + '?display=' + selectedValue; // Construct new URL with query string
+                // Update the URL in the browser without reloading the page
+                @* window.history.pushState({ path: newUrl }, '', newUrl); *@
+                window.location.href = newUrl;
+            });
+        });
+    </script>
 }

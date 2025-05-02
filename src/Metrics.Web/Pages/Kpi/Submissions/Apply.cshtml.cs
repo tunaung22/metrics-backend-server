@@ -1,15 +1,15 @@
-using Metrics.Application.DTOs.KpiSubmissionDtos;
-using Metrics.Application.Entities;
+using Metrics.Application.Domains;
 using Metrics.Application.Exceptions;
 using Metrics.Application.Interfaces.IServices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 
 namespace Metrics.Web.Pages.Kpi.Submissions;
 
+[Authorize(Roles = "Employee")]
 public class ApplyModel : PageModel
 {
     private readonly IKpiSubmissionService _kpiSubmissionService;

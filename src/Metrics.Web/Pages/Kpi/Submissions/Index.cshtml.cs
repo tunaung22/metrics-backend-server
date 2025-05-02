@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace Metrics.Web.Pages.Kpi.Submissions;
 
-[Authorize()]
+// [Authorize(Roles = "Employee")]
 public class IndexModel : PageModel
 {
     private readonly IKpiPeriodService _kpiPeriodService;

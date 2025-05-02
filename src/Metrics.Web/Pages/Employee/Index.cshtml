@@ -3,45 +3,61 @@
 @{
 }
 
-<h3>Employee (admin)</h3>
+<h3>Employee</h3>
 
 <div class="mt-4">
-    <a class="btn btn-success" asp-area="" asp-page="/Employee/Register">Register</a>
+    <a class="btn btn-success" asp-page="/Employee/Register">Register</a>
 </div>
 
 <div class="mt-4">
-    <table id="itemsTable" class="table">
+    <table id="employeeTable" class="table table-striped" style="width: 100%;">
         <thead>
             <tr>
-                <th>Employee Code</th>
-                <th>Full Name</th>
+                <th>Account</th>
+                <th>Name</th>
+                <th>Role</th>
+                <th>Department</th>
                 <th>Address</th>
                 <th>Phone Number</th>
-                <th>Department</th>
-                <th>Account</th>
+                @* <th>Actions</th> *@
             </tr>
         </thead>
         <tbody>
-            @if (Model.EmployeeList != null)
+            @if (Model.EmployeeList.Any())
             {
-
                 @foreach (var e in Model.EmployeeList)
                 {
                     <tr>
-                        <td>@e.EmployeeCode</td>
+                        <td>@e.UserAccount.UserName</td>
                         <td>@e.FullName</td>
+                        <td>
+                            @foreach(var r in e.UserRoles)
+                            {
+                                <p>@r</p>
+                            }
+                        </td>
+                        <td>@e.DepartmentName</td>
                         <td>@e.Address</td>
                         <td>@e.PhoneNumber</td>
-                        <td>@e.DepartmentId : @e.DepartmentName</td>
-                        <td>@e.ApplicationUserId</td>
-                        <td>
+                        @* <td>
                             <button class="btn btn-success">
                                 Edit
                             </button>
-                        </td>
+                        </td> *@
                     </tr>
                 }
             }
         </tbody>
     </table>
 </div>
+
+
+@section Scripts {
+    <script>
+        new DataTable('#employeeTable', {
+            paging: false,
+            info: false,
+            searching: false
+        });
+    </script>
+}

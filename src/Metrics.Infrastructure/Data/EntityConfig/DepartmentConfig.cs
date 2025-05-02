@@ -1,4 +1,4 @@
-﻿using Metrics.Application.Entities;
+﻿using Metrics.Application.Domains;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Npgsql.EntityFrameworkCore.PostgreSQL.ValueGeneration;

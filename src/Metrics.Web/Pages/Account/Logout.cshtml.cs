@@ -1,4 +1,4 @@
-using Metrics.Application.Entities;
+using Metrics.Application.Domains;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;

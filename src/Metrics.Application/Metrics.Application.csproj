@@ -11,6 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../Metrics.Shared/Metrics.Shared.csproj" />
   </ItemGroup>
 
 </Project>
