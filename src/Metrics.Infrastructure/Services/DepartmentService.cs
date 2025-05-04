@@ -200,10 +200,12 @@ public class DepartmentService : IDepartmentService
     {
         try
         {
-            var departments = await _departmentRepository.FindAllAsQueryable()
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
+            // var departments = await _departmentRepository.FindAllAsQueryable()
+            //     .Skip((pageNumber - 1) * pageSize)
+            //     .Take(pageSize)
+            //     .ToListAsync();
+            var departments = await _departmentRepository
+                .FindAllAsync(pageNumber, pageSize);
 
             return departments;
         }

@@ -8,6 +8,7 @@ public interface IDepartmentRepository
     void Update(Department entity);
     void Delete(Department entity);
     Task<IEnumerable<Department>> FindAllAsync();
+    Task<IEnumerable<Department>> FindAllAsync(int pageNumber, int pageSize);
     Task<Department> FindByIdAsync(long id);
     Task<Department> FindByDepartmentCodeAsync(string departmentCode);
     Task<Department?> FindByDepartmentNameAsync(string departmentName);
