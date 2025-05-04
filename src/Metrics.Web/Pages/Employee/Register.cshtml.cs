@@ -1,5 +1,6 @@
 using Metrics.Application.Domains;
 using Metrics.Application.DTOs.UserAccountDtos;
+using Metrics.Application.Exceptions;
 using Metrics.Application.Interfaces.IServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -14,15 +15,18 @@ namespace Metrics.Web.Pages.Employee;
 [Authorize(Roles = "Admin")]
 public class RegisterModel : PageModel
 {
+    private readonly ILogger<RegisterModel> _logger;
     private readonly RoleManager<ApplicationRole> _roleManager;
     private readonly IUserAccountService _userAccountService;
     private readonly IDepartmentService _departmentService;
 
     public RegisterModel(
+        ILogger<RegisterModel> logger,
         RoleManager<ApplicationRole> roleManager,
         IUserAccountService userAccountService,
         IDepartmentService departmentService)
     {
+        _logger = logger;
         _roleManager = roleManager;
         _userAccountService = userAccountService;
         _departmentService = departmentService;
@@ -32,6 +36,8 @@ public class RegisterModel : PageModel
     public class FormInputModel
     {
         [Required(ErrorMessage = "Username is required.")]
+        [StringLength(20, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 5)]
+        [RegularExpression(@"^[a-zA-Z0-9]*$", ErrorMessage = "Username can only contain letters and numbers.")]
         [Display(Name = "Username")]
         public required string UserName { get; set; } // Use username instead of email
 
@@ -83,8 +89,10 @@ public class RegisterModel : PageModel
         FullName = string.Empty,
         RoleId = string.Empty
     };
+
     [BindProperty]
     public List<SelectListItem> DepartmentListItems { get; set; } = [];
+    public string? SelectedDepartmentName { get; set; }
     [BindProperty]
     public List<SelectListItem> RoleListItems { get; set; } = [];
     // public long SelectedDepartmentId { get; set; }
@@ -107,19 +115,7 @@ public class RegisterModel : PageModel
 
     public async Task<IActionResult> OnPostAsync()
     {
-        if (!ModelState.IsValid)
-        {
-            DepartmentListItems = await LoadDepartmentList();
-            if (DepartmentListItems.Count <= 0)
-                return Page();
 
-            RoleListItems = await LoadRoleList();
-            if (RoleListItems.Count <= 0)
-                return Page();
-
-            return Page();
-
-        }
         // load departments
         // load accounts
         // save employee
@@ -128,7 +124,7 @@ public class RegisterModel : PageModel
             var createDto = new UserAccountCreateDto
             {
                 // account
-                UserName = FormInput.UserName,
+                UserName = FormInput.UserName.ToLower(),
                 Email = FormInput.Email,
                 Password = FormInput.Password,
                 // profile
@@ -136,26 +132,73 @@ public class RegisterModel : PageModel
                 FullName = FormInput.FullName,
                 Address = FormInput.Address,
                 PhoneNumber = FormInput.PhoneNumber,
-                DepartmentId = FormInput.DepartmentId
+                DepartmentId = FormInput.DepartmentId,
+                RoleId = FormInput.RoleId
                 // ApplicationUserId??? <- account not created then id unknown 
             };
 
             var result = await _userAccountService.RegisterUserAsync(createDto);
             if (result.Succeeded)
             {
+                var assignedRole = await _roleManager.FindByIdAsync(createDto.RoleId);
                 TempData["Username"] = createDto.UserName.ToString();
                 TempData["FullName"] = createDto.FullName.ToString();
+                TempData["RoleName"] = assignedRole?.Name ?? string.Empty;
+
 
                 return RedirectToPage("Success");
             }
 
+            // Handle errors
+            foreach (var error in result.Errors)
+            {
+                if (error.Code == "DuplicateUserName")
+                {
+                    ModelState.AddModelError("FormInput.Username", "Username is already taken.");
+                }
+                else if (error.Code == "DuplicateEmail")
+                {
+                    ModelState.AddModelError("FormInput.Email", "Email is already registered.");
+                }
+                else
+                {
+                    ModelState.AddModelError(string.Empty, error.Description);
+                }
+            }
+
+            // Load Select Items Data
+            DepartmentListItems = await LoadDepartmentList();
+            RoleListItems = await LoadRoleList();
+
+            return Page();
+        }
+        catch (MetricsDuplicateContentException e)
+        {
+            ModelState.AddModelError(string.Empty, e.Message);
+            // Load Select Items Data
+            DepartmentListItems = await LoadDepartmentList();
+            RoleListItems = await LoadRoleList();
+            return Page();
+        }
+        catch (MetricsNotFoundException e)
+        {
+            ModelState.AddModelError(string.Empty, e.Message);
+            // Load Select Items Data
+            DepartmentListItems = await LoadDepartmentList();
+            RoleListItems = await LoadRoleList();
             return Page();
         }
         catch (Exception e)
         {
-            ModelState.AddModelError(string.Empty, e.Message);
-
+            _logger.LogCritical(e.Message);
+            ModelState.AddModelError(string.Empty, "Unexpected error occured." + e.Message);
+            // Load Select Items Data
+            DepartmentListItems = await LoadDepartmentList();
+            RoleListItems = await LoadRoleList();
             return Page();
+            // throw new InvalidOperationException($"Can't create an instance of '{nameof(ApplicationUser)}'. " +
+            //        $"Ensure that '{nameof(ApplicationUser)}' is not an abstract class and has a parameterless constructor, or alternatively " +
+            //        $"override the register page in /Areas/Identity/Pages/Account/Register.cshtml");
         }
     }
 

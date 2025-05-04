@@ -31,7 +31,7 @@
                         metrics-main-navbar" 
                 aria-label="Main navigation">
             <div class="container-fluid">
-                <span class="d-flex align-items-center no-select pe-4">
+                <span class="d-flex align-items-center no-select pe-2">
                     <img src="~/images/logo.svg" alt="Logo" 
                             width="38" height="38" 
                             class="border border-3 border-white rounded d-inline-block align-text-top me-2" >
@@ -62,21 +62,18 @@
                             </li>
                         }
 
-                        @* ========================== Member Area ========================== *@
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-page="/Kpi/Submissions/Index">KPI Submissions</a>
-                        </li>
-
+                        @* ========================== Employee Area ========================== *@
+                        @if (User.IsInRole("Employee"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-page="/Kpi/Submissions/Index">KPI Submissions</a>
+                            </li>
+                        }
 
                         @* ========================== Public Area ========================== *@
                         <li class="nav-item">
                             <a class="nav-link" asp-area="" asp-page="/About/Index">About</a>
                         </li>
-
-
-                         @* <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-page="/App">MVC App</a>
-                        </li> *@
                     </ul>
                     <partial name="Shared/_LoginPartial" />
                 </div>

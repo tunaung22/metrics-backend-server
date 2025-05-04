@@ -84,6 +84,14 @@ public class DepartmentRepository : IDepartmentRepository
             .ToListAsync();
     }
 
+    public async Task<IEnumerable<Department>> FindAllAsync(int pageNumber, int pageSize)
+    {
+        return await _context.Departments
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+    }
+
     public async Task<long> FindCountAsync()
     {
         return await _context.Departments.CountAsync();

@@ -94,6 +94,7 @@ public class KpiSubmissionService : IKpiSubmissionService
         }
         catch (Exception ex)
         {
+            await transaction.RollbackAsync();
             _logger.LogError(ex, "Unexpected error while creating submission.");
             throw new Exception("An unexpected error occurred. Please try again later.");
         }

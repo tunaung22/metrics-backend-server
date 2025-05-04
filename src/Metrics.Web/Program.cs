@@ -107,7 +107,7 @@ builder.Services.AddDbContext<MetricsDbContext>(options =>
 // ========== Identity ==================================================
 builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
     {
-        options.User.RequireUniqueEmail = false;
+        // options.User.RequireUniqueEmail = true;
         options.Password.RequireDigit = false; // Allow passwords without digits
         options.Password.RequireLowercase = false; // Allow passwords without lowercase letters
         options.Password.RequireUppercase = false; // Allow passwords without uppercase letters
