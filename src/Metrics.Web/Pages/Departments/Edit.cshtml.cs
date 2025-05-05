@@ -42,7 +42,7 @@ public class EditModel : PageModel
         var result = await _departmentService.FindByDepartmentCodeAsync(departmentCode);
         if (result == null)
         {
-            ModelState.AddModelError("Input.DepartmentName", "Department not found.");
+            ModelState.AddModelError("FormInput.DepartmentName", "Department not found.");
         }
         else
         {
@@ -78,7 +78,7 @@ public class EditModel : PageModel
         }
         catch (DuplicateContentException)
         {
-            ModelState.AddModelError("Input.DepartmentName", "Department already exist.");
+            ModelState.AddModelError("FormInput.DepartmentName", "Department already exist.");
             return Page();
         }
         catch (Exception)

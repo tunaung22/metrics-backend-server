@@ -4,47 +4,53 @@
     ViewData["Title"] = "Add New Department";
 }
 
-<h3>Create New Department</h3>
+<div class="container" style="height: 70vh;">
+    <h3>Create New Department</h3>
 
-@* ========================================================================== *@
-@if (!ModelState.IsValid)
-{
-    <div class="alert alert-danger">
-        <h4>There were some errors:</h4>
-        <ul>
-            @foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
-            {
-                <li>@error.ErrorMessage</li>
-            }
-        </ul>
-    </div>
-}
-
-@* =============== Form ===================================================== *@
-<form method="post" asp-route-returnUrl="@Model.ReturnUrl">
-     <div class="row row-lg-6">
-        <div class="form-group col-md-4">
-            <label asp-for="Input.DepartmentName">Department Name</label>
-            <input asp-for="Input.DepartmentName" class="form-control" />
-            <div>
-                <span asp-validation-for="Input.DepartmentName" class="text-danger"></span>
-            </div>
+    @* ========================================================================== *@
+    @if (!ModelState.IsValid)
+    {
+        <div class="alert alert-danger">
+            <h4>There were some errors:</h4>
+            <ul>
+                @foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    <li>@error.ErrorMessage</li>
+                }
+            </ul>
         </div>
-     
-    </div>
+    }
 
-    <div class="row mt-4">
-        <div class="form-group col-md d-flex align-items-center">
-            <button type="submit" class="btn btn-success me-2">
-                <i class="bi bi-check-circle"> </i>Add Department
-            </button>
-            <button type="submit" class="btn btn-warning mx-2"
-                asp-page-handler="Cancel" formnovalidate>
-                <i class="bi bi-x-circle"> </i>Cancel
-            </button>
-        </div> 
+    @* =============== Form ===================================================== *@
+    <div class="bg-light p-4">
+
+        <form method="post" asp-route-returnUrl="@Model.ReturnUrl">
+            <div class="row row-lg-6">
+                <div class="form-group col-md-4">
+                    <label asp-for="Input.DepartmentName">Department Name</label>
+                    <input asp-for="Input.DepartmentName" class="form-control" />
+                    <div>
+                        <span asp-validation-for="Input.DepartmentName" class="text-danger"></span>
+                    </div>
+                </div>
+            
+            </div>
+
+            <div class="row mt-4">
+                <div class="form-group col-md d-flex align-items-center">
+                    <button type="submit" class="btn btn-success me-2">
+                        <i class="bi bi-check-circle"> </i>Add Department
+                    </button>
+                    <button type="submit" class="btn btn-warning mx-2"
+                        asp-page-handler="Cancel" formnovalidate>
+                        <i class="bi bi-x-circle"> </i>Cancel
+                    </button>
+                </div> 
+            </div>
+        </form>
     </div>
-</form>
+</div>
+
 
 @* =============== Scripts ================================================== *@
 @section Scripts {
