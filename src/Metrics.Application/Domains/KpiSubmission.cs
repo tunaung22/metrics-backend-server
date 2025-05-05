@@ -1,12 +1,16 @@
-﻿namespace Metrics.Application.Domains;
+﻿using Metrics.Application.Interfaces;
 
-public class KpiSubmission
+namespace Metrics.Application.Domains;
+
+public class KpiSubmission : IAuditColumn
 {
     public long Id { get; set; }
-    public DateTimeOffset SubmissionTime { get; set; }
-    public decimal KpiScore { get; set; }
-    public string? Comments { get; set; }
+    public DateTimeOffset SubmittedAt { get; set; }
     public DateOnly SubmissionDate { get; set; } // Generated Field
+    public decimal KpiScore { get; set; }
+    public string? Comments { get; set; } = string.Empty;
+    public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
+    public DateTimeOffset ModifiedAt { get; set; } = DateTimeOffset.UtcNow;
 
     // Foreign Keys
     public long KpiPeriodId { get; set; }
@@ -15,6 +19,6 @@ public class KpiSubmission
 
     // Reference Navigational Properties
     public KpiPeriod KpiPeriod { get; set; } = null!;
-    public Department TargetDepartment { get; set; } = null!;
-    public Employee Candidate { get; set; } = null!;
+    public Department Department { get; set; } = null!;
+    public Employee Employee { get; set; } = null!;
 }

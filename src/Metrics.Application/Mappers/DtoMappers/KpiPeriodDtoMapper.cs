@@ -13,7 +13,7 @@ public static class KpiPeriodDtoMapper
 
         return entities.Select(e => new KpiPeriodGetDto
         {
-            PeriodName = e.PeriodName,
+            PeriodName = e.PeriodCode,
             SubmissionStartDate = e.SubmissionStartDate,
             SubmissionEndDate = e.SubmissionEndDate
         }).ToList();
@@ -23,7 +23,7 @@ public static class KpiPeriodDtoMapper
     {
         return new KpiPeriodGetDto
         {
-            PeriodName = entity.PeriodName,
+            PeriodName = entity.PeriodCode,
             SubmissionStartDate = entity.SubmissionStartDate,
             SubmissionEndDate = entity.SubmissionEndDate
         };
@@ -34,7 +34,7 @@ public static class KpiPeriodDtoMapper
     {
         return new KpiPeriod
         {
-            PeriodName = dto.PeriodName,
+            PeriodCode = dto.PeriodName,
             SubmissionStartDate = dto.SubmissionStartDate,
             SubmissionEndDate = dto.SubmissionEndDate
         };

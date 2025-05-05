@@ -57,7 +57,7 @@ public class IndexModel : PageModel
         {
             foreach (var employee in employees)
             {
-                var roles = await _userManager.GetRolesAsync(employee.UserAccount);
+                var roles = await _userManager.GetRolesAsync(employee.ApplicationUser);
                 var employeeModel = new EmployeeModel
                 {
                     EmployeeCode = employee.EmployeeCode,
@@ -65,9 +65,9 @@ public class IndexModel : PageModel
                     Address = employee.Address,
                     PhoneNumber = employee.PhoneNumber,
                     DepartmentId = employee.DepartmentId,
-                    DepartmentName = employee.CurrentDepartment.DepartmentName,
+                    DepartmentName = employee.Department.DepartmentName,
                     ApplicationUserId = employee.ApplicationUserId,
-                    UserAccount = employee.UserAccount,
+                    UserAccount = employee.ApplicationUser,
                     // UserRole = roles
                     UserRoles = roles.ToList()
                 };

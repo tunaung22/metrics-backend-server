@@ -62,7 +62,7 @@ public class CreateModel : PageModel
             // await _kpiPeriodService.Create_Async(createDto);
             var entity = new KpiPeriod
             {
-                PeriodName = FormInput.PeriodName,
+                PeriodCode = FormInput.PeriodName,
                 SubmissionStartDate = FormInput.SubmissionStartDate.UtcDateTime,
                 SubmissionEndDate = FormInput.SubmissionEndDate.UtcDateTime
             };

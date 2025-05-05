@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Metrics.Web.Migrations
 {
     [DbContext(typeof(MetricsDbContext))]
-    [Migration("20250308152412_InitDb")]
-    partial class InitDb
+    [Migration("20250505074621_0000_InitialDb")]
+    partial class _0000_InitialDb
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,27 +24,37 @@ namespace Metrics.Web.Migrations
                 .HasAnnotation("ProductVersion", "9.0.2")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
-            NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+            NpgsqlModelBuilderExtensions.UseHiLo(modelBuilder, "EntityFrameworkHiLoSequence");
 
-            modelBuilder.Entity("Metrics.Domain.Entities.Department", b =>
+            modelBuilder.HasSequence("EntityFrameworkHiLoSequence")
+                .IncrementsBy(10);
+
+            modelBuilder.Entity("Metrics.Application.Domains.Department", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
                         .HasColumnName("id");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseHiLo(b.Property<long>("Id"));
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
 
                     b.Property<Guid>("DepartmentCode")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("department_code");
 
                     b.Property<string>("DepartmentName")
                         .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("varchar(500)")
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)")
                         .HasColumnName("department_name");
+
+                    b.Property<DateTimeOffset>("ModifiedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("modified_at");
 
                     b.HasKey("Id")
                         .HasName("pk_departments");
@@ -60,14 +70,14 @@ namespace Metrics.Web.Migrations
                     b.ToTable("departments", "metrics");
                 });
 
-            modelBuilder.Entity("Metrics.Domain.Entities.Employee", b =>
+            modelBuilder.Entity("Metrics.Application.Domains.Employee", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
                         .HasColumnName("id");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseHiLo(b.Property<long>("Id"));
 
                     b.Property<string>("Address")
                         .HasColumnType("text")
@@ -78,14 +88,18 @@ namespace Metrics.Web.Migrations
                         .HasColumnType("text")
                         .HasColumnName("application_user_id");
 
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
                     b.Property<long>("DepartmentId")
                         .HasColumnType("bigint")
                         .HasColumnName("department_id");
 
                     b.Property<string>("EmployeeCode")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("varchar(100)")
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)")
                         .HasColumnName("employee_code");
 
                     b.Property<string>("FullName")
@@ -93,6 +107,10 @@ namespace Metrics.Web.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("varchar(200)")
                         .HasColumnName("full_name");
+
+                    b.Property<DateTimeOffset>("ModifiedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("modified_at");
 
                     b.Property<string>("PhoneNumber")
                         .HasColumnType("varchar(200)")
@@ -115,20 +133,28 @@ namespace Metrics.Web.Migrations
                     b.ToTable("employees", "metrics");
                 });
 
-            modelBuilder.Entity("Metrics.Domain.Entities.KpiPeriod", b =>
+            modelBuilder.Entity("Metrics.Application.Domains.KpiPeriod", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
                         .HasColumnName("id");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseHiLo(b.Property<long>("Id"));
 
-                    b.Property<string>("PeriodName")
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateTimeOffset>("ModifiedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("modified_at");
+
+                    b.Property<string>("PeriodCode")
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("varchar(20)")
-                        .HasColumnName("period_name");
+                        .HasColumnName("period_code");
 
                     b.Property<DateTimeOffset>("SubmissionEndDate")
                         .HasColumnType("timestamp with time zone")
@@ -141,25 +167,34 @@ namespace Metrics.Web.Migrations
                     b.HasKey("Id")
                         .HasName("pk_kpi_periods");
 
-                    b.HasIndex("PeriodName")
+                    b.HasIndex("PeriodCode")
                         .IsUnique()
-                        .HasDatabaseName("ix_kpi_periods_period_name");
+                        .HasDatabaseName("ix_kpi_periods_period_code");
 
-                    b.ToTable("kpi_periods", "metrics");
+                    b.ToTable("KpiPeriods", "metrics", t =>
+                        {
+                            t.HasCheckConstraint("ck_kpi_periods_is_correct_period_code_format", "period_code ~ '^[0-9]{4}-[0-9]{2}$'");
+
+                            t.HasCheckConstraint("ck_kpi_periods_start_date_lt_end_date", "submission_start_date < submission_end_date");
+                        });
                 });
 
-            modelBuilder.Entity("Metrics.Domain.Entities.KpiSubmission", b =>
+            modelBuilder.Entity("Metrics.Application.Domains.KpiSubmission", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
                         .HasColumnName("id");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseHiLo(b.Property<long>("Id"));
 
                     b.Property<string>("Comments")
                         .HasColumnType("text")
                         .HasColumnName("comments");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
 
                     b.Property<long>("DepartmentId")
                         .HasColumnType("bigint")
@@ -177,15 +212,19 @@ namespace Metrics.Web.Migrations
                         .HasColumnType("decimal(4,2)")
                         .HasColumnName("kpi_score");
 
+                    b.Property<DateTimeOffset>("ModifiedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("modified_at");
+
                     b.Property<DateOnly>("SubmissionDate")
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("date")
                         .HasColumnName("submission_date")
-                        .HasComputedColumnSql("DATE(submission_time AT TIME ZONE 'UTC')", true);
+                        .HasComputedColumnSql("(submitted_at AT TIME ZONE 'UTC')::date", true);
 
-                    b.Property<DateTimeOffset>("SubmissionTime")
+                    b.Property<DateTimeOffset>("SubmittedAt")
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("submission_time");
+                        .HasColumnName("submitted_at");
 
                     b.HasKey("Id")
                         .HasName("pk_kpi_submissions");
@@ -196,14 +235,14 @@ namespace Metrics.Web.Migrations
                     b.HasIndex("EmployeeId")
                         .HasDatabaseName("ix_kpi_submissions_employee_id");
 
-                    b.HasIndex("KpiPeriodId")
-                        .HasDatabaseName("ix_kpi_submissions_kpi_period_id");
-
-                    b.HasIndex("SubmissionDate")
+                    b.HasIndex("KpiPeriodId", "DepartmentId", "EmployeeId")
                         .IsUnique()
-                        .HasDatabaseName("ix_kpi_submissions_submission_date");
+                        .HasDatabaseName("ix_kpi_submissions_kpi_period_id_department_id_employee_id");
 
-                    b.ToTable("kpi_submissions", "metrics");
+                    b.ToTable("kpi_submissions", "metrics", t =>
+                        {
+                            t.HasCheckConstraint("ck_kpi_submissions_kpi_score_gt_0", "kpi_score >= 0");
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -245,7 +284,7 @@ namespace Metrics.Web.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("id");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseHiLo(b.Property<int>("Id"));
 
                     b.Property<string>("ClaimType")
                         .HasColumnType("text")
@@ -357,7 +396,7 @@ namespace Metrics.Web.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("id");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseHiLo(b.Property<int>("Id"));
 
                     b.Property<string>("ClaimType")
                         .HasColumnType("text")
@@ -452,69 +491,85 @@ namespace Metrics.Web.Migrations
                     b.ToTable("asp_net_user_tokens", "metrics");
                 });
 
-            modelBuilder.Entity("Metrics.Domain.Entities.ApplicationRole", b =>
+            modelBuilder.Entity("Metrics.Application.Domains.ApplicationRole", b =>
                 {
                     b.HasBaseType("Microsoft.AspNetCore.Identity.IdentityRole");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateTimeOffset>("ModifiedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("modified_at");
 
                     b.ToTable("application_roles", "metrics");
                 });
 
-            modelBuilder.Entity("Metrics.Domain.Entities.ApplicationUser", b =>
+            modelBuilder.Entity("Metrics.Application.Domains.ApplicationUser", b =>
                 {
                     b.HasBaseType("Microsoft.AspNetCore.Identity.IdentityUser");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateTimeOffset>("ModifiedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("modified_at");
 
                     b.ToTable("application_users", "metrics");
                 });
 
-            modelBuilder.Entity("Metrics.Domain.Entities.Employee", b =>
+            modelBuilder.Entity("Metrics.Application.Domains.Employee", b =>
                 {
-                    b.HasOne("Metrics.Domain.Entities.ApplicationUser", "UserAccount")
+                    b.HasOne("Metrics.Application.Domains.ApplicationUser", "ApplicationUser")
                         .WithOne()
-                        .HasForeignKey("Metrics.Domain.Entities.Employee", "ApplicationUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasForeignKey("Metrics.Application.Domains.Employee", "ApplicationUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_employees_application_users_application_user_id");
 
-                    b.HasOne("Metrics.Domain.Entities.Department", "CurrentDepartment")
+                    b.HasOne("Metrics.Application.Domains.Department", "Department")
                         .WithMany("Employees")
                         .HasForeignKey("DepartmentId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_employees_departments_department_id");
 
-                    b.Navigation("CurrentDepartment");
+                    b.Navigation("ApplicationUser");
 
-                    b.Navigation("UserAccount");
+                    b.Navigation("Department");
                 });
 
-            modelBuilder.Entity("Metrics.Domain.Entities.KpiSubmission", b =>
+            modelBuilder.Entity("Metrics.Application.Domains.KpiSubmission", b =>
                 {
-                    b.HasOne("Metrics.Domain.Entities.Department", "TargetDepartment")
+                    b.HasOne("Metrics.Application.Domains.Department", "Department")
                         .WithMany("KpiSubmissions")
                         .HasForeignKey("DepartmentId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_kpi_submissions_departments_department_id");
 
-                    b.HasOne("Metrics.Domain.Entities.Employee", "Candidate")
+                    b.HasOne("Metrics.Application.Domains.Employee", "Employee")
                         .WithMany("KpiSubmissions")
                         .HasForeignKey("EmployeeId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_kpi_submissions_employees_employee_id");
 
-                    b.HasOne("Metrics.Domain.Entities.KpiPeriod", "KpiPeriod")
+                    b.HasOne("Metrics.Application.Domains.KpiPeriod", "KpiPeriod")
                         .WithMany("KpiSubmissions")
                         .HasForeignKey("KpiPeriodId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_kpi_submissions_kpi_periods_kpi_period_id");
 
-                    b.Navigation("Candidate");
+                    b.Navigation("Department");
+
+                    b.Navigation("Employee");
 
                     b.Navigation("KpiPeriod");
-
-                    b.Navigation("TargetDepartment");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -574,39 +629,39 @@ namespace Metrics.Web.Migrations
                         .HasConstraintName("fk_asp_net_user_tokens_asp_net_users_user_id");
                 });
 
-            modelBuilder.Entity("Metrics.Domain.Entities.ApplicationRole", b =>
+            modelBuilder.Entity("Metrics.Application.Domains.ApplicationRole", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
                         .WithOne()
-                        .HasForeignKey("Metrics.Domain.Entities.ApplicationRole", "Id")
+                        .HasForeignKey("Metrics.Application.Domains.ApplicationRole", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_application_roles_asp_net_roles_id");
                 });
 
-            modelBuilder.Entity("Metrics.Domain.Entities.ApplicationUser", b =>
+            modelBuilder.Entity("Metrics.Application.Domains.ApplicationUser", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
                         .WithOne()
-                        .HasForeignKey("Metrics.Domain.Entities.ApplicationUser", "Id")
+                        .HasForeignKey("Metrics.Application.Domains.ApplicationUser", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_application_users_asp_net_users_id");
                 });
 
-            modelBuilder.Entity("Metrics.Domain.Entities.Department", b =>
+            modelBuilder.Entity("Metrics.Application.Domains.Department", b =>
                 {
                     b.Navigation("Employees");
 
                     b.Navigation("KpiSubmissions");
                 });
 
-            modelBuilder.Entity("Metrics.Domain.Entities.Employee", b =>
+            modelBuilder.Entity("Metrics.Application.Domains.Employee", b =>
                 {
                     b.Navigation("KpiSubmissions");
                 });
 
-            modelBuilder.Entity("Metrics.Domain.Entities.KpiPeriod", b =>
+            modelBuilder.Entity("Metrics.Application.Domains.KpiPeriod", b =>
                 {
                     b.Navigation("KpiSubmissions");
                 });

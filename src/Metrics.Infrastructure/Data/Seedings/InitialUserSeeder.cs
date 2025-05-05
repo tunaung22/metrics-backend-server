@@ -74,7 +74,7 @@ public static class InitialUserSeeder
         var createDto = new DefaultUserCreateDto()
         {
             DefaultUsername = "sysadmin",
-            DefaultEmail = "sysadmin",
+            DefaultEmail = "sysadmin@metricshrm.com",
             DefaultPassword = "00000000",
             DefaultRoleName = "Admin",
             DefaultFullName = "System Admin",

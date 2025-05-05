@@ -34,7 +34,7 @@ public class KpiPeriodRepository : IKpiPeriodRepository
     {
         var kpiPeriod = await _context.KpiPeriods
             // .Include(e => e.KpiSubmissions)
-            .OrderBy(e => e.PeriodName)
+            .OrderBy(e => e.PeriodCode)
             .Where(e => e.Id == id)
             .FirstOrDefaultAsync();
         if (kpiPeriod == null)
@@ -49,8 +49,8 @@ public class KpiPeriodRepository : IKpiPeriodRepository
     {
         var kpiPeriod = await _context.KpiPeriods
             // .Include(e => e.KpiSubmissions)
-            .OrderBy(e => e.PeriodName)
-            .Where(e => e.PeriodName.Trim().ToLower() == periodName.Trim().ToLower())
+            .OrderBy(e => e.PeriodCode)
+            .Where(e => e.PeriodCode.Trim().ToLower() == periodName.Trim().ToLower())
             .FirstOrDefaultAsync();
 
         if (kpiPeriod == null)
@@ -64,14 +64,14 @@ public class KpiPeriodRepository : IKpiPeriodRepository
     public async Task<IEnumerable<KpiPeriod>> FindAllAsync()
     {
         return await _context.KpiPeriods
-            .OrderBy(e => e.PeriodName)
+            .OrderBy(e => e.PeriodCode)
             .ToListAsync();
     }
 
     public async Task<bool> KpiPeriodExistsAsync(string periodName)
     {
         return await _context.KpiPeriods
-            .AnyAsync(e => e.PeriodName == periodName);
+            .AnyAsync(e => e.PeriodCode == periodName);
     }
 
     public async Task<long> FindCountAsync()
@@ -82,7 +82,7 @@ public class KpiPeriodRepository : IKpiPeriodRepository
     public IQueryable<KpiPeriod> FindAllAsQueryable()
     {
         return _context.KpiPeriods
-            .OrderBy(e => e.PeriodName);
+            .OrderBy(e => e.PeriodCode);
     }
 
 }

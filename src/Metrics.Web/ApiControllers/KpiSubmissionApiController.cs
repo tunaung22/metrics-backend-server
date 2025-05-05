@@ -33,7 +33,7 @@ public class KpiSubmissionApiController : ControllerBase
             EmployeeId = createDto.EmployeeId,
             DepartmentId = createDto.DepartmentId,
             KpiScore = createDto.KpiScore,
-            SubmissionTime = createDto.SubmissionTime,
+            SubmittedAt = createDto.SubmissionTime,
             Comments = createDto.Comments
         };
         var newSubmission = await _kpiSubmissionService.CreateAsync(submission);
@@ -52,7 +52,7 @@ public class KpiSubmissionApiController : ControllerBase
             EmployeeId = dto.EmployeeId,
             DepartmentId = dto.DepartmentId,
             KpiScore = dto.KpiScore,
-            SubmissionTime = dto.SubmissionTime,
+            SubmittedAt = dto.SubmissionTime,
             Comments = dto.Comments
         }).ToList();
         var newSubmission = await _kpiSubmissionService.CreateRangeAsync(submissionList);

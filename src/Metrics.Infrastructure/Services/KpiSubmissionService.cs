@@ -33,7 +33,7 @@ public class KpiSubmissionService : IKpiSubmissionService
         try
         {
             // **NOTE: submission time use from input or system time?? 
-            var submissionDate = DateOnly.FromDateTime(submission.SubmissionTime.LocalDateTime.ToLocalTime());
+            var submissionDate = DateOnly.FromDateTime(submission.SubmittedAt.LocalDateTime.ToLocalTime());
 
             // var departmentId = submission.DepartmentId;
             var submissionsExist = await _kpiSubmissionRepository
@@ -46,7 +46,7 @@ public class KpiSubmissionService : IKpiSubmissionService
 
             var submissionEntity = new KpiSubmission
             {
-                SubmissionTime = submission.SubmissionTime,
+                SubmittedAt = submission.SubmittedAt,
                 KpiScore = submission.KpiScore,
                 Comments = submission.Comments,
                 KpiPeriodId = submission.KpiPeriodId,
@@ -78,7 +78,7 @@ public class KpiSubmissionService : IKpiSubmissionService
         {
             List<KpiSubmission> entities = submissions.Select(s => new KpiSubmission
             {
-                SubmissionTime = s.SubmissionTime,
+                SubmittedAt = s.SubmittedAt,
                 KpiScore = s.KpiScore,
                 Comments = s.Comments,
                 KpiPeriodId = s.KpiPeriodId,
@@ -159,8 +159,8 @@ public class KpiSubmissionService : IKpiSubmissionService
         {
             var kpiSubmission = await _kpiSubmissionRepository.FindByIdAsQueryable(id)
                 .Include(e => e.KpiPeriod)
-                .Include(e => e.TargetDepartment)
-                .Include(e => e.Candidate)
+                .Include(e => e.Department)
+                .Include(e => e.Employee)
                 .FirstOrDefaultAsync();
 
             if (kpiSubmission == null)
@@ -168,12 +168,12 @@ public class KpiSubmissionService : IKpiSubmissionService
 
             return new KpiSubmission
             {
-                SubmissionTime = kpiSubmission.SubmissionTime,
+                SubmittedAt = kpiSubmission.SubmittedAt,
                 SubmissionDate = kpiSubmission.SubmissionDate,
                 KpiScore = kpiSubmission.KpiScore,
                 KpiPeriodId = kpiSubmission.KpiPeriod.Id,
-                DepartmentId = kpiSubmission.TargetDepartment.Id,
-                EmployeeId = kpiSubmission.Candidate.Id
+                DepartmentId = kpiSubmission.Department.Id,
+                EmployeeId = kpiSubmission.Employee.Id
             };
         }
         catch (Exception ex)
@@ -194,8 +194,8 @@ public class KpiSubmissionService : IKpiSubmissionService
         {
             var foundSubmissions = await _kpiSubmissionRepository.FindAllAsQueryable()
                 .Include(e => e.KpiPeriod)
-                .Include(e => e.TargetDepartment)
-                .Include(e => e.Candidate)
+                .Include(e => e.Department)
+                .Include(e => e.Employee)
                 .OrderBy(e => e.SubmissionDate)
                 .Where(e => e.EmployeeId == employeeId
                     && e.KpiPeriodId == kpiPeriodId
@@ -206,7 +206,7 @@ public class KpiSubmissionService : IKpiSubmissionService
             {
                 return foundSubmissions.Select(s => new KpiSubmission
                 {
-                    SubmissionTime = s.SubmissionTime,
+                    SubmittedAt = s.SubmittedAt,
                     SubmissionDate = s.SubmissionDate,
                     KpiScore = s.KpiScore,
                     KpiPeriodId = s.KpiPeriodId,
@@ -231,8 +231,8 @@ public class KpiSubmissionService : IKpiSubmissionService
         {
             var foundSubmissions = await _kpiSubmissionRepository.FindAllAsQueryable()
                 .Include(e => e.KpiPeriod)
-                .Include(e => e.TargetDepartment)
-                .Include(e => e.Candidate)
+                .Include(e => e.Department)
+                .Include(e => e.Employee)
                 .OrderBy(e => e.SubmissionDate)
                 .Where(e => e.KpiPeriodId == kpiPeriodId
                     && departmentIds.Any(d => e.DepartmentId == d))
@@ -242,7 +242,7 @@ public class KpiSubmissionService : IKpiSubmissionService
             {
                 return foundSubmissions.Select(s => new KpiSubmission
                 {
-                    SubmissionTime = s.SubmissionTime,
+                    SubmittedAt = s.SubmittedAt,
                     SubmissionDate = s.SubmissionDate,
                     KpiScore = s.KpiScore,
                     KpiPeriodId = s.KpiPeriodId,
@@ -269,8 +269,8 @@ public class KpiSubmissionService : IKpiSubmissionService
         {
             var foundedSubmissions = await _kpiSubmissionRepository.FindAllAsQueryable()
                 .Include(e => e.KpiPeriod)
-                .Include(e => e.TargetDepartment)
-                .Include(e => e.Candidate)
+                .Include(e => e.Department)
+                .Include(e => e.Employee)
                 .OrderBy(e => e.SubmissionDate)
                 .Where(e => e.KpiPeriodId == kpiPeriodId
                     && e.DepartmentId == departmentId)
@@ -280,15 +280,15 @@ public class KpiSubmissionService : IKpiSubmissionService
             {
                 return foundedSubmissions.Select(s => new KpiSubmission
                 {
-                    SubmissionTime = s.SubmissionTime,
+                    SubmittedAt = s.SubmittedAt,
                     SubmissionDate = s.SubmissionDate,
                     KpiScore = s.KpiScore,
                     KpiPeriodId = s.KpiPeriodId,
                     DepartmentId = s.DepartmentId,
                     EmployeeId = s.EmployeeId,
                     KpiPeriod = s.KpiPeriod,
-                    TargetDepartment = s.TargetDepartment,
-                    Candidate = s.Candidate
+                    Department = s.Department,
+                    Employee = s.Employee
                 }).ToList();
             }
             return [];
@@ -306,8 +306,8 @@ public class KpiSubmissionService : IKpiSubmissionService
         {
             var submissions = await _kpiSubmissionRepository.FindAllAsQueryable()
                 .Include(e => e.KpiPeriod)
-                .Include(e => e.TargetDepartment)
-                .Include(e => e.Candidate)
+                .Include(e => e.Department)
+                .Include(e => e.Employee)
                 .OrderBy(e => e.SubmissionDate)
                 .AsNoTracking()
                 .ToListAsync();

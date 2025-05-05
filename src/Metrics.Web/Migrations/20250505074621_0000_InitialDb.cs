@@ -1,19 +1,23 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
-using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
 namespace Metrics.Web.Migrations
 {
     /// <inheritdoc />
-    public partial class InitDb : Migration
+    public partial class _0000_InitialDb : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.EnsureSchema(
                 name: "metrics");
+
+            migrationBuilder.CreateSequence(
+                name: "EntityFrameworkHiLoSequence",
+                schema: "metrics",
+                incrementBy: 10);
 
             migrationBuilder.CreateTable(
                 name: "asp_net_roles",
@@ -61,10 +65,11 @@ namespace Metrics.Web.Migrations
                 schema: "metrics",
                 columns: table => new
                 {
-                    id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    id = table.Column<long>(type: "bigint", nullable: false),
                     department_code = table.Column<Guid>(type: "uuid", nullable: false),
-                    department_name = table.Column<string>(type: "varchar(500)", maxLength: 20, nullable: false)
+                    department_name = table.Column<string>(type: "varchar(200)", maxLength: 200, nullable: false),
+                    created_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    modified_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -72,19 +77,22 @@ namespace Metrics.Web.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "kpi_periods",
+                name: "KpiPeriods",
                 schema: "metrics",
                 columns: table => new
                 {
-                    id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    period_name = table.Column<string>(type: "varchar(20)", maxLength: 20, nullable: false),
+                    id = table.Column<long>(type: "bigint", nullable: false),
+                    period_code = table.Column<string>(type: "varchar(20)", maxLength: 20, nullable: false),
                     submission_start_date = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    submission_end_date = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
+                    submission_end_date = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    created_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    modified_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("pk_kpi_periods", x => x.id);
+                    table.CheckConstraint("ck_kpi_periods_is_correct_period_code_format", "period_code ~ '^[0-9]{4}-[0-9]{2}$'");
+                    table.CheckConstraint("ck_kpi_periods_start_date_lt_end_date", "submission_start_date < submission_end_date");
                 });
 
             migrationBuilder.CreateTable(
@@ -92,7 +100,9 @@ namespace Metrics.Web.Migrations
                 schema: "metrics",
                 columns: table => new
                 {
-                    id = table.Column<string>(type: "text", nullable: false)
+                    id = table.Column<string>(type: "text", nullable: false),
+                    created_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    modified_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -111,8 +121,7 @@ namespace Metrics.Web.Migrations
                 schema: "metrics",
                 columns: table => new
                 {
-                    id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    id = table.Column<int>(type: "integer", nullable: false),
                     role_id = table.Column<string>(type: "text", nullable: false),
                     claim_type = table.Column<string>(type: "text", nullable: true),
                     claim_value = table.Column<string>(type: "text", nullable: true)
@@ -134,7 +143,9 @@ namespace Metrics.Web.Migrations
                 schema: "metrics",
                 columns: table => new
                 {
-                    id = table.Column<string>(type: "text", nullable: false)
+                    id = table.Column<string>(type: "text", nullable: false),
+                    created_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    modified_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -153,8 +164,7 @@ namespace Metrics.Web.Migrations
                 schema: "metrics",
                 columns: table => new
                 {
-                    id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    id = table.Column<int>(type: "integer", nullable: false),
                     user_id = table.Column<string>(type: "text", nullable: false),
                     claim_type = table.Column<string>(type: "text", nullable: true),
                     claim_value = table.Column<string>(type: "text", nullable: true)
@@ -247,12 +257,13 @@ namespace Metrics.Web.Migrations
                 schema: "metrics",
                 columns: table => new
                 {
-                    id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    employee_code = table.Column<string>(type: "varchar(100)", maxLength: 100, nullable: false),
+                    id = table.Column<long>(type: "bigint", nullable: false),
+                    employee_code = table.Column<string>(type: "varchar(200)", maxLength: 200, nullable: false),
                     full_name = table.Column<string>(type: "varchar(200)", maxLength: 200, nullable: false),
                     address = table.Column<string>(type: "text", nullable: true),
                     phone_number = table.Column<string>(type: "varchar(200)", nullable: true),
+                    created_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    modified_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     department_id = table.Column<long>(type: "bigint", nullable: false),
                     application_user_id = table.Column<string>(type: "text", nullable: false)
                 },
@@ -265,7 +276,7 @@ namespace Metrics.Web.Migrations
                         principalSchema: "metrics",
                         principalTable: "application_users",
                         principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "fk_employees_departments_department_id",
                         column: x => x.department_id,
@@ -280,12 +291,13 @@ namespace Metrics.Web.Migrations
                 schema: "metrics",
                 columns: table => new
                 {
-                    id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    submission_time = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    id = table.Column<long>(type: "bigint", nullable: false),
+                    submitted_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    submission_date = table.Column<DateOnly>(type: "date", nullable: false, computedColumnSql: "(submitted_at AT TIME ZONE 'UTC')::date", stored: true),
                     kpi_score = table.Column<decimal>(type: "numeric(4,2)", nullable: false),
                     comments = table.Column<string>(type: "text", nullable: true),
-                    submission_date = table.Column<DateOnly>(type: "date", nullable: false, computedColumnSql: "DATE(submission_time AT TIME ZONE 'UTC')", stored: true),
+                    created_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    modified_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     kpi_period_id = table.Column<long>(type: "bigint", nullable: false),
                     department_id = table.Column<long>(type: "bigint", nullable: false),
                     employee_id = table.Column<long>(type: "bigint", nullable: false)
@@ -293,6 +305,7 @@ namespace Metrics.Web.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("pk_kpi_submissions", x => x.id);
+                    table.CheckConstraint("ck_kpi_submissions_kpi_score_gt_0", "kpi_score >= 0");
                     table.ForeignKey(
                         name: "fk_kpi_submissions_departments_department_id",
                         column: x => x.department_id,
@@ -311,7 +324,7 @@ namespace Metrics.Web.Migrations
                         name: "fk_kpi_submissions_kpi_periods_kpi_period_id",
                         column: x => x.kpi_period_id,
                         principalSchema: "metrics",
-                        principalTable: "kpi_periods",
+                        principalTable: "KpiPeriods",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Restrict);
                 });
@@ -395,13 +408,6 @@ namespace Metrics.Web.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "ix_kpi_periods_period_name",
-                schema: "metrics",
-                table: "kpi_periods",
-                column: "period_name",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
                 name: "ix_kpi_submissions_department_id",
                 schema: "metrics",
                 table: "kpi_submissions",
@@ -414,16 +420,17 @@ namespace Metrics.Web.Migrations
                 column: "employee_id");
 
             migrationBuilder.CreateIndex(
-                name: "ix_kpi_submissions_kpi_period_id",
+                name: "ix_kpi_submissions_kpi_period_id_department_id_employee_id",
                 schema: "metrics",
                 table: "kpi_submissions",
-                column: "kpi_period_id");
+                columns: new[] { "kpi_period_id", "department_id", "employee_id" },
+                unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "ix_kpi_submissions_submission_date",
+                name: "ix_kpi_periods_period_code",
                 schema: "metrics",
-                table: "kpi_submissions",
-                column: "submission_date",
+                table: "KpiPeriods",
+                column: "period_code",
                 unique: true);
         }
 
@@ -467,7 +474,7 @@ namespace Metrics.Web.Migrations
                 schema: "metrics");
 
             migrationBuilder.DropTable(
-                name: "kpi_periods",
+                name: "KpiPeriods",
                 schema: "metrics");
 
             migrationBuilder.DropTable(
@@ -480,6 +487,10 @@ namespace Metrics.Web.Migrations
 
             migrationBuilder.DropTable(
                 name: "asp_net_users",
+                schema: "metrics");
+
+            migrationBuilder.DropSequence(
+                name: "EntityFrameworkHiLoSequence",
                 schema: "metrics");
         }
     }

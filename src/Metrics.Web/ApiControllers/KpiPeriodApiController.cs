@@ -41,7 +41,7 @@ public class KpiPeriodApiController : ControllerBase
     {
         var entity = new KpiPeriod
         {
-            PeriodName = createDto.PeriodName,
+            PeriodCode = createDto.PeriodName,
             SubmissionStartDate = createDto.SubmissionStartDate,
             SubmissionEndDate = createDto.SubmissionEndDate
         };
@@ -65,7 +65,7 @@ public class KpiPeriodApiController : ControllerBase
         //     ErrorType.ValidationError => BadRequest(result.ErrorMessage),
         //     _ => StatusCode(500, "An unexpected error occurred.")
         // };
-        var uri = Url.Action(nameof(PostAsync), new { periodName = newKpiPeriod.PeriodName });
+        var uri = Url.Action(nameof(PostAsync), new { periodName = newKpiPeriod.PeriodCode });
 
         return Created(uri, newKpiPeriod);
 
@@ -79,7 +79,7 @@ public class KpiPeriodApiController : ControllerBase
 
         var entity = new KpiPeriod
         {
-            PeriodName = updateDto.PeriodName,
+            PeriodCode = updateDto.PeriodName,
             SubmissionStartDate = updateDto.SubmissionStartDate,
             SubmissionEndDate = updateDto.SubmissionEndDate
         };

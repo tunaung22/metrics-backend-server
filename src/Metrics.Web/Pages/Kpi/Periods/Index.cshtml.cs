@@ -64,7 +64,7 @@ public class IndexModel : PageModel
         var result = await _kpiPeriodService.FindAllAsync(CurrentPage, PageSize);
         KpiPeriods = result.Select(e => new KpiPeriodModel
         {
-            PeriodName = e.PeriodName,
+            PeriodName = e.PeriodCode,
             SubmissionStartDate = e.SubmissionStartDate,
             SubmissionEndDate = e.SubmissionEndDate
         }).ToList();

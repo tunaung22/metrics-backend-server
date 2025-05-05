@@ -61,14 +61,28 @@ public class UserAccountService : IUserAccountService
 
             var newUser = await _userManager.FindByNameAsync(dto.UserName);
 
-            // Assign Role
-            // check employee role exist
-            var roleToAssign = await _roleManager.FindByIdAsync(dto.RoleId);
-            if (roleToAssign == null)
-                throw new MetricsNotFoundException("Role does not exist.");
+            // --- Assign Role SINGLE ---
+            // var roleToAssign = await _roleManager.FindByIdAsync(dto.RoleId);
+            // if (roleToAssign == null)
+            //     throw new MetricsNotFoundException("Role to assign does not exist.");
 
-            if (roleToAssign != null && newUser != null && !string.IsNullOrEmpty(roleToAssign.Name))
-                await _userManager.AddToRoleAsync(newUser, roleToAssign.Name);
+            // if (roleToAssign != null && newUser != null && !string.IsNullOrEmpty(roleToAssign.Name))
+            //     await _userManager.AddToRoleAsync(newUser, roleToAssign.Name);
+
+            // --- Assign Role MULTIPLE ---
+            if (newUser != null && dto.RoleIds.Count > 0)
+            {
+                for (int i = 0; i < dto.RoleIds.Count; i++) // foreach cannot execute async operation
+                {
+                    var roleToAssign = await _roleManager.FindByIdAsync(dto.RoleIds[i]);
+                    if (roleToAssign == null)
+                        throw new MetricsNotFoundException("Role to assign does not exist.");
+
+                    if (roleToAssign != null && !string.IsNullOrEmpty(roleToAssign.Name))
+                        await _userManager.AddToRoleAsync(newUser, roleToAssign.Name);
+                }
+            }
+
 
             // var employeeRole = await _roleManager.FindByNameAsync("Employee");
             // if (employeeRole == null)

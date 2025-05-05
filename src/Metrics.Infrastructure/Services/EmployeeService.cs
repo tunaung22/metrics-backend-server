@@ -170,8 +170,8 @@ public class EmployeeService : IEmployeeService
         try
         {
             var employees = await _employeeRepository.FindAllAsQueryable()
-                .Include(e => e.CurrentDepartment)
-                .Include(e => e.UserAccount)
+                .Include(e => e.Department)
+                .Include(e => e.ApplicationUser)
                 .Include(e => e.KpiSubmissions)
                 .ToListAsync();
 
