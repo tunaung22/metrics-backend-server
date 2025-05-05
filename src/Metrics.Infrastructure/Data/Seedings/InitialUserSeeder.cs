@@ -76,7 +76,7 @@ public static class InitialUserSeeder
             DefaultUsername = "sysadmin",
             DefaultEmail = "sysadmin",
             DefaultPassword = "00000000",
-            DefaultRoleName = "admin",
+            DefaultRoleName = "Admin",
             DefaultFullName = "System Admin",
             DefaultDepartmentName = "System Admin Department",
             EmployeeCode = new Guid().ToString(),

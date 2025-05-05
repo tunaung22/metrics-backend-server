@@ -1,14 +1,15 @@
-﻿@page
-@model Metrics.Web.Pages.Kpi.Periods.CreateModel
+﻿@page "{periodName}"
+@model Metrics.Web.Pages.Kpi.Periods.EditModel
 @{
-    ViewData["Title"] = "Add New KPI Period";
+    ViewData["Title"] = "Update KPI Period";
     var currentYear = DateTime.Now.ToString("yyyy");
     var currentMonth = DateTime.Now.ToString("MM");
 }
 
 
+
 <div class="container">
-    <h3>New KPI Period</h3>
+    <h3>Edit KPI Period for @Model.PeriodName</h3>
     @* ========================================================================== *@
     @if (!ModelState.IsValid)
     {
@@ -67,8 +68,15 @@
 
             <div class="row mt-4">
                 <div class="form-group col-md d-flex align-items-center">
+                    @* <button
+                            type="submit" 
+                            class="btn btn-primary ms-2">Update</button>
+                    <button asp-page-handler="Cancel" 
+                            type="submit" 
+                            class="btn btn-warning ms-2">Cancel</button> *@
+
                     <button type="submit" class="btn btn-success me-2">
-                        <i class="bi bi-check-circle"> </i>Save
+                        <i class="bi bi-check-circle"> </i>Update
                     </button>
                     <button type="submit" class="btn btn-warning mx-2"
                         asp-page-handler="Cancel" formnovalidate>
@@ -82,42 +90,45 @@
 
 
 @section Scripts {
-    @* <partial name="_ValidationScriptsPartial" /> *@
     @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
 
     <script>
-        $(function() {
-            $("#FormInput_PeriodName").focus();
+        $(document).ready(function() {
+            $("#FormInput_PeriodName").focus().select();
 
             // ----- Check Period Name conflict -----
             $('#FormInput_PeriodName').on('input', function() {
                 console.log("user started typing...");
                 var inputVal = $(this).val();
-                $.ajax({
-                    url: "@Url.Page("Create", "CheckKpiName")",
-                    type: "GET",
-                    data: { value: inputVal },
-                    success: function(response) {
-                        $("#feedback__periodNameInput")
-                            .text("");
-                        $("#feedback__periodNameInput")
-                            .removeClass("text-danger")
-                            .addClass("text-success");
-                    },
-                    error: function(jqXHR) {
-                        if (jqXHR.status === 409) {
-                            //$("#textMessage__periodNameInput").text("Conflict: The period name is already in use.");
-                            //$("#textMessage__periodNameInput").text(response.message);
-                            var errorMessage = jqXHR.responseJSON.message;
-                            $("#feedback__periodNameInput").text(errorMessage);
+                var currentPeriodName = @Html.Raw(Json.Serialize(Model.PeriodName));
+                if (currentPeriodName != inputVal) 
+                {
+                    $.ajax({
+                        url: "@Url.Page("Create", "CheckKpiName")",
+                        type: "GET",
+                        data: { value: inputVal },
+                        success: function(response) {
                             $("#feedback__periodNameInput")
-                                .removeClass("text-success")
-                                .addClass("text-danger");                        }
-                        else {
-                            $("#feedback__periodNameInput").text("Error checking period name avaibility.");
+                                .text("");
+                            $("#feedback__periodNameInput")
+                                .removeClass("text-danger")
+                                .addClass("text-success");
+                        },
+                        error: function(jqXHR) {
+                            if (jqXHR.status === 409) {
+                                //$("#textMessage__periodNameInput").text("Conflict: The period name is already in use.");
+                                //$("#textMessage__periodNameInput").text(response.message);
+                                var errorMessage = jqXHR.responseJSON.message;
+                                $("#feedback__periodNameInput").text(errorMessage);
+                                $("#feedback__periodNameInput")
+                                    .removeClass("text-success")
+                                    .addClass("text-danger");                        }
+                            else {
+                                $("#feedback__periodNameInput").text("Error checking period name avaibility.");
+                            }
                         }
-                    }
-                });
+                    });
+                }
             });
 
             // ----- Date Picker -----
@@ -153,7 +164,7 @@
                 dateFormat: dateFormat,
                 onSelect: function(selectedDate) {
                     // Set From datepicker's maxDate to the selected To date
-                    startDate.datepicker("option", "maxDate", selectedDate);
+                    @* startDate.datepicker("option", "maxDate", selectedDate); *@
                     // If From date is later than To date, update it
                     var fromDate = startDate.datepicker("getDate");
                     var toDate = $(this).datepicker("getDate");
@@ -162,12 +173,12 @@
                     }
                 }
             });
-            var today = new Date();
-            startDate.datepicker("setDate", today);
-            endDate.datepicker("setDate", today);
+            @* var today = new Date(); *@
+            @* startDate.datepicker("setDate", today); *@
+            @* endDate.datepicker("setDate", today); *@
             // Set initial constraints
-            startDate.datepicker("option", "maxDate", endDate.datepicker("getDate"));
-            endDate.datepicker("option", "minDate", startDate.datepicker("getDate"));
+            @* startDate.datepicker("option", "maxDate", endDate.datepicker("getDate")); *@
+            @* endDate.datepicker("option", "minDate", startDate.datepicker("getDate")); *@
         });
     </script>
 

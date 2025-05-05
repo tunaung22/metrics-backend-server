@@ -69,9 +69,18 @@
                         <td>@period.SubmissionStartDate.LocalDateTime.ToString("MMM dd, yyyy")</td>
                         <td>@period.SubmissionEndDate.LocalDateTime.Date.ToString("MMM dd, yyyy")</td>
                         <td>
-                            <button class="btn btn-success">
+                            @* <button class="btn btn-success">
                                 Edit
-                            </button>
+                            </button> *@
+                            <form method="post" style="display:inline;">
+                                <input type="hidden" name="periodName" value="@period.PeriodName" />
+                                <a class="btn btn-success"
+                                    asp-page="Edit"
+                                    asp-route-periodName="@period.PeriodName" 
+                                    asp-route-returnUrl="@HttpContext.Request.Path">
+                                    Edit
+                                </a>
+                            </form>
                         </td>
                     </tr>
                 }
