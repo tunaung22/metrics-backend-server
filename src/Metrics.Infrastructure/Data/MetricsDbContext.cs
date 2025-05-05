@@ -1,4 +1,5 @@
 ﻿using Metrics.Application.Domains;
+using Metrics.Application.Interfaces;
 using Metrics.Infrastructure.Data.EntityConfig;
 using Metrics.Shared.Configurations;
 using Metrics.Shared.Utils;
@@ -27,6 +28,25 @@ public class MetricsDbContext : IdentityDbContext
     public DbSet<Employee> Employees { get; set; }
     public DbSet<KpiSubmission> KpiSubmissions { get; set; }
 
+
+    public override int SaveChanges()
+    {
+        var entries = ChangeTracker.Entries()
+            .Where(e => e.Entity is IAuditColumn &&
+                        (e.State == EntityState.Added || e.State == EntityState.Modified));
+
+        foreach (var entry in entries)
+        {
+            var entity = (IAuditColumn)entry.Entity;
+            if (entry.State == EntityState.Added)
+            {
+                entity.CreatedAt = DateTimeOffset.UtcNow; // Set created date
+            }
+            entity.ModifiedAt = DateTimeOffset.UtcNow; // Always set modified date
+        }
+
+        return base.SaveChanges();
+    }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -74,20 +94,24 @@ public class MetricsDbContext : IdentityDbContext
     {
         base.OnModelCreating(builder);
 
-
-
+        // ** EFCore.NamingConventions package doesn't change the table name
+        //    to snakecase properly.
         foreach (var entity in builder.Model.GetEntityTypes())
         {
             // Replace table names
             entity.SetTableName(entity.GetTableName()?.ToSnakeCase());
         }
+
+        // https://www.npgsql.org/efcore/modeling/generated-properties.html?tabs=13%2Cefcore5#hilo-autoincrement-generation
+        // sequence id
+        builder.UseHiLo();
+        builder.HasDefaultSchema(_pgConfig.PgSchema);
+
         // ------------ Entity Configurations ------------
         /* https://learn.microsoft.com/en-us/ef/core/modeling/#grouping-configuration
             Method 1: new ItemHeaderConfig().Configure(builder.Entity<ItemHeader>());
             Method 2: builder.ApplyConfiguration(new ItemHeaderConfig());
         */
-        Console.WriteLine("Postgres Schema: " + _pgConfig.PgSchema);
-        builder.HasDefaultSchema(_pgConfig.PgSchema);
         builder.ApplyConfiguration(new DepartmentConfig());
         builder.ApplyConfiguration(new KpiPeriodConfig());
         builder.ApplyConfiguration(new EmployeeConfig());

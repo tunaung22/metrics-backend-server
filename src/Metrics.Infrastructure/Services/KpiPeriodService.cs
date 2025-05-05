@@ -70,7 +70,7 @@ public class KpiPeriodService : IKpiPeriodService
             // if (existing.RowVersion != department.RowVersion)
             //     return Result<Department>.Fail("Concurrency conflict.");
             _kpiPeriodRepository.Update(targetPeriod);
-            targetPeriod.PeriodName = entity.PeriodName;
+            targetPeriod.PeriodCode = entity.PeriodCode;
             targetPeriod.SubmissionStartDate = entity.SubmissionStartDate;
             targetPeriod.SubmissionEndDate = entity.SubmissionEndDate;
 

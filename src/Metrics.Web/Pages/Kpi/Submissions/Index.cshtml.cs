@@ -57,7 +57,7 @@ public class IndexModel : PageModel
 
         return kpiPeriods.Select(e => new KpiPeriodGetDto
         {
-            PeriodName = e.PeriodName,
+            PeriodName = e.PeriodCode,
             SubmissionStartDate = e.SubmissionStartDate,
             SubmissionEndDate = e.SubmissionEndDate
         }).ToList();

@@ -281,7 +281,7 @@ public class ApplyModel : PageModel
         {
             var submission = new KpiSubmission
             {
-                SubmissionTime = DateTimeOffset.UtcNow,
+                SubmittedAt = DateTimeOffset.UtcNow,
                 EmployeeId = EmployeeId,
                 KpiPeriodId = TargetKpiPeriodId,
                 DepartmentId = DepartmentList[i].Id,

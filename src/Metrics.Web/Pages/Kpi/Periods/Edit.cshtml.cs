@@ -52,7 +52,7 @@ namespace Metrics.Web.Pages.Kpi.Periods
             {
                 FormInput = new KpiPeriodFormInputModel
                 {
-                    PeriodName = result.PeriodName,
+                    PeriodName = result.PeriodCode,
                     SubmissionStartDate = result.SubmissionStartDate.ToLocalTime(),
                     SubmissionEndDate = result.SubmissionEndDate.ToLocalTime()
                 };
@@ -70,7 +70,7 @@ namespace Metrics.Web.Pages.Kpi.Periods
             {
                 var entity = new KpiPeriod
                 {
-                    PeriodName = PeriodName,
+                    PeriodCode = PeriodName,
                     SubmissionStartDate = FormInput.SubmissionStartDate.UtcDateTime,
                     SubmissionEndDate = FormInput.SubmissionEndDate.UtcDateTime
                 };

@@ -3,52 +3,56 @@
 @{
 }
 
-<h3>Employee</h3>
+<div class="container">
+    <h3>Employee</h3>
 
-<div class="mt-4">
-    <a class="btn btn-success" asp-page="/Employee/Register">Register</a>
-</div>
+    <div class="mt-4">
+        <a class="btn btn-success" asp-page="/Employee/Register">Register</a>
+    </div>
 
-<div class="mt-4">
-    <table id="employeeTable" class="table table-striped" style="width: 100%;">
-        <thead>
-            <tr>
-                <th>Account</th>
-                <th>Name</th>
-                <th>Role</th>
-                <th>Department</th>
-                <th>Address</th>
-                <th>Phone Number</th>
-                @* <th>Actions</th> *@
-            </tr>
-        </thead>
-        <tbody>
-            @if (Model.EmployeeList.Any())
-            {
-                @foreach (var e in Model.EmployeeList)
+    <div class="mt-4">
+        <table id="employeeTable" class="table table-striped" style="width: 100%;">
+            <thead>
+                <tr>
+                    <th>Account</th>
+                    <th>Name</th>
+                    <th>Role</th>
+                    <th>Department</th>
+                    @* <th>Address</th> *@
+                    @* <th>Phone Number</th> *@
+                    @* <th>Actions</th> *@
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.EmployeeList.Any())
                 {
-                    <tr>
-                        <td>@e.UserAccount.UserName</td>
-                        <td>@e.FullName</td>
-                        <td>
-                            @foreach(var r in e.UserRoles)
-                            {
-                                <p>@r</p>
-                            }
-                        </td>
-                        <td>@e.DepartmentName</td>
-                        <td>@e.Address</td>
-                        <td>@e.PhoneNumber</td>
-                        @* <td>
-                            <button class="btn btn-success">
-                                Edit
-                            </button>
-                        </td> *@
-                    </tr>
+                    @foreach (var e in Model.EmployeeList)
+                    {
+                        <tr>
+                            <td>@e.UserAccount.UserName</td>
+                            <td>@e.FullName</td>
+                            <td>
+                                @foreach(var roleName in e.UserRoles)
+                                {
+                                        <span class="badge rounded-2 text-bg-primary">
+                                            <small>@roleName</small>
+                                        </span>
+                                }
+                            </td>
+                            <td>@e.DepartmentName</td>
+                            @* <td>@e.Address</td> *@
+                            @* <td>@e.PhoneNumber</td> *@
+                            @* <td>
+                                <button class="btn btn-success">
+                                    Edit
+                                </button>
+                            </td> *@
+                        </tr>
+                    }
                 }
-            }
-        </tbody>
-    </table>
+            </tbody>
+        </table>
+    </div>
 </div>
 
 

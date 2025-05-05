@@ -9,26 +9,41 @@ class DepartmentConfig : IEntityTypeConfiguration<Department>
 {
     public void Configure(EntityTypeBuilder<Department> builder)
     {
-        // builder.ToTable("departments");
+        builder.ToTable("departments");
+
+        // ===== Index ======
         builder.HasKey(e => e.Id);
+        builder.HasIndex(e => e.DepartmentCode).IsUnique();
+        builder.HasIndex(e => e.DepartmentName).IsUnique();
 
         // ===== Columns =====
         builder.Property(e => e.Id)
-            .HasColumnType("bigint")
-            .ValueGeneratedOnAdd();
+            .HasColumnName("id")
+            .HasColumnType("bigint");
         builder.Property(e => e.DepartmentCode)
+            .HasColumnName("department_code")
             .HasColumnType("uuid")
             .HasValueGenerator<NpgsqlSequentialGuidValueGenerator>()
             .IsRequired();
         builder.Property(e => e.DepartmentName)
-            .HasColumnType("varchar(500)")
-            .HasMaxLength(20)
+            .HasColumnName("department_name")
+            .HasColumnType("varchar(200)")
+            .HasMaxLength(200)
             .IsRequired();
+        builder.Property(e => e.CreatedAt)
+            .HasColumnName("created_at")
+            .HasColumnType("timestamp with time zone");
+        builder.Property(e => e.ModifiedAt)
+            .HasColumnName("modified_at")
+            .HasColumnType("timestamp with time zone");
 
         // ===== Relationships =====
 
-        // ===== Index ======
-        builder.HasIndex(e => e.DepartmentCode).IsUnique();
-        builder.HasIndex(e => e.DepartmentName).IsUnique();
+        // ===== Check Constraints ======
+        // CONSTRAINT ck_departments_department_name_min_length_gt_3 CHECK(LENGTH(department_name) >= 3)
+        // builder.ToTable(c => c.HasCheckConstraint(
+        //     "ck_departments_department_name_min_length_gt_3",
+        //     "LENGTH(department_name) >= 3"
+        // ));
     }
 }

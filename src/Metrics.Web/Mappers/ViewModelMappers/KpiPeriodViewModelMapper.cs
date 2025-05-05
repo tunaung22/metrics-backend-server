@@ -10,7 +10,7 @@ public static class KpiPeriodViewModelMapper
     {
         return new KpiPeriod
         {
-            PeriodName = model.PeriodName,
+            PeriodCode = model.PeriodName,
             SubmissionStartDate = model.SubmissionStartDate,
             SubmissionEndDate = model.SubmissionEndDate
         };
@@ -20,7 +20,7 @@ public static class KpiPeriodViewModelMapper
     {
         return entity.Select(e => new KpiPeriodGetViewModel
         {
-            PeriodName = e.PeriodName,
+            PeriodName = e.PeriodCode,
             SubmissionStartDate = e.SubmissionStartDate,
             SubmissionEndDate = e.SubmissionEndDate,
         }).ToList();

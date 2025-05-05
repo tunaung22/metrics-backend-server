@@ -51,7 +51,7 @@ public class IndexModel : PageModel
             SelectedPeriod = new KpiPeriodViewModel()
             {
                 Id = kpiPeriod.Id,
-                PeriodName = kpiPeriod.PeriodName,
+                PeriodName = kpiPeriod.PeriodCode,
                 SubmissionStartDate = kpiPeriod.SubmissionStartDate,
                 SubmissionEndDate = kpiPeriod.SubmissionEndDate
             };
@@ -86,7 +86,7 @@ public class IndexModel : PageModel
                         DepartmentName = department.DepartmentName,
                         TotalReceivedSubmissions = totalSubmission,
                         TotalScoreReceived = totalScore,
-                        FinalKpiScore = totalSubmission / totalScore
+                        FinalKpiScore = totalScore / totalSubmission
                     };
 
                     KpiReportList.Add(singleReportForPeriodAndDepartment);
