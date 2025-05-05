@@ -56,7 +56,7 @@ CREATE TABLE metrics.departments (
     CONSTRAINT pk_departments PRIMARY KEY (id)
 );
 
-CREATE TABLE metrics."KpiPeriods" (
+CREATE TABLE metrics.kpi_periods (
     id bigint NOT NULL,
     period_code varchar(20) NOT NULL,
     submission_start_date timestamp with time zone NOT NULL,
@@ -158,7 +158,7 @@ CREATE TABLE metrics.kpi_submissions (
     CONSTRAINT ck_kpi_submissions_kpi_score_gt_0 CHECK (kpi_score >= 0),
     CONSTRAINT fk_kpi_submissions_departments_department_id FOREIGN KEY (department_id) REFERENCES metrics.departments (id) ON DELETE RESTRICT,
     CONSTRAINT fk_kpi_submissions_employees_employee_id FOREIGN KEY (employee_id) REFERENCES metrics.employees (id) ON DELETE RESTRICT,
-    CONSTRAINT fk_kpi_submissions_kpi_periods_kpi_period_id FOREIGN KEY (kpi_period_id) REFERENCES metrics."KpiPeriods" (id) ON DELETE RESTRICT
+    CONSTRAINT fk_kpi_submissions_kpi_periods_kpi_period_id FOREIGN KEY (kpi_period_id) REFERENCES metrics.kpi_periods (id) ON DELETE RESTRICT
 );
 
 CREATE INDEX ix_asp_net_role_claims_role_id ON metrics.asp_net_role_claims (role_id);
@@ -185,16 +185,16 @@ CREATE INDEX ix_employees_department_id ON metrics.employees (department_id);
 
 CREATE UNIQUE INDEX ix_employees_employee_code ON metrics.employees (employee_code);
 
+CREATE UNIQUE INDEX ix_kpi_periods_period_code ON metrics.kpi_periods (period_code);
+
 CREATE INDEX ix_kpi_submissions_department_id ON metrics.kpi_submissions (department_id);
 
 CREATE INDEX ix_kpi_submissions_employee_id ON metrics.kpi_submissions (employee_id);
 
 CREATE UNIQUE INDEX ix_kpi_submissions_kpi_period_id_department_id_employee_id ON metrics.kpi_submissions (kpi_period_id, department_id, employee_id);
 
-CREATE UNIQUE INDEX ix_kpi_periods_period_code ON metrics."KpiPeriods" (period_code);
-
 INSERT INTO metrics.__ef_migrations_history (migration_id, product_version)
-VALUES ('20250505074621_0000_InitialDb', '9.0.2');
+VALUES ('20250505174730_0000_InitialDb', '9.0.2');
 
 COMMIT;
 

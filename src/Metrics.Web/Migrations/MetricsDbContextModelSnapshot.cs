@@ -168,7 +168,7 @@ namespace Metrics.Web.Migrations
                         .IsUnique()
                         .HasDatabaseName("ix_kpi_periods_period_code");
 
-                    b.ToTable("KpiPeriods", "metrics", t =>
+                    b.ToTable("kpi_periods", "metrics", t =>
                         {
                             t.HasCheckConstraint("ck_kpi_periods_is_correct_period_code_format", "period_code ~ '^[0-9]{4}-[0-9]{2}$'");
 

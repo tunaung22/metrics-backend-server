@@ -77,7 +77,7 @@ namespace Metrics.Web.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "KpiPeriods",
+                name: "kpi_periods",
                 schema: "metrics",
                 columns: table => new
                 {
@@ -324,7 +324,7 @@ namespace Metrics.Web.Migrations
                         name: "fk_kpi_submissions_kpi_periods_kpi_period_id",
                         column: x => x.kpi_period_id,
                         principalSchema: "metrics",
-                        principalTable: "KpiPeriods",
+                        principalTable: "kpi_periods",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Restrict);
                 });
@@ -408,6 +408,13 @@ namespace Metrics.Web.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "ix_kpi_periods_period_code",
+                schema: "metrics",
+                table: "kpi_periods",
+                column: "period_code",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "ix_kpi_submissions_department_id",
                 schema: "metrics",
                 table: "kpi_submissions",
@@ -424,13 +431,6 @@ namespace Metrics.Web.Migrations
                 schema: "metrics",
                 table: "kpi_submissions",
                 columns: new[] { "kpi_period_id", "department_id", "employee_id" },
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "ix_kpi_periods_period_code",
-                schema: "metrics",
-                table: "KpiPeriods",
-                column: "period_code",
                 unique: true);
         }
 
@@ -474,7 +474,7 @@ namespace Metrics.Web.Migrations
                 schema: "metrics");
 
             migrationBuilder.DropTable(
-                name: "KpiPeriods",
+                name: "kpi_periods",
                 schema: "metrics");
 
             migrationBuilder.DropTable(
