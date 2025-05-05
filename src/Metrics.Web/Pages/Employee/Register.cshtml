@@ -1,6 +1,7 @@
 ﻿@page
 @model Metrics.Web.Pages.Employee.RegisterModel
 @{
+    ViewData["Title"] = "Register new Account";
 }
 
 @* @if (!ModelState.IsValid)
@@ -14,7 +15,10 @@
         </div>
     </div>
 } *@
-<div class="container">
+
+
+
+<div class="container-fluid">
     <h2>Create new employee</h2>
     <div class="form">
         <form id="registerForm" method="post" asp-page-handler="">
@@ -35,14 +39,29 @@
                         <div><span asp-validation-for="FormInput.DepartmentId" class="text-danger"></span></div>
                     </div>
                     <div class="col col-xs-12 col-sm-12 col-md-6 col-lg-6">
-                        <label asp-for="FormInput.RoleId">User Role</label>
+                        @* <label asp-for="FormInput.RoleId">User Role</label>
                         <select asp-for="FormInput.RoleId" 
                                 asp-items="Model.RoleListItems"
                                 class="form-select" 
                                 aria-label="Select Role">
                             <option value="" selected hidden></option>
                         </select>
-                        <div><span asp-validation-for="FormInput.RoleId" class="text-danger"></span></div>
+                        <div><span asp-validation-for="FormInput.RoleId" class="text-danger"></span></div> *@
+                        
+                        <label asp-for="FormInput.RoleIds">User Roles</label>
+
+                        @foreach (var role in Model.AvaiableRoles)
+                        {
+                            <div>
+                                <input type="checkbox" 
+                                    name="SelectedRoleIds" 
+                                    value="@role.Id" 
+                                    checked="@Model.SelectedRoleIds.Contains(role.Id)" />
+                                    @* checked="@(Model.FormInput.RoleIds != null && Model.FormInput.RoleIds.Contains(role.Id))" /> *@
+                                <label>@role.Name</label>
+                            </div>
+                        }
+                        <div><span asp-validation-for="FormInput.RoleIds" class="text-danger"></span></div>
                     </div>
                 </div>
             </div>

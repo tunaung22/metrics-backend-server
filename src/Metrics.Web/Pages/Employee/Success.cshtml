@@ -15,22 +15,32 @@
 
         <div class="">
             <div class="row mb-2">
-                <div class="col col-3">Username</div>
+                <div class="col col-2">Username:</div>
                 <div class="col"><strong>@Model.Username</strong></div>
             </div>
             <div class="row mb-2">
-                <div class="col col-3">Name</div>
+                <div class="col col-2">Name:</div>
                 <div class="col"><strong>@Model.FullName</strong></div>
             </div>
             <div class="row mb-2">
-                <div class="col col-3">Role</div>
-                <div class="col"><strong>@Model.RoleName</strong></div>
+                <div class="col col-2">Role:</div>
+                <div class="col">
+                    @if(Model.AssignedRoles.Any())
+                    {
+                        @foreach(var roleName in Model.AssignedRoles)
+                        {
+                            <span class="badge rounded-2 text-bg-primary">
+                                <strong>@roleName</strong>
+                            </span>
+                        }
+                    }
+                </div>
             </div>
         </div>
 
         <div class="my-4">
             <p>
-                Add another <a asp-page="/Employee/Registe">Register</a>.
+                Add another <a class="" asp-page="/Employee/Register">Register</a>.
             </p>
         </div>
     }
@@ -39,7 +49,7 @@
         <div>
             <span>
                 <h5>To add more employee, use the Registration Page.</h5>
-                <a class="btn btn-link" asp-page="/Employee/Register">Register</a>
+                <a class="" asp-page="/Employee/Register">Register</a>
             </span>
         </div>
     }

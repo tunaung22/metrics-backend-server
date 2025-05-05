@@ -32,18 +32,33 @@ public class UserAccountService : IUserAccountService
     {
         // using var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
         using var transaction = await _context.Database.BeginTransactionAsync();
+
         try
         {
             // ========== STEP 1 - ApplicationUser =============================
             // var userInstance = Activator.CreateInstance<ApplicationUser>();
 
             // ----- CHECK username, email duplication -----
+            var errors = new List<IdentityError>();
+
             var accountWithUsernameExists = await _userManager.FindByNameAsync(dto.UserName);
             if (accountWithUsernameExists != null)
-                throw new MetricsDuplicateContentException("Username is already taken.");
+                // throw new MetricsDuplicateContentException("Username is already taken.");
+                // newUserIdentityResult.Errors.Append(new IdentityError { Code = "", Description = "Username is already taken." });
+                errors.Add(new IdentityError { Code = "DuplicateUserName", Description = "Username is already taken." });
+
             var accountWithEmailExists = await _userManager.FindByEmailAsync(dto.Email);
             if (accountWithEmailExists != null)
-                throw new MetricsDuplicateContentException("Email address is already taken.");
+                // throw new MetricsDuplicateContentException("Email address is already taken.");
+                // newUserIdentityResult.Errors.Append(new IdentityError { Code = "", Description = "Email address is already taken." });
+                errors.Add(new IdentityError { Code = "DuplicateEmail", Description = "Email address is already taken." });
+
+            if (errors.Any())
+            {
+                return IdentityResult.Failed(errors.ToArray());
+            }
+            // -----------------------------------------------------------------
+
 
             var userInstance = new ApplicationUser
             {

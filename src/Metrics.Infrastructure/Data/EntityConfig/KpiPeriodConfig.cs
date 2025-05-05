@@ -8,7 +8,7 @@ class KpiPeriodConfig : IEntityTypeConfiguration<KpiPeriod>
 {
     public void Configure(EntityTypeBuilder<KpiPeriod> builder)
     {
-        builder.ToTable("KpiPeriods");
+        builder.ToTable("kpi_periods");
 
         // ===== Index ======
         builder.HasKey(e => e.Id);
