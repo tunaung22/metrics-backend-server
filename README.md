@@ -25,4 +25,10 @@ or use env.sample as reference
 
 ## Publish
 
-> dotnet publish --configuration Release -r linux-x64 /p:PublishTrimmed=true --version-suffix BETA --output ../release
+> dotnet publish -c Release -r win-x64 --self-contained false -o C:\app\publish
+> dotnet publish -c Release -r linux-x64 /p:PublishTrimmed=true --version-suffix BETA --output ../release
+
+### Instruction
+
+> cd src\Metrics.Web
+> dotnet publish -c Release -r win-x64 --self-contained false -o C:\app\publish

@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace Metrics.Web.Pages.Employee;
 
@@ -14,7 +14,7 @@ public class SuccessModel : PageModel
     {
         var rolesJson = TempData["AssignedRoles"] as string;
 
-        AssignedRoles = (rolesJson != null ? JsonConvert.DeserializeObject<List<string>>(rolesJson) : new List<string>()) ?? [];
+        AssignedRoles = (rolesJson != null ? JsonSerializer.Deserialize<List<string>>(rolesJson) : new List<string>()) ?? [];
         Username = TempData["Username"] as string;
         FullName = TempData["FullName"] as string;
 

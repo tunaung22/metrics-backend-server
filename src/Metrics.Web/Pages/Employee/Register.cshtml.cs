@@ -8,9 +8,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
-using Newtonsoft.Json;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json;
 
 namespace Metrics.Web.Pages.Employee;
 
@@ -171,7 +170,7 @@ public class RegisterModel : PageModel
                 TempData["Username"] = createDto.UserName.ToString();
                 TempData["FullName"] = createDto.FullName.ToString();
                 // TempData["RoleName"] = assignedRole?.Name ?? string.Empty;
-                TempData["AssignedRoles"] = JsonConvert.SerializeObject(assignedRoles);
+                TempData["AssignedRoles"] = JsonSerializer.Serialize(assignedRoles);
 
                 return RedirectToPage("Success");
             }
