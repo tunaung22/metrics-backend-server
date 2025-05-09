@@ -2,7 +2,52 @@
 
 Project Documentation
 
-## Instructions
+## What?
+
+### Definition
+
+#### Department
+
+Each employee must be in a department.
+
+---
+
+#### User Account
+
+An account must be created to interact with the system
+
+#### Employee/Staff
+
+Each employee owns an employee/staff account
+
+#### Roles
+
+User account have roles to control who can interact with certain part of the system.
+Common roles are:
+
+1. Staff
+2. HOD
+3. Management
+
+---
+
+#### KPI Score
+
+A KPI score, or Key Performance Indicator score, is a measurable value that demonstrates how effectively an organization is achieving key business objectives.
+
+#### KPI Score Submission
+
+KPI Score are submitted by the following category:
+
+1. Submissions by Staff
+2. Submissions by HOD
+3. Submissions by Management
+
+#### Case Feedback & HR Record
+
+#### Key KPI Score
+
+---
 
 ### Database Migrations
 
