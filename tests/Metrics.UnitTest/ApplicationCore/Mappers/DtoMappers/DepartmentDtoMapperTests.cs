@@ -1,11 +1,10 @@
+using Metrics.Application.Domains;
 using Metrics.Application.DTOs.DepartmentDtos;
 using Metrics.Application.Mappers.DtoMappers;
-using Metrics.Domain.Entities;
-using System;
 
-namespace Metrics.Application.UnitTest.Mappers.DtoMappers;
+namespace Metrics.UnitTest.ApplicationCore.Mappers.DtoMappers;
 
-public class DepeartmentDtoMapperTests
+public class DepartmentDtoMapperTests
 {
 
     [Fact]
@@ -76,7 +75,7 @@ public class DepeartmentDtoMapperTests
         var code = new Guid();
         var dto = new DepartmentUpdateDto
         {
-            DepartmentCode = code,
+            // DepartmentCode = code,
             DepartmentName = "Clinic Department"
         };
         var result = dto.ToEntity();
@@ -101,4 +100,5 @@ public class DepeartmentDtoMapperTests
         Assert.Equal(code, result.DepartmentCode);
         Assert.Equal("Clinic Department", result.DepartmentName);
     }
+
 }
