@@ -93,6 +93,9 @@ public class DepartmentService : IDepartmentService
 
             // refetch updated entity
             var updatedEntity = await _departmentRepository.FindByDepartmentCodeAsync(departmentCode);
+            if (updatedEntity == null)
+                throw new NotFoundException("Department not found.");
+
             return updatedEntity;
         }
         catch (Exception ex)

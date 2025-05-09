@@ -30,15 +30,15 @@ public class DepartmentRepository : IDepartmentRepository
         _context.Departments.Remove(entity);
     }
 
-    public async Task<Department> FindByDepartmentCodeAsync(string departmentCode)
+    public async Task<Department?> FindByDepartmentCodeAsync(string departmentCode)
     {
         var department = await _context.Departments
             // .Include(e => e.Employees)
             .Where(e => e.DepartmentCode.ToString().ToLower() == departmentCode.ToLower())
             .FirstOrDefaultAsync();
 
-        if (department == null)
-            throw new NotFoundException("Department not found.");
+        // if (department == null)
+        //     throw new NotFoundException("Department not found.");
 
         return department;
     }
@@ -58,15 +58,15 @@ public class DepartmentRepository : IDepartmentRepository
         return department;
     }
 
-    public async Task<Department> FindByIdAsync(long id)
+    public async Task<Department?> FindByIdAsync(long id)
     {
         var department = await _context.Departments
             // .Include(e => e.Employees)
             .Where(e => e.Id == id)
             .FirstOrDefaultAsync();
 
-        if (department == null)
-            throw new NotFoundException("Department not found.");
+        // if (department == null)
+        //     throw new NotFoundException("Department not found.");
 
         return department;
     }
