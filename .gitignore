@@ -1,6 +1,8 @@
 #
 .env
 
+# draw.io backup
+.drawio.bkp
 
 # ReactJS
 
