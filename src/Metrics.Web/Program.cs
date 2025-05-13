@@ -16,6 +16,7 @@ using Metrics.Web.Middleware;
 using Metrics.Application.Exceptions;
 using Metrics.Infrastructure.Data.Seedings;
 using Microsoft.AspNetCore.Authorization;
+using Metrics.Infrastructure.Data.DatabaseMigrator;
 
 
 // ========== Load .env ===========================================
@@ -181,12 +182,41 @@ builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 // ========== APPLICATION ==========
 var app = builder.Build();
 
-// ----- DATA SEEDING -----
-// ----- Run Identity Seeding -----
-// if (args.Length == 1 && args[0].ToLower() == "seed")
-// {
 using (var scope = app.Services.CreateScope())
 {
+    // Check database connection
+    var context = scope.ServiceProvider.GetRequiredService<MetricsDbContext>();
+
+    try
+    {
+        // Attempt to open a connection to the database
+        await context.Database.OpenConnectionAsync();
+        Console.WriteLine("========== Database connection successful. ==========");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"========== Database connection failed: {ex.Message} ==========");
+        // Optionally, you can exit the application if the connection fails
+        return; // Exit the application
+    }
+    finally
+    {
+        // Ensure the connection is closed
+        await context.Database.CloseConnectionAsync();
+    }
+
+
+
+
+    // ----- RUN DB MIGRATION -----
+    var dbContext = scope.ServiceProvider.GetRequiredService<MetricsDbContext>();
+
+    await SchemaMigrator.MigrateDbAsync(args, dbContext);
+
+    // ----- DATA SEEDING -----
+    // ----- Run Identity Seeding -----
+    // if (args.Length == 1 && args[0].ToLower() == "seed")
+    // {
     // var initialSeedingDataConfig = builder.Configuration
     //     .GetSection("InitialSeedingData")
     //     .Get<InitialSeedingDataConfig>()
