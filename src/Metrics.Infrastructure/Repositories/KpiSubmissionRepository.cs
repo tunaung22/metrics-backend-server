@@ -37,12 +37,12 @@ public class KpiSubmissionRepository : IKpiSubmissionRepository
     //         .AnyAsync(e => e.SubmissionDate == submissionDate);
     // }
 
-    public async Task<bool> KpiSubmissionExistsAsync(long kpiPeriodId, long departmentId, long employeeId)
+    public async Task<bool> KpiSubmissionExistsAsync(long kpiPeriodId, long departmentId, string candidateId)
     {
         return await _context.KpiSubmissions
-            .AnyAsync(e => e.KpiPeriodId == kpiPeriodId
+            .AnyAsync(e => e.KpiSubmissionPeriodId == kpiPeriodId
                         && e.DepartmentId == departmentId
-                        && e.EmployeeId == employeeId);
+                        && e.ApplicationUserId == candidateId);
     }
 
 
@@ -59,12 +59,12 @@ public class KpiSubmissionRepository : IKpiSubmissionRepository
             .ToListAsync();
     }
 
-    public IQueryable<KpiSubmission> FindAsQueryable(long kpiPeriodId, long departmentId, long employeeId)
+    public IQueryable<KpiSubmission> FindAsQueryable(long kpiPeriodId, long departmentId, string candidateId)
     {
         var result = _context.KpiSubmissions
-            .Where(e => e.KpiPeriodId == kpiPeriodId)
+            .Where(e => e.KpiSubmissionPeriodId == kpiPeriodId)
             .Where(e => e.DepartmentId == departmentId)
-            .Where(e => e.EmployeeId == employeeId);
+            .Where(e => e.ApplicationUserId == candidateId);
 
         if (result == null)
             throw new NotFoundException("Submission not found.");

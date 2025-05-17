@@ -55,7 +55,8 @@
                         </li>
 
                         @* ========================== Admin Area ========================== *@
-                        @if (User.IsInRole("Admin"))
+                        @if (User.IsInRole("admin") || User.IsInRole("sysadmin"))
+                        @* @if (User.HasClaim("Permission", "CanSubmitScore")) *@
                         {
                             <li class="nav-item">
                                 <a class="nav-link " asp-area="" asp-page="/Dashboard/Index">Dashboard</a>

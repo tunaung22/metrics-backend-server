@@ -1,0 +1,201 @@
+﻿@page
+@model Metrics.Web.Pages.Manage.Users.RegisterModel
+@{
+    ViewData["Title"] = "Register new Account";
+}
+
+@* @if (!ModelState.IsValid)
+{
+    <div class="form bg-light p-4">
+        <div class="alert alert-danger">
+            <h5>There were some errors in the form.</h5>
+            <ul>
+                <li>@ModelState.Values.SelectMany(v => v.Errors).First().ErrorMessage</li>
+            </ul>
+        </div>
+    </div>
+} *@
+
+
+
+<div class="container-fluid">
+    <h2>Create new employee</h2>
+    <div class="form">
+        <form id="registerForm" method="post" asp-page-handler="">
+        <div class="col col-xs-12 col-sm-12 col-md-10 col-lg-10 col-xl-8 mx-auto">
+
+             <div asp-validation-summary="ModelOnly" class="alert alert-danger text-danger" role="alert"></div>
+
+            <div class="row section__authorization p-2 my-2 rounded-2">
+                <div class="row mb-4">
+                    <div class="col col-xs-12 col-sm-12 col-md-6">
+                        <label asp-for="FormInput.DepartmentId">Department</label>
+                        <select asp-for="FormInput.DepartmentId" 
+                                asp-items="Model.DepartmentListItems"
+                                class="form-select" 
+                                aria-label="Select Department">
+                            <option value="" selected hidden></option>
+                        </select>
+                        <div><span asp-validation-for="FormInput.DepartmentId" class="text-danger"></span></div>
+                    </div>
+                    <div class="col col-xs-12 col-sm-12 col-md-6 col-lg-6">
+                        @* <label asp-for="FormInput.RoleId">User Role</label>
+                        <select asp-for="FormInput.RoleId" 
+                                asp-items="Model.RoleListItems"
+                                class="form-select" 
+                                aria-label="Select Role">
+                            <option value="" selected hidden></option>
+                        </select>
+                        <div><span asp-validation-for="FormInput.RoleId" class="text-danger"></span></div> *@
+                        
+                        <label asp-for="FormInput.RoleIds">User Roles</label>
+
+                        @foreach (var role in Model.AvaiableRoles)
+                        {
+                            <div>
+                                <input type="checkbox" 
+                                    name="SelectedRoleIds" 
+                                    value="@role.Id" 
+                                    checked="@Model.SelectedRoleIds.Contains(role.Id)" />
+                                    @* checked="@(Model.FormInput.RoleIds != null && Model.FormInput.RoleIds.Contains(role.Id))" /> *@
+                                <label>@role.Name</label>
+                            </div>
+                        }
+                        <div><span asp-validation-for="FormInput.RoleIds" class="text-danger"></span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row section__credentials p-2 my-2 rounded-2">
+                @* <div class="col"> *@
+                    <div class="row mb-4">
+                        <div class="col col-xs-12 col-sm-12 col-md-6 col-lg-6">
+                            <label asp-for="FormInput.UserName">Username</label>
+                            <input asp-for="FormInput.UserName"
+                                id="input__username"
+                                class="form-control" />
+                            <div><span asp-validation-for="FormInput.UserName" class="text-danger"></span></div>
+                        </div>
+                        <div class="col col-xs-12 col-sm-12 col-md-6 col-lg-6">
+                            <label asp-for="FormInput.Email">Email</label>
+                            <input asp-for="FormInput.Email" class="form-control" />
+                            <div><span asp-validation-for="FormInput.Email" class="text-danger"></span></div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col col-xs-12 col-sm-12 col-md-6 col-lg-6">
+                            <label asp-for="FormInput.Password">Password</label>
+                                <input asp-for="FormInput.Password" 
+                                    class="form-control" 
+                                    autocomplete="new-password" 
+                                    aria-required="true"/>
+                            <div><span asp-validation-for="FormInput.Password" class="text-danger"></span></div>
+
+                            <label asp-for="FormInput.ConfirmPassword">Confirm Password</label>
+                            <input asp-for="FormInput.ConfirmPassword" 
+                                    class="form-control" 
+                                    autocomplete="new-password" 
+                                    aria-required="true" />
+                            <div><span asp-validation-for="FormInput.ConfirmPassword" class="text-danger"></span></div>
+                        </div>
+                    </div>
+                @* </div> *@
+            </div>
+
+            @* <div class="section__employeeInfo p-2 my-2" style="background: #e0e0e03f;"> *@
+            <div class="row section__employeeInfo p-2 my-2 rounded-2">
+                <div class="col">
+                    <div class="row mb-4">
+                        <div class="col col-sm-12 col-md-12">
+                            <label asp-for="FormInput.EmployeeCode">Employee Code</label>
+                            <div class="input-group">
+                                <input asp-for="FormInput.EmployeeCode"
+                                    id="input__employeeCode" 
+                                    class="form-control" />
+                                <button id="generateId" 
+                                        class="btn btn-outline-success" 
+                                        type="button">Generate</button>
+                            </div>
+                            <div><span asp-validation-for="FormInput.EmployeeCode" class="text-danger"></span></div>
+                        </div>
+                        <div class="col col-sm-12 col-md-12">
+                            <label asp-for="FormInput.FullName">Full Name</label>
+                            <input asp-for="FormInput.FullName" class="form-control" />
+                            <div><span asp-validation-for="FormInput.FullName" class="text-danger"></span></div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col col-sm-12 col-md-6">
+                            <label asp-for="FormInput.Address">Address</label>
+                            <textarea asp-for="FormInput.Address" class="form-control"></textarea>
+                            <div><span asp-validation-for="FormInput.Address" class="text-danger"></span></div>
+                        </div>
+                        <div class="col col-sm-12 col-md-6">
+                            <label asp-for="FormInput.PhoneNumber">Phone</label>
+                            <textarea asp-for="FormInput.PhoneNumber" class="form-control"></textarea>
+                            <div><span asp-validation-for="FormInput.PhoneNumber" class="text-danger"></span></div>
+                        </div>
+                    </div>
+                </div>
+            @* </div> *@
+            </div>
+
+            <div class="row section__formAction my-4">
+                <div class="p-0 mb-3 col-xs-12 col-sm-12 col-md-3 d-flex align-items-center">
+                    <button id="registerSubmit" type="submit" class="w-100 btn btn-lg btn-primary">
+                        <i class="fas fa-plus">Register</i>
+                    </button>
+                </div> 
+            </div>
+
+        </div>
+        </form>
+    </div>
+</div>
+
+
+@section Scripts {
+    @* <partial name="_ValidationScriptsPartial" /> *@
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+
+    <script>
+        $(document).ready(function() {
+            $("#input__username").on("input", function() {
+                // Store the current selection range
+                var start = this.selectionStart;
+                var end = this.selectionEnd;
+
+                // Convert text to lowercase
+                $(this).val($(this).val().toLowerCase());
+
+                // Restore the selection range
+                this.setSelectionRange(start, end);
+            });
+
+            $("#generateId").on("click", function() {
+                // https://stackoverflow.com/questions/105034/how-do-i-create-a-guid-uuid#2117523
+                const ho = (n, p) => n.toString(16).padStart(p, 0); /// Return the hexadecimal text representation of number `n`, padded with zeroes to be of length `p`; e.g. `ho(13, 2)` returns `"0d"`
+                const data = crypto.getRandomValues(new Uint8Array(16)); /// Fill a buffer with random bits
+                data[6] = (data[6] & 0xf) | 0x40; /// Patch the 6th byte to reflect a version 4 UUID
+                data[8] = (data[8] & 0x3f) | 0x80; /// Patch the 8th byte to reflect a variant 1 UUID (version 4 UUIDs are)
+                const view = new DataView(data.buffer); /// Create a view backed by the 16-byte buffer
+                var generatedEmployeeCode = `${ho(view.getUint32(0), 8)}-${ho(view.getUint16(4), 4)}-${ho(view.getUint16(6), 4)}-${ho(view.getUint16(8), 4)}-${ho(view.getUint32(10), 8)}${ho(view.getUint16(14), 4)}`; /// Compile the canonical textual form from the array data
+                $("#input__employeeCode").val(generatedEmployeeCode);
+            });
+        });
+    </script>
+}
+
+@section Styles {
+    <style>
+        .section__authorization, .section__credentials, .section__employeeInfo {
+            background: #e2e2e2;
+        }
+
+        .section__formAction {
+
+        }
+    </style>
+}

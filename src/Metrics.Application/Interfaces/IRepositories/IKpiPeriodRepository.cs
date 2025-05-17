@@ -4,12 +4,12 @@ namespace Metrics.Application.Interfaces.IRepositories;
 
 public interface IKpiPeriodRepository
 {
-    void Create(KpiPeriod entity);
-    void Update(KpiPeriod entity);
-    void Delete(KpiPeriod entities);
-    Task<KpiPeriod> FindByIdAsync(long id);
-    Task<KpiPeriod> FindByPeriodNameAsync(string periodName);
-    Task<IEnumerable<KpiPeriod>> FindAllAsync();
+    void Create(KpiSubmissionPeriod entity);
+    void Update(KpiSubmissionPeriod entity);
+    void Delete(KpiSubmissionPeriod entities);
+    Task<KpiSubmissionPeriod> FindByIdAsync(long id);
+    Task<KpiSubmissionPeriod> FindByPeriodNameAsync(string periodName);
+    Task<IEnumerable<KpiSubmissionPeriod>> FindAllAsync();
     Task<bool> KpiPeriodExistsAsync(string periodName);
     Task<long> FindCountAsync();
 
@@ -19,6 +19,6 @@ public interface IKpiPeriodRepository
     // Task<bool> IsPeriodNameExist(string periodName);
 
     // ========== Queryable ====================================================
-    IQueryable<KpiPeriod> FindAllAsQueryable();
+    IQueryable<KpiSubmissionPeriod> FindAllAsQueryable();
 
 }

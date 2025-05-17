@@ -170,13 +170,13 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 // ===== Repository =========
 builder.Services.AddScoped<IDepartmentRepository, DepartmentRepository>();
-builder.Services.AddScoped<IKpiPeriodRepository, KpiPeriodRepository>();
+builder.Services.AddScoped<IKpiPeriodRepository, KpiSubmissionPeriodRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IKpiSubmissionRepository, KpiSubmissionRepository>();
 // ===== Service ============
 builder.Services.AddScoped<ISeedingService, SeedingService>();
 builder.Services.AddScoped<IDepartmentService, DepartmentService>();
-builder.Services.AddScoped<IKpiPeriodService, KpiPeriodService>();
+builder.Services.AddScoped<IKpiSubmissionPeriodService, KpiSubmissionPeriodService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUserAccountService, UserAccountService>();
 builder.Services.AddScoped<IUserRoleService, UserRoleService>();

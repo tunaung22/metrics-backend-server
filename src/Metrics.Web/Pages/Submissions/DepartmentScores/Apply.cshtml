@@ -1,0 +1,165 @@
+﻿@page "{periodName}"
+@model Metrics.Web.Pages.Submissions.DepartmentScores.ApplyModel
+@{
+    decimal[] scoreList = new decimal[] { 1M, 2M, 3M, 4M, 5M, 6M, 7M, 8M, 9M, 10M };
+
+}
+
+<h3>Submission</h3>
+
+<div class="col-8 m-auto">
+
+@* <div id="submissionStatusBar" class="fixed-bottom mt-2 mb-0 px-4 p-2 d-flex align-items-center justify-content-center">
+    <p class="px-4 mb-0"><strong>Progress:</strong> <span id="formProgress">0</span> of @Model.SubmissionInput.Count</p>
+</div> *@
+
+
+@if (!ModelState.IsValid)
+{
+    if(!Model.IsSubmissionsExist)
+    {
+        <div class="form bg-light p-4">
+            <div class="alert alert-danger">
+                <h5>There were some errors in the form.</h5>
+                <ul>
+                    @* @foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
+                    {
+                        <li>@error.ErrorMessage</li>
+                    } *@
+                    <li>@ModelState.Values.SelectMany(v => v.Errors).First().ErrorMessage</li>
+                </ul>
+            </div>
+        </div>
+    }
+}
+
+@if(Model.IsSubmissionValid)
+{
+    @if(!Model.IsSubmissionsExist)
+    {
+        @if (Model.DepartmentList.Count > 0)
+        {
+            <form method="post">
+
+                    <div class="row mt-4">
+                        <div class="form-group col-md d-flex justify-content-between align-items-center">
+                            <div class="flex-item">KPI Period: <strong>@Model.TargetKpiPeriodName</strong></div>
+                            <div class="flex-item">Departments: <strong>@Model.DepartmentList.Count</strong></div>
+                        </div>
+                        <div class="form-group col-md d-flex justify-content-end align-items-center">
+                            <button type="submit" class="btn btn-success me-2">
+                                <i class="bi bi-check-circle"> </i>Submit
+                            </button>
+                            @* <button type="submit" class="btn btn-warning mx-2"
+                                asp-page-handler="Cancel" formnovalidate>
+                                <i class="bi bi-x-circle"> </i>Cancel
+                            </button> *@
+                        </div> 
+                    </div>
+
+                    @for(int i=0 ; i< Model.DepartmentList.Count; i++)
+                    {
+                        <div class="card mt-2 p-2">
+
+                            <div class="row pb-2">
+                                <label class="col-3 col-sm-3 col-md-3 col-lg-2" asp-for="SubmissionInput[i].DepartmentId">Department:</label>
+                                <div class="col-9 col-sm-9 col-md-9 col-lg-10">
+                                    <span class="d-flex">
+                                        <strong class="flex-grow-1 justify-content-start">@Model.DepartmentList[i].DepartmentName</strong>
+                                        <label class="justify-content-end"><strong>@(i+1)</strong>/@Model.DepartmentList.Count</label>
+                                    </span>
+                                    
+                                </div>
+                                <input type="hidden" asp-for="SubmissionInput[i].DepartmentId" />
+                            </div>
+                            
+                            <div class="row pb-2">
+                                <label class="col-3 col-sm-3 col-md-3 col-lg-2 form-label" asp-for="SubmissionInput[i].KpiScore">KPI Score: </label>
+                                <div class="col-9 col-sm-9 col-md-9 col-lg-10">
+                                    @for(int x = 0; x < scoreList.Length; x++)
+                                    {
+                                        <input class="submissionform__radiobutton form-check-input" 
+                                                type="radio" 
+                                                asp-for="SubmissionInput[i].KpiScore" 
+                                                value="@scoreList[x]" 
+                                                id="radio_[@i][@x]" />
+                                                @* name="submissionFormRadioButton_@i" /> *@
+                                        <strong>
+                                            <label for="radio_[@i][@x]" class="radio__kpiscore form-check-label pe-4">@scoreList[x]</label>
+                                        </strong>
+                                    }
+                                </div>
+                                <div>
+                                    <span asp-validation-for="SubmissionInput[i].KpiScore" class="text-danger"></span>
+                                </div>
+                                    @* <input asp-for="SubmissionInput[i].KpiScore" name="@Model.DepartmentList[@i].Id" value="@Model.SubmissionInput[i].KpiScore" /> *@
+                            </div>
+                            
+                            <div class="row pb-2">
+                                    <label asp-for="SubmissionInput[i].Comments" 
+                                                class="col-3 col-sm-3 col-md-3 col-lg-2 form-label">Comments: </label>
+                                <div class="col-9 col-sm-9 col-md-9 col-lg-10">
+                                    <textarea asp-for="SubmissionInput[i].Comments" class="form-control" id="exampleFormControlTextarea1" rows="2"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    <div class="row mt-4">
+                        <div class="form-group col-md d-flex justify-content-end align-items-center">
+                            <button type="submit" class="btn btn-success me-2">
+                                <i class="bi bi-check-circle"> </i>Submit
+                            </button>
+                            @* <button type="submit" class="btn btn-warning mx-2"
+                                asp-page-handler="Cancel" formnovalidate>
+                                <i class="bi bi-x-circle"> </i>Cancel
+                            </button> *@
+                        </div> 
+                    </div>
+            </form>
+        }
+
+        @* Go to Top button *@
+        <button id="goToTop" class="btn btn-primary">
+            <i class="bi bi-arrow-up-circle"></i> Top
+        </button>
+
+    }
+    else
+    {
+        <h4 class="my-4">You already submitted for this period <strong>@Model.TargetKpiPeriodName</strong>.</h4>
+        <div class="alert alert-success my-4 py-4">
+            <div>
+                Please check other <a class="alert-link" asp-page="/Kpi/Submissions/Index">Submissions</a>.
+            </div>
+        </div>
+    }
+}
+
+</div>
+
+
+@section Scripts {
+    @* <partial name="_ValidationScriptsPartial" /> *@
+    <script>
+        // ------------------- goToTop button implementation -------------------
+        // Get the button
+        var mybutton = document.getElementById("goToTop");
+
+        // When the user scrolls down 20px from the top of the document, show the button
+        window.onscroll = function() {
+            if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
+                mybutton.style.display = "block";
+            } else {
+                mybutton.style.display = "none";
+            }
+        };
+
+        // When the user clicks on the button, scroll to the top of the document
+        mybutton.onclick = function() {
+            document.body.scrollTop = 0; // For Safari
+            document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE, and Opera
+        };
+        //-----------------------------------------------------------------------
+    </script>
+}

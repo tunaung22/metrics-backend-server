@@ -9,7 +9,7 @@ using Microsoft.Extensions.Options;
 
 namespace Metrics.Infrastructure.Data;
 
-public class MetricsDbContext : IdentityDbContext
+public class MetricsDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, string>
 {
     private readonly PostgresDbConfig _pgConfig;
 
@@ -21,12 +21,15 @@ public class MetricsDbContext : IdentityDbContext
     }
 
     // ========== DbSet ========================================================
-    public DbSet<ApplicationUser> ApplicationUsers { get; set; }
-    public DbSet<ApplicationRole> ApplicationRoles { get; set; }
+    // public DbSet<ApplicationUser> ApplicationUsers { get; set; }
+    // public DbSet<ApplicationRole> ApplicationRoles { get; set; }
     public DbSet<Department> Departments { get; set; }
-    public DbSet<KpiPeriod> KpiPeriods { get; set; }
-    public DbSet<Employee> Employees { get; set; }
+    public DbSet<DepartmentKeyKpi> DepartmentKeyKpis { get; set; }
+    public DbSet<KeyKpi> KeyKpis { get; set; }
+    public DbSet<KpiSubmissionPeriod> KpiSubmissionPeriods { get; set; }
     public DbSet<KpiSubmission> KpiSubmissions { get; set; }
+    public DbSet<KeyKpiSubmission> KeyKpiSubmissions { get; set; }
+    public DbSet<KeyKpiSubmissionItem> KeyKpiSubmissionItems { get; set; }
 
 
     public override int SaveChanges()
@@ -104,7 +107,7 @@ public class MetricsDbContext : IdentityDbContext
 
         // https://www.npgsql.org/efcore/modeling/generated-properties.html?tabs=13%2Cefcore5#hilo-autoincrement-generation
         // sequence id
-        builder.UseHiLo();
+        // builder.UseHiLo("entityframeworkcore_hilo_sequence");
         builder.HasDefaultSchema(_pgConfig.PgSchema);
 
         // ------------ Entity Configurations ------------
@@ -112,10 +115,15 @@ public class MetricsDbContext : IdentityDbContext
             Method 1: new ItemHeaderConfig().Configure(builder.Entity<ItemHeader>());
             Method 2: builder.ApplyConfiguration(new ItemHeaderConfig());
         */
+        builder.ApplyConfiguration(new ApplicationUserConfig());
+        builder.ApplyConfiguration(new ApplicationRoleConfig());
         builder.ApplyConfiguration(new DepartmentConfig());
-        builder.ApplyConfiguration(new KpiPeriodConfig());
-        builder.ApplyConfiguration(new EmployeeConfig());
+        builder.ApplyConfiguration(new DepartmentKeyKpiConfig());
+        builder.ApplyConfiguration(new KeyKpiConfig());
+        builder.ApplyConfiguration(new KpiSubmissionPeriodConfig());
         builder.ApplyConfiguration(new KpiSubmissionConfig());
+        builder.ApplyConfiguration(new KeyKpiSubmissionConfig());
+        builder.ApplyConfiguration(new KeyKpiSubmissionItemConfig());
 
         // ----------- Seeding -----------
         // builder.Entity<...>().HasData(...);

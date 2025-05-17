@@ -6,7 +6,7 @@ public interface IUnitOfWork
 {
     IDepartmentRepository Departments { get; }
     IKpiPeriodRepository KpiPeriods { get; }
-    IEmployeeRepository Employees { get; }
+    IUserRepository Users { get; }
     IKpiSubmissionRepository KpiSubmissions { get; }
 
     Task CompleteAsync();

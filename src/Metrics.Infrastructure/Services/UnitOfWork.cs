@@ -11,7 +11,7 @@ public class UnitOfWork : IUnitOfWork, IDisposable
     // private readonly Ilogger _logger;
     public IDepartmentRepository Departments { get; }
     public IKpiPeriodRepository KpiPeriods { get; }
-    public IUserRepository Employees { get; }
+    public IUserRepository Users { get; }
     public IKpiSubmissionRepository KpiSubmissions { get; }
 
     public UnitOfWork(
@@ -26,7 +26,7 @@ public class UnitOfWork : IUnitOfWork, IDisposable
         // _logger = Logger;
         Departments = departmentRepository;
         KpiPeriods = kpiPeriodRepository;
-        Employees = employeeRepository;
+        Users = employeeRepository;
         KpiSubmissions = kpiSubmissionRepository;
         // // 
         // // _departmentRepository = new DepartmentRepository(context);

@@ -9,9 +9,7 @@ namespace Metrics.Infrastructure.Data.Seedings;
 
 public static class InitialUserSeeder
 {
-    public static async Task InitAsync(
-        IServiceProvider serviceProvider)
-    // InitialSeedingDataConfig initialSeedingData)
+    public static async Task InitAsync(IServiceProvider serviceProvider) // InitialSeedingDataConfig initialSeedingData)
     {
         var userManager = serviceProvider
                     .GetRequiredService<UserManager<ApplicationUser>>();
@@ -56,33 +54,34 @@ public static class InitialUserSeeder
 
         // IF NOT EXIST -> user with username "admin" + role "admin" + employee "admin" + department "admin department"
         // EXECUTE -> SeedInitialUser
+        // var userData = initialSeedingData.DefaultUserDataConfig;
         // var createDto = new DefaultUserCreateDto()
         // {
-        //     DefaultUsername = initialSeedingData.DefaultUserDataConfig.DefaultUsername,
-        //     DefaultEmail = initialSeedingData.DefaultUserDataConfig.DefaultEmail,
-        //     DefaultPassword = initialSeedingData.DefaultUserDataConfig.DefaultPassword,
-        //     DefaultRoleName = initialSeedingData.DefaultUserDataConfig.DefaultRoleName,
-        //     DefaultFullName = initialSeedingData.DefaultUserDataConfig.DefaultFullName,
-        //     DefaultDepartmentName = initialSeedingData.DefaultUserDataConfig.DefaultDepartmentName,
-        //     EmployeeCode = initialSeedingData.DefaultUserDataConfig.EmployeeCode,
-        //     EmployeeFullName = initialSeedingData.DefaultUserDataConfig.EmployeeFullName,
-        //     EmployeeAddress = initialSeedingData.DefaultUserDataConfig.EmployeeAddress,
-        //     EmployeePhoneNumber = initialSeedingData.DefaultUserDataConfig.EmployeePhoneNumber
+        //     DefaultUsername = userData.DefaultUsername,
+        //     DefaultEmail = userData.DefaultEmail,
+        //     DefaultPassword = userData.DefaultPassword,
+        //     DefaultRoleName = userData.DefaultRoleName,
+        //     DefaultFullName = userData.DefaultFullName,
+        //     DefaultDepartmentName = userData.DefaultDepartmentName,
+        //     EmployeeCode = userData.EmployeeCode,
+        //     EmployeeFullName = userData.EmployeeFullName,
+        //     EmployeeAddress = userData.EmployeeAddress,
+        //     EmployeePhoneNumber = userData.EmployeePhoneNumber
         // };
 
         // **Values are hard coded for now
         var createDto = new DefaultUserCreateDto()
         {
-            DefaultUsername = "sysadmin",
-            DefaultEmail = "sysadmin@metricshrm.com",
-            DefaultPassword = "00000000",
-            DefaultRoleName = "Admin",
-            DefaultFullName = "System Admin",
-            DefaultDepartmentName = "System Admin Department",
-            EmployeeCode = new Guid().ToString(),
-            EmployeeFullName = "System Admin",
-            EmployeeAddress = "none",
-            EmployeePhoneNumber = "none"
+            Username = "sysadmin",
+            Email = "sysadmin@metricshrm.com",
+            Password = "00000000",
+            RoleName = "sysadmin",
+            Roles = ["sysadmin", "admin"],
+            FullName = "System Admin",
+            DepartmentName = "Admin Department",
+            UserCode = new Guid().ToString(),
+            ContactAddress = "none",
+            PhoneNumber = "none"
         };
 
         try
