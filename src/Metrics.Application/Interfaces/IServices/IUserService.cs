@@ -1,19 +1,33 @@
 using Metrics.Application.Domains;
+using Metrics.Application.DTOs.UserAccountDtos;
+using Microsoft.AspNetCore.Identity;
 
 namespace Metrics.Application.Interfaces.IServices;
 
-public interface IEmployeeService
+public interface IUserService
 {
+
+    Task<IdentityResult> RegisterUserAsync(UserAccountCreateDto dto);
+    Task<ApplicationUser> FindByUsernameAsync(string username);
+    // TODOs
+    // lock user
+    // unlock user
+    // reset password
+
+    // Task<long> FindByUserIdAsync(string userId);
+
     // ========== Return Entity ================================================
-    Task<Employee> CreateAsync(Employee entity);
-    Task<Employee> UpdateAsync(string employeeCode, Employee entity);
-    Task<bool> DeleteAsync(string employeeCode);
-    Task<Employee> FindByIdAsync(long id);
-    Task<Employee?> FindByEmployeeCodeAsync(string employeeCode);
-    Task<IEnumerable<Employee>> FindAllAsync();
-    Task<long> FindByUserIdAsync(string userId);
+    // Task<ApplicationUser> CreateAsync(ApplicationUser entity);
+    // Task<ApplicationUser> UpdateAsync(string username, ApplicationUser entity);
+    // Task<bool> DeleteAsync(string username);
+    // Task<ApplicationUser?> FindByUserCodeAsync(string username);
+    // Task<IEnumerable<ApplicationUser>> FindAllAsync();
 
 
+
+
+
+    // Task<ApplicationUser> FindByIdAsync(long id);
     // ========== Return DTO ===================================================
     // Task<EmployeeGetDto> CreateAsync(EmployeeCreateDto createDto);
     // Task<EmployeeGetDto> UpdateAsync(string employeeCode, EmployeeUpdateDto updateDto);

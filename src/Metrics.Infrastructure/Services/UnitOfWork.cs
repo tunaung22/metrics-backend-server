@@ -11,7 +11,7 @@ public class UnitOfWork : IUnitOfWork, IDisposable
     // private readonly Ilogger _logger;
     public IDepartmentRepository Departments { get; }
     public IKpiPeriodRepository KpiPeriods { get; }
-    public IEmployeeRepository Employees { get; }
+    public IUserRepository Employees { get; }
     public IKpiSubmissionRepository KpiSubmissions { get; }
 
     public UnitOfWork(
@@ -19,7 +19,7 @@ public class UnitOfWork : IUnitOfWork, IDisposable
         // Ilogger logger,
         IDepartmentRepository departmentRepository,
         IKpiPeriodRepository kpiPeriodRepository,
-        IEmployeeRepository employeeRepository,
+        IUserRepository employeeRepository,
         IKpiSubmissionRepository kpiSubmissionRepository)
     {
         _context = context;

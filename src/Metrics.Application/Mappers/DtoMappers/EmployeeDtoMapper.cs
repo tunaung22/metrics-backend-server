@@ -5,9 +5,10 @@ namespace Metrics.Application.Mappers.DtoMappers;
 
 public static class EmployeeDtoMapper
 {
+    /*
     // ========== Entity to DTO ==========
     // public static List<EmployeeGetDto> ToGetDto(this List<Employee> entities) { }
-    public static List<EmployeeGetDto> ToGetDto(this IEnumerable<Employee> entities)
+    public static List<EmployeeGetDto> ToGetDto(this IEnumerable<ApplicationUser> entities)
     {
         if (entities == null) return [];
 
@@ -22,7 +23,7 @@ public static class EmployeeDtoMapper
         }).ToList();
     }
 
-    public static EmployeeGetDto ToGetDto(this Employee entity)
+    public static EmployeeGetDto ToGetDto(this ApplicationUser entity)
     {
         return new EmployeeGetDto
         {
@@ -36,9 +37,9 @@ public static class EmployeeDtoMapper
     }
 
     // ========== DTO to Entity ==========
-    public static Employee ToEntity(this EmployeeCreateDto createDto)
+    public static ApplicationUser ToEntity(this EmployeeCreateDto createDto)
     {
-        return new Employee
+        return new ApplicationUser
         {
             EmployeeCode = createDto.EmployeeCode,
             FullName = createDto.FullName,
@@ -49,9 +50,9 @@ public static class EmployeeDtoMapper
         };
     }
 
-    public static Employee ToEntity(EmployeeUpdateDto updateDto)
+    public static ApplicationUser ToEntity(EmployeeUpdateDto updateDto)
     {
-        return new Employee
+        return new ApplicationUser
         {
             FullName = updateDto.FullName,
             Address = updateDto.Address,
@@ -73,4 +74,5 @@ public static class EmployeeDtoMapper
             ApplicationUserId = createDto.ApplicationUserId
         };
     }
+    */
 }
