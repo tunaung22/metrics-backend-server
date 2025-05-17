@@ -2,10 +2,10 @@
 
 namespace Metrics.Application.Domains;
 
-public partial class KpiPeriod : IAuditColumn
+public partial class KpiSubmissionPeriod : IAuditColumn
 {
     public long Id { get; set; }
-    public string PeriodCode { get; set; } = null!;
+    public string PeriodName { get; set; } = null!;
     public DateTimeOffset SubmissionStartDate { get; set; }
     public DateTimeOffset SubmissionEndDate { get; set; }
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
@@ -13,5 +13,6 @@ public partial class KpiPeriod : IAuditColumn
 
     // Collection Navigational Properties
     public List<KpiSubmission> KpiSubmissions { get; set; } = [];
+    public List<KeyKpiSubmission> KeyKpiSubmissions { get; set; } = [];
 
 }
