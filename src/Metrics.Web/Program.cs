@@ -147,10 +147,17 @@ builder.Services.AddSession(options =>
 builder.Services.AddAuthorization(options =>
 {
     options.FallbackPolicy = new AuthorizationPolicyBuilder()
-                .RequireAuthenticatedUser()
-                .Build();
-    options.AddPolicy("Admin", policy => policy.RequireRole("Admin"));
-    options.AddPolicy("Employee", policy => policy.RequireRole("Employee"));
+        .RequireAuthenticatedUser()
+        .Build();
+
+    options.AddPolicy("RequiresAdminRole", policy => policy.RequireRole("admin"));
+
+    options.AddPolicy("CanAccessAdminFeaturePolicy", policy =>
+        {
+            policy.RequireClaim("Permission", "CanAccessAdminFeature");
+        });
+    options.AddPolicy("CanSubmitScorePolicy", policy =>
+        policy.RequireClaim("Permission", "CanSubmitKPIScore"));
 });
 
 
@@ -164,13 +171,13 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 // ===== Repository =========
 builder.Services.AddScoped<IDepartmentRepository, DepartmentRepository>();
 builder.Services.AddScoped<IKpiPeriodRepository, KpiPeriodRepository>();
-builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IKpiSubmissionRepository, KpiSubmissionRepository>();
 // ===== Service ============
 builder.Services.AddScoped<ISeedingService, SeedingService>();
 builder.Services.AddScoped<IDepartmentService, DepartmentService>();
 builder.Services.AddScoped<IKpiPeriodService, KpiPeriodService>();
-builder.Services.AddScoped<IEmployeeService, EmployeeService>();
+builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUserAccountService, UserAccountService>();
 builder.Services.AddScoped<IUserRoleService, UserRoleService>();
 builder.Services.AddScoped<IKpiSubmissionService, KpiSubmissionService>();
@@ -184,7 +191,7 @@ var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
 {
-    // Check database connection
+    // ----- CHECK CONNECTION -----
     var context = scope.ServiceProvider.GetRequiredService<MetricsDbContext>();
 
     try
@@ -209,9 +216,36 @@ using (var scope = app.Services.CreateScope())
 
 
     // ----- RUN DB MIGRATION -----
-    var dbContext = scope.ServiceProvider.GetRequiredService<MetricsDbContext>();
+    // var dbContext = scope.ServiceProvider.GetRequiredService<MetricsDbContext>();
+    // await SchemaMigrator.MigrateDbAsync(args, context);
 
-    await SchemaMigrator.MigrateDbAsync(args, dbContext);
+    var pendingMigrations = await context.Database.GetPendingMigrationsAsync();
+    if (args.Contains("migrate-db"))
+    {
+        if (pendingMigrations.Any())
+            await SchemaMigrator.MigrateDbAsync(context);
+        else
+            Console.WriteLine("========== No database migration needs to run. ==========");
+
+        return;
+    }
+    else
+    {
+        if (pendingMigrations.Any())
+        {
+            // don't run migration
+            // but show message if have pending
+            Console.WriteLine("========== WARNING: You have pending migrations not run yet! ==========");
+            Console.WriteLine("========== Use dotnet run migrate-db to run the migration again. ==========");
+            foreach (var migration in pendingMigrations)
+                Console.WriteLine("### " + migration);
+            Console.WriteLine("===========================================================================");
+        }
+        else
+        {
+            Console.WriteLine("========== No database migration needs to run. ==========");
+        }
+    }
 
     // ----- DATA SEEDING -----
     // ----- Run Identity Seeding -----

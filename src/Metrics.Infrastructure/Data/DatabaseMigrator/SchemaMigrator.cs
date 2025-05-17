@@ -4,7 +4,20 @@ namespace Metrics.Infrastructure.Data.DatabaseMigrator;
 
 public static class SchemaMigrator
 {
-    public static async Task MigrateDbAsync(string[] args, MetricsDbContext context)
+    public static async Task MigrateDbAsync(MetricsDbContext context)
+    {
+        // migrate
+        try
+        {
+            await context.Database.MigrateAsync();
+        }
+        catch (Exception e)
+        {
+            throw new Exception("========= WARNING: Database migration task have failed! =========", e);
+        }
+    }
+
+    public static async Task MigrateDb_2_Async(string[] args, MetricsDbContext context)
     {
         var pendingMigrations = await context.Database.GetPendingMigrationsAsync();
         if (pendingMigrations.Any())
