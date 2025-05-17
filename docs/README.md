@@ -66,17 +66,83 @@ KPI Score are submitted by the following category:
 
 ### Packages Used
 
-| Name                         | Package                                                                                                                               |
-| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| Entity Framework Core        | [Microsoft.EntityFrameworkCore](https://www.nuget.org/packages/Microsoft.EntityFrameworkCore)                                         |
-| EFCore Tools (CLI)           | [Microsoft.EntityFrameworkCore.Tools](https://www.nuget.org/packages/Microsoft.EntityFrameworkCore.Tools)                             |
-| EFCore Tools (Design)        | [Microsoft.EntityFrameworkCore.Design](https://www.nuget.org/packages/Microsoft.EntityFrameworkCore.Design)                           |
-| Identiy                      | [Microsoft.AspNetCore.Identity.EntityFrameworkCore](https://www.nuget.org/packages/Microsoft.AspNetCore.Identity.EntityFrameworkCore) |
-| MSSQL Database Provider      | [Microsoft.EntityFrameworkCore.SqlServer](https://www.nuget.org/packages/Microsoft.EntityFrameworkCore.SqlServer)                     |
-| PostgreSQL Database Provider | [Npgsql.EntityFrameworkCore.PostgreSQL](https://www.nuget.org/packages/Npgsql.EntityFrameworkCore.PostgreSQL)                         |
-| EF Core Naming Conventions   | [EFCore.NamingConventions](https://www.nuget.org/packages/EFCore.NamingConventions)                                                   |
+- Entity Framework Core  
+  [Microsoft.EntityFrameworkCore](https://www.nuget.org/packages/Microsoft.EntityFrameworkCore)
+
+- EFCore Tools (CLI)  
+  [Microsoft.EntityFrameworkCore.Tools](https://www.nuget.org/packages/Microsoft.EntityFrameworkCore.Tools)
+
+- EFCore Tools (Design)  
+  [Microsoft.EntityFrameworkCore.Design](https://www.nuget.org/packages/Microsoft.EntityFrameworkCore.Design)
+
+- .NET Identiy Entity Framework Core  
+  [Microsoft.AspNetCore.Identity.EntityFrameworkCore](https://www.nuget.org/packages/Microsoft.AspNetCore.Identity.EntityFrameworkCore)
+
+- PostgreSQL Database Provider  
+  [Npgsql.EntityFrameworkCore.PostgreSQL](https://www.nuget.org/packages/Npgsql.EntityFrameworkCore.PostgreSQL)
+
+- EF Core Naming Conventions  
+  [EFCore.NamingConventions](https://www.nuget.org/packages/EFCore.NamingConventions)
 
 ## URL Routes
+
+| Admin Dashboard | Description     |
+| --------------- | --------------- |
+| `/dashboard`    | admin dashboard |
+
+| Manage User Accounts                          | Description        |
+| --------------------------------------------- | ------------------ |
+| `/manage/users`                               | staff list         |
+| `/manage/users/register`                      | register new staff |
+| `/manage/users/{account-uuid}/password/reset` | reset a password   |
+| `/manage/users/roles`                         | role list          |
+| `/manage/users/roles/create`                  | create new role    |
+
+| Manage Departments           | Description           |
+| ---------------------------- | --------------------- |
+| `/manage/departments`        | department list       |
+| `/manage/departments/create` | create new department |
+| `/manage/departments/edit`   | edit department       |
+
+| Manage submission periods            | Description           |
+| ------------------------------------ | --------------------- |
+| `/manage/submissions/periods`        | kpi period list       |
+| `/manage/submissions/periods/create` | create new kpi period |
+| `/manage/submissions/periods/edit`   | edit kpi period       |
+
+| Manage score metrics                           | Description                         |
+| ---------------------------------------------- | ----------------------------------- |
+| `/manage/key-metrics`                          | list score metrics                  |
+| `/manage/key-metrics/{department-code}/view`   | view score metrics for department   |
+| `/manage/key-metrics/{department-code}/create` | create score metrics for department |
+| `/manage/key-metrics/{department-code}/edit`   | edit score metrics for department   |
+
+| KPI Submission                                              | Description                         |
+| ----------------------------------------------------------- | ----------------------------------- |
+| `/submissions/department-scores`                            | list avaiable submissions           |
+| `/submissions/department-scores/succcess`                   | score submission success            |
+| `/submissions/department-scores/{period-name}/apply`        | apply for general department scores |
+| `/submissions/department-metric-scores`                     | list avaiable submissions           |
+| `/submissions/department-metric-scores/{period-name}/apply` | apply for department metrics scores |
+
+| Reports                                                            | Description |
+| ------------------------------------------------------------------ | ----------- |
+| `/reports/submissions/department-scores`                           |             |
+| `/reports/submissions/department-scores/view/{period-name}`        |             |
+| `/reports/submissions/department-metric-scores`                    |             |
+| `/reports/submissions/department-metric-scores/view/{period-name}` |             |
+
+| Route                     | Description                |
+| ------------------------- | -------------------------- |
+| `/account/me`             | view profile               |
+| `/account/password/reset` | request password reset     |
+| `/account/login`          | login                      |
+| `/account/logout`         | logout                     |
+| `/account/success`        | register new staff success |
+
+| Route    | Description |
+| -------- | ----------- |
+| `/about` | about page  |
 
 ### Razor Pages
 
