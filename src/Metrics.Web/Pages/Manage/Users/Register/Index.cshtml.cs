@@ -11,20 +11,20 @@ using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json;
 
-namespace Metrics.Web.Pages.Manage.Users;
+namespace Metrics.Web.Pages.Manage.Users.Register;
 
 [Authorize(Policy = "CanAccessAdminFeaturePolicy")]
-public class RegisterModel : PageModel
+public class IndexModel : PageModel
 {
-    private readonly ILogger<RegisterModel> _logger;
+    private readonly ILogger<IndexModel> _logger;
     private readonly RoleManager<ApplicationRole> _roleManager;
     // private readonly IUserAccountService _userAccountService;
     private readonly IUserService _userService;
     private readonly IUserTitleService _userTitleService;
     private readonly IDepartmentService _departmentService;
 
-    public RegisterModel(
-        ILogger<RegisterModel> logger,
+    public IndexModel(
+        ILogger<IndexModel> logger,
         RoleManager<ApplicationRole> roleManager,
         // IUserAccountService userAccountService,
         IUserService userService,

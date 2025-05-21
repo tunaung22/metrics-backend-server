@@ -22,8 +22,10 @@ public class ResetModel : PageModel
     public required InputModel Input { get; set; }
 
     // =============== HANDLERS ================================================
-    public void OnGet()
+    public IActionResult OnGet()
     {
+        // TODO: Not implemented
+        return RedirectToPage("/Index");
     }
 
     public IActionResult OnPostAsync()

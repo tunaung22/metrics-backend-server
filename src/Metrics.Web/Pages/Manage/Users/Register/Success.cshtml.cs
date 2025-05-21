@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Text.Json;
 
-namespace Metrics.Web.Pages.Manage.Users;
+namespace Metrics.Web.Pages.Manage.Users.Register;
 
 public class SuccessModel : PageModel
 {

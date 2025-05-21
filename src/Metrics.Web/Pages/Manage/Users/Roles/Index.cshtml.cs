@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace Metrics.Web.Pages.Manage.Roles;
+namespace Metrics.Web.Pages.Manage.Users.Roles;
 
 [Authorize(Policy = "CanAccessAdminFeaturePolicy")]
 public class IndexModel : PageModel
