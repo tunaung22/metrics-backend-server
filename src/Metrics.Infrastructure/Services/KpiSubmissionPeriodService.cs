@@ -13,16 +13,16 @@ public class KpiSubmissionPeriodService : IKpiSubmissionPeriodService
 {
     private readonly MetricsDbContext _context;
     private readonly ILogger<KpiSubmissionPeriodService> _logger;
-    private readonly IKpiPeriodRepository _kpiPeriodRepository;
+    private readonly IKpiSubmissionPeriodRepository _kpiSubmissionPeriodRepository;
 
     public KpiSubmissionPeriodService(
         MetricsDbContext context,
         ILogger<KpiSubmissionPeriodService> logger,
-        IKpiPeriodRepository kpiPeriodRepository)
+        IKpiSubmissionPeriodRepository kpiSubmissionPeriodRepository)
     {
         _context = context;
         _logger = logger;
-        _kpiPeriodRepository = kpiPeriodRepository;
+        _kpiSubmissionPeriodRepository = kpiSubmissionPeriodRepository;
     }
 
 
@@ -31,7 +31,7 @@ public class KpiSubmissionPeriodService : IKpiSubmissionPeriodService
     {
         try
         {
-            _kpiPeriodRepository.Create(entity);
+            _kpiSubmissionPeriodRepository.Create(entity);
             await _context.SaveChangesAsync();
 
             return entity;
@@ -63,19 +63,19 @@ public class KpiSubmissionPeriodService : IKpiSubmissionPeriodService
             if (string.IsNullOrEmpty(periodName) || string.IsNullOrWhiteSpace(periodName))
                 throw new ArgumentNullException("Period name is required.");
 
-            var targetPeriod = await _kpiPeriodRepository.FindByPeriodNameAsync(periodName);
+            var targetPeriod = await _kpiSubmissionPeriodRepository.FindByPeriodNameAsync(periodName);
             if (targetPeriod == null)
                 throw new NotFoundException("KPI Period not found.");
             // Handle concurrency (example using row version)
             // if (existing.RowVersion != department.RowVersion)
             //     return Result<Department>.Fail("Concurrency conflict.");
-            _kpiPeriodRepository.Update(targetPeriod);
+            _kpiSubmissionPeriodRepository.Update(targetPeriod);
             targetPeriod.PeriodName = entity.PeriodName;
             targetPeriod.SubmissionStartDate = entity.SubmissionStartDate;
             targetPeriod.SubmissionEndDate = entity.SubmissionEndDate;
 
             await _context.SaveChangesAsync();
-            var updatedEntity = await _kpiPeriodRepository.FindByPeriodNameAsync(periodName);
+            var updatedEntity = await _kpiSubmissionPeriodRepository.FindByPeriodNameAsync(periodName);
 
             return updatedEntity;
         }
@@ -93,11 +93,11 @@ public class KpiSubmissionPeriodService : IKpiSubmissionPeriodService
             if (string.IsNullOrEmpty(periodName) || string.IsNullOrWhiteSpace(periodName))
                 throw new ArgumentNullException("Period name is required.");
 
-            var targetPeriod = await _kpiPeriodRepository.FindByPeriodNameAsync(periodName);
+            var targetPeriod = await _kpiSubmissionPeriodRepository.FindByPeriodNameAsync(periodName);
             if (targetPeriod == null)
                 return true; // Idempotent: Treat as success
 
-            _kpiPeriodRepository.Delete(targetPeriod);
+            _kpiSubmissionPeriodRepository.Delete(targetPeriod);
 
             return await _context.SaveChangesAsync() > 0;
         }
@@ -112,7 +112,7 @@ public class KpiSubmissionPeriodService : IKpiSubmissionPeriodService
     {
         try
         {
-            var kpiPeriod = await _kpiPeriodRepository.FindByIdAsync(id);
+            var kpiPeriod = await _kpiSubmissionPeriodRepository.FindByIdAsync(id);
             if (kpiPeriod == null)
                 throw new NotFoundException($"KPI Period with id {id} not found.");
 
@@ -132,7 +132,7 @@ public class KpiSubmissionPeriodService : IKpiSubmissionPeriodService
             if (string.IsNullOrEmpty(periodName) || string.IsNullOrWhiteSpace(periodName))
                 throw new ArgumentNullException("Parameter periodName is required.");
 
-            var kpiPeriod = await _kpiPeriodRepository.FindByPeriodNameAsync(periodName);
+            var kpiPeriod = await _kpiSubmissionPeriodRepository.FindByPeriodNameAsync(periodName);
             if (kpiPeriod == null)
                 throw new NotFoundException($"KPI Period with period name {periodName} not found.");
 
@@ -152,7 +152,7 @@ public class KpiSubmissionPeriodService : IKpiSubmissionPeriodService
             if (string.IsNullOrEmpty(periodName) || string.IsNullOrWhiteSpace(periodName))
                 throw new ArgumentNullException("Parameter periodName is required.");
 
-            var kpiPeriod = await _kpiPeriodRepository.FindByPeriodNameAsync(periodName);
+            var kpiPeriod = await _kpiSubmissionPeriodRepository.FindByPeriodNameAsync(periodName);
             if (kpiPeriod == null)
                 throw new NotFoundException($"KPI Period with period name {periodName} not found.");
 
@@ -169,7 +169,7 @@ public class KpiSubmissionPeriodService : IKpiSubmissionPeriodService
     {
         try
         {
-            var kpiPeriods = await _kpiPeriodRepository.FindAllAsQueryable()
+            var kpiPeriods = await _kpiSubmissionPeriodRepository.FindAllAsQueryable()
                 .ToListAsync();
 
             return kpiPeriods;
@@ -185,7 +185,7 @@ public class KpiSubmissionPeriodService : IKpiSubmissionPeriodService
     {
         try
         {
-            var kpiPeriods = await _kpiPeriodRepository.FindAllAsQueryable()
+            var kpiPeriods = await _kpiSubmissionPeriodRepository.FindAllAsQueryable()
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
@@ -203,7 +203,7 @@ public class KpiSubmissionPeriodService : IKpiSubmissionPeriodService
     {
         try
         {
-            var kpiPeriods = await _kpiPeriodRepository.FindAllAsQueryable()
+            var kpiPeriods = await _kpiSubmissionPeriodRepository.FindAllAsQueryable()
                 // .Skip((pageNumber - 1) * pageSize)
                 // .Take(pageSize)
                 .Where(e =>
@@ -224,7 +224,7 @@ public class KpiSubmissionPeriodService : IKpiSubmissionPeriodService
     {
         try
         {
-            return await _kpiPeriodRepository.KpiPeriodExistsAsync(kpiName);
+            return await _kpiSubmissionPeriodRepository.KpiPeriodExistsAsync(kpiName);
         }
         catch (Exception ex)
         {
@@ -238,7 +238,7 @@ public class KpiSubmissionPeriodService : IKpiSubmissionPeriodService
     {
         try
         {
-            return await _kpiPeriodRepository.FindCountAsync();
+            return await _kpiSubmissionPeriodRepository.FindCountAsync();
         }
         catch (Exception ex)
         {

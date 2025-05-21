@@ -2,7 +2,7 @@ using Metrics.Application.Domains;
 
 namespace Metrics.Application.Interfaces.IRepositories;
 
-public interface IKpiPeriodRepository
+public interface IKpiSubmissionPeriodRepository
 {
     void Create(KpiSubmissionPeriod entity);
     void Update(KpiSubmissionPeriod entity);

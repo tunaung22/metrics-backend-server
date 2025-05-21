@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Metrics.Infrastructure.Repositories;
 
-public class KpiSubmissionPeriodRepository : IKpiPeriodRepository
+public class KpiSubmissionPeriodRepository : IKpiSubmissionPeriodRepository
 {
     private readonly MetricsDbContext _context;
 
