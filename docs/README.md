@@ -86,23 +86,44 @@ KPI Score are submitted by the following category:
 
 ## URL Routes
 
+| Pages    | Description |
+| -------- | ----------- |
+| `/`      | home page   |
+| `/about` | about page  |
+
 | Admin Dashboard | Description     |
 | --------------- | --------------- |
 | `/dashboard`    | admin dashboard |
 
-| Manage User Accounts                          | Description        |
-| --------------------------------------------- | ------------------ |
-| `/manage/users`                               | staff list         |
-| `/manage/users/register`                      | register new staff |
-| `/manage/users/{account-uuid}/password/reset` | reset a password   |
-| `/manage/users/roles`                         | role list          |
-| `/manage/users/roles/create`                  | create new role    |
+| Account                           | Description            |
+| --------------------------------- | ---------------------- |
+| `/account/me`                     | view profile           |
+| `/account/edit`                   | edit profile (self)    |
+| `/account/login`                  | login                  |
+| `/account/logout`                 | logout                 |
+| `/account/manage/password/change` | request password reset |
+| `/account/manage/password/reset`  | Not Implemented!       |
 
-| Manage Departments           | Description           |
-| ---------------------------- | --------------------- |
-| `/manage/departments`        | department list       |
-| `/manage/departments/create` | create new department |
-| `/manage/departments/edit`   | edit department       |
+---
+
+| Manage User Accounts             | Description               |
+| -------------------------------- | ------------------------- |
+| `/manage/users`                  | user list                 |
+| `/manage/users/{userCode}`       | user details              |
+| `/manage/users/edit/{userCode}`  | edit user                 |
+| `/manage/users/register`         | register new user         |
+| `/manage/users/register/success` | register new user success |
+| `/manage/users/groups`           | user list                 |
+| `/manage/users/groups/create`    | user list                 |
+| `/manage/users/groups/edit`      | user list                 |
+| `/manage/users/roles`            | role list                 |
+| `/manage/users/roles/create`     | create new role           |
+
+| Manage Departments                          | Description           |
+| ------------------------------------------- | --------------------- |
+| `/manage/departments`                       | department list       |
+| `/manage/departments/create`                | create new department |
+| `/manage/departments/edit/{departmentCode}` | edit department       |
 
 | Manage submission periods            | Description           |
 | ------------------------------------ | --------------------- |
@@ -110,39 +131,42 @@ KPI Score are submitted by the following category:
 | `/manage/submissions/periods/create` | create new kpi period |
 | `/manage/submissions/periods/edit`   | edit kpi period       |
 
-| Manage score metrics                           | Description                         |
-| ---------------------------------------------- | ----------------------------------- |
-| `/manage/key-metrics`                          | list score metrics                  |
-| `/manage/key-metrics/{department-code}/view`   | view score metrics for department   |
-| `/manage/key-metrics/{department-code}/create` | create score metrics for department |
-| `/manage/key-metrics/{department-code}/edit`   | edit score metrics for department   |
+| Manage score metrics (KEYS)                               | Description                         |
+| --------------------------------------------------------- | ----------------------------------- |
+| `/manage/submissions/keymetrics`                          | list score metrics                  |
+| `/manage/submissions/keymetrics/{department-code}`        | view score metrics for department   |
+| `/manage/submissions/keymetrics/create/{department-code}` | create score metrics for department |
+| `/manage/submissions/keymetrics/edit/{department-code}`   | edit score metrics for department   |
 
-| KPI Submission                                              | Description                         |
-| ----------------------------------------------------------- | ----------------------------------- |
-| `/submissions/department-scores`                            | list avaiable submissions           |
-| `/submissions/department-scores/succcess`                   | score submission success            |
-| `/submissions/department-scores/{period-name}/apply`        | apply for general department scores |
-| `/submissions/department-metric-scores`                     | list avaiable submissions           |
-| `/submissions/department-metric-scores/{period-name}/apply` | apply for department metrics scores |
+---
 
-| Reports                                                            | Description |
-| ------------------------------------------------------------------ | ----------- |
-| `/reports/submissions/department-scores`                           |             |
-| `/reports/submissions/department-scores/view/{period-name}`        |             |
-| `/reports/submissions/department-metric-scores`                    |             |
-| `/reports/submissions/department-metric-scores/view/{period-name}` |             |
+| Submissions Index Page (for staff, hod, management) | Description            |
+| --------------------------------------------------- | ---------------------- |
+| `/submissions`                                      | submissions index page |
 
-| Route                     | Description                |
-| ------------------------- | -------------------------- |
-| `/account/me`             | view profile               |
-| `/account/password/reset` | request password reset     |
-| `/account/login`          | login                      |
-| `/account/logout`         | logout                     |
-| `/account/success`        | register new staff success |
+| KPI Submission (for staff, hod, management)            | Description           |
+| ------------------------------------------------------ | --------------------- |
+| `/submissions/departments/scores`                      | list submissions      |
+| `/submissions/departments/scores/submit/{period-name}` | submit for kpi scores |
+| `/submissions/departments/scores/success`              | submission success    |
 
-| Route    | Description |
-| -------- | ----------- |
-| `/about` | about page  |
+| KEY KPI Submission                                           | Description               |
+| ------------------------------------------------------------ | ------------------------- |
+| `/submissions/departments/metricscores`                      | list submissions          |
+| `/submissions/departments/metricscores/submit/{period-name}` | submit for key kpi scores |
+| `/submissions/departments/metricscores/success`              | submission success        |
+
+---
+
+| Reports                                                                         | Description                             |
+| ------------------------------------------------------------------------------- | --------------------------------------- |
+| `/reports/submissions/departments/`                                             | summary                                 |
+| `/reports/submissions/departments/kpi`                                          | list kpi scores                         |
+| `/reports/submissions/departments/kpi/view/{period-name}`                       | list kpi scores by period               |
+| `/reports/submissions/departments/kpi/view/{period-name}/?group={groupName}`    | list kpi scores by period by user group |
+| `/reports/submissions/departments/keykpi`                                       | list key kpi                            |
+| `/reports/submissions/departments/keykpi/view/{period-name}`                    | list key kpi by period                  |
+| `/reports/submissions/departments/keykpi/view/{period-name}/?group={groupName}` | list key kpi by period by user group    |
 
 ### Razor Pages
 
