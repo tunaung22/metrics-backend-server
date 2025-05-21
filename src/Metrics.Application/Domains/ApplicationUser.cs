@@ -14,9 +14,11 @@ public class ApplicationUser : IdentityUser, IAuditColumn
 
     // ----- Foreign Keys
     public long DepartmentId { get; set; }
+    public long UserTitleId { get; set; }
 
-    // ----- Reference Navigational Properties  
+    // ----- Reference Navigational Properties
     public Department Department { get; set; } = null!;
+    public UserTitle UserTitle { get; set; } = null!;
 
     // ----- Collection Navigational Properties
     public List<KpiSubmission> KpiSubmissions { get; set; } = [];
