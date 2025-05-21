@@ -1,0 +1,65 @@
+﻿@page
+@model Metrics.Web.Pages.Manage.Users.Groups.CreateModel
+@{
+    ViewData["Title"] = "Add User Group";
+}
+
+<div class="container">
+    <h4>Add New User Group</h4>
+
+    @* ========================================================================== *@
+    @if (!ModelState.IsValid)
+    {
+        <div class="alert alert-danger">
+            <h4>There were some errors:</h4>
+            <ul>
+                @foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    <li>@error.ErrorMessage</li>
+                }
+            </ul>
+        </div>
+    }
+
+    @* =============== Form ===================================================== *@
+    <div class="col-sm-12 col-lg-8 mx-auto px-4 py-4">
+        <form method="post" asp-route-returnUrl="@Model.ReturnUrl">
+            <div class="row row-lg-6">
+                <div class="form-group col-md-4">
+                    <label asp-for="Input.TitleName">Title</label>
+                    <input asp-for="Input.TitleName" class="form-control" />
+                    <div><span asp-validation-for="Input.TitleName" class="text-danger"></span></div>
+                </div>
+            </div>
+            <div class="row row-lg-6">
+                <div class="form-group col-md-4">
+                    <label asp-for="Input.Description">Description (optional)</label>
+                    <input asp-for="Input.Description" class="form-control" />
+                    <div><span asp-validation-for="Input.Description" class="text-danger"></span></div>
+                </div>
+            </div>
+
+            <div class="row mt-4">
+                <div class="form-group col-md d-flex align-items-center gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle"> </i>Save
+                    </button>
+                    <button type="submit" class="btn btn-warning"
+                        asp-page-handler="Cancel" formnovalidate>
+                        <i class="bi bi-x-circle"> </i>Cancel
+                    </button>
+                </div> 
+            </div>
+        </form>
+    </div>
+</div>
+
+
+@* =============== Scripts ================================================== *@
+@section Scripts {
+    @* <partial name="_ValidationScriptsPartial" /> *@
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+
+    <script>
+    </script>
+}
