@@ -64,24 +64,23 @@ public class ChangeModel : PageModel
         public string? ConfirmPassword { get; set; }
     }
 
+    public string ReturnUrl { get; set; } = string.Empty;
 
     // =============== HANDLERS ================================================
 
     public async Task<IActionResult> OnGetAsync(string? returnUrl)
     {
-        ViewData["ReturnUrl"] = returnUrl;
+        if (!string.IsNullOrEmpty(returnUrl))
+            ReturnUrl = returnUrl;
 
         var user = await _userManager.GetUserAsync(User);
         if (user == null)
-        {
             return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
-        }
 
         var hasPassword = await _userManager.HasPasswordAsync(user);
         if (!hasPassword)
-        {
-            return RedirectToPage("./SetPassword");
-        }
+            // return RedirectToPage("./SetPassword");
+            ModelState.AddModelError(string.Empty, "User has no password set.");
 
         return Page();
     }
@@ -116,19 +115,15 @@ public class ChangeModel : PageModel
         return RedirectToPage();
     }
 
-    public IActionResult OnPostCancel(string? returnUrl)
+    public IActionResult OnPostCancel()
     {
-        if (string.IsNullOrEmpty(returnUrl))
-        {
-            return RedirectToPage();
-        }
-        else
-        {
+        var returnUrl = ViewData["ReturnUrl"] as string;
+        if (!string.IsNullOrEmpty(returnUrl))
             return LocalRedirect(returnUrl);
-        }
+
+        return RedirectToPage("Index");
     }
 
     // ========== Methods ==================================================
-
 
 }

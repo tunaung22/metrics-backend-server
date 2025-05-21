@@ -10,7 +10,7 @@
         <h3 class="flex-grow-1">Manage Users</h3>
         <span class="justify-content-end gap-2">
             <a class="btn btn-success" 
-                asp-page="Register"
+                asp-page="Register/Index"
                 asp-route-returnUrl="@Url.Page("Index")"><i class="bi bi-plus"></i> Register</a>
         </span>
     </div>
@@ -52,8 +52,9 @@
                             @* <td>@e.PhoneNumber</td> *@
                             <td>
                                 <a asp-page="Edit" 
-                                    asp-route-user="@e.UserCode"
+                                    asp-route-userCode="@e.UserCode"
                                     asp-route-returnUrl="@Url.Page("Index")"
+                                    @* asp-route-user="@e.UserCode" *@
                                     class="link-underline-primary">Edit</a>
                             </td>
                         </tr>

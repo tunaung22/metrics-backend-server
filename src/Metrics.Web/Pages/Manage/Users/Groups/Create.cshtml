@@ -22,31 +22,38 @@
     }
 
     @* =============== Form ===================================================== *@
-    <div class="col-sm-12 col-lg-8 mx-auto px-4 py-4">
+    <div class="col-sm-12 col-md-4 mx-auto px-4 py-4 bg-light">
         <form method="post" asp-route-returnUrl="@Model.ReturnUrl">
-            <div class="row row-lg-6">
-                <div class="form-group col-md-4">
+            <div class="row">
+                <div class="form-group col">
                     <label asp-for="Input.TitleName">Title</label>
                     <input asp-for="Input.TitleName" class="form-control" />
                     <div><span asp-validation-for="Input.TitleName" class="text-danger"></span></div>
                 </div>
             </div>
-            <div class="row row-lg-6">
-                <div class="form-group col-md-4">
+            <div class="row">
+                <div class="form-group col">
                     <label asp-for="Input.Description">Description (optional)</label>
                     <input asp-for="Input.Description" class="form-control" />
                     <div><span asp-validation-for="Input.Description" class="text-danger"></span></div>
                 </div>
             </div>
-
             <div class="row mt-4">
-                <div class="form-group col-md d-flex align-items-center gap-2">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-check-circle"> </i>Save
-                    </button>
+                @* <div class="d-flex justify-content-end">
+                    <button asp-page-handler="Cancel" type="submit"
+                            class="btn btn-warning ms-2">
+                                <i class="bi bi-x-circle"> </i>Cancel</button>
+                    <button type="submit" 
+                            class="btn btn-primary ms-2">
+                                <i class="bi bi-check-circle"> </i>Update</button>
+                </div> *@
+                <div class="form-group col d-flex justify-content-end gap-2">
                     <button type="submit" class="btn btn-warning"
                         asp-page-handler="Cancel" formnovalidate>
                         <i class="bi bi-x-circle"> </i>Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle"> </i>Save
                     </button>
                 </div> 
             </div>

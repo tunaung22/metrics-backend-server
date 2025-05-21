@@ -12,7 +12,8 @@
         <span class="justify-content-end gap-2">
             <a class="btn btn-success" 
                 asp-page="Create"
-                asp-route-returnUrl="@Url.Page("Index")"><i class="bi bi-plus"> </i>New</a>
+                asp-route-returnUrl="@Url.Page("Index")">
+                <i class="bi bi-plus"> </i>New</a>
         </span>
     </div>
 
@@ -64,7 +65,7 @@
                                         <input type="hidden" name="departmentCode" value="@department.DepartmentCode" />
                                         <a class="btn btn-primary"
                                             asp-page="Edit"
-                                            asp-route-departmentCode="@department.DepartmentCode" 
+                                            asp-route-departmentCode="@department.DepartmentCode"
                                             asp-route-returnUrl="@HttpContext.Request.Path">
                                             Edit
                                         </a>

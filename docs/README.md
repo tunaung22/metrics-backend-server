@@ -123,37 +123,37 @@ KPI Score are submitted by the following category:
 
 ---
 
-| Manage User Accounts             | Description               |
-| -------------------------------- | ------------------------- |
-| `/manage/users`                  | user list                 |
-| `/manage/users/{userCode}`       | user details              |
-| `/manage/users/edit/{userCode}`  | edit user                 |
-| `/manage/users/register`         | register new user         |
-| `/manage/users/register/success` | register new user success |
-| `/manage/users/groups`           | user list                 |
-| `/manage/users/groups/create`    | user list                 |
-| `/manage/users/groups/edit`      | user list                 |
-| `/manage/users/roles`            | role list                 |
-| `/manage/users/roles/create`     | create new role           |
+| Manage User Accounts               | Description               |
+| ---------------------------------- | ------------------------- |
+| `/manage/users`                    | user list                 |
+| `/manage/users/{userCode}`         | user details              |
+| `/manage/users/{userCode}/edit`    | edit user                 |
+| `/manage/users/register`           | register new user         |
+| `/manage/users/register/success`   | register new user success |
+| `/manage/users/groups`             | user list                 |
+| `/manage/users/groups/create`      | user list                 |
+| `/manage/users/groups/{code}/edit` | user list                 |
+| `/manage/users/roles`              | role list                 |
+| `/manage/users/roles/create`       | create new role           |
 
 | Manage Departments                          | Description           |
 | ------------------------------------------- | --------------------- |
 | `/manage/departments`                       | department list       |
 | `/manage/departments/create`                | create new department |
-| `/manage/departments/edit/{departmentCode}` | edit department       |
+| `/manage/departments/{departmentCode}/edit` | edit department       |
 
-| Manage submission periods            | Description           |
-| ------------------------------------ | --------------------- |
-| `/manage/submissions/periods`        | kpi period list       |
-| `/manage/submissions/periods/create` | create new kpi period |
-| `/manage/submissions/periods/edit`   | edit kpi period       |
+| Manage submission periods                       | Description           |
+| ----------------------------------------------- | --------------------- |
+| `/manage/submissions/periods`                   | kpi period list       |
+| `/manage/submissions/periods/create`            | create new kpi period |
+| `/manage/submissions/periods/{periodName}/edit` | edit kpi period       |
 
 | Manage score metrics (KEYS)                               | Description                         |
 | --------------------------------------------------------- | ----------------------------------- |
 | `/manage/submissions/keymetrics`                          | list score metrics                  |
 | `/manage/submissions/keymetrics/{department-code}`        | view score metrics for department   |
 | `/manage/submissions/keymetrics/create/{department-code}` | create score metrics for department |
-| `/manage/submissions/keymetrics/edit/{department-code}`   | edit score metrics for department   |
+| `/manage/submissions/keymetrics/{department-code}/edit`   | edit score metrics for department   |
 
 ---
 
@@ -175,15 +175,15 @@ KPI Score are submitted by the following category:
 
 ---
 
-| Reports                                                                         | Description                             |
-| ------------------------------------------------------------------------------- | --------------------------------------- |
-| `/reports/submissions/departments/`                                             | summary                                 |
-| `/reports/submissions/departments/kpi`                                          | list kpi scores                         |
-| `/reports/submissions/departments/kpi/view/{period-name}`                       | list kpi scores by period               |
-| `/reports/submissions/departments/kpi/view/{period-name}/?group={groupName}`    | list kpi scores by period by user group |
-| `/reports/submissions/departments/keykpi`                                       | list key kpi                            |
-| `/reports/submissions/departments/keykpi/view/{period-name}`                    | list key kpi by period                  |
-| `/reports/submissions/departments/keykpi/view/{period-name}/?group={groupName}` | list key kpi by period by user group    |
+| Reports                                                                         | Description                                    |
+| ------------------------------------------------------------------------------- | ---------------------------------------------- |
+| `/reports/submissions/departments/`                                             | summary                                        |
+| `/reports/submissions/departments/kpi`                                          | list kpi scores                                |
+| `/reports/submissions/departments/kpi/view/{period-name}`                       | list kpi scores by period                      |
+| `/reports/submissions/departments/kpi/view/{period-name}/?group={groupName}`    | list kpi scores by period filter by user group |
+| `/reports/submissions/departments/keykpi`                                       | list key kpi                                   |
+| `/reports/submissions/departments/keykpi/view/{period-name}`                    | list key kpi by period                         |
+| `/reports/submissions/departments/keykpi/view/{period-name}/?group={groupName}` | list key kpi by period filter by user group    |
 
 ### Razor Pages
 

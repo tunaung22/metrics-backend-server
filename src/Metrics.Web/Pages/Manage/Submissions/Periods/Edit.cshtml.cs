@@ -100,9 +100,8 @@ public class EditModel : PageModel
     public IActionResult OnPostCancel()
     {
         if (!string.IsNullOrEmpty(ReturnUrl))
-        {
             return LocalRedirect(ReturnUrl);
-        }
+
         return RedirectToPage("./Index");
     }
 }

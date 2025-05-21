@@ -36,8 +36,11 @@ public class EditModel : PageModel
 
 
     // ========== HANDLERS ========================================
-    public async Task<IActionResult> OnGet(string departmentCode)
+    public async Task<IActionResult> OnGetAsync(string departmentCode, string? returnUrl)
     {
+        if (!string.IsNullOrEmpty(returnUrl))
+            ReturnUrl = returnUrl;
+
         DepartmentCode = departmentCode;
         var result = await _departmentService.FindByDepartmentCodeAsync(departmentCode);
         if (result == null)
@@ -89,19 +92,18 @@ public class EditModel : PageModel
 
 
         // Redirect to return URL or default to Index
-        if (!string.IsNullOrEmpty(ReturnUrl))
-        {
-            return LocalRedirect(ReturnUrl);
-        }
+        var returnUrl = ViewData["ReturnUrl"] as string;
+        if (!string.IsNullOrEmpty(returnUrl))
+            return LocalRedirect(returnUrl);
+
         return RedirectToPage("./Index");
     }
 
     public IActionResult OnPostCancel()
     {
         if (!string.IsNullOrEmpty(ReturnUrl))
-        {
             return LocalRedirect(ReturnUrl);
-        }
+
         return RedirectToPage("./Index");
     }
 

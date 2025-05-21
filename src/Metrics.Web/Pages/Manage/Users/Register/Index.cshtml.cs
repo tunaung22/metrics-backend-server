@@ -46,33 +46,33 @@ public class IndexModel : PageModel
         [StringLength(20, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 5)]
         [RegularExpression(@"^[a-z0-9]*$", ErrorMessage = "Username can only contain letters and numbers.")]
         [Display(Name = "Username")]
-        public string? UserName { get; set; } // Use username instead of email
+        public string UserName { get; set; } = null!; // Use username instead of email
 
         [Required(ErrorMessage = "Email address is required.")]
         [EmailAddress(ErrorMessage = "Invalid email address.")]
         [Display(Name = "Email")]
-        public string? Email { get; set; }
+        public string Email { get; set; } = null!;
 
         [Required(ErrorMessage = "Password is required.")]
         [StringLength(20, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 6)]
         [DataType(DataType.Password)]
         [Display(Name = "Password")]
-        public string? Password { get; set; }
+        public string Password { get; set; } = null!;
 
         [Required(ErrorMessage = "Confirm-password is required.")]
         [StringLength(20, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 6)]
         [DataType(DataType.Password)]
         [Display(Name = "Confirm-password")]
         [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
-        public string? ConfirmPassword { get; set; }
+        public string ConfirmPassword { get; set; } = null!;
 
         [Required(ErrorMessage = "User Code is required.")]
         [Display(Name = "User Code")]
-        public string? UserCode { get; set; }
+        public string UserCode { get; set; } = null!;
 
         [Required(ErrorMessage = "Name is required.")]
         [Display(Name = "Full Name")]
-        public string? FullName { get; set; }
+        public string FullName { get; set; } = null!;
 
         public string? Address { get; set; }
 
@@ -85,7 +85,7 @@ public class IndexModel : PageModel
         public long UserTitleId { get; set; }
 
         [Required(ErrorMessage = "User Role is required.")]
-        public string? RoleId { get; set; } = string.Empty;
+        public string RoleId { get; set; } = null!;
         // public List<string> RoleIds { get; set; } = [];
     }
 
@@ -108,6 +108,7 @@ public class IndexModel : PageModel
     public List<ApplicationRole> AvaiableRoles { get; set; } = [];
     // public string? SelectedDepartmentName { get; set; }
 
+    public string ReturnUrl { get; set; } = string.Empty;
 
 
     // ========== HANDLERS ==============================
@@ -162,9 +163,8 @@ public class IndexModel : PageModel
                 DepartmentId = FormInput.DepartmentId,
                 UserTitleId = FormInput.UserTitleId,
                 // RoleId = FormInput.RoleId,
-                RoleIds = new List<string> { FormInput.RoleId! }
                 // RoleIds = FormInput.RoleIds
-                // ApplicationUserId??? <- account not created then id unknown 
+                RoleIds = new List<string> { FormInput.RoleId }
             };
 
             // var result = await _userAccountService.RegisterUserAsync(createDto);
@@ -192,18 +192,11 @@ public class IndexModel : PageModel
             foreach (var error in result.Errors)
             {
                 if (error.Code == "DuplicateUserName")
-                {
                     ModelState.AddModelError("FormInput.UserName", "Username is already taken.");
-                }
                 else if (error.Code == "DuplicateEmail")
-                {
                     ModelState.AddModelError("FormInput.Email", "Email is already registered.");
-                }
                 else
-                {
                     ModelState.AddModelError(string.Empty, error.Description);
-                }
-
             }
 
             if (!ModelState.IsValid)
@@ -257,6 +250,14 @@ public class IndexModel : PageModel
             //        $"Ensure that '{nameof(ApplicationUser)}' is not an abstract class and has a parameterless constructor, or alternatively " +
             //        $"override the register page in /Areas/Identity/Pages/Account/Register.cshtml");
         }
+    }
+
+    public IActionResult OnPostCancel()
+    {
+        if (!string.IsNullOrEmpty(ReturnUrl))
+            return LocalRedirect(ReturnUrl);
+
+        return RedirectToPage("./Index");
     }
 
     // ========== METHODS ==========

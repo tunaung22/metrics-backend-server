@@ -1,4 +1,4 @@
-﻿@page "{departmentCode}"
+﻿@page "/Manage/Departments/{departmentCode}/Edit"
 @model Metrics.Web.Pages.Manage.Departments.EditModel
 @{
     ViewData["Title"] = "Update Department";
@@ -46,15 +46,15 @@
                 <div class="row">
                     <span asp-validation-for="FormInput.DepartmentName" class="text-danger"></span>
                 </div>
-                
+
                 <div class="form-group row my-2 pe-0">
                     <div class="d-flex justify-content-end">
-                        <button
-                                type="submit" 
-                                class="btn btn-primary ms-2"><i class="bi bi-check-circle"> </i>Update</button>
-                        <button asp-page-handler="Cancel" 
-                                type="submit" 
-                                class="btn btn-warning ms-2"><i class="bi bi-x-circle"> </i>Cancel</button>
+                        <button asp-page-handler="Cancel" type="submit"
+                                class="btn btn-warning ms-2" formnovalidate>
+                                    <i class="bi bi-x-circle"> </i>Cancel</button>
+                        <button type="submit" 
+                                class="btn btn-primary ms-2">
+                                    <i class="bi bi-check-circle"> </i>Update</button>
                     </div>
                     @* <input type="" name="Id" value="@Model.UpdateModel.Id" /> *@
                     @* <input type="" name="DepartmentCode" value="@Model.UpdateModel.DepartmentCode" /> *@

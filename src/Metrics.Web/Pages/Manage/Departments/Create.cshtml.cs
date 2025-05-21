@@ -63,7 +63,7 @@ public class CreateModel : PageModel
         if (!string.IsNullOrEmpty(ReturnUrl))
             return LocalRedirect(ReturnUrl);
 
-        return RedirectToPage("./Index");
+        return RedirectToPage("Index");
     }
 
     public IActionResult OnPostCancel()
@@ -72,7 +72,7 @@ public class CreateModel : PageModel
         {
             return LocalRedirect(ReturnUrl);
         }
-        return RedirectToPage("./Index");
+        return RedirectToPage("Index");
     }
 
     public class InputModel()

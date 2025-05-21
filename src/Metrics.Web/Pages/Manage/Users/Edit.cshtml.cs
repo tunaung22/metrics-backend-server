@@ -53,30 +53,26 @@ public class EditModel : PageModel
     public ApplicationUser TargetUser { get; set; }
 
     // ========== HANDLERS ==============================
-    public async Task<PageResult> OnGetAsync(string user, string? returnUrl)
+    public async Task<PageResult> OnGetAsync(string userCode, string? returnUrl)
     {
-        AvaiableRoles = await LoadAvaiableRoles();
-        DepartmentListItems = await LoadDepartmentList();
-
-
         if (!string.IsNullOrEmpty(returnUrl))
             ReturnUrl = returnUrl;
 
-        if (string.IsNullOrEmpty(user))
+        AvaiableRoles = await LoadAvaiableRoles();
+        DepartmentListItems = await LoadDepartmentList();
+
+        if (string.IsNullOrEmpty(userCode))
         {
             ModelState.AddModelError("", "User not found.");
             return Page();
         }
 
-        TargetUserCode = user;
+        TargetUserCode = userCode;
         var selectedUser = await _userManager.Users
             .Include(u => u.Department)
-            .FirstOrDefaultAsync(u => u.UserCode == user);
+            .FirstOrDefaultAsync(u => u.UserCode == userCode);
         if (selectedUser != null)
             TargetUser = selectedUser;
-
-
-
 
         return Page();
     }
@@ -84,9 +80,7 @@ public class EditModel : PageModel
     public async Task<PageResult> OnPostAsync()
     {
         if (!ModelState.IsValid)
-        {
             return Page();
-        }
 
         AvaiableRoles = await LoadAvaiableRoles();
         DepartmentListItems = await LoadDepartmentList();
@@ -97,10 +91,9 @@ public class EditModel : PageModel
     public IActionResult OnPostCancel()
     {
         if (!string.IsNullOrEmpty(ReturnUrl))
-        {
             return LocalRedirect(ReturnUrl);
-        }
-        return RedirectToPage("./Index");
+
+        return RedirectToPage("Index");
     }
 
     // ========== METHODS ==========
@@ -119,6 +112,7 @@ public class EditModel : PageModel
         ModelState.AddModelError("", "Departments not exist. Try to add department and continue.");
         return [];
     }
+
     private async Task<List<ApplicationRole>> LoadAvaiableRoles()
     {
         var roles = await _roleManager.Roles
