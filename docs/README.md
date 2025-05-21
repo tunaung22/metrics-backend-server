@@ -1,14 +1,31 @@
-# Documentation
+# Project Documentation
 
-Project Documentation
+Internal application for KPI score submission, calculating, reporting.
 
-## What?
+## Definition
 
-### Definition
+### User Group
 
-#### Department
+User group to identify user types:
 
-Each employee must be in a department.
+- Staff
+- HOD
+- Management
+
+### User Role
+
+Currently, there are only 2 user roles:
+
+- Admin
+- Staff
+
+### Department
+
+a department
+
+### Score Submission Period
+
+For representing the period for the score submission start date and end date with period name. Period name have the following format `{yyyy-mm}`: `2025-01`.
 
 ---
 
@@ -201,7 +218,7 @@ KPI Score are submitted by the following category:
 
 ![Infrastructure](./images/infrastructure.png)
 
-### Clearn Architecture
+## Clearn Architecture
 
 Reference from the Microsoft's Common web application architectures article, section [Clean Architecture](https://learn.microsoft.com/en-us/dotnet/architecture/modern-web-apps-azure/common-web-application-architectures#clean-architecture)
 
@@ -227,11 +244,39 @@ Reference from the Microsoft's Common web application architectures article, sec
 - Metrics.Web
   - Main ASP.NET app
 
-## ERD Diagrams
+## ERD/Database Diagrams
 
-![ERD](./images/erd_v0.1.png)
-![ERD](./images/erd_v0.2.png)
-![ERD](./images/erd_v0.3.png)
+### Version 0.1 (Draft)
+
+![ERD v0.1](./images/database-v0.1.png)
+
+### Version 0.2 (Draft)
+
+![ERD v0.2](./images/database-v0.2.png)
+
+### Version 0.3 (Draft)
+
+![ERD v0.3](./images/database-v0.3.png)
+
+### Version 0.4 (Draft)
+
+![ERD v0.4](./images/database-v0.4.png)
+
+### Version 0.5 (Draft)
+
+![ERD v0.5](./images/database-v0.5.png)
+
+### Version 0.6 (Draft)
+
+![ERD v0.6](./images/database-v0.6.png)
+
+### Version 0.7 (Draft)
+
+![ERD v0.7](./images/database-v0.7.png)
+
+### Version 0.8 (Draft)
+
+![ERD v0.8](./images/database-v0.8.png)
 
 ## Client UIs
 
