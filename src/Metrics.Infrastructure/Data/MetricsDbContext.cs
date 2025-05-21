@@ -23,6 +23,7 @@ public class MetricsDbContext : IdentityDbContext<ApplicationUser, ApplicationRo
     // ========== DbSet ========================================================
     // public DbSet<ApplicationUser> ApplicationUsers { get; set; }
     // public DbSet<ApplicationRole> ApplicationRoles { get; set; }
+    public DbSet<UserTitle> UserTitles { get; set; }
     public DbSet<Department> Departments { get; set; }
     public DbSet<DepartmentKeyKpi> DepartmentKeyKpis { get; set; }
     public DbSet<KeyKpi> KeyKpis { get; set; }
@@ -117,6 +118,8 @@ public class MetricsDbContext : IdentityDbContext<ApplicationUser, ApplicationRo
         */
         builder.ApplyConfiguration(new ApplicationUserConfig());
         builder.ApplyConfiguration(new ApplicationRoleConfig());
+        builder.ApplyConfiguration(new UserTitleConfig());
+
         builder.ApplyConfiguration(new DepartmentConfig());
         builder.ApplyConfiguration(new DepartmentKeyKpiConfig());
         builder.ApplyConfiguration(new KeyKpiConfig());
@@ -124,7 +127,6 @@ public class MetricsDbContext : IdentityDbContext<ApplicationUser, ApplicationRo
         builder.ApplyConfiguration(new KpiSubmissionConfig());
         builder.ApplyConfiguration(new KeyKpiSubmissionConfig());
         builder.ApplyConfiguration(new KeyKpiSubmissionItemConfig());
-
         // ----------- Seeding -----------
         // builder.Entity<...>().HasData(...);
         // builder.Entity<Department>().HasData(
