@@ -35,7 +35,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Pages/Reports/Submissions/Departments/Kpi/View/" />
     <Folder Include="Security/PolicyHandlers/" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Watch Include="**/*" Exclude="**/logs/*.log;*.log" />
   </ItemGroup>
 
 </Project>

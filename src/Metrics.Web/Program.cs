@@ -17,6 +17,7 @@ using Metrics.Application.Exceptions;
 using Metrics.Infrastructure.Data.Seedings;
 using Microsoft.AspNetCore.Authorization;
 using Metrics.Infrastructure.Data.DatabaseMigrator;
+using Metrics.Application.DTOs.SeedingDtos;
 
 
 // ========== Load .env ===========================================
@@ -24,15 +25,32 @@ var dotenv = Path.Combine(Directory.GetCurrentDirectory(), ".env");
 DotenvLoader.Load(dotenv);
 
 // ========== Serilog ================
+var enviroment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production";
+var logFilePath = Path.Combine(Directory.GetCurrentDirectory(), "Logs", $"log-{enviroment}.txt");
+
 Log.Logger = new LoggerConfiguration()
-    .MinimumLevel.Debug()
+    .MinimumLevel.Is(enviroment == "Production" ?
+        Serilog.Events.LogEventLevel.Fatal :
+        Serilog.Events.LogEventLevel.Debug)
     .WriteTo.Console()
-    .WriteTo.File("Logs/log.txt", rollingInterval: RollingInterval.Day)
+    .WriteTo.Conditional(
+        e => enviroment == "Production",
+        w => w.File(
+            logFilePath,
+            buffered: true,
+            rollingInterval: RollingInterval.Day,
+            fileSizeLimitBytes: 100 * 1024 * 1024, // 100 MB
+            rollOnFileSizeLimit: true, // This ensures a new file is created when the limit is reached
+            restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Information
+        )
+    )
     .CreateLogger();
 
 
 // ========== BUILDER ===========================
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Host.UseSerilog();
 
 /* Configuration loading orders: 
     1) command-line args -> 2) enviroment variables -> 3) user secrets ->
@@ -144,40 +162,44 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
-builder.Services.AddAuthorization(options =>
-{
-    options.FallbackPolicy = new AuthorizationPolicyBuilder()
+builder.Services.AddAuthorizationBuilder()
+    .SetFallbackPolicy(new AuthorizationPolicyBuilder()
         .RequireAuthenticatedUser()
-        .Build();
-
-    options.AddPolicy("RequiresAdminRole", policy => policy.RequireRole("admin"));
-
-    options.AddPolicy("CanAccessAdminFeaturePolicy", policy =>
-        {
-            policy.RequireClaim("Permission", "CanAccessAdminFeature");
-        });
-    options.AddPolicy("CanSubmitScorePolicy", policy =>
-        policy.RequireClaim("Permission", "CanSubmitKPIScore"));
-});
+        .Build())
+    // .AddPolicy("RequiresAdminRole", policy => policy.RequireRole("admin"))
+    .AddPolicy("CanAccessAdminFeaturePolicy", policy =>
+    {
+        // policy.RequireClaim("Permission", "CanAccessAdminFeature");
+        policy.RequireRole("Admin");
+    })
+    .AddPolicy("CanSubmitScorePolicy", policy =>
+    {
+        // policy.RequireClaim("Permission", "ScoreSubmissionCandidate");
+        policy
+            .RequireRole("Staff");
+        // .RequireRole("hod")
+        // .RequireRole("management");
+    });
 
 
 builder.Services.AddOpenApi();
 
 // ========== Register services and repositories ==========
-// builder.Services.AddScoped<>();
-// ===== Unit of Work =======
+// ===== Unit of Work (not using) =======
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 // ===== Repository =========
 builder.Services.AddScoped<IDepartmentRepository, DepartmentRepository>();
-builder.Services.AddScoped<IKpiPeriodRepository, KpiSubmissionPeriodRepository>();
+builder.Services.AddScoped<IKpiSubmissionPeriodRepository, KpiSubmissionPeriodRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IUserTitleRepository, UserTitleRepository>();
 builder.Services.AddScoped<IKpiSubmissionRepository, KpiSubmissionRepository>();
 // ===== Service ============
 builder.Services.AddScoped<ISeedingService, SeedingService>();
 builder.Services.AddScoped<IDepartmentService, DepartmentService>();
 builder.Services.AddScoped<IKpiSubmissionPeriodService, KpiSubmissionPeriodService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IUserTitleService, UserTitleService>();
 builder.Services.AddScoped<IUserAccountService, UserAccountService>();
 builder.Services.AddScoped<IUserRoleService, UserRoleService>();
 builder.Services.AddScoped<IKpiSubmissionService, KpiSubmissionService>();
@@ -188,6 +210,8 @@ builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
 // ========== APPLICATION ==========
 var app = builder.Build();
+
+app.UseSerilogRequestLogging();
 
 using (var scope = app.Services.CreateScope())
 {
@@ -212,18 +236,19 @@ using (var scope = app.Services.CreateScope())
         await context.Database.CloseConnectionAsync();
     }
 
-
-
-
     // ----- RUN DB MIGRATION -----
     // var dbContext = scope.ServiceProvider.GetRequiredService<MetricsDbContext>();
     // await SchemaMigrator.MigrateDbAsync(args, context);
-
     var pendingMigrations = await context.Database.GetPendingMigrationsAsync();
-    if (args.Contains("migrate-db"))
+    if (args.Contains("migratedb"))
     {
         if (pendingMigrations.Any())
+        {
+            Console.WriteLine("========== INFO: Running pending database migrations. ==========");
             await SchemaMigrator.MigrateDbAsync(context);
+            Console.WriteLine("========== Database migration successful. ==========");
+            Console.WriteLine("=======================================================================");
+        }
         else
             Console.WriteLine("========== No database migration needs to run. ==========");
 
@@ -236,30 +261,83 @@ using (var scope = app.Services.CreateScope())
             // don't run migration
             // but show message if have pending
             Console.WriteLine("========== WARNING: You have pending migrations not run yet! ==========");
-            Console.WriteLine("========== Use dotnet run migrate-db to run the migration again. ==========");
+            Console.WriteLine("========== Use 'dotnet run migratedb' to run the migration. ==========");
             foreach (var migration in pendingMigrations)
                 Console.WriteLine("### " + migration);
-            Console.WriteLine("===========================================================================");
+            Console.WriteLine("=======================================================================");
+            return;
         }
         else
-        {
             Console.WriteLine("========== No database migration needs to run. ==========");
-        }
     }
 
     // ----- DATA SEEDING -----
     // ----- Run Identity Seeding -----
-    // if (args.Length == 1 && args[0].ToLower() == "seed")
-    // {
-    // var initialSeedingDataConfig = builder.Configuration
-    //     .GetSection("InitialSeedingData")
-    //     .Get<InitialSeedingDataConfig>()
-    //     ?? throw new MetricsInvalidConfigurationException("InitialSeedingData > DefaultUserData section is not configured properly. Check your configuration files.");
-    // await InitialUserSeeder.InitAsync(scope.ServiceProvider, initialSeedingDataConfig);
-    await InitialUserSeeder.InitAsync(scope.ServiceProvider);
-}
-// }
+    // if (args.Length == 1 && args[0].ToLower() == "seed") { var initialSeedingDataConfig = builder.Configuration.GetSection("InitialSeedingData").Get<InitialSeedingDataConfig>() ?? throw new MetricsInvalidConfigurationException("InitialSeedingData > DefaultUserData section is not configured properly. Check your configuration files."); await InitialUserSeeder.InitAsync(scope.ServiceProvider, initialSeedingDataConfig); }
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+    var sysadminUser = await userManager.FindByNameAsync("sysadmin");
 
+    if (args.Contains("inituser"))
+    {
+        if (sysadminUser != null)
+        {
+            Console.WriteLine("========== INFO: There is sysadmin user already! ==========");
+            return;
+        }
+        else
+        {
+            Console.WriteLine("========== INFO: Creating inital user: sysadmin ==========");
+
+            string? passwordInput;
+            string? confirmPasswordInput;
+            while (true)
+            {
+                passwordInput = ConsoleUtils.ReadPassword("Enter password for sysadmin: ");
+                confirmPasswordInput = ConsoleUtils.ReadPassword("Confirm password: ");
+
+                if (!passwordInput.Equals(confirmPasswordInput))
+                    Console.WriteLine("Password does not match. Please try again.");
+                else
+                    break;
+            }
+            var seedUserCreateDto = new SeedUserCreateDto()
+            {
+                Username = "sysadmin",
+                Email = "sysadmin@metricshrm.com",
+                Password = passwordInput ?? "00000000",
+                UserTitleName = "Admin",
+                RolesList = ["Admin", "Staff"],
+                FullName = "System Admin",
+                DepartmentName = "Admin Department",
+                UserCode = new Guid().ToString(),
+                ContactAddress = "",
+                PhoneNumber = ""
+            };
+            await InitialUserSeeder.InitAsync(scope.ServiceProvider, seedUserCreateDto);
+            Console.WriteLine("========== INFO: sysadmin user created. ==========");
+            Console.WriteLine($"Username: {seedUserCreateDto.Username}");
+            Console.WriteLine($"Email: {seedUserCreateDto.Email}");
+            Console.WriteLine($"User title: {seedUserCreateDto.UserTitleName}");
+            string rolesList = string.Join(", ", seedUserCreateDto.RolesList);
+            Console.WriteLine($"Roles: {rolesList}");
+            Console.WriteLine($"Department: {seedUserCreateDto.DepartmentName}");
+
+
+            return;
+        }
+    }
+    else
+    {
+        if (sysadminUser == null)
+        {
+            Console.WriteLine(" ========== WARNING: You have no sysadmin user yet! ==========");
+            Console.WriteLine("========== Use 'dotnet run inituser' to add sysadmin user. ==========");
+            return;
+        }
+        else
+            Console.WriteLine(" ========== INFO: sysadmin user exist! ==========");
+    }
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -272,7 +350,7 @@ if (app.Environment.IsDevelopment())
 }
 else
 {
-    app.UseExceptionHandler("/Error");
+    app.UseExceptionHandler(" /Error");
     app.UseStatusCodePagesWithReExecute("/Error/{0}");
     app.UseStatusCodePages();
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
@@ -303,6 +381,14 @@ app.MapControllers();
 //     pattern: "app/{controller=Home}/{action=Index}/{id?}");
 
 app.MapOpenApi();
+
+// Register shutdown handler
+var lifetime = app.Services.GetRequiredService<IHostApplicationLifetime>();
+lifetime.ApplicationStopping.Register(() =>
+{
+    Log.Information("Application is shutting down...");
+    Log.CloseAndFlush();
+});
 
 app.Run();
 

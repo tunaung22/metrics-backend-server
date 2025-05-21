@@ -12,20 +12,133 @@ public class SeedingService : ISeedingService
     private readonly MetricsDbContext _context;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly RoleManager<ApplicationRole> _roleManager;
+    private readonly IUserTitleRepository _userTitleRepository;
     private readonly IDepartmentRepository _departmentRepository;
-    // private readonly IEmployeeRepository _employeeRepository;
 
     public SeedingService(MetricsDbContext context,
                             UserManager<ApplicationUser> userManager,
                             RoleManager<ApplicationRole> roleManager,
+                            IUserTitleRepository userTitleRepository,
                             IDepartmentRepository departmentRepository)
     {
         _context = context;
         _userManager = userManager;
         _roleManager = roleManager;
+        _userTitleRepository = userTitleRepository;
         _departmentRepository = departmentRepository;
     }
 
+    public async Task SeedSysadminUser(SeedUserCreateDto createDto)
+    {
+        using var transaction = await _context.Database.BeginTransactionAsync();
+
+        try
+        {
+            if (string.IsNullOrEmpty(createDto.DepartmentName) || string.IsNullOrWhiteSpace(createDto.DepartmentName))
+                throw new ArgumentNullException("Department name is required.");
+
+            var adminDepartment = await _departmentRepository.FindByDepartmentNameAsync(createDto.DepartmentName);
+
+            if (adminDepartment == null)
+            {
+                var entity = new Department { DepartmentName = createDto.DepartmentName };
+                _departmentRepository.Create(entity);
+                await _context.SaveChangesAsync();
+                adminDepartment = entity;
+            }
+
+            var adminTitle = await _userTitleRepository.FindByTitleNameAsync(createDto.UserTitleName);
+
+            if (adminTitle == null)
+            {
+                var entity = new UserTitle { TitleCode = Guid.NewGuid(), TitleName = createDto.UserTitleName };
+                _userTitleRepository.Create(entity);
+                await _context.SaveChangesAsync();
+                adminTitle = entity;
+            }
+
+            if (createDto.RolesList.Count > 0)
+            {
+                foreach (var role in createDto.RolesList)
+                {
+                    await CreateRoleIfNotExists(role);
+                }
+            }
+
+            var sysadminUser = await _userManager
+                        .FindByNameAsync(createDto.Username);
+            if (sysadminUser == null)
+            {
+                // - CREATE new { admin user }
+                var userInstance = new ApplicationUser
+                {
+                    UserCode = Guid.NewGuid().ToString(),
+                    UserName = createDto.Username,
+                    Email = createDto.Email,
+                    FullName = createDto.FullName,
+                    ContactAddress = createDto.ContactAddress ?? string.Empty,
+                    PhoneNumber = createDto.PhoneNumber ?? string.Empty,
+                    UserTitleId = adminTitle.Id,
+                    DepartmentId = adminDepartment.Id
+                };
+                var identityResult = await _userManager.CreateAsync(userInstance, createDto.Password);
+
+                if (!identityResult.Succeeded)
+                    throw new Exception("User Account creation failed.");
+
+                sysadminUser = userInstance;
+            }
+
+            // - ASSIGN {role admin}
+            var sysAdminRole = await _roleManager.FindByNameAsync("Sysadmin");
+            if (sysAdminRole != null && sysadminUser != null && !string.IsNullOrEmpty(sysAdminRole.Name))
+                await _userManager.AddToRoleAsync(sysadminUser, sysAdminRole.Name);
+
+            var adminRole = await _roleManager.FindByNameAsync("Admin");
+            if (adminRole != null && sysadminUser != null && !string.IsNullOrEmpty(adminRole.Name))
+                await _userManager.AddToRoleAsync(sysadminUser, adminRole.Name);
+
+            await _context.SaveChangesAsync();
+            await transaction.CommitAsync();
+        }
+        catch (Exception ex)
+        {
+            await transaction.RollbackAsync();
+            throw new InvalidOperationException($"Can't create an instance of '{nameof(ApplicationUser)}'. " +
+                                                $"Error: {ex.Message}");
+            // _logger.LogError(ex, "Unexpected error while querying department by department code.");
+            // throw new Exception("An unexpected error occurred. Please try again later.");
+        }
+    }
+
+    private async Task<ApplicationRole> CreateRoleIfNotExists(string roleName)
+    {
+        var role = await _roleManager.FindByNameAsync(roleName);
+
+        if (role == null)
+        {
+            // - CREATE new { role admin }
+            var roleInstance = new ApplicationRole
+            {
+                Name = roleName,
+                ConcurrencyStamp = Guid.NewGuid().ToString()
+            };
+            var newRoleResult = await _roleManager.CreateAsync(roleInstance);
+            if (newRoleResult.Succeeded)
+                role = await _roleManager.FindByNameAsync(roleName);
+            else
+            {
+                // Handle the error (optional)
+                // might log the errors or throw an exception
+                throw new Exception($"Failed to create role '{roleName}': {string.Join(", ", newRoleResult.Errors.Select(e => e.Description))}");
+            }
+        }
+
+        return role!;
+    }
+
+
+    [Obsolete("Use SeedSysadminUser instead.")]
     public async Task SeedInitialUser(DefaultUserCreateDto createDto)
     {
         /* === logic ===
@@ -225,29 +338,5 @@ public class SeedingService : ISeedingService
     // }
 
 
-    private async Task<ApplicationRole> CreateRoleIfNotExists(string roleName)
-    {
-        var role = await _roleManager.FindByNameAsync(roleName);
 
-        if (role == null)
-        {
-            // - CREATE new { role admin }
-            var roleInstance = new ApplicationRole
-            {
-                Name = roleName,
-                ConcurrencyStamp = Guid.NewGuid().ToString()
-            };
-            var newRoleResult = await _roleManager.CreateAsync(roleInstance);
-            if (newRoleResult.Succeeded)
-                role = await _roleManager.FindByNameAsync(roleName);
-            else
-            {
-                // Handle the error (optional)
-                // You might want to log the errors or throw an exception
-                throw new Exception($"Failed to create role '{roleName}': {string.Join(", ", newRoleResult.Errors.Select(e => e.Description))}");
-            }
-        }
-
-        return role!;
-    }
 }

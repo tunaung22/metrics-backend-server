@@ -50,6 +50,11 @@ namespace Metrics.Web.Migrations
                 schema: "metrics",
                 incrementBy: 10);
 
+            migrationBuilder.CreateSequence(
+                name: "user_titles_id_seq",
+                schema: "metrics",
+                incrementBy: 10);
+
             migrationBuilder.CreateTable(
                 name: "application_roles",
                 schema: "metrics",
@@ -122,6 +127,24 @@ namespace Metrics.Web.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "user_titles",
+                schema: "metrics",
+                columns: table => new
+                {
+                    id = table.Column<long>(type: "bigint", nullable: false),
+                    title_code = table.Column<Guid>(type: "uuid", nullable: false),
+                    title_name = table.Column<string>(type: "varchar (200)", nullable: false),
+                    description = table.Column<string>(type: "text", nullable: true),
+                    is_deleted = table.Column<bool>(type: "boolean", nullable: false),
+                    created_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    modified_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_user_titles", x => x.id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "asp_net_role_claims",
                 schema: "metrics",
                 columns: table => new
@@ -140,46 +163,6 @@ namespace Metrics.Web.Migrations
                         column: x => x.role_id,
                         principalSchema: "metrics",
                         principalTable: "application_roles",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "application_users",
-                schema: "metrics",
-                columns: table => new
-                {
-                    id = table.Column<string>(type: "text", nullable: false),
-                    user_code = table.Column<string>(type: "varchar(200)", maxLength: 200, nullable: false),
-                    full_name = table.Column<string>(type: "varchar(200)", maxLength: 200, nullable: false),
-                    contact_address = table.Column<string>(type: "varchar(200)", nullable: false),
-                    profile_picture_url = table.Column<string>(type: "text", nullable: false),
-                    created_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    modified_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    department_id = table.Column<long>(type: "bigint", nullable: false),
-                    user_name = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
-                    normalized_user_name = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
-                    email = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
-                    normalized_email = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
-                    email_confirmed = table.Column<bool>(type: "boolean", nullable: false),
-                    password_hash = table.Column<string>(type: "text", nullable: true),
-                    security_stamp = table.Column<string>(type: "text", nullable: true),
-                    concurrency_stamp = table.Column<string>(type: "text", nullable: true),
-                    phone_number = table.Column<string>(type: "varchar(200)", nullable: true),
-                    phone_number_confirmed = table.Column<bool>(type: "boolean", nullable: false),
-                    two_factor_enabled = table.Column<bool>(type: "boolean", nullable: false),
-                    lockout_end = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
-                    lockout_enabled = table.Column<bool>(type: "boolean", nullable: false),
-                    access_failed_count = table.Column<int>(type: "integer", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("pk_application_users", x => x.id);
-                    table.ForeignKey(
-                        name: "fk_application_users_departments_department_id",
-                        column: x => x.department_id,
-                        principalSchema: "metrics",
-                        principalTable: "departments",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -211,6 +194,54 @@ namespace Metrics.Web.Migrations
                         column: x => x.key_kpi_metric_id,
                         principalSchema: "metrics",
                         principalTable: "key_kpis",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "application_users",
+                schema: "metrics",
+                columns: table => new
+                {
+                    id = table.Column<string>(type: "text", nullable: false),
+                    user_code = table.Column<string>(type: "varchar(200)", maxLength: 200, nullable: false),
+                    full_name = table.Column<string>(type: "varchar(200)", maxLength: 200, nullable: false),
+                    contact_address = table.Column<string>(type: "varchar(200)", nullable: false),
+                    profile_picture_url = table.Column<string>(type: "text", nullable: false),
+                    created_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    modified_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    department_id = table.Column<long>(type: "bigint", nullable: false),
+                    user_title_id = table.Column<long>(type: "bigint", nullable: false),
+                    user_name = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    normalized_user_name = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    email = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    normalized_email = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    email_confirmed = table.Column<bool>(type: "boolean", nullable: false),
+                    password_hash = table.Column<string>(type: "text", nullable: true),
+                    security_stamp = table.Column<string>(type: "text", nullable: true),
+                    concurrency_stamp = table.Column<string>(type: "text", nullable: true),
+                    phone_number = table.Column<string>(type: "varchar(200)", nullable: true),
+                    phone_number_confirmed = table.Column<bool>(type: "boolean", nullable: false),
+                    two_factor_enabled = table.Column<bool>(type: "boolean", nullable: false),
+                    lockout_end = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    lockout_enabled = table.Column<bool>(type: "boolean", nullable: false),
+                    access_failed_count = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_application_users", x => x.id);
+                    table.ForeignKey(
+                        name: "fk_application_users_departments_department_id",
+                        column: x => x.department_id,
+                        principalSchema: "metrics",
+                        principalTable: "departments",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "fk_application_users_user_titles_user_title_id",
+                        column: x => x.user_title_id,
+                        principalSchema: "metrics",
+                        principalTable: "user_titles",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Restrict);
                 });
@@ -468,6 +499,12 @@ namespace Metrics.Web.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "ix_application_users_user_title_id",
+                schema: "metrics",
+                table: "application_users",
+                column: "user_title_id");
+
+            migrationBuilder.CreateIndex(
                 name: "UserNameIndex",
                 schema: "metrics",
                 table: "application_users",
@@ -607,6 +644,20 @@ namespace Metrics.Web.Migrations
                 table: "kpi_submissions",
                 columns: new[] { "kpi_submission_period_id", "department_id", "application_user_id" },
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "ix_user_titles_title_code",
+                schema: "metrics",
+                table: "user_titles",
+                column: "title_code",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "ix_user_titles_title_name",
+                schema: "metrics",
+                table: "user_titles",
+                column: "title_name",
+                unique: true);
         }
 
         /// <inheritdoc />
@@ -668,6 +719,10 @@ namespace Metrics.Web.Migrations
                 name: "departments",
                 schema: "metrics");
 
+            migrationBuilder.DropTable(
+                name: "user_titles",
+                schema: "metrics");
+
             migrationBuilder.DropSequence(
                 name: "department_key_kpis_id_seq",
                 schema: "metrics");
@@ -694,6 +749,10 @@ namespace Metrics.Web.Migrations
 
             migrationBuilder.DropSequence(
                 name: "kpi_submissions_id_seq",
+                schema: "metrics");
+
+            migrationBuilder.DropSequence(
+                name: "user_titles_id_seq",
                 schema: "metrics");
         }
     }

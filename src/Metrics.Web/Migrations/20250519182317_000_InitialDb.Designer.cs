@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Metrics.Web.Migrations
 {
     [DbContext(typeof(MetricsDbContext))]
-    [Migration("20250516141321_000_InitialDb")]
+    [Migration("20250519182317_000_InitialDb")]
     partial class _000_InitialDb
     {
         /// <inheritdoc />
@@ -45,6 +45,9 @@ namespace Metrics.Web.Migrations
                 .IncrementsBy(10);
 
             modelBuilder.HasSequence("kpi_submissions_id_seq")
+                .IncrementsBy(10);
+
+            modelBuilder.HasSequence("user_titles_id_seq")
                 .IncrementsBy(10);
 
             modelBuilder.Entity("Metrics.Application.Domains.ApplicationRole", b =>
@@ -187,6 +190,10 @@ namespace Metrics.Web.Migrations
                         .HasColumnType("character varying(256)")
                         .HasColumnName("user_name");
 
+                    b.Property<long>("UserTitleId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("user_title_id");
+
                     b.HasKey("Id")
                         .HasName("pk_application_users");
 
@@ -203,6 +210,9 @@ namespace Metrics.Web.Migrations
                     b.HasIndex("UserCode")
                         .IsUnique()
                         .HasDatabaseName("ix_application_users_user_code");
+
+                    b.HasIndex("UserTitleId")
+                        .HasDatabaseName("ix_application_users_user_title_id");
 
                     b.ToTable("application_users", "metrics");
                 });
@@ -586,6 +596,54 @@ namespace Metrics.Web.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Metrics.Application.Domains.UserTitle", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseHiLo(b.Property<long>("Id"), "user_titles_id_seq");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text")
+                        .HasColumnName("description");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_deleted");
+
+                    b.Property<DateTimeOffset>("ModifiedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("modified_at");
+
+                    b.Property<Guid>("TitleCode")
+                        .HasColumnType("uuid")
+                        .HasColumnName("title_code");
+
+                    b.Property<string>("TitleName")
+                        .IsRequired()
+                        .HasColumnType("varchar (200)")
+                        .HasColumnName("title_name");
+
+                    b.HasKey("Id")
+                        .HasName("pk_user_titles");
+
+                    b.HasIndex("TitleCode")
+                        .IsUnique()
+                        .HasDatabaseName("ix_user_titles_title_code");
+
+                    b.HasIndex("TitleName")
+                        .IsUnique()
+                        .HasDatabaseName("ix_user_titles_title_name");
+
+                    b.ToTable("user_titles", "metrics");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.Property<int>("Id")
@@ -722,13 +780,22 @@ namespace Metrics.Web.Migrations
             modelBuilder.Entity("Metrics.Application.Domains.ApplicationUser", b =>
                 {
                     b.HasOne("Metrics.Application.Domains.Department", "Department")
-                        .WithMany("Employees")
+                        .WithMany("ApplicationUsers")
                         .HasForeignKey("DepartmentId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_application_users_departments_department_id");
 
+                    b.HasOne("Metrics.Application.Domains.UserTitle", "UserTitle")
+                        .WithMany("ApplicationUsers")
+                        .HasForeignKey("UserTitleId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_application_users_user_titles_user_title_id");
+
                     b.Navigation("Department");
+
+                    b.Navigation("UserTitle");
                 });
 
             modelBuilder.Entity("Metrics.Application.Domains.DepartmentKeyKpi", b =>
@@ -909,13 +976,13 @@ namespace Metrics.Web.Migrations
 
             modelBuilder.Entity("Metrics.Application.Domains.Department", b =>
                 {
+                    b.Navigation("ApplicationUsers");
+
                     b.Navigation("DepartmentKeyKpiMetrics");
 
                     b.Navigation("DepartmentMetricsScores");
 
                     b.Navigation("DepartmentScores");
-
-                    b.Navigation("Employees");
 
                     b.Navigation("KeyKpiSubmissionItems");
                 });
@@ -939,6 +1006,11 @@ namespace Metrics.Web.Migrations
                     b.Navigation("KeyKpiSubmissions");
 
                     b.Navigation("KpiSubmissions");
+                });
+
+            modelBuilder.Entity("Metrics.Application.Domains.UserTitle", b =>
+                {
+                    b.Navigation("ApplicationUsers");
                 });
 #pragma warning restore 612, 618
         }

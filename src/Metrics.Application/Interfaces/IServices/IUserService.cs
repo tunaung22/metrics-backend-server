@@ -7,8 +7,9 @@ namespace Metrics.Application.Interfaces.IServices;
 public interface IUserService
 {
 
-    Task<IdentityResult> RegisterUserAsync(UserAccountCreateDto dto);
+    Task<IdentityResult> RegisterUserAsync(UserAccountCreateDto createDto);
     Task<ApplicationUser> FindByUsernameAsync(string username);
+    Task<ApplicationUser> FindByIdAsync(string userId);
     // TODOs
     // lock user
     // unlock user
