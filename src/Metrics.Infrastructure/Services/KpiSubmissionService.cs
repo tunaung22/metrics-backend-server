@@ -48,6 +48,8 @@ public class KpiSubmissionService : IKpiSubmissionService
             {
                 SubmittedAt = submission.SubmittedAt,
                 ScoreValue = submission.ScoreValue,
+                PositiveAspects = submission.PositiveAspects,
+                NegativeAspects = submission.NegativeAspects,
                 Comments = submission.Comments,
                 KpiSubmissionPeriodId = submission.KpiSubmissionPeriodId,
                 DepartmentId = submission.DepartmentId,
@@ -332,6 +334,21 @@ public class KpiSubmissionService : IKpiSubmissionService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Unexpected error while querying departments.");
+            throw new Exception("An unexpected error occurred. Please try again later.");
+        }
+    }
+
+
+    public async Task<long> FindCountByUserIdByKpiPeriodIdAsync(string currentUserId, long kpiPeriodId)
+    {
+        try
+        {
+            return await _kpiSubmissionRepository
+                .FindCountByUserIdByKpiPeriodIdAsync(currentUserId, kpiPeriodId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while counting submissions.");
             throw new Exception("An unexpected error occurred. Please try again later.");
         }
     }

@@ -109,4 +109,13 @@ public class KpiSubmissionRepository : IKpiSubmissionRepository
         _context.Entry(entity).State = EntityState.Modified;
         _context.KpiSubmissions.Update(entity);
     }
+
+    public async Task<long> FindCountByUserIdByKpiPeriodIdAsync(string currentUserId, long kpiPeriodId)
+    {
+        return await _context.KpiSubmissions
+            .Where(e =>
+                e.ApplicationUserId == currentUserId &&
+                e.KpiSubmissionPeriodId == kpiPeriodId)
+            .CountAsync();
+    }
 }

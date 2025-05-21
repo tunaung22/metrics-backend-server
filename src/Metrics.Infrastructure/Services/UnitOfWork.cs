@@ -10,7 +10,7 @@ public class UnitOfWork : IUnitOfWork, IDisposable
     private readonly MetricsDbContext _context;
     // private readonly Ilogger _logger;
     public IDepartmentRepository Departments { get; }
-    public IKpiPeriodRepository KpiPeriods { get; }
+    public IKpiSubmissionPeriodRepository KpiPeriods { get; }
     public IUserRepository Users { get; }
     public IKpiSubmissionRepository KpiSubmissions { get; }
 
@@ -18,7 +18,7 @@ public class UnitOfWork : IUnitOfWork, IDisposable
         MetricsDbContext context,
         // Ilogger logger,
         IDepartmentRepository departmentRepository,
-        IKpiPeriodRepository kpiPeriodRepository,
+        IKpiSubmissionPeriodRepository kpiPeriodRepository,
         IUserRepository employeeRepository,
         IKpiSubmissionRepository kpiSubmissionRepository)
     {

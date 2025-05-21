@@ -2,7 +2,7 @@ using Metrics.Application.Interfaces.IServices;
 using Metrics.Web.Models;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace Metrics.Web.Pages.Reports.Submissions.DepartmentScores;
+namespace Metrics.Web.Pages.Reports.Submissions.Departments.Kpi;
 
 public class IndexModel : PageModel
 {

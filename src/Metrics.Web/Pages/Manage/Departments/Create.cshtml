@@ -4,8 +4,16 @@
     ViewData["Title"] = "Add New Department";
 }
 
-<div class="container" style="height: 70vh;">
-    <h3>Create New Department</h3>
+<div class="container">
+    <h4>Create New Department</h4>
+
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-page="/Dashboard/Index">Dashboard</a></li>
+            <li class="breadcrumb-item"><a asp-page="/Manage/Departments/Index">Departments</a></li>
+            <li class="breadcrumb-item active">Create</li>
+        </ol>
+    </nav>
 
     @* ========================================================================== *@
     @if (!ModelState.IsValid)
@@ -22,30 +30,27 @@
     }
 
     @* =============== Form ===================================================== *@
-    <div class="bg-light p-4">
-
+    @* <div class="col-sm-12 col-lg-8 mx-auto p-4"> *@
+    <div class="p-4">
         <form method="post" asp-route-returnUrl="@Model.ReturnUrl">
-            <div class="row row-lg-6">
-                <div class="form-group col-md-4">
-                    <label asp-for="Input.DepartmentName">Department Name</label>
-                    <input asp-for="Input.DepartmentName" class="form-control" />
-                    <div>
-                        <span asp-validation-for="Input.DepartmentName" class="text-danger"></span>
-                    </div>
-                </div>
-            
-            </div>
+            <div class="col-sm-12 col-md-6 col-xl-4 justify-content-center">
+                <div class="row">
+                    <label asp-for="Input.DepartmentName" class="form-label">Department Name</label></div>
+                <div class="row">
+                    <input asp-for="Input.DepartmentName" id="input__departmentName" class="form-control" /></div>
+                <div class="row"><span asp-validation-for="Input.DepartmentName" class="text-danger"></span></div>
 
-            <div class="row mt-4">
-                <div class="form-group col-md d-flex align-items-center">
-                    <button type="submit" class="btn btn-success me-2">
-                        <i class="bi bi-check-circle"> </i>Add Department
-                    </button>
-                    <button type="submit" class="btn btn-warning mx-2"
-                        asp-page-handler="Cancel" formnovalidate>
-                        <i class="bi bi-x-circle"> </i>Cancel
-                    </button>
-                </div> 
+                <div class="form-group row my-2">
+                    <div class="d-flex justify-content-end pe-0">
+                        <button type="submit" 
+                                class="btn btn-primary ms-2"><i class="bi bi-check-circle"> </i>Save</button>
+                        <button asp-page-handler="Cancel" 
+                                type="submit" 
+                                class="btn btn-warning ms-2" formnovalidate><i class="bi bi-x-circle"> </i>Cancel</button>
+                    </div>
+                    @* <input type="" name="Id" value="@Model.UpdateModel.Id" /> *@
+                    @* <input type="" name="DepartmentCode" value="@Model.UpdateModel.DepartmentCode" /> *@
+                </div>
             </div>
         </form>
     </div>

@@ -46,5 +46,17 @@ public class ApplicationUserConfig : IEntityTypeConfiguration<ApplicationUser>
         builder.Property(e => e.ModifiedAt)
                 .HasColumnName("modified_at")
                 .HasColumnType("timestamp with time zone");
+
+        // ===== Foreign Keys ======
+        builder.HasOne(e => e.Department)
+            .WithMany(e => e.ApplicationUsers)
+            .HasForeignKey(e => e.DepartmentId)
+            .OnDelete(DeleteBehavior.Restrict)
+            .IsRequired();
+        builder.HasOne(e => e.UserTitle)
+            .WithMany(e => e.ApplicationUsers)
+            .HasForeignKey(e => e.UserTitleId)
+            .OnDelete(DeleteBehavior.Restrict)
+            .IsRequired();
     }
 }

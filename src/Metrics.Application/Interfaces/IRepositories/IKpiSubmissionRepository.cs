@@ -12,7 +12,7 @@ public interface IKpiSubmissionRepository
     Task<KpiSubmission> FindByIdAsync(long id);
     Task<IEnumerable<KpiSubmission>> FindAllAsync();
     Task<bool> KpiSubmissionExistsAsync(long kpiPeriodId, long departmentId, string candidateId);
-
+    Task<long> FindCountByUserIdByKpiPeriodIdAsync(string currentUserId, long kpiPeriodId);
 
     // ========== Queryable ====================================================
     IQueryable<KpiSubmission> FindByIdAsQueryable(long id);

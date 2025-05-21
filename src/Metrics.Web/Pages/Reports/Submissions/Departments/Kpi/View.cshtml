@@ -1,0 +1,88 @@
+﻿@page "{periodName}"
+@model Metrics.Web.Pages.Reports.Submissions.Departments.Kpi.ViewModel
+@{
+    ViewData["Title"] = "Score Submission Report";
+}
+
+<div class="container">
+    <div class="d-flex align-items-center">
+        <h3>Score Submission Report (KPI)</h3>
+        <span class="mx-4">
+        Period: <strong>@Model.SelectedPeriod.PeriodName</strong>
+        <small>(@Model.SelectedPeriod.SubmissionStartDate.ToString("MMM dd, yyyy") - @Model.SelectedPeriod.SubmissionEndDate.ToString("MMM dd, yyyy"))</small>
+        </span>
+    </div>
+
+    <nav aria-label="breadcrumb">
+    using Microsoft.EntityFrameworkCore.Metadata.Internal;
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-page="/Dashboard/Index">Dashboard</a></li>
+            <li class="breadcrumb-item"><a asp-page="/Reports/Submissions/Departments/Kpi/Index">KPI Reports</a></li>
+            <li class="breadcrumb-item active">@Model.SelectedPeriod.PeriodName</li>
+        </ol>
+    </nav>
+
+    <div class="bg-light p-4">
+        <table id="reportTable" class="table table-striped" style="width:100%">
+            <thead>
+                <tr>
+                    <th>Departments</th>
+                    <th>Submissions (Total submissions)</th>
+                    <th>Total Score</th>
+                    <th>KPI Score</th>
+                </tr>
+            </thead>
+            <tbody>
+                @* @if(Model.KpiPeriodlist.Count > 0 && Model.DepartmentList.Count > 0)
+                {
+                    @foreach(var p in Model.KpiPeriodlist)
+                    {
+                        foreach(var d in Model.DepartmentList)
+                        {
+                            <tr>
+                                <td>@p.PeriodName</td>
+                                <td>@d.DepartmentName</td>
+                                <td>ddd</td>
+                                <td>2011-04-25</td>
+                                <td>2011-04-25</td>
+                            </tr>
+                        }
+                    }
+                } *@
+                @if (Model.KpiReportList.Any())
+                {
+                    @foreach(var r in Model.KpiReportList)
+                    {
+                        <tr>
+                            <td>@r.DepartmentName</td>
+                            <td>@r.TotalReceivedSubmissions.ToString("0")</td>
+                            <td>@r.TotalScoreReceived.ToString("0")</td>
+                            <td>@r.FinalKpiScore.ToString("0.00")</td>
+                        </tr>
+                    }
+                }
+            </tbody>
+            @* <tfoot>
+                <tr>
+                    <th>Name</th>
+                    <th>Position</th>
+                    <th>Office</th>
+                    <th>Age</th>
+                    <th>Start date</th>
+                    <th>Salary</th>
+                </tr>
+            </tfoot> *@
+        </table>
+    </div>
+</div>
+
+
+@section Scripts {
+    <script>
+        new DataTable('#reportTable', {
+            paging: false,
+            info: false,
+            searching: false
+        });
+    </script>
+}

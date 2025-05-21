@@ -12,7 +12,7 @@ public class Department : IAuditColumn, ISoftDelete
     public DateTimeOffset ModifiedAt { get; set; } = DateTimeOffset.UtcNow;
 
     // Collection Navigational Properties
-    public List<ApplicationUser> Employees { get; set; } = [];
+    public List<ApplicationUser> ApplicationUsers { get; set; } = [];
     public List<KpiSubmission> DepartmentScores { get; set; } = [];
     public List<KeyKpiSubmission> DepartmentMetricsScores { get; set; } = [];
     public List<KeyKpiSubmissionItem> KeyKpiSubmissionItems { get; set; } = [];

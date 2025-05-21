@@ -26,12 +26,12 @@
     }
 
     @* =============== Form ===================================================== *@
-    <div class="col col-10 col-sm-12 col-md-12 col-lg-8 mx-auto bg-light px-4 py-4">
+    <div class="col-sm-12 col-lg-8 mx-auto bg-light px-4 py-4">
         <form method="post" asp-route-returnUrl="">
             <div class="row">
-                <div class="col col-xs-12 col-sm-6 col-md-6">
+                <div class="col-sm-12 col-md-6">
                     <div class="form-group">
-                        <label asp-for="FormInput.PeriodName">
+                        <label asp-for="FormInput.PeriodName" class="form-label">
                             Periods Name
                             <small>
                                 (example: @currentYear-@currentMonth)
@@ -45,18 +45,18 @@
                 </div>
             </div>
             <div class="row">
-                <div class="col col-12 col-sm-6 col-md-6 col-xl-6">
+                <div class="col-sm-12 col-md-6 col-xl-6">
                     <div class="form-group">
-                        <label asp-for="FormInput.SubmissionStartDate">Start Date</label>
+                        <label asp-for="FormInput.SubmissionStartDate" class="form-label">Start Date</label>
                         <input id="startDate__datePicker" class="form-control"
                                 asp-for="FormInput.SubmissionStartDate" 
                                 type="text" />
                         <div><span asp-validation-for="FormInput.SubmissionStartDate" class="text-danger"></span></div>
                     </div>
                 </div>
-                <div class="col col-12 col-sm-6 col-md-6 col-xl-6">
+                <div class="col col-sm-12 col-md-6 col-xl-6">
                     <div class="form-group">
-                        <label asp-for="FormInput.SubmissionEndDate">End Date</label>
+                        <label asp-for="FormInput.SubmissionEndDate" class="form-label">End Date</label>
                         <input id="endDate__datePicker" class="form-control"
                                 asp-for="FormInput.SubmissionEndDate"
                                 type="text" />
@@ -67,7 +67,7 @@
 
             <div class="row mt-4">
                 <div class="form-group col-md d-flex align-items-center">
-                    <button type="submit" class="btn btn-success me-2">
+                    <button type="submit" class="btn btn-primary me-2">
                         <i class="bi bi-check-circle"> </i>Save
                     </button>
                     <button type="submit" class="btn btn-warning mx-2"

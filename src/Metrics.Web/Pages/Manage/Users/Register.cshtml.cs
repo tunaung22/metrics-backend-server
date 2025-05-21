@@ -13,23 +13,29 @@ using System.Text.Json;
 
 namespace Metrics.Web.Pages.Manage.Users;
 
-[Authorize(Roles = "Admin")]
+[Authorize(Policy = "CanAccessAdminFeaturePolicy")]
 public class RegisterModel : PageModel
 {
     private readonly ILogger<RegisterModel> _logger;
     private readonly RoleManager<ApplicationRole> _roleManager;
-    private readonly IUserAccountService _userAccountService;
+    // private readonly IUserAccountService _userAccountService;
+    private readonly IUserService _userService;
+    private readonly IUserTitleService _userTitleService;
     private readonly IDepartmentService _departmentService;
 
     public RegisterModel(
         ILogger<RegisterModel> logger,
         RoleManager<ApplicationRole> roleManager,
-        IUserAccountService userAccountService,
+        // IUserAccountService userAccountService,
+        IUserService userService,
+        IUserTitleService userTitleService,
         IDepartmentService departmentService)
     {
         _logger = logger;
         _roleManager = roleManager;
-        _userAccountService = userAccountService;
+        // _userAccountService = userAccountS/ervice;
+        _userService = userService;
+        _userTitleService = userTitleService;
         _departmentService = departmentService;
     }
 
@@ -38,35 +44,35 @@ public class RegisterModel : PageModel
     {
         [Required(ErrorMessage = "Username is required.")]
         [StringLength(20, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 5)]
-        [RegularExpression(@"^[a-zA-Z0-9]*$", ErrorMessage = "Username can only contain letters and numbers.")]
+        [RegularExpression(@"^[a-z0-9]*$", ErrorMessage = "Username can only contain letters and numbers.")]
         [Display(Name = "Username")]
-        public required string UserName { get; set; } // Use username instead of email
+        public string? UserName { get; set; } // Use username instead of email
 
         [Required(ErrorMessage = "Email address is required.")]
         [EmailAddress(ErrorMessage = "Invalid email address.")]
         [Display(Name = "Email")]
-        public required string Email { get; set; }
+        public string? Email { get; set; }
 
         [Required(ErrorMessage = "Password is required.")]
         [StringLength(20, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 6)]
         [DataType(DataType.Password)]
         [Display(Name = "Password")]
-        public required string Password { get; set; }
+        public string? Password { get; set; }
 
         [Required(ErrorMessage = "Confirm-password is required.")]
         [StringLength(20, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 6)]
         [DataType(DataType.Password)]
         [Display(Name = "Confirm-password")]
         [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
-        public required string ConfirmPassword { get; set; }
+        public string? ConfirmPassword { get; set; }
 
-        [Required(ErrorMessage = "Employee Code is required.")]
-        [Display(Name = "Employee Code")]
-        public required string EmployeeCode { get; set; }
+        [Required(ErrorMessage = "User Code is required.")]
+        [Display(Name = "User Code")]
+        public string? UserCode { get; set; }
 
-        [Required(ErrorMessage = "Employee name is required.")]
+        [Required(ErrorMessage = "Name is required.")]
         [Display(Name = "Full Name")]
-        public required string FullName { get; set; }
+        public string? FullName { get; set; }
 
         public string? Address { get; set; }
 
@@ -75,33 +81,32 @@ public class RegisterModel : PageModel
         [Required(ErrorMessage = "Department is required.")]
         public long DepartmentId { get; set; }
 
+        [Required(ErrorMessage = "User Title is required.")]
+        public long UserTitleId { get; set; }
+
         [Required(ErrorMessage = "User Role is required.")]
-        public List<string> RoleIds { get; set; } = [];
+        public string? RoleId { get; set; } = string.Empty;
+        // public List<string> RoleIds { get; set; } = [];
     }
 
     [BindProperty]
-    public FormInputModel FormInput { get; set; } = new FormInputModel()
-    {
-        UserName = string.Empty,
-        Email = string.Empty,
-        Password = string.Empty,
-        ConfirmPassword = string.Empty,
-        EmployeeCode = string.Empty,
-        FullName = string.Empty,
-        // RoleIds = []
-    };
+    public required FormInputModel FormInput { get; set; }
 
     [BindProperty]
     public List<SelectListItem> DepartmentListItems { get; set; } = null!;
-    public string? SelectedDepartmentName { get; set; }
-    // [BindProperty]
-    // public List<SelectListItem> RoleListItems { get; set; } = [];
+
+    [BindProperty]
+    public List<SelectListItem> UserTitleListItems { get; set; } = null!;
+
+    [BindProperty]
+    public List<SelectListItem> RoleListItems { get; set; } = [];
 
     // public long SelectedDepartmentId { get; set; }
     // public string SelectedRoleId { get; set; } = string.Empty;
-    [BindProperty]
-    public required List<string> SelectedRoleIds { get; set; } = [];
+    // [BindProperty]
+    // public required List<string> SelectedRoleIds { get; set; } = [];
     public List<ApplicationRole> AvaiableRoles { get; set; } = [];
+    // public string? SelectedDepartmentName { get; set; }
 
 
 
@@ -109,16 +114,29 @@ public class RegisterModel : PageModel
     public async Task<IActionResult> OnGetAsync()
     {
         DepartmentListItems = await LoadDepartmentList();
-        if (DepartmentListItems.Count <= 0)
-            return Page();
+        UserTitleListItems = await LoadUserTitleList();
+        RoleListItems = await LoadRoleList();
+        AvaiableRoles = await LoadAvaiableRoles();
 
         // RoleListItems = await LoadRoleList();
         // if (RoleListItems.Count <= 0)
         //     return Page();
+        if (UserTitleListItems.Any())
+        {
+            var defaultTitle = UserTitleListItems?
+                .Where(t => t.Text.ToLower() == "staff")
+                .FirstOrDefault();
+            var defaultRole = RoleListItems?
+                .Where(t => t.Text.ToLower() == "staff")
+                .FirstOrDefault();
 
-        AvaiableRoles = await LoadAvaiableRoles();
-        if (AvaiableRoles.Count <= 0)
-            return Page();
+            FormInput = new FormInputModel
+            {
+                UserTitleId = defaultTitle?.Value != null ? long.Parse(defaultTitle.Value) : 0,
+                RoleId = defaultRole?.Value != null ? defaultRole.Value : string.Empty,
+            };
+        }
+
 
         return Page();
     }
@@ -127,14 +145,7 @@ public class RegisterModel : PageModel
     {
         // load departments
         // load accounts
-        // save employee
-        // if (!ModelState.IsValid)
-        // {
-        //     DepartmentListItems = await LoadDepartmentList();
-        //     AvaiableRoles = await LoadAvaiableRoles();
-        //     return Page();
-        // }
-
+        // save user
         try
         {
             var createDto = new UserAccountCreateDto
@@ -144,18 +155,20 @@ public class RegisterModel : PageModel
                 Email = FormInput.Email,
                 Password = FormInput.Password,
                 // profile
-                EmployeeCode = FormInput.EmployeeCode,
+                UserCode = FormInput.UserCode,
                 FullName = FormInput.FullName,
                 Address = FormInput.Address,
                 PhoneNumber = FormInput.PhoneNumber,
                 DepartmentId = FormInput.DepartmentId,
+                UserTitleId = FormInput.UserTitleId,
                 // RoleId = FormInput.RoleId,
-                RoleIds = SelectedRoleIds
+                RoleIds = new List<string> { FormInput.RoleId! }
                 // RoleIds = FormInput.RoleIds
                 // ApplicationUserId??? <- account not created then id unknown 
             };
 
-            var result = await _userAccountService.RegisterUserAsync(createDto);
+            // var result = await _userAccountService.RegisterUserAsync(createDto);
+            var result = await _userService.RegisterUserAsync(createDto);
             if (result.Succeeded)
             {
                 // var assignedRole = await _roleManager.FindByIdAsync(createDto.RoleId);
@@ -193,10 +206,13 @@ public class RegisterModel : PageModel
 
             }
 
-            // Load Select Items & Checkbox Data
-            DepartmentListItems = await LoadDepartmentList();
-            AvaiableRoles = await LoadAvaiableRoles();
-            // FormInput.RoleIds = SelectedRoleIds;
+            if (!ModelState.IsValid)
+            {
+                DepartmentListItems = await LoadDepartmentList();
+                UserTitleListItems = await LoadUserTitleList();
+                RoleListItems = await LoadRoleList();
+                AvaiableRoles = await LoadAvaiableRoles();
+            }
 
             return Page();
         }
@@ -205,6 +221,8 @@ public class RegisterModel : PageModel
             ModelState.AddModelError(string.Empty, e.Message);
             // Load Select Items & Checkbox Data
             DepartmentListItems = await LoadDepartmentList();
+            UserTitleListItems = await LoadUserTitleList();
+            RoleListItems = await LoadRoleList();
             AvaiableRoles = await LoadAvaiableRoles();
             // FormInput.RoleIds = SelectedRoleIds;
 
@@ -215,6 +233,8 @@ public class RegisterModel : PageModel
             ModelState.AddModelError(string.Empty, e.Message);
             // Load Select Items & Checkbox Data
             DepartmentListItems = await LoadDepartmentList();
+            UserTitleListItems = await LoadUserTitleList();
+            RoleListItems = await LoadRoleList();
             AvaiableRoles = await LoadAvaiableRoles();
             // FormInput.RoleIds = SelectedRoleIds;
 
@@ -223,9 +243,11 @@ public class RegisterModel : PageModel
         catch (Exception e)
         {
             _logger.LogCritical(e.Message);
-            ModelState.AddModelError(string.Empty, "Unexpected error occured." + e.Message);
+            ModelState.AddModelError(string.Empty, "Unexpected error occured. " + e.Message);
             // Load Select Items & Checkbox Data
             DepartmentListItems = await LoadDepartmentList();
+            UserTitleListItems = await LoadUserTitleList();
+            RoleListItems = await LoadRoleList();
             AvaiableRoles = await LoadAvaiableRoles();
             // FormInput.RoleIds = SelectedRoleIds;
             // RoleListItems = await LoadRoleList();
@@ -254,25 +276,48 @@ public class RegisterModel : PageModel
         return [];
     }
 
-    // private async Task<List<SelectListItem>> LoadRoleList()
-    // {
-    //     var roles = await _roleManager.Roles.ToListAsync();
-    //     if (roles.Any())
-    //     {
-    //         return roles.Select(e => new SelectListItem
-    //         {
-    //             Value = e.Id,
-    //             Text = e.Name
-    //         }).ToList();
-    //     }
+    private async Task<List<SelectListItem>> LoadRoleList()
+    {
+        var roles = await _roleManager.Roles.ToListAsync();
+        if (roles.Any())
+        {
+            return roles.Select(e => new SelectListItem
+            {
+                Value = e.Id,
+                Text = e.Name
+            }).ToList();
+        }
 
-    //     ModelState.AddModelError("", "Roles does not exist.");
-    //     return [];
-    // }
+        ModelState.AddModelError("", "Roles does not exist.");
+        return [];
+    }
+
+    private async Task<List<SelectListItem>> LoadUserTitleList()
+    {
+        var query = await _userTitleService.FindAllAsync();
+        var userTitles = query
+            .OrderBy(t => t.TitleName == "Staff" ? 0 : 1)
+            .ThenBy(t => t.TitleName)
+            .ToList();
+        if (userTitles.Any())
+        {
+            return userTitles.Select(e => new SelectListItem
+            {
+                Value = e.Id.ToString(),
+                Text = e.TitleName
+            }).ToList();
+        }
+
+        ModelState.AddModelError("", "User Titles not exist. Try to add user title and continue.");
+        return [];
+    }
 
     private async Task<List<ApplicationRole>> LoadAvaiableRoles()
     {
-        var roles = await _roleManager.Roles.ToListAsync();
+        var roles = await _roleManager.Roles
+            .Where(r => r.Name != "sysadmin")
+            .ToListAsync();
+
         if (roles.Any())
         {
             return roles.Select(e => new ApplicationRole

@@ -1,0 +1,89 @@
+﻿@page
+@model Metrics.Web.Pages.Submissions.Departments.Scores.IndexModel
+@{
+    ViewData["Title"] = "Department Performance Score Submissions";
+}
+
+<div class="container">
+    <h4>Department Score Submission</h4>
+
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-page="/Index">Home</a></li>
+            <li class="breadcrumb-item active">Submissions</li>
+        </ol>
+    </nav>
+
+    <div class="my-4 pb-4">
+    @if(Model.IsSubmissionAvaiable)
+    {
+        @* <div class="my-4 pb-4">check Submissions is avaiable (early or late)</div> *@
+        <table id="dataTable" class="table table-striped" style="width: 100%;">
+            <thead>
+                <tr>
+                    <th>Period</th>
+                    <th>Duration</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if(Model.KpiSubmissionPeriods.Any())
+                {
+                    @foreach(var period in Model.KpiSubmissionPeriods)
+                    {
+                        <tr>
+                            <td>
+                                <strong>@period.PeriodName</strong>
+                            </td>
+                            <td>
+                                <label>
+                                    <i class="bi bi-calendar4-week text-primary"> </i> 
+                                    @period.SubmissionStartDate.ToLocalTime().ToString("dd MMM, yyyy") - @period.SubmissionEndDate.ToLocalTime().ToString("dd MMM, yyyy")</label>
+                            </td>
+                            <td>
+                                @if(period.IsSubmitted) { 
+                                    <i class="bi bi-check2-circle text-success"> </i><label>Done</label> 
+                                }
+                                else { 
+                                    <i class="bi bi-exclamation-circle text-danger"> </i><label>Pending</label> 
+                                }
+                            </td>
+                            <td>
+                                <a asp-page="Submit" 
+                                    asp-route-periodName="@period.PeriodName"
+                                    class="link-offset-2"><strong>View</strong></a>
+                                @* @if(period.IsSubmitted) {
+                                    <a href="" class="btn btn-link disabled" aria-disabled="true">Submit</a>
+                                    <a href="" class="btn btn-link">View</a>
+                                }
+                                else {
+                                    <a href="" class="btn btn-link">Submit</a>
+                                    <a href="" class="btn btn-link disabled" aria-disabled="true">View</a>
+                                } *@
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <span class="text-success">No Submission Avaiable Currently.</span>
+    }
+    </div>
+</div>
+
+
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        new DataTable('#dataTable', {
+            paging: false,
+            info: false,
+            searching: false,
+        });
+    </script>
+}

@@ -4,16 +4,16 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace Metrics.Web.Pages.Reports.Submissions.DepartmentScores.View;
+namespace Metrics.Web.Pages.Reports.Submissions.Departments.Kpi;
 
-[Authorize(Roles = "Admin")]
-public class IndexModel : PageModel
+[Authorize(Policy = "CanAccessAdminFeaturePolicy")]
+public class ViewModel : PageModel
 {
     private readonly IKpiSubmissionPeriodService _kpiPeriodService;
     private readonly IDepartmentService _departmentService;
     private readonly IKpiSubmissionService _kpiSubmissionService;
 
-    public IndexModel(
+    public ViewModel(
         IKpiSubmissionPeriodService kpiPeriodService,
         IDepartmentService departmentService,
         IKpiSubmissionService kpiSubmissionService)

@@ -7,6 +7,7 @@ using Metrics.Infrastructure.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Npgsql;
 
 namespace Metrics.Infrastructure.Services;
 
@@ -32,7 +33,7 @@ public class UserService : IUserService
         _userRepository = userRepository;
     }
 
-    public async Task<IdentityResult> RegisterUserAsync(UserAccountCreateDto dto)
+    public async Task<IdentityResult> RegisterUserAsync(UserAccountCreateDto createDto)
     {
         // using var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
         using var transaction = await _context.Database.BeginTransactionAsync();
@@ -45,13 +46,13 @@ public class UserService : IUserService
             // ----- CHECK username, email duplication -----
             var errors = new List<IdentityError>();
 
-            var accountWithUsernameExists = await _userManager.FindByNameAsync(dto.UserName);
+            var accountWithUsernameExists = await _userManager.FindByNameAsync(createDto.UserName);
             if (accountWithUsernameExists != null)
                 // throw new MetricsDuplicateContentException("Username is already taken.");
                 // newUserIdentityResult.Errors.Append(new IdentityError { Code = "", Description = "Username is already taken." });
                 errors.Add(new IdentityError { Code = "DuplicateUserName", Description = "Username is already taken." });
 
-            var accountWithEmailExists = await _userManager.FindByEmailAsync(dto.Email);
+            var accountWithEmailExists = await _userManager.FindByEmailAsync(createDto.Email);
             if (accountWithEmailExists != null)
                 // throw new MetricsDuplicateContentException("Email address is already taken.");
                 // newUserIdentityResult.Errors.Append(new IdentityError { Code = "", Description = "Email address is already taken." });
@@ -66,19 +67,25 @@ public class UserService : IUserService
 
             var userInstance = new ApplicationUser
             {
-                UserName = dto.UserName,
-                Email = dto.Email
+                UserName = createDto.UserName,
+                Email = createDto.Email,
+                UserCode = createDto.UserCode,
+                FullName = createDto.FullName,
+                PhoneNumber = createDto.PhoneNumber ?? string.Empty,
+                ContactAddress = createDto.Address ?? string.Empty,
+                DepartmentId = createDto.DepartmentId,
+                UserTitleId = createDto.UserTitleId
             };
             // await _userStore.SetUserNameAsync(userInstance, dto.UserName, CancellationToken.None);
             // await _emailStore.SetEmailAsync(userInstance, dto.Email, CancellationToken.None);
 
-            var newUserIdentityResult = await _userManager.CreateAsync(userInstance, dto.Password);
+            var newUserIdentityResult = await _userManager.CreateAsync(userInstance, createDto.Password);
 
             if (!newUserIdentityResult.Succeeded)
                 return newUserIdentityResult;
             // throw new Exception("User account creation failed.");
 
-            var newUser = await _userManager.FindByNameAsync(dto.UserName);
+            var newUser = await _userManager.FindByNameAsync(createDto.UserName);
 
             // --- Assign Role SINGLE ---
             // var roleToAssign = await _roleManager.FindByIdAsync(dto.RoleId);
@@ -89,11 +96,11 @@ public class UserService : IUserService
             //     await _userManager.AddToRoleAsync(newUser, roleToAssign.Name);
 
             // --- Assign Role MULTIPLE ---
-            if (newUser != null && dto.RoleIds.Count > 0)
+            if (newUser != null && createDto.RoleIds.Count > 0)
             {
-                for (int i = 0; i < dto.RoleIds.Count; i++) // foreach cannot execute async operation
+                for (int i = 0; i < createDto.RoleIds.Count; i++) // foreach cannot execute async operation
                 {
-                    var roleToAssign = await _roleManager.FindByIdAsync(dto.RoleIds[i]);
+                    var roleToAssign = await _roleManager.FindByIdAsync(createDto.RoleIds[i]);
                     if (roleToAssign == null)
                         throw new MetricsNotFoundException("Role to assign does not exist.");
 
@@ -136,6 +143,28 @@ public class UserService : IUserService
             await transaction.RollbackAsync();
             throw;
         }
+        catch (DbUpdateException ex)
+        {
+            // when (ex.InnerException is PostgresException postgresEx && postgresEx.SqlState == "23505")
+            if (ex.InnerException is PostgresException pgEx && pgEx.SqlState == "23505")
+            {
+                _logger.LogError(ex, pgEx.MessageText);
+                // TODO: DuplicateEntityException
+                throw new DuplicateContentException("Duplicate content exception.", ex.InnerException);
+            }
+            else if (ex.InnerException is PostgresException foreignKeyViolation && foreignKeyViolation.SqlState == "23503")
+            {
+                _logger.LogError(ex, foreignKeyViolation.MessageText);
+                throw new InvalidOperationException("Foreign Key violation exception.", ex.InnerException);
+            }
+            else
+            {
+                // Handle database-specific errors
+                _logger.LogError(ex, "Database error while creating user.");
+                // TODO: DatabaseException
+                throw new Exception("A database error occurred.");
+            }
+        }
         catch (Exception)
         {
             // transaction.Dispose();
@@ -144,6 +173,30 @@ public class UserService : IUserService
             throw new InvalidOperationException($"Can't create an instance of '{nameof(ApplicationUser)}'. " +
                    $"Ensure that '{nameof(ApplicationUser)}' is not an abstract class and has a parameterless constructor, or alternatively " +
                    $"override the register page in /Areas/Identity/Pages/Account/Register.cshtml");
+        }
+    }
+
+    public async Task<ApplicationUser> FindByIdAsync(string userId)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(userId))
+                throw new Exception("User ID is required.");
+
+            // var user = await _userManager.FindByIdAsync(userId);
+            var user = await _userManager.Users
+                .Include(u => u.Department)
+                .Include(u => u.UserTitle)
+                .FirstOrDefaultAsync(u => u.Id == userId);
+            if (user == null)
+                throw new Exception($"User not found.");
+
+            return user;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while querying user.");
+            throw new Exception("An unexpected error occurred. Please try again later.");
         }
     }
 
@@ -172,17 +225,17 @@ public class UserService : IUserService
         try
         {
             if (string.IsNullOrEmpty(userCode))
-                throw new Exception("Parameter employeeCode is required.");
+                throw new Exception("Parameter usercode is required.");
 
             var employee = await _userRepository.FindByUserCodeAsync(userCode);
             if (employee == null)
-                throw new Exception($"Employee with code {userCode} not found.");
+                throw new Exception($"User with code {userCode} not found.");
 
             return employee;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Unexpected error while querying department by department code.");
+            _logger.LogError(ex, "Unexpected error while querying user by user code.");
             throw new Exception("An unexpected error occurred. Please try again later.");
         }
     }

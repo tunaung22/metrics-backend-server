@@ -5,13 +5,17 @@
 }
 
 
-<div class="container" style="height: 70vh;">
+<div class="container">
     @if (@Model.Username != null)
     {
         <h3>Success</h3>
-        <div class="alert alert-success my-4">
-            <h4 class="m-0">A user was created successfully!</h4>
+
+        <div class="my-4">
+            <span>
+                <h5 class="m-0">A user was created successfully!</h5>
+            </span>
         </div>
+
 
         <div class="">
             <div class="row mb-2">
@@ -46,10 +50,21 @@
     }
     else
     {
-        <div>
+        <div class="my-4">
             <span>
-                <h5>To add more employee, use the Registration Page.</h5>
-                <a class="" asp-page="/Manage/Users/Register">Register</a>
+                <h5>To add more users, use the Registration Page.</h5>
+                <div class="row">
+                    <div class="col-sm-4 col-xl-2">Users:</div>
+                    <div class="col-sm-8 col-xl-10">
+                        <a class="" asp-page="/Manage/Users/Index"><strong>User List</strong></a>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-4 col-xl-2">Add more user:</div>
+                    <div class="col-sm-8 col-xl-10">
+                         <a class="" asp-page="/Manage/Users/Register"><strong>Register</strong></a>
+                    </div>
+                </div>
             </span>
         </div>
     }

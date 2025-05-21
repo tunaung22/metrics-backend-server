@@ -1,52 +1,61 @@
 ﻿@page
 @model Metrics.Web.Pages.Manage.Users.IndexModel
 @{
+    ViewData["Title"] = "Manage Users";
 }
 
-<div class="container">
-    <h3>Employee</h3>
 
-    <div class="mt-4">
-        <a class="btn btn-success" asp-page="/Employee/Register">Register</a>
+<div class="container">
+    <div class="d-flex align-items-center">
+        <h3 class="flex-grow-1">Manage Users</h3>
+        <span class="justify-content-end gap-2">
+            <a class="btn btn-success" 
+                asp-page="Register"
+                asp-route-returnUrl="@Url.Page("Index")"><i class="bi bi-plus"></i> Register</a>
+        </span>
     </div>
 
     <div class="mt-4">
-        <table id="employeeTable" class="table table-striped" style="width: 100%;">
+        <table id="userTable" class="table table-striped" style="width: 100%;">
             <thead>
                 <tr>
                     <th>Account</th>
                     <th>Name</th>
+                    <th>Group</th>
                     <th>Role</th>
                     <th>Department</th>
                     @* <th>Address</th> *@
                     @* <th>Phone Number</th> *@
-                    @* <th>Actions</th> *@
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
-                @if (Model.EmployeeList.Any())
+                @if (Model.UsersList.Any())
                 {
-                    @foreach (var e in Model.EmployeeList)
+                    @foreach (var e in Model.UsersList)
                     {
                         <tr>
-                            <td>@e.UserAccount.UserName</td>
-                            <td>@e.FullName</td>
+                            <td>@e.UserName</td>
+                            <td>@e.FullName </td>
+                            <td>
+                                <span class="badge rounded-2 rounded-pill text-bg-primary">
+                                    <small>@e.UserTitleName</small>
+                                </span></td>
                             <td>
                                 @foreach(var roleName in e.UserRoles)
                                 {
-                                        <span class="badge rounded-2 text-bg-primary">
-                                            <small>@roleName</small>
-                                        </span>
-                                }
-                            </td>
+                                    <span class="badge rounded-2 rounded-pill text-bg-primary">
+                                        <small>@roleName</small></span>
+                                } </td>
                             <td>@e.DepartmentName</td>
                             @* <td>@e.Address</td> *@
                             @* <td>@e.PhoneNumber</td> *@
-                            @* <td>
-                                <button class="btn btn-success">
-                                    Edit
-                                </button>
-                            </td> *@
+                            <td>
+                                <a asp-page="Edit" 
+                                    asp-route-user="@e.UserCode"
+                                    asp-route-returnUrl="@Url.Page("Index")"
+                                    class="link-underline-primary">Edit</a>
+                            </td>
                         </tr>
                     }
                 }
@@ -58,7 +67,7 @@
 
 @section Scripts {
     <script>
-        new DataTable('#employeeTable', {
+        new DataTable('#userTable', {
             paging: false,
             info: false,
             searching: false

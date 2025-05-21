@@ -4,13 +4,14 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
 
 namespace Metrics.Web.Pages.Manage.Users;
 
-[Authorize(Roles = "Admin")]
+[Authorize(Policy = "CanAccessAdminFeaturePolicy")]
 public class IndexModel : PageModel
 {
-    private readonly IUserService _employeeService;
+    private readonly IUserService _userService;
     private readonly IDepartmentService _departmentService;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly RoleManager<ApplicationRole> _roleManager;
@@ -18,64 +19,68 @@ public class IndexModel : PageModel
     public IndexModel(
         UserManager<ApplicationUser> userManager,
         RoleManager<ApplicationRole> roleManager,
-        IUserService employeeService,
+        IUserService userService,
         IDepartmentService departmentService)
     {
         _userManager = userManager;
         _roleManager = roleManager;
-        _employeeService = employeeService;
+        _userService = userService;
         _departmentService = departmentService;
     }
 
 
     // =============== MODELS ==================================================
-    public class EmployeeModel
+    public class UserModel
     {
-        public required string EmployeeCode { get; set; }
-        public required string FullName { get; set; }
-        public string? Address { get; set; }
-        public string? PhoneNumber { get; set; }
+        public string? UserName { get; set; } = string.Empty;
+        public string? UserCode { get; set; } = string.Empty;
+        public string? FullName { get; set; } = string.Empty;
+        public string? Address { get; set; } = string.Empty;
+        public string? PhoneNumber { get; set; } = string.Empty;
         public long DepartmentId { get; set; }
-        public required string DepartmentName { get; set; }
-        public required string ApplicationUserId { get; set; }
+        public string? DepartmentName { get; set; } = string.Empty;
+        public string? UserTitleName { get; set; } = string.Empty;
+        public List<string> UserRoles { get; set; } = [];
+        // public required string ApplicationUserId { get; set; }
         // public Department CurrentDepartment { get; set; } = null!;
-        public required ApplicationUser UserAccount { get; set; }
+        // public required ApplicationUser UserAccount { get; set; }
         // public List<KpiSubmission> KpiSubmissions { get; set; } = [];
         // public required ApplicationRole UserRole { get; set; }
-        public List<string> UserRoles { get; set; } = [];
     }
 
-    public List<EmployeeModel> EmployeeList { get; set; } = [];
+    public List<UserModel> UsersList { get; set; } = [];
 
 
     // =============== HANDLERS ================================================
-    public async Task<IActionResult> OnGet()
+    public async Task<IActionResult> OnGetAsync()
     {
-        // var employees = await _employeeService.FindAllAsync();
+        // var users = await _userService.FindAllAsync();
+        var usersList = await _userManager.Users
+            .Include(u => u.Department)
+            .Include(u => u.UserTitle)
+            .ToListAsync();
 
-        // if (employees.Any())
-        // {
-        //     foreach (var employee in employees)
-        //     {
-        //         var roles = await _userManager.GetRolesAsync(employee.ApplicationUser);
-        //         var employeeModel = new EmployeeModel
-        //         {
-        //             EmployeeCode = employee.EmployeeCode,
-        //             FullName = employee.FullName,
-        //             Address = employee.Address,
-        //             PhoneNumber = employee.PhoneNumber,
-        //             DepartmentId = employee.DepartmentId,
-        //             DepartmentName = employee.Department.DepartmentName,
-        //             ApplicationUserId = employee.ApplicationUserId,
-        //             UserAccount = employee.ApplicationUser,
-        //             // UserRole = roles
-        //             UserRoles = roles.ToList()
-        //         };
-
-        //         EmployeeList.Add(employeeModel);
-
-        //     }
-        // }
+        if (usersList.Any())
+        {
+            foreach (var user in usersList)
+            {
+                // var roles = await _userManager.GetRolesAsync(user.ApplicationUser);
+                var roles = await _userManager.GetRolesAsync(user);
+                var userModel = new UserModel
+                {
+                    UserName = user.UserName,
+                    UserCode = user.UserCode,
+                    FullName = user.FullName,
+                    Address = user.ContactAddress,
+                    PhoneNumber = user.PhoneNumber,
+                    DepartmentId = user.DepartmentId,
+                    DepartmentName = user.Department.DepartmentName,
+                    UserTitleName = user.UserTitle.TitleName,
+                    UserRoles = roles.ToList()
+                };
+                UsersList.Add(userModel);
+            }
+        }
 
         return Page();
     }

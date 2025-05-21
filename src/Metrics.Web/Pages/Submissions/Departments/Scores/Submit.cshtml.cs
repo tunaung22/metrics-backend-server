@@ -7,17 +7,17 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 
-namespace Metrics.Web.Pages.Submissions.DepartmentScores;
+namespace Metrics.Web.Pages.Submissions.Departments.Scores;
 
-[Authorize(Roles = "Employee")]
-public class ApplyModel : PageModel
+[Authorize(Policy = "CanSubmitScorePolicy")]
+public class SubmitModel : PageModel
 {
     private readonly IKpiSubmissionService _kpiSubmissionService;
     private readonly IDepartmentService _departmentService;
     private readonly IKpiSubmissionPeriodService _kpiPeriodService;
     private readonly IUserService _userService;
 
-    public ApplyModel(
+    public SubmitModel(
                         IDepartmentService departmentService,
                         IKpiSubmissionPeriodService kpiPeriodService,
                         IKpiSubmissionService kpiSubmissionService,
@@ -47,6 +47,7 @@ public class ApplyModel : PageModel
 
 
     // =============== MODELS ==================================================
+    // Input Model for Staff
     public class SubmissionInputModel
     {
         // public long Id { get; set; }
@@ -54,6 +55,8 @@ public class ApplyModel : PageModel
         [Required(ErrorMessage = "KPI Score is required.")]
         [Range(1, 10, ErrorMessage = "KPI Score is required and choose between 1 to 10.")]
         public decimal KpiScore { get; set; }
+        public string? PositiveAspects { get; set; }
+        public string? NegativeAspects { get; set; }
         public string? Comments { get; set; }
         // Foreign Keys
         public long KpiPeriodId { get; set; }
@@ -65,6 +68,7 @@ public class ApplyModel : PageModel
         // public Department TargetDepartment { get; set; } = null!;
         // public Employee Candidate { get; set; } = null!;
     }
+
     public class DepartmentModel
     {
         public long Id { get; set; }
@@ -79,20 +83,25 @@ public class ApplyModel : PageModel
     // ==========
     public string TargetKpiPeriodName { get; set; } = null!;
     public long TargetKpiPeriodId { get; set; }
-    public bool IsSubmissionValid { get; set; } = false; // is current date not early or late
+    public bool IsSubmissionValid { get; set; } = false; // check is current date not early or late
     // public long EmployeeId { get; set; }
     public ApplicationUser Submitter { get; set; } = null!;
     public List<DepartmentModel> DepartmentList { get; set; } = [];
     public bool IsSubmissionsExist { get; set; } = false;
     // this model won't need if submission time is based on current time 
-    // public DateTimeOffset SubmissionTime { get; set; } = DateTimeOffset.UtcNow; 
+    // public DateTimeOffset SubmissionTime { get; set; } = DateTimeOffset.UtcNow;
+    public string? CurrentUserTitleName { get; set; } = string.Empty;
     // ==========
     // public bool IsSubmissionAvaiable { get; set; } = false;
+    public string? ReturnUrl { get; set; } = string.Empty;
 
 
     // =============== HANDLERS ================================================
-    public async Task<IActionResult> OnGetAsync(string periodName)
+    public async Task<IActionResult> OnGetAsync(string periodName, string? returnUrl)
     {
+        if (!string.IsNullOrEmpty(returnUrl))
+            ReturnUrl = returnUrl;
+
         TargetKpiPeriodName = periodName;
 
         // ---------- KPI Period ID ----------------------------------------
@@ -133,7 +142,7 @@ public class ApplyModel : PageModel
         // ---------- Employee ID ----------------------------------------
         // EmployeeId = await GetEmployeeId();
         Submitter = await GetCurrentUser();
-
+        CurrentUserTitleName = Submitter.UserTitle?.TitleName ?? string.Empty;
         // ----- Load Kpi Period List for Dropdown -----
         // var listItems = await LoadKpiPeriodListItems();
         // if (listItems == null)
@@ -241,6 +250,7 @@ public class ApplyModel : PageModel
 
         // EmployeeId = await GetEmployeeId();
         Submitter = await GetCurrentUser();
+        CurrentUserTitleName = Submitter.UserTitle?.TitleName ?? string.Empty;
 
         // Assign: DepartmentList
         DepartmentList = await GetDepartmentList();
@@ -289,6 +299,8 @@ public class ApplyModel : PageModel
                 KpiSubmissionPeriodId = TargetKpiPeriodId,
                 DepartmentId = DepartmentList[i].Id,
                 ScoreValue = SubmissionInput[i].KpiScore.Equals(0) ? 1 : SubmissionInput[i].KpiScore,
+                PositiveAspects = SubmissionInput[i].PositiveAspects ?? "",
+                NegativeAspects = SubmissionInput[i].NegativeAspects ?? "",
                 Comments = SubmissionInput[i].Comments ?? ""
             };
             submissionList.Add(submission);
@@ -298,8 +310,10 @@ public class ApplyModel : PageModel
         {
             var appliedRecords = await _kpiSubmissionService.CreateRangeAsync(submissionList);
 
-            HttpContext.Session.SetString("SubmissionSuccessful", "true");
-            HttpContext.Session.SetString("TargetKpiPeriodName", TargetKpiPeriodName);
+            // HttpContext.Session.SetString("SubmissionSuccessful", "true");
+            // HttpContext.Session.SetString("TargetKpiPeriodName", TargetKpiPeriodName);
+            // TempData["SubmissionSuccessful"] = true;
+            TempData["TargetKpiPeriodName"] = TargetKpiPeriodName;
 
             return RedirectToPage("Success");
 
@@ -314,6 +328,15 @@ public class ApplyModel : PageModel
             ModelState.AddModelError("", ex.Message);
             return Page();
         }
+    }
+
+    public IActionResult OnPostCancel()
+    {
+        if (!string.IsNullOrEmpty(ReturnUrl))
+        {
+            return LocalRedirect(ReturnUrl);
+        }
+        return RedirectToPage("./Index");
     }
 
     // ========== Methods ==================================================
@@ -366,7 +389,7 @@ public class ApplyModel : PageModel
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)
             ?? throw new Exception("User not found. Please login again.");
 
-        return await _userService.FindByUsernameAsync(userId);
+        return await _userService.FindByIdAsync(userId);
     }
 
     private async Task<List<DepartmentModel>> GetDepartmentList()

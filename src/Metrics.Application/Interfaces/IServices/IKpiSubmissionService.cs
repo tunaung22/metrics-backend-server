@@ -17,7 +17,7 @@ public interface IKpiSubmissionService
     Task<List<KpiSubmission>> FindByKpiPeriodAndDepartmentAsync(long kpiPeriodId, long departmentId); // find by KpiPeriod & Department
     Task<IEnumerable<KpiSubmission>> FindAllAsync();
     // Task<IEnumerable<Department>> FindAsync(string keyword); // Search feature
-
+    Task<long> FindCountByUserIdByKpiPeriodIdAsync(string currentUserId, long kpiPeriodId);
 
     // ========== Return DTO ===================================================
     // Task<KpiSubmissionGetDto> Create_Async(KpiSubmissionCreateDto createDto);

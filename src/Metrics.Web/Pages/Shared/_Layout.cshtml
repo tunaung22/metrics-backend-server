@@ -1,4 +1,11 @@
-﻿<!DOCTYPE html>
+﻿@using Microsoft.AspNetCore.Authorization
+@inject IAuthorizationService AuthorizationService
+@{
+    var canAccessAdminFeatures = await AuthorizationService.AuthorizeAsync(User, "CanAccessAdminFeaturePolicy");
+    var canSubmitScore = await AuthorizationService.AuthorizeAsync(User, "CanSubmitScorePolicy");
+}
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -47,33 +54,35 @@
                     <span class="navbar-toggler-icon"></span>
                 </button>
 
+               
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
                     <ul id="metrics__main-navbar" class="navbar-nav flex-grow-1">
                         @* ========================== Public Area ========================== *@
                         <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-page="/Index">Home</a>
+                            <strong><a class="nav-link" asp-area="" asp-page="/Index">Home</a></strong>
                         </li>
-
                         @* ========================== Admin Area ========================== *@
-                        @if (User.IsInRole("admin") || User.IsInRole("sysadmin"))
+                        @if(canAccessAdminFeatures.Succeeded)
+                        @* @if (User.IsInRole("admin") || User.IsInRole("sysadmin")) *@
                         @* @if (User.HasClaim("Permission", "CanSubmitScore")) *@
                         {
                             <li class="nav-item">
-                                <a class="nav-link " asp-area="" asp-page="/Dashboard/Index">Dashboard</a>
+                                <strong><a class="nav-link " asp-area="" asp-page="/Dashboard/Index">Dashboard</a></strong>
                             </li>
                         }
 
                         @* ========================== Employee Area ========================== *@
-                        @if (User.IsInRole("Employee"))
+                        @if(canSubmitScore.Succeeded)
+                        @* @if (User.IsInRole("staff")) *@
                         {
                             <li class="nav-item">
-                                <a class="nav-link" asp-area="" asp-page="/Kpi/Submissions/Index">KPI Submissions</a>
+                                <strong><a class="nav-link" asp-area="" asp-page="/Submissions/Departments/Scores/Index">Submissions</a></strong>
                             </li>
                         }
 
                         @* ========================== Public Area ========================== *@
                         <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-page="/About/Index">About</a>
+                            <strong><a class="nav-link" asp-area="" asp-page="/About/Index">About</a></strong>
                         </li>
                     </ul>
                     <partial name="Shared/_LoginPartial" />
@@ -88,9 +97,9 @@
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container-fluid">
-            &copy; 2025 - Metrics Backend - <a asp-area="" asp-page="/Privacy">Privacy</a>
+    <footer class="border-top footer text-muted py-2">
+        <div class="container">
+            &copy; 2025 - Metrics Backend
         </div>
     </footer>
 
@@ -100,6 +109,10 @@
     @* <script src="~/lib/tempus-dominus/tempus-dominus.min.js"></script> *@
     <script src="~/lib/jquery-ui-1.14.1.custom/jquery-ui.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script>
+        const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+        const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
+    </script>
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>

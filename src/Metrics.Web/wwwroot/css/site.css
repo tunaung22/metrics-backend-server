@@ -30,12 +30,13 @@ body {
 }
 
 a {
-  color: #3465a4;
+  /* color: #3465a4; */
   text-decoration: none;
 }
 
 a:hover {
-  color: #006eff;
+  /* color: #006eff; */
+  /* text-decoration: underline; */
 }
 
 .nav-item .nav-link {

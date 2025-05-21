@@ -1,14 +1,14 @@
 using Metrics.Application.Domains;
 using Metrics.Application.Exceptions;
 using Metrics.Application.Interfaces.IServices;
-using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.ComponentModel.DataAnnotations;
-using System.Net;
 
 namespace Metrics.Web.Pages.Manage.Submissions.Periods;
 
+[Authorize(Policy = "CanAccessAdminFeaturePolicy")]
 public class CreateModel : PageModel
 {
     private readonly IKpiSubmissionPeriodService _kpiPeriodService;

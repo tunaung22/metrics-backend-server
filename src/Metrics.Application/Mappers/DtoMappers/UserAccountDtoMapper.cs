@@ -10,7 +10,7 @@ public static class UserAccountDtoMapper
     {
         return new ApplicationUser
         {
-            UserCode = createDto.EmployeeCode,
+            UserCode = createDto.UserCode,
             FullName = createDto.FullName,
             ContactAddress = createDto.Address ?? string.Empty,
             ProfilePictureUrl = string.Empty,
