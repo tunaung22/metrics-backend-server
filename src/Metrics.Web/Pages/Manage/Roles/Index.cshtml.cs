@@ -1,9 +1,11 @@
 using Metrics.Application.Interfaces.IServices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace Metrics.Web.Pages.Manage.Roles;
 
+[Authorize(Policy = "CanAccessAdminFeaturePolicy")]
 public class IndexModel : PageModel
 {
     private readonly IUserRoleService _userRoleService;
@@ -16,8 +18,8 @@ public class IndexModel : PageModel
     // =============== MODELS ==================================================
     public class UserRoleModel
     {
-        public required string RoleName { get; set; }
         public required string Id { get; set; }
+        public required string RoleName { get; set; }
     }
 
     public List<UserRoleModel> UserRoleList { get; set; } = new List<UserRoleModel>();

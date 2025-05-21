@@ -4,8 +4,8 @@
     ViewData["Title"] = "Change Password";
 }
 
-@* <div class="container"> *@
-    <h3>Change Password</h3>
+<div class="container">
+    <h4>Change Password</h4>
     <partial name="../../_StatusMessage" for="StatusMessage" />
     <div class="col col-lg-12">
         <div class="row g-0">
@@ -13,47 +13,55 @@
                 @* <p class="text-muted"></p> *@
                 <form id="change-password-form" method="post">
                     <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
-                    
                     <div class="mb-4">
-                                <label asp-for="Input.OldPassword" class="form-label"></label>
-                                <input asp-for="Input.OldPassword" 
-                                        type="password"
-                                        class="form-control" 
-                                        @* autocomplete="current-password"  *@
-                                        aria-required="true" 
-                                        autocomplete="current-password" 
-                                        placeholder="Please enter your old password." 
-                                        required />
-                                <span asp-validation-for="Input.OldPassword" class="text-danger"></span>
-                            </div>
+                        <label asp-for="Input.OldPassword" class="form-label"></label>
+                        <input asp-for="Input.OldPassword" 
+                                type="password"
+                                class="form-control" 
+                                @* autocomplete="current-password"  *@
+                                aria-required="true" 
+                                autocomplete="current-password" 
+                                placeholder="Please enter your old password." 
+                                required />
+                        <span asp-validation-for="Input.OldPassword" class="text-danger"></span>
+                    </div>
                     <div class="mb-4">
-                                <label asp-for="Input.NewPassword" class="form-label"></label>
-                                <input asp-for="Input.NewPassword" 
-                                        type="password"
-                                        class="form-control" 
-                                        @* autocomplete="current-password"  *@
-                                        aria-required="true"
-                                        autocomplete="new-password" 
-                                        placeholder="Please enter your new password." 
-                                        required />
-                                <span asp-validation-for="Input.NewPassword" class="text-danger"></span>
-                            </div>
+                        <label asp-for="Input.NewPassword" class="form-label"></label>
+                        <input asp-for="Input.NewPassword" 
+                                type="password"
+                                class="form-control" 
+                                @* autocomplete="current-password"  *@
+                                aria-required="true"
+                                autocomplete="new-password" 
+                                placeholder="Please enter your new password." 
+                                required />
+                        <span asp-validation-for="Input.NewPassword" class="text-danger"></span>
+                    </div>
                     <div class="mb-4">
-                                <label asp-for="Input.ConfirmPassword" class="form-label"></label>
-                                <input asp-for="Input.ConfirmPassword" 
-                                        type="password"
-                                        class="form-control" 
-                                        @* autocomplete="current-password"  *@
-                                        aria-required="true" 
-                                        autocomplete="new-password" 
-                                        placeholder="Please confirm your new password."
-                                        required />
-                                <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
-                            </div>
-                    <button type="submit" class="btn btn-login btn-primary mb-3">Update Password</button>
-                    
-                    
-                    
+                        <label asp-for="Input.ConfirmPassword" class="form-label"></label>
+                        <input asp-for="Input.ConfirmPassword" 
+                                type="password"
+                                class="form-control" 
+                                @* autocomplete="current-password"  *@
+                                aria-required="true" 
+                                autocomplete="new-password" 
+                                placeholder="Please confirm your new password."
+                                required />
+                        <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group row">
+                        <div class="d-flex justify-content-end pe-0 gap-2">
+                                    @* class="btn btn-primary ms-2">Save</button> *@
+                            <a asp-page="/Account/Me" class="btn btn-warning mb-3"><i class="bi bi-arrow-left"> </i>Back</a>
+                            <button type="submit" class="btn btn-primary mb-3"><i class="bi bi-check-circle"> </i>Update</button>
+                            @* <button asp-page-handler="Cancel" 
+                                    type="submit" 
+                                    class="btn btn-warning ms-2" formnovalidate><i class="bi bi-x-circle"> </i>Cancel</button> *@
+                        </div>
+                        @* <input type="" name="Id" value="@Model.UpdateModel.Id" /> *@
+                        @* <input type="" name="DepartmentCode" value="@Model.UpdateModel.DepartmentCode" /> *@
+                    </div>
                     @* <div class="form-floating mb-3">
                         <input asp-for="Input.OldPassword" class="form-control" autocomplete="current-password" aria-required="true" placeholder="Please enter your old password." />
                         <label asp-for="Input.OldPassword" class="form-label"></label>
@@ -74,7 +82,7 @@
             </div>
         </div>
     </div>
-@* </div>   *@
+</div>  
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

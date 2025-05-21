@@ -1,0 +1,79 @@
+﻿@page
+@model Metrics.Web.Pages.Manage.Users.EditModel
+@{
+    ViewData["Title"] = "Update User";
+}
+
+<div class="container">
+    <h3>Edit User</h3>
+    @if (@Model.TargetUser != null)
+    {
+        <div class="col-sm-12 col-md-10 col-lg-6 col-xl-6 mx-auto bg-light p-4">
+            <form id="update-user-form" method="post" asp-route-returnUrl="@Model.ReturnUrl">
+                <div class="row mb-2">
+                    <div class="col-xs-12 col-sm-3 col-md-4 col-xl-4">
+                        <label for="" class="form-label">User:</label>
+                    </div>
+                    <div class="col-xs-12 col-sm-9 col-md-8 col-xl-8">
+                        <label for="" class="form-label"><strong>@Model.TargetUser.UserName / @Model.TargetUser.FullName</strong></label>
+                    </div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-xs-12 col-sm-3 col-md-4 col-xl-4">
+                        <label for="Input.Department" class="form-label">Department:</label>
+                    </div>
+                    <div class="col-xs-12 col-sm-9 col-md-8 col-xl-8">
+                        <select asp-for="Input.DepartmentId" 
+                                asp-items="Model.DepartmentListItems"
+                                class="form-select" 
+                                aria-label="Select Department">
+                            <option value="" selected hidden></option>
+                        </select>
+                        <div><span asp-validation-for="Input.DepartmentId" class="text-danger"></span></div>
+                    </div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-xs-12 col-sm-3 col-md-4 col-xl-4">
+                        <label for="" class="form-label">Roles:</label>
+                    </div>
+                    <div class="col-xs-12 col-sm-9 col-md-8 col-xl-8">
+                        @foreach (var role in Model.AvaiableRoles)
+                        {
+                            <div>
+                                <input type="checkbox" 
+                                    name="SelectedRoleIds" 
+                                    value="@role.Id" 
+                                    checked="@Model.SelectedRoleIds.Contains(role.Id)" />
+                                    @* checked="@(Model.Input.RoleIds != null && Model.Input.RoleIds.Contains(role.Id))" /> *@
+                                <label>@role.Name?.ToUpper()</label>
+                            </div>
+                        }
+                        <div><span asp-validation-for="Input.RoleIds" class="text-danger"></span></div>
+                    </div>
+                </div>
+
+                <div class="row mt-4">
+                    <div class="d-flex justify-content-end gap-2 mb-3">
+                        <button type="submit" class="btn btn-warning"
+                            asp-page-handler="Cancel" formnovalidate>
+                            <i class="bi bi-x-circle"> </i>Cancel
+                        </button>
+                        @* <button type="submit" class="btn btn-login btn-secondary">Reset</button> *@
+                        <button type="submit" class="btn btn-login btn-primary"><i class="bi bi-check-circle"> </i>Update</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    }
+
+</div>
+
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        $(document).ready(function() {
+            $('#Input_OldPassword').val('');
+        });
+    </script>
+}

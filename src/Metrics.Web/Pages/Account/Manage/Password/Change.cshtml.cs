@@ -42,7 +42,7 @@ public class ChangeModel : PageModel
         [Required]
         [DataType(DataType.Password)]
         [Display(Name = "Current password")]
-        public string? OldPassword { get; set; }
+        public string OldPassword { get; set; } = null!;
 
         /// <summary>
         ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
@@ -52,7 +52,7 @@ public class ChangeModel : PageModel
         [StringLength(100, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 6)]
         [DataType(DataType.Password)]
         [Display(Name = "New password")]
-        public string? NewPassword { get; set; }
+        public string NewPassword { get; set; } = null!;
 
         /// <summary>
         ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
@@ -67,8 +67,10 @@ public class ChangeModel : PageModel
 
     // =============== HANDLERS ================================================
 
-    public async Task<IActionResult> OnGetAsync()
+    public async Task<IActionResult> OnGetAsync(string? returnUrl)
     {
+        ViewData["ReturnUrl"] = returnUrl;
+
         var user = await _userManager.GetUserAsync(User);
         if (user == null)
         {
@@ -112,6 +114,18 @@ public class ChangeModel : PageModel
         StatusMessage = "Your password has been changed.";
 
         return RedirectToPage();
+    }
+
+    public IActionResult OnPostCancel(string? returnUrl)
+    {
+        if (string.IsNullOrEmpty(returnUrl))
+        {
+            return RedirectToPage();
+        }
+        else
+        {
+            return LocalRedirect(returnUrl);
+        }
     }
 
     // ========== Methods ==================================================
