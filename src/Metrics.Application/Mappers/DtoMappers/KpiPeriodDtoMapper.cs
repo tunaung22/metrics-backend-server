@@ -7,34 +7,34 @@ public static class KpiPeriodDtoMapper
 {
     // ========== Entity to DTO ==========
     // public static List<KpiPeriodGetDto> ToGetDto(this List<KpiPeriod> entities) { }
-    public static List<KpiPeriodGetDto> ToGetDto(this IEnumerable<KpiPeriod> entities)
+    public static List<KpiPeriodGetDto> ToGetDto(this IEnumerable<KpiSubmissionPeriod> entities)
     {
         if (entities == null) return [];
 
         return entities.Select(e => new KpiPeriodGetDto
         {
-            PeriodName = e.PeriodCode,
+            PeriodName = e.PeriodName,
             SubmissionStartDate = e.SubmissionStartDate,
             SubmissionEndDate = e.SubmissionEndDate
         }).ToList();
     }
 
-    public static KpiPeriodGetDto ToGetDto(this KpiPeriod entity)
+    public static KpiPeriodGetDto ToGetDto(this KpiSubmissionPeriod entity)
     {
         return new KpiPeriodGetDto
         {
-            PeriodName = entity.PeriodCode,
+            PeriodName = entity.PeriodName,
             SubmissionStartDate = entity.SubmissionStartDate,
             SubmissionEndDate = entity.SubmissionEndDate
         };
     }
 
     // ========== DTO to Entity ==========
-    public static KpiPeriod ToEntity(this KpiPeriodCreateDto dto)
+    public static KpiSubmissionPeriod ToEntity(this KpiPeriodCreateDto dto)
     {
-        return new KpiPeriod
+        return new KpiSubmissionPeriod
         {
-            PeriodCode = dto.PeriodName,
+            PeriodName = dto.PeriodName,
             SubmissionStartDate = dto.SubmissionStartDate,
             SubmissionEndDate = dto.SubmissionEndDate
         };

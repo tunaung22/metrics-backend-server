@@ -9,6 +9,12 @@ public class ApplicationRoleConfig : IEntityTypeConfiguration<ApplicationRole>
 {
     public void Configure(EntityTypeBuilder<ApplicationRole> builder)
     {
+        builder.ToTable("application_roles");
+
+        // ===== Index ======
+        builder.HasKey(e => e.Id);
+
+        // ===== Columns =====
         builder.Property(e => e.CreatedAt)
             .HasColumnName("created_at")
             .HasColumnType("timestamp with time zone");

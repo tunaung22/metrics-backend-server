@@ -14,13 +14,13 @@ public class UserAccountService : IUserAccountService
     private readonly MetricsDbContext _context;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly RoleManager<ApplicationRole> _roleManager;
-    private readonly IEmployeeRepository _employeeRepository;
+    private readonly IUserRepository _employeeRepository;
 
     public UserAccountService(
         MetricsDbContext context,
         UserManager<ApplicationUser> userManager,
         RoleManager<ApplicationRole> roleManager,
-        IEmployeeRepository employeeRepository)
+        IUserRepository employeeRepository)
     {
         _context = context;
         _userManager = userManager;
@@ -108,9 +108,9 @@ public class UserAccountService : IUserAccountService
 
             // ========== STEP 2 - Employee (User Profile) =====================
             // ** UserAccountCreateDto to Employee
-            var employeeEntity = dto.ToEntity();
-            employeeEntity.ApplicationUserId = userInstance.Id;
-            _employeeRepository.Create(employeeEntity);
+            // var employeeEntity = dto.ToEntity();
+            // employeeEntity.ApplicationUserId = userInstance.Id;
+            // _employeeRepository.Create(employeeEntity);
 
             // ========== STEP 3 - Save All Changes =====================
             await _context.SaveChangesAsync();

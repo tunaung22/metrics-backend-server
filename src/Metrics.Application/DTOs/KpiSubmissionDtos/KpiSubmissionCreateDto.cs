@@ -10,7 +10,7 @@ public class KpiSubmissionCreateDto
     // Foreign Keys
     public long KpiPeriodId { get; set; }
     public long DepartmentId { get; set; }
-    public long EmployeeId { get; set; }
+    public string CandateId { get; set; } = null!;
 
     // Reference Navigational Properties
     // public KpiPeriod KpiPeriod { get; set; } = null!;

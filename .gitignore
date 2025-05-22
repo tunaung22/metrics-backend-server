@@ -3,7 +3,8 @@
 
 # draw.io backup
 *.drawio.bkp
-
+*.drawio.dtmp
+**/Logs/
 # ReactJS
 
 # Logs

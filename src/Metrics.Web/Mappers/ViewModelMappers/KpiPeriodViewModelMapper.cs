@@ -6,21 +6,21 @@ namespace Metrics.Web.Mappers.ViewModelMappers;
 
 public static class KpiPeriodViewModelMapper
 {
-    public static KpiPeriod ToEntity(this KpiPeriodCreateViewModel model)
+    public static KpiSubmissionPeriod ToEntity(this KpiPeriodCreateViewModel model)
     {
-        return new KpiPeriod
+        return new KpiSubmissionPeriod
         {
-            PeriodCode = model.PeriodName,
+            PeriodName = model.PeriodName,
             SubmissionStartDate = model.SubmissionStartDate,
             SubmissionEndDate = model.SubmissionEndDate
         };
     }
 
-    public static IEnumerable<KpiPeriodGetViewModel> ToGetViewModel(this IEnumerable<KpiPeriod> entity)
+    public static IEnumerable<KpiPeriodGetViewModel> ToGetViewModel(this IEnumerable<KpiSubmissionPeriod> entity)
     {
         return entity.Select(e => new KpiPeriodGetViewModel
         {
-            PeriodName = e.PeriodCode,
+            PeriodName = e.PeriodName,
             SubmissionStartDate = e.SubmissionStartDate,
             SubmissionEndDate = e.SubmissionEndDate,
         }).ToList();

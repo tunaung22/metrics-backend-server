@@ -32,12 +32,13 @@
                         <form id="account" method="post">
 
                             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                            @* <div class="text-danger">@Html.Raw(@ViewData["Message"])</div> *@
 
                             <div class="mb-3">
                                 <label asp-for="Input.Username" class="form-label">Username</label>
                                 <input asp-for="Input.Username" 
-                                    autocomplete="username"
                                     class="form-control"
+                                    autocomplete="username"
                                     placeholder="Enter your username" 
                                     aria-required="true"
                                     required />
@@ -49,9 +50,9 @@
                                 <input asp-for="Input.Password" 
                                         type="password"
                                         class="form-control" 
-                                        @* autocomplete="current-password"  *@
-                                        aria-required="true" 
+                                        autocomplete="current-password" 
                                         placeholder="Enter your password"
+                                        aria-required="true" 
                                         required />
                                 <span asp-validation-for="Input.Password" class="text-danger"></span>
                             </div>
@@ -74,10 +75,6 @@
 </div>
 
 
-@section Scripts {
-    <partial name="_ValidationScriptsPartial" />
-    <script></script>
-}
 
 @section Styles {
     <style>
@@ -119,4 +116,14 @@
             @* background: linear-gradient(135deg, #5d7dea, #0057ba); *@
         }
     </style>
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        $(document).ready(function() {
+            $('#Input_Password').val('');
+            $('#Input_Username').focus();
+        });
+    </script>
 }

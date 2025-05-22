@@ -10,23 +10,23 @@ public class UnitOfWork : IUnitOfWork, IDisposable
     private readonly MetricsDbContext _context;
     // private readonly Ilogger _logger;
     public IDepartmentRepository Departments { get; }
-    public IKpiPeriodRepository KpiPeriods { get; }
-    public IEmployeeRepository Employees { get; }
+    public IKpiSubmissionPeriodRepository KpiPeriods { get; }
+    public IUserRepository Users { get; }
     public IKpiSubmissionRepository KpiSubmissions { get; }
 
     public UnitOfWork(
         MetricsDbContext context,
         // Ilogger logger,
         IDepartmentRepository departmentRepository,
-        IKpiPeriodRepository kpiPeriodRepository,
-        IEmployeeRepository employeeRepository,
+        IKpiSubmissionPeriodRepository kpiPeriodRepository,
+        IUserRepository employeeRepository,
         IKpiSubmissionRepository kpiSubmissionRepository)
     {
         _context = context;
         // _logger = Logger;
         Departments = departmentRepository;
         KpiPeriods = kpiPeriodRepository;
-        Employees = employeeRepository;
+        Users = employeeRepository;
         KpiSubmissions = kpiSubmissionRepository;
         // // 
         // // _departmentRepository = new DepartmentRepository(context);
