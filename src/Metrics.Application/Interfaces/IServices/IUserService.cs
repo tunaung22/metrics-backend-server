@@ -1,4 +1,5 @@
 using Metrics.Application.Domains;
+using Metrics.Application.DTOs.AccountDtos;
 using Metrics.Application.DTOs.UserAccountDtos;
 using Microsoft.AspNetCore.Identity;
 
@@ -8,14 +9,21 @@ public interface IUserService
 {
 
     Task<IdentityResult> RegisterUserAsync(UserAccountCreateDto createDto);
+    Task<ApplicationUser> UpdateAsync(string userId, UserUpdateDto updateDto);
+    Task<ApplicationUser> UpdateProfileAsync(string userId, UserProfileUpdateDto updateDto);
     Task<ApplicationUser> FindByUsernameAsync(string username);
     Task<ApplicationUser> FindByIdAsync(string userId);
     // TODOs
-    // lock user
-    // unlock user
-    // reset password
-
     // Task<long> FindByUserIdAsync(string userId);
+    // lock user
+    // Task<IdentityResult> LockUserByIdAsync(string userId);
+    // unlock user
+    // Task<IdentityResult> UnlockUserByIdAsync(string userId);
+    // toggle lock user
+    // Task<IdentityResult> ToggleLockUserByIdAsync(string userId);
+    Task<IEnumerable<ApplicationUser>> FindAllActiveAsync();
+    Task<IEnumerable<ApplicationUser>> FindAllAsync();
+
 
     // ========== Return Entity ================================================
     // Task<ApplicationUser> CreateAsync(ApplicationUser entity);

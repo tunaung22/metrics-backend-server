@@ -78,6 +78,13 @@ public class EditModel : PageModel
                 DepartmentName = FormInput.DepartmentName
             };
             await _departmentService.UpdateAsync(DepartmentCode, entity);
+
+            // Redirect to return URL or default to Index
+            var returnUrl = ViewData["ReturnUrl"] as string;
+            if (!string.IsNullOrEmpty(returnUrl))
+                return LocalRedirect(returnUrl);
+
+            return RedirectToPage("./Index");
         }
         catch (DuplicateContentException)
         {
@@ -89,14 +96,6 @@ public class EditModel : PageModel
             ModelState.AddModelError("", "Unexpected error occured. Please try again.");
             return Page();
         }
-
-
-        // Redirect to return URL or default to Index
-        var returnUrl = ViewData["ReturnUrl"] as string;
-        if (!string.IsNullOrEmpty(returnUrl))
-            return LocalRedirect(returnUrl);
-
-        return RedirectToPage("./Index");
     }
 
     public IActionResult OnPostCancel()

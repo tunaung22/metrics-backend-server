@@ -1,4 +1,5 @@
 using Metrics.Application.Domains;
+using Metrics.Application.DTOs.AccountDtos;
 using Metrics.Application.DTOs.UserAccountDtos;
 using Metrics.Application.Exceptions;
 using Metrics.Application.Interfaces.IRepositories;
@@ -176,6 +177,105 @@ public class UserService : IUserService
         }
     }
 
+    public async Task<ApplicationUser> UpdateAsync(string userId, UserUpdateDto updateDto)
+    {
+        if (string.IsNullOrEmpty(userId) || string.IsNullOrWhiteSpace(userId))
+            throw new ArgumentNullException("User ID is required.");
+
+        using var transaction = await _context.Database.BeginTransactionAsync();
+
+        try
+        {
+            var targetUser = await _userManager.FindByIdAsync(userId);
+            if (targetUser == null)
+                throw new NotFoundException("User not found.");
+
+            // Handle concurrency (example using row version)
+            // if (existing.RowVersion != application_user.RowVersion)
+            //     return Result<ApplicationUser>.Fail("Concurrency conflict.");
+
+            // Note: This is full update (**not partial update)
+
+            // 1. Update ApplicationUser
+            targetUser.UserCode = updateDto.UserCode;
+            targetUser.DepartmentId = updateDto.DepartmentId;
+            targetUser.UserTitleId = updateDto.UserTitleId;
+            var result = await _userManager.UpdateAsync(targetUser);
+            if (!result.Succeeded)
+                throw new DbUpdateException("User update failed.");
+            // 2. Update Role
+            var currentRoles = await _userManager.GetRolesAsync(targetUser);
+            await _userManager.RemoveFromRolesAsync(targetUser, currentRoles);
+            await _userManager.AddToRolesAsync(targetUser, updateDto.RoleNames);
+            // foreach (var roleId in updateDto.RoleIds)
+            // {
+            //     // role.id == roleId ? pass : assign role
+            //     //   admin == staff
+            //     // existing roles
+            //     var existingRoles = await _userManager.GetRolesAsync(targetUser);
+            // }
+
+            // refetch updated user
+            var updatedUser = await _userManager.FindByIdAsync(userId);
+            if (updatedUser == null)
+                throw new NotFoundException("Can't load updated user.");
+
+            await _context.SaveChangesAsync();
+            await transaction.CommitAsync();
+
+            return updatedUser;
+        }
+        catch (Exception ex)
+        {
+            // transaction.Dispose();
+            await transaction.RollbackAsync();
+            _logger.LogError(ex, "Unexpected error while updating user.");
+            throw new Exception("An unexpected error occurred. Please try again later.");
+        }
+    }
+
+    public async Task<ApplicationUser> UpdateProfileAsync(string userId, UserProfileUpdateDto updateDto)
+    {
+        if (string.IsNullOrEmpty(userId) || string.IsNullOrWhiteSpace(userId))
+            throw new ArgumentNullException("User ID is required.");
+
+        try
+        {
+            var targetUser = await _userManager.FindByIdAsync(userId);
+            if (targetUser == null)
+                throw new NotFoundException("User not found.");
+
+            // Handle concurrency (example using row version)
+            // if (existing.RowVersion != application_user.RowVersion)
+            //     return Result<ApplicationUser>.Fail("Concurrency conflict.");
+
+            // Note: This is full update (**not partial update)
+            // 1. Update ApplicationUser
+            targetUser.Email = updateDto.Email;
+            targetUser.FullName = updateDto.FullName;
+            targetUser.ContactAddress = updateDto.ContactAddress ?? string.Empty;
+            targetUser.PhoneNumber = updateDto.PhoneNumber ?? string.Empty;
+            var result = await _userManager.UpdateAsync(targetUser);
+            if (!result.Succeeded)
+                throw new DbUpdateException("User update failed.");
+
+            // refetch updated user
+            var updatedUser = await _userManager.FindByIdAsync(userId);
+            if (updatedUser == null)
+                throw new NotFoundException("Can't load updated user.");
+
+            await _context.SaveChangesAsync();
+
+            return updatedUser;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while updating user.");
+            throw new Exception("An unexpected error occurred. Please try again later.");
+        }
+    }
+
+
     public async Task<ApplicationUser> FindByIdAsync(string userId)
     {
         try
@@ -239,6 +339,50 @@ public class UserService : IUserService
             throw new Exception("An unexpected error occurred. Please try again later.");
         }
     }
+
+    public async Task<IEnumerable<ApplicationUser>> FindAllActiveAsync()
+    {
+        try
+        {
+            var users = await _userRepository.FindAllAsQueryable()
+                .Include(u => u.Department)
+                .Include(u => u.UserTitle)
+                // .Where(u => )
+                .Where(u =>
+                    u.UserName != "sysadmin" &&
+                    u.LockoutEnabled == true &&
+                    (u.LockoutEnd == null || u.LockoutEnd < DateTimeOffset.UtcNow))
+                .ToListAsync();
+
+            return users;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while querying active users.");
+            throw new Exception("An unexpected error occurred. Please try again later.");
+        }
+    }
+
+    public async Task<IEnumerable<ApplicationUser>> FindAllAsync()
+    {
+        try
+        {
+            var users = await _userRepository.FindAllAsQueryable()
+                .Include(u => u.Department)
+                .Include(u => u.UserTitle)
+                .Where(u => u.UserName != "sysadmin")
+                .ToListAsync();
+
+            return users;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while querying all users.");
+            throw new Exception("An unexpected error occurred. Please try again later.");
+        }
+    }
+
+
 
     /*
     public async Task<ApplicationUser> CreateAsync(ApplicationUser user)
@@ -362,25 +506,6 @@ public class UserService : IUserService
         }
     }
 
-
-
-    public async Task<IEnumerable<ApplicationUser>> FindAllAsync()
-    {
-        try
-        {
-            var employees = await _userRepository.FindAllAsQueryable()
-                .Include(e => e.Department)
-                .Include(e => e.KpiSubmissions)
-                .ToListAsync();
-
-            return employees;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Unexpected error while querying employees.");
-            throw new Exception("An unexpected error occurred. Please try again later.");
-        }
-    }
     */
 
     // public async Task<long> FindByUserIdAsync(string userId)

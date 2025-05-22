@@ -15,15 +15,24 @@
         </span>
     </div>
 
+    @if (!string.IsNullOrEmpty(Model.StatusMessage))
+    {
+        var color = Model.StatusMessage.StartsWith("Error") ? "danger" : "info";
+        <div id="alert__actionFeedback" class="alert alert-@color alert-dismissible fade show mt-4 m-2" role="alert">
+            @Html.Raw(Model.StatusMessage)
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
     <div class="mt-4">
         <table id="userTable" class="table table-striped" style="width: 100%;">
             <thead>
                 <tr>
                     <th>Account</th>
+                    <th>Position</th>
                     <th>Name</th>
-                    <th>Group</th>
-                    <th>Role</th>
                     <th>Department</th>
+                    <th>Authority</th>
                     @* <th>Address</th> *@
                     @* <th>Phone Number</th> *@
                     <th>Actions</th>
@@ -34,28 +43,44 @@
                 {
                     @foreach (var e in Model.UsersList)
                     {
-                        <tr>
+                        <tr class="align-middle">
                             <td>@e.UserName</td>
-                            <td>@e.FullName </td>
                             <td>
-                                <span class="badge rounded-2 rounded-pill text-bg-primary">
+                                <p>@e.UserTitleName</p>
+                                @* <span class="badge rounded-2 rounded-pill text-bg-primary">
                                     <small>@e.UserTitleName</small>
-                                </span></td>
+                                </span></td> *@
+                                @* <span class="badge rounded-2 rounded-pill text-bg-primary">
+                                    @e.UserTitleName
+                                </span> *@
+                            </td>
+                            <td>@e.FullName </td>
+                            <td>@e.DepartmentName</td>
                             <td>
                                 @foreach(var roleName in e.UserRoles)
                                 {
-                                    <span class="badge rounded-2 rounded-pill text-bg-primary">
-                                        <small>@roleName</small></span>
+                                    @* var color = roleName.StartsWith("Admin") ? "success" : "secondary";
+                                    <span class="badge rounded-2 rounded-pill text-bg-@color">
+                                        @roleName</span> *@
+                                    <p><strong>@roleName</strong></p>
                                 } </td>
-                            <td>@e.DepartmentName</td>
                             @* <td>@e.Address</td> *@
                             @* <td>@e.PhoneNumber</td> *@
                             <td>
-                                <a asp-page="Edit" 
-                                    asp-route-userCode="@e.UserCode"
-                                    asp-route-returnUrl="@Url.Page("Index")"
-                                    @* asp-route-user="@e.UserCode" *@
-                                    class="link-underline-primary">Edit</a>
+                                    <a asp-page="Edit" 
+                                        asp-route-userId="@e.Id"
+                                        asp-route-returnUrl="@Request.Path"
+                                        class="btn__actionButtons btn btn-sm btn-primary my-2 my-lg-0 me-2">
+                                        <i class="bi bi-pencil-square"> </i>Edit</a>
+                                    <a asp-page="Lock" 
+                                        asp-route-userId="@e.Id"
+                                        asp-route-returnUrl="@Request.Path"
+                                        class="btn__actionButtons btn btn-sm btn-@(e.IsActive?"outline-success":"outline-danger") my-2 my-lg-0 me-2">
+                                            @if (@e.IsActive) 
+                                            { <i class="bi bi-lock-fill"></i> <text>Lock</text> }
+                                            else 
+                                            { <i class="bi bi-unlock-fill"></i> <text>Unlock</text> } 
+                                    </a>
                             </td>
                         </tr>
                     }
@@ -65,6 +90,13 @@
     </div>
 </div>
 
+@section Styles {
+    <style>
+        .btn__actionButtons {
+            width: 6em;
+        }
+    </style>
+}
 
 @section Scripts {
     <script>
@@ -72,6 +104,16 @@
             paging: false,
             info: false,
             searching: false
+        });
+
+        $(function() {
+            @* setTimeout(function() {
+                if ($('.btn-close').length) {
+                    $('.btn-close').click();
+                }
+            }, 4000); *@
+
+            $('#alert__actionFeedback').on('closed.bs.alert', function() {});
         });
     </script>
 }

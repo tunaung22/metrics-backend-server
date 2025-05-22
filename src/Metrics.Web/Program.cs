@@ -18,6 +18,7 @@ using Metrics.Infrastructure.Data.Seedings;
 using Microsoft.AspNetCore.Authorization;
 using Metrics.Infrastructure.Data.DatabaseMigrator;
 using Metrics.Application.DTOs.SeedingDtos;
+using Metrics.Web.Security.PolicyHandlers;
 
 
 // ========== Load .env ===========================================
@@ -166,7 +167,6 @@ builder.Services.AddAuthorizationBuilder()
     .SetFallbackPolicy(new AuthorizationPolicyBuilder()
         .RequireAuthenticatedUser()
         .Build())
-    // .AddPolicy("RequiresAdminRole", policy => policy.RequireRole("admin"))
     .AddPolicy("CanAccessAdminFeaturePolicy", policy =>
     {
         // policy.RequireClaim("Permission", "CanAccessAdminFeature");
@@ -180,7 +180,7 @@ builder.Services.AddAuthorizationBuilder()
         // .RequireRole("hod")
         // .RequireRole("management");
     });
-
+builder.Services.AddSingleton<IAuthorizationHandler, AllowLockedUserHandler>();
 
 builder.Services.AddOpenApi();
 

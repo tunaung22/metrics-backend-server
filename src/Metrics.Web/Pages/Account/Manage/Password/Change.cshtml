@@ -5,64 +5,76 @@
 }
 
 <div class="container">
-    <h4>Change Password</h4>
-    <partial name="../../_StatusMessage" for="StatusMessage" />
-    <div class="col col-lg-12">
-        <div class="row g-0">
-            <div class="col col-sm-8 col-md-6 col-xl-4 mx-auto">
-                @* <p class="text-muted"></p> *@
-                <form id="change-password-form" method="post">
-                    <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
-                    <div class="mb-4">
-                        <label asp-for="Input.OldPassword" class="form-label"></label>
-                        <input asp-for="Input.OldPassword" 
-                                type="password"
-                                class="form-control" 
-                                @* autocomplete="current-password"  *@
-                                aria-required="true" 
-                                autocomplete="current-password" 
-                                placeholder="Please enter your old password." 
-                                required />
-                        <span asp-validation-for="Input.OldPassword" class="text-danger"></span>
-                    </div>
-                    <div class="mb-4">
-                        <label asp-for="Input.NewPassword" class="form-label"></label>
-                        <input asp-for="Input.NewPassword" 
-                                type="password"
-                                class="form-control" 
-                                @* autocomplete="current-password"  *@
-                                aria-required="true"
-                                autocomplete="new-password" 
-                                placeholder="Please enter your new password." 
-                                required />
-                        <span asp-validation-for="Input.NewPassword" class="text-danger"></span>
-                    </div>
-                    <div class="mb-4">
-                        <label asp-for="Input.ConfirmPassword" class="form-label"></label>
-                        <input asp-for="Input.ConfirmPassword" 
-                                type="password"
-                                class="form-control" 
-                                @* autocomplete="current-password"  *@
-                                aria-required="true" 
-                                autocomplete="new-password" 
-                                placeholder="Please confirm your new password."
-                                required />
-                        <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
-                    </div>
+    <div class="d-flex align-items-center my-2">
+        <h4 class="flex-grow-1">Change Password</h4>
+    </div>
 
-                    <div class="form-group row">
-                        <div class="d-flex justify-content-end pe-0 gap-2">
-                                    @* class="btn btn-primary ms-2">Save</button> *@
-                            <a asp-page="/Account/Me" class="btn btn-warning mb-3"><i class="bi bi-arrow-left"> </i>Back</a>
-                            <button type="submit" class="btn btn-primary mb-3"><i class="bi bi-check-circle"> </i>Update</button>
-                            @* <button asp-page-handler="Cancel" 
-                                    type="submit" 
-                                    class="btn btn-warning ms-2" formnovalidate><i class="bi bi-x-circle"> </i>Cancel</button> *@
-                        </div>
-                    </div>
-                </form>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Home</a></li>
+            <li class="breadcrumb-item"><a href="/Account/Me/Index">Profile</a></li>
+            <li class="breadcrumb-item active">Change Password</li>
+        </ol>
+    </nav>
+
+    <partial name="../../_StatusMessage" for="StatusMessage" />
+    
+    <div class="col-sm-12 col-md-8 col-lg-6 col-xl-4 px-4 py-2 mt-4">
+                @* <p class="text-muted"></p> *@
+        <form id="change-password-form" method="post">
+
+            <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+            
+            <div class="mb-3">
+                <label asp-for="Input.OldPassword" class="form-label">Current Password</label>
+                <input asp-for="Input.OldPassword" type="password"
+                        class="form-control" 
+                        aria-required="true" 
+                        autocomplete="current-password" 
+                        placeholder="Please enter your current password." 
+                        required />
+                <span asp-validation-for="Input.OldPassword" class="text-danger"></span>
             </div>
-        </div>
+            <div class="mb-3">
+                <label asp-for="Input.NewPassword" class="form-label"></label>
+                <input asp-for="Input.NewPassword" 
+                        type="password"
+                        class="form-control" 
+                        autocomplete="new-password" 
+                        aria-required="true"
+                        autocomplete="new-password" 
+                        placeholder="Please enter your new password." 
+                        required />
+                <span asp-validation-for="Input.NewPassword" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="Input.ConfirmPassword" class="form-label"></label>
+                <input asp-for="Input.ConfirmPassword" 
+                        type="password"
+                        class="form-control" 
+                        autocomplete="new-password" 
+                        aria-required="true" 
+                        autocomplete="new-password" 
+                        placeholder="Please confirm your new password."
+                        required />
+                <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <div class="d-flex justify-content-end pe-0 gap-2">
+                            @* class="btn btn-primary ms-2">Save</button> *@
+                    <a asp-page="/Account/Me/Index" 
+                        class="btn btn-warning mb-3">
+                        <i class="bi bi-arrow-left"> </i>Back</a>
+                    <button type="submit" 
+                        class="btn btn-primary mb-3">
+                        <i class="bi bi-check-circle"> </i>Update</button>
+                    @* <button asp-page-handler="Cancel" 
+                            type="submit" 
+                            class="btn btn-warning ms-2" formnovalidate><i class="bi bi-x-circle"> </i>Cancel</button> *@
+                </div>
+            </div>
+        </form>
     </div>
 </div>  
 

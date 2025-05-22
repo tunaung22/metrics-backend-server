@@ -1,0 +1,77 @@
+﻿@page "/Manage/Users/{userId}/Lock"
+@model Metrics.Web.Pages.Manage.Users.LockModel
+@{
+    ViewData["Title"] = "Lock a user";
+    var UserInfo = @Model.UserInfo;
+}
+
+<div class="container">
+    <h4>Lock user</h4>
+
+    @if (TempData["Message"] != null)
+    {
+        <div id="alert__actionFeedback" class="alert alert-danger alert-dismissible fade show mt-4 m-2" role="alert">
+            @Html.Raw(TempData["Message"])
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="col-12 pt-2 mx-auto">
+        <form method="post">
+            <input type="hidden" asp-for="TargetUserId" />
+            <div class="row py-2 my-4">
+                <div class="d-flex align-items-center gap-2">
+                    <h5>Are you sure to lock this user out?</h5>
+                    <button asp-page-handler="Cancel" 
+                                type="submit" 
+                                class="btn btn-warning ms-2" formnovalidate>
+                                <i class="bi bi-x-circle"> </i>Cancel</button>
+                    <button class="btn btn-primary" type="submit"
+                            @(UserInfo==null?"disabled":"") >
+                                <i class="bi bi-check-circle"> </i>Lock</button>
+                </div>
+            </div>
+            <div class="row p-4">
+                @if(UserInfo != null)
+                {
+                    <div class="row  bg-light mb-4">
+                        <div class="row mb-4">
+                            <div class="col col-3">Username:</div>
+                            <div class="col col-9">@UserInfo.UserName</div>
+                        </div>
+                        <div class="row mb-4">
+                            <div class="col col-3">Email:</div>
+                            <div class="col col-9">@UserInfo.Email</div>
+                        </div>
+                        <div class="row mb-4">
+                            <div class="col col-3">Full Name:</div>
+                            <div class="col col-9">@UserInfo.FullName</div>
+                        </div>
+                        <div class="row mb-4">
+                            <div class="col col-3">Position:</div>
+                            <div class="col col-9">@UserInfo.TitleName</div>
+                        </div>
+                        <div class="row mb-4">
+                            <div class="col col-3">User Code (staff id):</div>
+                            <div class="col col-9">
+                                <span id="text__userCode">@UserInfo.UserCode</span>
+                            </div>
+                        </div>
+                        <div class="row mb-4">
+                            <div class="col col-3">Department:</div>
+                            <div class="col col-9">@UserInfo.DepartmentName</div>
+                        </div>
+                        <div class="row mb-4">
+                                <div class="col col-3">Address:</div>
+                                <div class="col col-9">@UserInfo.ContactAddress</div>
+                        </div>
+                        <div class="row mb-4">
+                                <div class="col col-3">Phone:</div>
+                                <div class="col col-9">@UserInfo.PhoneNumber</div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </form>
+    </div>
+</div>

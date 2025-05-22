@@ -9,11 +9,11 @@ public interface IUserRepository
     // void Delete(ApplicationUser enitiy);
     Task<ApplicationUser?> FindByUserCodeAsync(string userCode);
     // Task<ApplicationUser> FindByIdAsync(long id);
-    // Task<IEnumerable<ApplicationUser>> FindAllAsync();
+    Task<IEnumerable<ApplicationUser>> FindAllAsync();
     // Task<bool> EmployeeExistsAsync(string userCode);
     // Task<Employee> FindByUserCodeAsync(string userCode);
     // Task<bool> EmployeeExistAsync(string userCode);
 
     // ========== Queryable ====================================================
-    // IQueryable<ApplicationUser> FindAllAsQueryable();
+    IQueryable<ApplicationUser> FindAllAsQueryable();
 }

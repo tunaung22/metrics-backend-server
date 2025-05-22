@@ -27,6 +27,20 @@ public class UserRepository : IUserRepository
         return user;
     }
 
+    public async Task<IEnumerable<ApplicationUser>> FindAllAsync()
+    {
+        return await _userManager.Users
+            .OrderBy(e => e.UserName)
+            .ToListAsync();
+    }
+
+    public IQueryable<ApplicationUser> FindAllAsQueryable()
+    {
+        return _userManager.Users
+            .OrderBy(e => e.UserName)
+            .AsQueryable();
+    }
+
 }
 
 
@@ -46,18 +60,9 @@ public class UserRepository : IUserRepository
 //         .AnyAsync(e => e.UserCode.ToLower() == userCode.ToLower());
 // }
 
-// public async Task<IEnumerable<ApplicationUser>> FindAllAsync()
-// {
-//     return await _context.Employees
-//         .OrderBy(e => e.UserCode)
-//         .ToListAsync();
-// }
 
-// public IQueryable<ApplicationUser> FindAllAsQueryable()
-// {
-//     return _context.Employees
-//         .OrderBy(e => e.UserCode);
-// }
+
+
 
 
 // public async Task<ApplicationUser> FindByIdAsync(long id)

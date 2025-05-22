@@ -29,6 +29,7 @@ public class IndexModel : PageModel
     }
 
     public UserModel UserInfo { get; set; } = new();
+    public string CurrentUserId { get; set; }
 
     public async Task<PageResult> OnGetAsync()
     {
@@ -47,7 +48,7 @@ public class IndexModel : PageModel
 
         if (currentUser != null)
         {
-
+            CurrentUserId = currentUser.Id;
             var roles = await _userManager.GetRolesAsync(currentUser);
 
             UserInfo = new UserModel

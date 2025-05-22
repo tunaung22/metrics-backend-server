@@ -36,7 +36,6 @@
 
   <ItemGroup>
     <Folder Include="Pages/Reports/Submissions/Departments/Kpi/View/" />
-    <Folder Include="Security/PolicyHandlers/" />
   </ItemGroup>
 
   <ItemGroup>

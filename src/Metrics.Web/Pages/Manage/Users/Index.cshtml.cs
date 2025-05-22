@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace Metrics.Web.Pages.Manage.Users;
 
@@ -32,6 +33,7 @@ public class IndexModel : PageModel
     // =============== MODELS ==================================================
     public class UserModel
     {
+        public string? Id { get; set; } = string.Empty;
         public string? UserName { get; set; } = string.Empty;
         public string? UserCode { get; set; } = string.Empty;
         public string? FullName { get; set; } = string.Empty;
@@ -41,6 +43,7 @@ public class IndexModel : PageModel
         public string? DepartmentName { get; set; } = string.Empty;
         public string? UserTitleName { get; set; } = string.Empty;
         public List<string> UserRoles { get; set; } = [];
+        public bool IsActive { get; set; }
         // public required string ApplicationUserId { get; set; }
         // public Department CurrentDepartment { get; set; } = null!;
         // public required ApplicationUser UserAccount { get; set; }
@@ -50,15 +53,18 @@ public class IndexModel : PageModel
 
     public List<UserModel> UsersList { get; set; } = [];
 
+    [TempData]
+    public string? StatusMessage { get; set; }
+
 
     // =============== HANDLERS ================================================
     public async Task<IActionResult> OnGetAsync()
     {
-        // var users = await _userService.FindAllAsync();
-        var usersList = await _userManager.Users
-            .Include(u => u.Department)
-            .Include(u => u.UserTitle)
-            .ToListAsync();
+        var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier); // self user id
+        var users = await _userService.FindAllAsync();
+        var usersList = users
+            .Where(u => u.Id != currentUserId)
+            .ToList();
 
         if (usersList.Any())
         {
@@ -68,6 +74,7 @@ public class IndexModel : PageModel
                 var roles = await _userManager.GetRolesAsync(user);
                 var userModel = new UserModel
                 {
+                    Id = user.Id,
                     UserName = user.UserName,
                     UserCode = user.UserCode,
                     FullName = user.FullName,
@@ -76,7 +83,10 @@ public class IndexModel : PageModel
                     DepartmentId = user.DepartmentId,
                     DepartmentName = user.Department.DepartmentName,
                     UserTitleName = user.UserTitle.TitleName,
-                    UserRoles = roles.ToList()
+                    UserRoles = roles.ToList(),
+                    IsActive = user.LockoutEnabled == true &&
+                                        user.LockoutEnd == null ||
+                                        user.LockoutEnd < DateTimeOffset.UtcNow
                 };
                 UsersList.Add(userModel);
             }

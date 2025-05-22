@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace Metrics.Web.Pages.Account;
 
@@ -175,8 +176,12 @@ public class LoginModel : PageModel
             }
             if (result.IsLockedOut)
             {
+                ModelState.AddModelError(string.Empty, "Account is locked! Please contact Administrator.");
                 _logger.LogWarning("User account locked out.");
-                return RedirectToPage("./Lockout");
+                // return RedirectToPage("./Locked/Index");
+                // **Workaround
+                ViewData["Message"] = "<div>Locked!</div><div>Your account is locked. Please contact Administrator.</div>";
+                return Page();
             }
             else
             {
