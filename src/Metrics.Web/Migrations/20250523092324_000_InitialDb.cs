@@ -208,6 +208,7 @@ namespace Metrics.Web.Migrations
                     full_name = table.Column<string>(type: "varchar(200)", maxLength: 200, nullable: false),
                     contact_address = table.Column<string>(type: "varchar(200)", nullable: false),
                     profile_picture_url = table.Column<string>(type: "text", nullable: false),
+                    permission_level = table.Column<int>(type: "int", nullable: false),
                     created_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     modified_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     department_id = table.Column<long>(type: "bigint", nullable: false),

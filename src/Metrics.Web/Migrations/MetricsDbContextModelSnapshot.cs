@@ -155,6 +155,10 @@ namespace Metrics.Web.Migrations
                         .HasColumnType("text")
                         .HasColumnName("password_hash");
 
+                    b.Property<int>("PermissionLevel")
+                        .HasColumnType("int")
+                        .HasColumnName("permission_level");
+
                     b.Property<string>("PhoneNumber")
                         .HasColumnType("varchar(200)")
                         .HasColumnName("phone_number");
