@@ -6,16 +6,17 @@ namespace Metrics.Application.Mappers.DtoMappers;
 public static class UserAccountDtoMapper
 {
     // UserAccountCreateDto <-> EmployeeCreateDto
-    public static Employee ToEntity(this UserAccountCreateDto createDto)
+    public static ApplicationUser ToEntity(this UserAccountCreateDto createDto)
     {
-        return new Employee
+        return new ApplicationUser
         {
-            EmployeeCode = createDto.EmployeeCode,
+            UserCode = createDto.UserCode,
             FullName = createDto.FullName,
-            Address = createDto.Address ?? string.Empty,
+            ContactAddress = createDto.Address ?? string.Empty,
+            ProfilePictureUrl = string.Empty,
             PhoneNumber = createDto.PhoneNumber ?? string.Empty,
             DepartmentId = createDto.DepartmentId,
-            ApplicationUserId = createDto.ApplicationUserId
+            // ApplicationUserId = createDto.ApplicationUserId
         };
     }
 }

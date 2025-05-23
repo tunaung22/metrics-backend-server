@@ -1,0 +1,75 @@
+﻿@page "{periodName}"
+@model Metrics.Web.Pages.Reports.Submissions.Departments.Kpi.ViewModel
+@{
+    ViewData["Title"] = "Score Submission Report";
+}
+
+<div class="container">
+    <div class="d-flex align-items-center">
+        <h4>Score Submission Report (KPI)</h4>
+        <span class="mx-4">
+        Period: <strong>@Model.SelectedPeriod.PeriodName</strong>
+        <small>(@Model.SelectedPeriod.SubmissionStartDate.ToString("MMM dd, yyyy") - @Model.SelectedPeriod.SubmissionEndDate.ToString("MMM dd, yyyy"))</small>
+        </span>
+    </div>
+
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-page="/Dashboard/Index">Dashboard</a></li>
+            <li class="breadcrumb-item"><a asp-page="/Reports/Submissions/Departments/Kpi/Index">Submissions</a></li>
+            <li class="breadcrumb-item active">@Model.SelectedPeriod.PeriodName</li>
+        </ol>
+    </nav>
+
+    <div class="bg-light p-4">
+
+        <div class="filter-toolbar d-flex">
+            <form method="get">
+                <select 
+                    asp-for="UserGroup"
+                    asp-items="Model.UserTitleListItems"
+                    onchange="this.form.submit()"
+                    class="form-select" 
+                    aria-label="Select User Group">
+                        <option value="">All</option>
+                </select>
+            </form>
+        </div>
+
+        <table id="reportTable" class="table table-striped" style="width:100%">
+            <thead>
+                <tr>
+                    <th>Departments</th>
+                    <th>Submissions (Total submissions)</th>
+                    <th>Total Score</th>
+                    <th>KPI Score</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.KpiReportList.Any())
+                {
+                    @foreach(var r in Model.KpiReportList)
+                    {
+                        <tr>
+                            <td>@r.DepartmentName</td>
+                            <td>@r.TotalReceivedSubmissions.ToString("0")</td>
+                            <td>@r.TotalScoreReceived.ToString("0.00")</td>
+                            <td>@r.FinalKpiScore.ToString("0.00")</td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+@section Scripts {
+    <script>
+        new DataTable('#reportTable', {
+            paging: false,
+            info: false,
+            searching: false
+        });
+    </script>
+}

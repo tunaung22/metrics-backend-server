@@ -19,7 +19,9 @@ class DepartmentConfig : IEntityTypeConfiguration<Department>
         // ===== Columns =====
         builder.Property(e => e.Id)
             .HasColumnName("id")
-            .HasColumnType("bigint");
+            .HasColumnType("bigint")
+            .UseHiLo("departments_id_seq");
+        // .UseHiLo();
         builder.Property(e => e.DepartmentCode)
             .HasColumnName("department_code")
             .HasColumnType("uuid")
@@ -30,6 +32,9 @@ class DepartmentConfig : IEntityTypeConfiguration<Department>
             .HasColumnType("varchar(200)")
             .HasMaxLength(200)
             .IsRequired();
+        builder.Property(e => e.IsDeleted)
+            .HasColumnName("is_deleted")
+            .HasColumnType("boolean");
         builder.Property(e => e.CreatedAt)
             .HasColumnName("created_at")
             .HasColumnType("timestamp with time zone");

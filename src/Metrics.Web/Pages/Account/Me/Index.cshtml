@@ -1,0 +1,90 @@
+﻿@page
+@model Metrics.Web.Pages.Account.Me.IndexModel
+@{
+    @* Layout = "/Pages/Shared/_AuthLayout.cshtml"; *@
+    ViewData["Title"] = "Profile";
+    var UserInfo = @Model.UserInfo;
+}
+
+<div class="container">
+
+    <div class="d-flex align-items-center my-2">
+        <h4 class="flex-grow-1">Profile</h4>
+    </div>
+
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Home</a></li>
+            <li class="breadcrumb-item active">Profile</li>
+        </ol>
+    </nav>
+
+    <div class="col-8 border px-4 py-2 me-auto">
+        <div class="row mb-4"> <!-- Links -->
+            <span class="d-flex justify-content-end gap-2">
+            <a asp-page="./Edit"
+                asp-route-returnUrl="@Request.Path"
+                class="btn btn-outline-success"><i class="bi bi-pencil-square"> </i>Edit</a>
+            <a href="/account/manage/password/change/"
+                class="btn btn-outline-success" title="Change Password" ><i class="bi bi-person-lock"> </i>Change Password</a>
+            </span>
+        </div>
+        <div class="row"> <!-- Info -->
+            <div class="mb-4">
+                <div class="row mb-4">
+                    <div class="col-3">Username:</div>
+                    <div class="col-xl-7">
+                        <text id="text__userName">@UserInfo.UserName</text>    
+                    </div>
+                </div>
+                <div class="row mb-4">
+                    <div class="col-3">Email:</div>
+                    <div class="col-xl-7">@UserInfo.Email</div>
+                </div>
+                <div class="row mb-4">
+                    <div class="col-3">Full Name:</div>
+                    <div class="col-xl-7">@UserInfo.FullName</div>
+                </div>
+                <div class="row mb-4">
+                    <div class="col-3">Group:</div>
+                    <div class="col-xl-7">@UserInfo.TitleName</div>
+                </div>
+                <div class="row mb-4">
+                    <div class="col-3">Staff ID:</div>
+                    <div class="col-xl-7">
+                        <text id="text__userCode">@UserInfo.UserCode</text>
+                    </div>
+                </div>
+                <div class="row mb-4">
+                    <div class="col-3">Department:</div>
+                    <div class="col-xl-7">@UserInfo.DepartmentName</div>
+                </div>
+                <div class="row mb-4">
+                        <div class="col-3">Address:</div>
+                        <div class="col-xl-7">@UserInfo.ContactAddress</div>
+                </div>
+                <div class="row mb-4">
+                        <div class="col-3">Phone:</div>
+                        <div class="col-xl-7">@UserInfo.PhoneNumber</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    <script>
+        $(function() {
+            const staffId = $("#text__userCode").text();
+            const sanititizedId = staffId.substring(0, 8) + " ***** " + staffId.substring(staffId.length - 4);
+            $("#text__userCode").text(sanititizedId);
+
+            const username = $("#text__userName").text();
+            const sanititizedUsername = username.substring(0, 4) + "***";
+            $("#text__userName").text(sanititizedUsername);
+        });
+    </script>
+}
+
+

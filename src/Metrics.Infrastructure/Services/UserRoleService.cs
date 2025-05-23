@@ -47,7 +47,9 @@ public class UserRoleService : IUserRoleService
     {
         try
         {
-            return await _roleManager.Roles.ToListAsync();
+            return await _roleManager.Roles
+                .Where(r => r.Name != "sysadmin")
+                .ToListAsync();
         }
         catch (Exception ex)
         {

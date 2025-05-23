@@ -1,0 +1,58 @@
+﻿@page
+@model Metrics.Web.Pages.Manage.Users.Groups.IndexModel
+@{
+    ViewData["Title"] = "User Groups";
+}
+
+<div class="container">
+    <div class="d-flex align-items-center">
+        <h3 class="flex-grow-1">User Groups</h3>
+        <span class="justify-content-end gap-2">
+            <a class="btn btn-success" 
+                asp-page="Create"
+                asp-route-returnUrl="@Url.Page("Index")"><i class="bi bi-plus-circle"></i> Add</a>
+        </span>
+    </div>
+    <div class="mt-4">
+        <table id="dataTable" class="table" style="width:100%">
+            <thead>
+                <tr>
+                    @* <th>ID</th> *@
+                    <th>Role Name</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if(Model.UserTitleList.Any())
+                {
+                    @foreach(var role in Model.UserTitleList)
+                    {
+                        <tr>
+                            @* <td>@role.Id</td> *@
+                            <td>@role.TitleName</td>
+                        </tr>
+                    }
+                }
+            </tbody>
+            @* <tfoot>
+                <tr>
+                    <th>Name</th>
+                    <th>Position</th>
+                    <th>Office</th>
+                    <th>Age</th>
+                    <th>Start date</th>
+                    <th>Salary</th>
+                </tr>
+            </tfoot> *@
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        new DataTable('#dataTable', {
+            paging: false,
+            info: false,
+            searching: false
+        });
+    </script>
+}

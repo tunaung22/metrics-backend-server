@@ -7,18 +7,20 @@ public class KpiSubmission : IAuditColumn
     public long Id { get; set; }
     public DateTimeOffset SubmittedAt { get; set; }
     public DateOnly SubmissionDate { get; set; } // Generated Field
-    public decimal KpiScore { get; set; }
+    public decimal ScoreValue { get; set; }
+    public string? PositiveAspects { get; set; } = string.Empty;
+    public string? NegativeAspects { get; set; } = string.Empty;
     public string? Comments { get; set; } = string.Empty;
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
     public DateTimeOffset ModifiedAt { get; set; } = DateTimeOffset.UtcNow;
 
     // Foreign Keys
-    public long KpiPeriodId { get; set; }
+    public long KpiSubmissionPeriodId { get; set; }
     public long DepartmentId { get; set; }
-    public long EmployeeId { get; set; }
+    public string ApplicationUserId { get; set; } = null!;
 
     // Reference Navigational Properties
-    public KpiPeriod KpiPeriod { get; set; } = null!;
-    public Department Department { get; set; } = null!;
-    public Employee Employee { get; set; } = null!;
+    public KpiSubmissionPeriod TargetPeriod { get; set; } = null!;
+    public Department TargetDepartment { get; set; } = null!;
+    public ApplicationUser SubmittedBy { get; set; } = null!;
 }

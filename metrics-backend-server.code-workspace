@@ -61,6 +61,13 @@
         "source.organizeImports": "explicit"
       }
     },
+    "[yaml]": {
+      "editor.insertSpaces": true,
+      "editor.tabSize": 2,
+      "editor.autoIndent": "advanced",
+      "diffEditor.ignoreTrimWhitespace": false,
+      "editor.defaultColorDecorators": "never"
+    },
     // "isort.args": ["--profile", "black", "--settings-file", ".isort.cfg"],
     // PYTHON
     // ---------------------------------------------------

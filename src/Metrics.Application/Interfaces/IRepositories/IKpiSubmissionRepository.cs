@@ -11,11 +11,11 @@ public interface IKpiSubmissionRepository
     Task<KpiSubmission> FindBySubmissionDateAsync(DateOnly submissionDate);
     Task<KpiSubmission> FindByIdAsync(long id);
     Task<IEnumerable<KpiSubmission>> FindAllAsync();
-    Task<bool> KpiSubmissionExistsAsync(long employeeId, long kpiPeriodId, long departmentId);
-
+    Task<bool> KpiSubmissionExistsAsync(long kpiPeriodId, long departmentId, string candidateId);
+    Task<long> FindCountByUserIdByKpiPeriodIdAsync(string currentUserId, long kpiPeriodId);
 
     // ========== Queryable ====================================================
     IQueryable<KpiSubmission> FindByIdAsQueryable(long id);
-    IQueryable<KpiSubmission> FindAsQueryable(long employeeId, long kpiPeriodId, long departmentId);
+    IQueryable<KpiSubmission> FindAsQueryable(long kpiPeriodId, long departmentId, string candidateId);
     IQueryable<KpiSubmission> FindAllAsQueryable();
 }

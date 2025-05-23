@@ -3,25 +3,37 @@
 #nullable disable
 
 using System.ComponentModel.DataAnnotations;
+using System.Security.Claims;
 using Metrics.Application.Domains;
+using Metrics.Application.Interfaces.IServices;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace Metrics.Web.Pages.Account;
 
 [AllowAnonymous]
 public class LoginModel : PageModel
 {
-    private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly ILogger<LoginModel> _logger;
+    private readonly SignInManager<ApplicationUser> _signInManager;
+    private readonly IUserService _userService;
+    private readonly IUserTitleService _userTitleService;
 
-    public LoginModel(SignInManager<ApplicationUser> signInManager, ILogger<LoginModel> logger)
+    public LoginModel(
+        ILogger<LoginModel> logger,
+        SignInManager<ApplicationUser> signInManager,
+        IUserService userService,
+        IUserTitleService userTitleService)
     {
-        _signInManager = signInManager;
         _logger = logger;
+        _signInManager = signInManager;
+        _userService = userService;
+        _userTitleService = userTitleService;
     }
 
     [BindProperty]
@@ -66,8 +78,8 @@ public class LoginModel : PageModel
         // [EmailAddress]
         // public string Email { get; set; }
         [Required]
-        [MaxLength(13)]
-        [MinLength(5)]
+        // [MaxLength(13)]
+        // [MinLength(5)]
         public string Username { get; set; }
 
         /// <summary>
@@ -121,11 +133,42 @@ public class LoginModel : PageModel
         {
             // This doesn't count login failures towards account lockout
             // To enable password failures to trigger account lockout, set lockoutOnFailure: true
-            var result = await _signInManager.PasswordSignInAsync(Input.Username, Input.Password, Input.RememberMe, lockoutOnFailure: false);
+            var result = await _signInManager.PasswordSignInAsync(
+                Input.Username,
+                Input.Password,
+                Input.RememberMe,
+                lockoutOnFailure: false);
             if (result.Succeeded)
             {
-                _logger.LogInformation("User logged in.");
-                return LocalRedirect(returnUrl);
+                var user = await _userService.FindByUsernameAsync(Input.Username);
+                if (user != null)
+                {
+                    var userTitle = await _userTitleService.FindByIdAsync(user.UserTitleId);
+                    var claims = new List<Claim>
+                    {
+                        // new Claim(ClaimTypes.NameIdentifier, user.Id),
+                        // new Claim(ClaimTypes.Name, user.UserName),
+                        // new Claim(ClaimTypes.Email, user.Email),
+                        // new Claim("FullName", user.FullName ?? string.Empty),
+                        // new Claim("UserCode", user.UserCode ?? string.Empty),
+                        // new Claim("ContactAddress", user.ContactAddress ?? string.Empty),
+                        // new Claim("PhoneNumber", user.PhoneNumber ?? string.Empty),
+                        // new Claim("DepartmentName", user.Department?.DepartmentName ?? string.Empty),
+                        // new Claim("TitleName", userTitle?.TitleName ?? string.Empty)
+                        new Claim("UserTitle", userTitle?.TitleName ?? string.Empty),
+                    };
+
+                    var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                    await _signInManager.SignInWithClaimsAsync(user, Input.RememberMe, claims);
+                    // var claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
+                    // await _signInManager.SignInAsync(user, isPersistent: Input.RememberMe);
+                    // await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, claimsPrincipal);
+
+                    LoggedIn = true;
+
+                    _logger.LogInformation("User logged in.");
+                    return LocalRedirect(returnUrl);
+                }
             }
             if (result.RequiresTwoFactor)
             {
@@ -133,12 +176,16 @@ public class LoginModel : PageModel
             }
             if (result.IsLockedOut)
             {
+                ModelState.AddModelError(string.Empty, "Account is locked! Please contact Administrator.");
                 _logger.LogWarning("User account locked out.");
-                return RedirectToPage("./Lockout");
+                // return RedirectToPage("./Locked/Index");
+                // **Workaround
+                ViewData["Message"] = "<div>Locked!</div><div>Your account is locked. Please contact Administrator.</div>";
+                return Page();
             }
             else
             {
-                ModelState.AddModelError(string.Empty, "Invalid login credentials. Try again.");
+                ModelState.AddModelError(string.Empty, "Username or password invalid! Try again.");
                 // ModelState.AddModelError("Input.Username", "Invalid login credentials.");
                 // ModelState.AddModelError("Input.Password", "Invalid login credentials.");
                 return Page();

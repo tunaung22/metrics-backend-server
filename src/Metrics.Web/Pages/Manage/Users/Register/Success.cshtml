@@ -1,0 +1,71 @@
+@page
+@model Metrics.Web.Pages.Manage.Users.Register.SuccessModel
+@{
+    ViewData["Title"]= "Registration Successful";
+}
+
+
+<div class="container">
+    @if (@Model.Username != null)
+    {
+        <h3>Success</h3>
+
+        <div class="my-4">
+            <span>
+                <h5 class="m-0">A user was created successfully!</h5>
+            </span>
+        </div>
+
+
+        <div class="">
+            <div class="row mb-2">
+                <div class="col col-2">Username:</div>
+                <div class="col"><strong>@Model.Username</strong></div>
+            </div>
+            <div class="row mb-2">
+                <div class="col col-2">Name:</div>
+                <div class="col"><strong>@Model.FullName</strong></div>
+            </div>
+            <div class="row mb-2">
+                <div class="col col-2">Role:</div>
+                <div class="col">
+                    @if(Model.AssignedRoles.Any())
+                    {
+                        @foreach(var roleName in Model.AssignedRoles)
+                        {
+                            <span class="badge rounded-2 text-bg-primary">
+                                <strong>@roleName</strong>
+                            </span>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="my-4">
+            <p>
+                Add another <a class="" asp-page="/Manage/Users/Register">Register</a>.
+            </p>
+        </div>
+    }
+    else
+    {
+        <div class="my-4">
+            <span>
+                <h5>To add more users, use the Registration Page.</h5>
+                <div class="row">
+                    <div class="col-sm-4 col-xl-2">Users:</div>
+                    <div class="col-sm-8 col-xl-10">
+                        <a class="" asp-page="/Manage/Users/Index"><strong>User List</strong></a>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-4 col-xl-2">Add more user:</div>
+                    <div class="col-sm-8 col-xl-10">
+                         <a class="" asp-page="/Manage/Users/Register"><strong>Register</strong></a>
+                    </div>
+                </div>
+            </span>
+        </div>
+    }
+</div>

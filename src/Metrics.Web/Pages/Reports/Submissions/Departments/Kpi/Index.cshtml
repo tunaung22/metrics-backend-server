@@ -1,0 +1,63 @@
+﻿@page
+@model Metrics.Web.Pages.Reports.Submissions.Departments.Kpi.IndexModel
+@{
+    ViewData["Title"] = "KPI Submission Reports";
+}
+
+<div class="container">
+    <h4>Score Submission Reports</h4>
+
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-page="/Dashboard/Index">Dashboard</a></li>
+            <li class="breadcrumb-item active">Submissions</li>
+        </ol>
+    </nav>
+
+    <div class="bg-light p-4">
+        <table id="reportIndexTable" class="table table-striped" style="width:100%">
+            <thead>
+                <tr>
+                    <th>Period Name</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.KpiPeriodList.Any())
+                {
+                    @foreach(var p in Model.KpiPeriodList)
+                    {
+                        <tr>
+                            <td>
+                                <a asp-page="View" 
+                                    asp-route-periodName="@p.PeriodName"
+                                    class="link-primary link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover">@p.PeriodName</a>
+                            </td>
+                            <td>@p.SubmissionStartDate.ToLocalTime().UtcDateTime.ToString("MMM dd, yyyy hh:mm:ss tt")</td>
+                            <td>@p.SubmissionEndDate.ToLocalTime().UtcDateTime.ToString("MMM dd, yyyy hh:mm:ss tt")</td>
+                        </tr>
+                    }
+                }
+            </tbody>
+@* 
+            <tfoot>
+                <tr>
+                    <th>Period Name</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                </tr>
+            </tfoot> *@
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        new DataTable('#reportIndexTable', {
+            paging: false,
+            info: false,
+            searching: false 
+        });
+    </script>
+}

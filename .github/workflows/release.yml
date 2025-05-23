@@ -1,0 +1,93 @@
+name: Build, Test, Publish, and Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  pull_request:
+    branches:
+      - "release"
+
+env:
+  DOTNET_VERSION: "9.0.x"
+  CONFIGURATION: "Release"
+
+jobs:
+  build-test:
+    name: Build and Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --configuration ${{ env.CONFIGURATION}} --no-restore
+
+      - name: Test
+        run: dotnet test --configuration ${{ env.CONFIGURATION}} --no-build --verbosity normal
+
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-output
+          path: bin/${{ env.CONFIGURATION }}
+
+  release:
+    name: Create Release
+    needs: build-test
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: List Build Output
+        run: ls -R bin/${{ env.CONFIGURATION }}
+
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-output
+          path: bin/${{ env.CONFIGURATION }}
+
+      - name: Get version from tag
+        id: get_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Publish
+        run: |
+          RELEASE_DIR="publish-${{ steps.get_version.outputs.VERSION }}"
+          dotnet publish --configuration ${{ env.CONFIGURATION }} \
+            --output $RELEASE_DIR \
+            -p:Version=${{ steps.get_version.outputs.VERSION }} \
+            -p:FileVersion=${{ steps.get_version.outputs.VERSION }} \
+            -p:InformationalVersion=${{ steps.get_version.outputs.VERSION }}
+
+          # Create zip archive for release
+          zip -r $RELEASE_DIR.zip $RELEASE_DIR/
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref }}
+          name: Release ${{ steps.get_version.outputs.VERSION }}
+          body: Release ${{ steps.get_version.outputs.VERSION }}
+          files: publish-${{ steps.get_version.outputs.VERSION }}.zip
+
+      - name: Clean Runner (Optional)
+        run: rm -rf publish-* # Clean up release directory

@@ -1,0 +1,20 @@
+﻿@page
+@model Metrics.Web.Pages.Manage.Users.Roles.CreateModel
+@{
+}
+
+<h3>Create New Department</h3>
+
+@* ========================================================================== *@
+@if (!ModelState.IsValid)
+{
+    <div class="alert alert-danger">
+        <h4>There were some errors:</h4>
+        <ul>
+            @foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
+            {
+                <li>@error.ErrorMessage</li>
+            }
+        </ul>
+    </div>
+}
