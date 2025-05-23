@@ -18,11 +18,10 @@ or use env.sample as reference
 ## Development environment setup
 
 1. Create a copy of `env.sample` (src/Metrics.Web/env.sample) file and rename as `.env`
-2. Modify the content with your environment.
-3. Create a database with a name as the same as the PG_DB_NAME value in .env
-4. In terminal, run `dotnet run migratedb` to run the migrations.
-5. In terminal, run `dotnet run inituser` to create initial user (follow the instructions in the console).
-6. In terminal, run `dotnet watch` to start the development server.
+2. Modify the .env file content to align with your environment. Such as PG_DB_NAME, PG_DB_PORT, etc,.
+3. In terminal, run `dotnet run migratedb` to run the migrations.
+4. In terminal, run `dotnet run inituser` to create initial user (follow the instructions in the console).
+5. In terminal, run `dotnet watch` to start the development server.
 
 ## Publish
 
