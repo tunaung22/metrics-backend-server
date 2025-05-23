@@ -34,17 +34,17 @@ Log.Logger = new LoggerConfiguration()
         Serilog.Events.LogEventLevel.Fatal :
         Serilog.Events.LogEventLevel.Debug)
     .WriteTo.Console()
-    .WriteTo.Conditional(
-        e => enviroment == "Production",
-        w => w.File(
-            logFilePath,
-            buffered: true,
-            rollingInterval: RollingInterval.Day,
-            fileSizeLimitBytes: 100 * 1024 * 1024, // 100 MB
-            rollOnFileSizeLimit: true, // This ensures a new file is created when the limit is reached
-            restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Information
-        )
-    )
+    // .WriteTo.Conditional(
+    //     e => enviroment == "Production",
+    //     w => w.File(
+    //         logFilePath,
+    //         buffered: true,
+    //         rollingInterval: RollingInterval.Day,
+    //         fileSizeLimitBytes: 100 * 1024 * 1024, // 100 MB
+    //         rollOnFileSizeLimit: true, // This ensures a new file is created when the limit is reached
+    //         restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Information
+    //     )
+    // )
     .CreateLogger();
 
 
@@ -215,129 +215,175 @@ app.UseSerilogRequestLogging();
 
 using (var scope = app.Services.CreateScope())
 {
+    Console.WriteLine($"========== Environment: {app.Environment.EnvironmentName} ==========");
+    Console.WriteLine($"========== Args received: [{string.Join(", ", args)}] ==========");
+
     // ----- CHECK CONNECTION -----
     var context = scope.ServiceProvider.GetRequiredService<MetricsDbContext>();
 
     try
     {
         // Attempt to open a connection to the database
+        Console.WriteLine("========== Testing database connection... ==========");
         await context.Database.OpenConnectionAsync();
         Console.WriteLine("========== Database connection successful. ==========");
+
+        // ----- RUN DB MIGRATION -----
+        // var dbContext = scope.ServiceProvider.GetRequiredService<MetricsDbContext>();
+        // await SchemaMigrator.MigrateDbAsync(args, context);
+        var pendingMigrations = await context.Database.GetPendingMigrationsAsync();
+
+        if (args.Length == 1 && args.Contains("migratedb"))
+        {
+            if (pendingMigrations.Any())
+            {
+                Console.WriteLine("========== INFO: Running pending database migrations. ==========");
+                await SchemaMigrator.MigrateDbAsync(context);
+                Console.WriteLine("========== Database migration successful. ==========");
+                Console.WriteLine("=======================================================================");
+            }
+            else
+                Console.WriteLine("========== No database migration needs to run. ==========");
+
+            // await context.Database.CloseConnectionAsync();
+            // return;
+            // Clean exit for migration mode
+            Console.WriteLine("========== Migration mode complete. Exiting. ==========");
+            Environment.Exit(0);
+        }
+        else
+        {
+            if (pendingMigrations.Any())
+            {
+                // don't run migration
+                // but show message if have pending
+                Console.WriteLine("========== WARNING: You have pending migrations not run yet! ==========");
+                Console.WriteLine("========== Use 'migratedb' to run the migration. ==========");
+                foreach (var migration in pendingMigrations)
+                    Console.WriteLine("### " + migration);
+                Console.WriteLine("=======================================================================");
+
+                // await context.Database.CloseConnectionAsync();
+                // return;
+                // Clean exit for migration mode
+                Console.WriteLine("========== Pending migrations detected. Exiting. ==========");
+                Environment.Exit(1);
+            }
+            else
+                Console.WriteLine("========== No database migration needs to run. ==========");
+        }
+
+        // ----- DATA SEEDING -----
+        // ----- Run Identity Seeding -----
+        // if (args.Length == 1 && args[0].ToLower() == "seed") { var initialSeedingDataConfig = builder.Configuration.GetSection("InitialSeedingData").Get<InitialSeedingDataConfig>() ?? throw new MetricsInvalidConfigurationException("InitialSeedingData > DefaultUserData section is not configured properly. Check your configuration files."); await InitialUserSeeder.InitAsync(scope.ServiceProvider, initialSeedingDataConfig); }
+        Console.WriteLine("========== Checking for sysadmin user... ==========");
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+        var sysadminUser = await userManager.FindByNameAsync("sysadmin");
+
+        if (args.Length == 1 && args.Contains("inituser"))
+        {
+            if (sysadminUser != null)
+            {
+                Console.WriteLine("========== INFO: There is sysadmin user already! ==========");
+                // await context.Database.CloseConnectionAsync();
+                // return;
+                Console.WriteLine("========== InitUser mode complete. Exiting. ==========");
+                Environment.Exit(0);
+            }
+            else
+            {
+                Console.WriteLine("========== INFO: Creating inital user: sysadmin ==========");
+
+                string? passwordInput;
+                string? confirmPasswordInput;
+                while (true)
+                {
+                    passwordInput = ConsoleUtils.ReadPassword("Enter password for sysadmin: ");
+                    confirmPasswordInput = ConsoleUtils.ReadPassword("Confirm password: ");
+
+                    if (!passwordInput.Equals(confirmPasswordInput))
+                        Console.WriteLine("Password does not match. Please try again.");
+                    else
+                        break;
+                }
+                var seedUserCreateDto = new SeedUserCreateDto()
+                {
+                    Username = "sysadmin",
+                    Email = "sysadmin@metricshrm.com",
+                    Password = passwordInput ?? "00000000",
+                    UserTitleName = "Admin",
+                    RolesList = ["Admin", "Staff"],
+                    FullName = "System Admin",
+                    DepartmentName = "Admin Department",
+                    UserCode = new Guid().ToString(),
+                    ContactAddress = "",
+                    PhoneNumber = ""
+                };
+                await InitialUserSeeder.InitAsync(scope.ServiceProvider, seedUserCreateDto);
+                Console.WriteLine("========== INFO: sysadmin user created. ==========");
+                Console.WriteLine($"Username: {seedUserCreateDto.Username}");
+                Console.WriteLine($"Email: {seedUserCreateDto.Email}");
+                Console.WriteLine($"User title: {seedUserCreateDto.UserTitleName}");
+                string rolesList = string.Join(", ", seedUserCreateDto.RolesList);
+                Console.WriteLine($"Roles: {rolesList}");
+                Console.WriteLine($"Department: {seedUserCreateDto.DepartmentName}");
+
+                // await context.Database.CloseConnectionAsync();
+                // return;
+                Console.WriteLine("========== InitUser mode complete. Exiting. ==========");
+                Environment.Exit(0);
+            }
+        }
+        else
+        {
+            if (sysadminUser == null)
+            {
+                Console.WriteLine(" ========== WARNING: You have no sysadmin user yet! ==========");
+                Console.WriteLine("========== Use 'dotnet run inituser' to add sysadmin user. ==========");
+                // await context.Database.CloseConnectionAsync();
+                // return;
+                Console.WriteLine("========== Cannot start application without sysadmin user. Exiting. ==========");
+                Environment.Exit(1);
+            }
+            else
+            {
+                Console.WriteLine(" ========== INFO: sysadmin user exist! ==========");
+                Console.WriteLine("========== Database startup checks completed successfully. ==========");
+            }
+        }
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"========== Database connection failed: {ex.Message} ==========");
-        // Optionally, you can exit the application if the connection fails
-        return; // Exit the application
+        // Console.WriteLine($"========== Database connection failed: {ex.Message} ==========");
+        // // Optionally, you can exit the application if the connection fails
+        // await context.Database.CloseConnectionAsync();
+        // return; // Exit the application
+        Console.WriteLine($"========== ERROR during startup: {ex.Message} ==========");
+        Log.Error(ex, "Startup database operations failed");
+        // Clean exit on error
+        Environment.Exit(1);
     }
     finally
     {
-        // Ensure the connection is closed
-        await context.Database.CloseConnectionAsync();
-    }
-
-    // ----- RUN DB MIGRATION -----
-    // var dbContext = scope.ServiceProvider.GetRequiredService<MetricsDbContext>();
-    // await SchemaMigrator.MigrateDbAsync(args, context);
-    var pendingMigrations = await context.Database.GetPendingMigrationsAsync();
-    if (args.Contains("migratedb"))
-    {
-        if (pendingMigrations.Any())
+        // // Ensure the connection is closed
+        // await context.Database.CloseConnectionAsync();
+        // Let EF Core handle connection cleanup, but ensure it's closed
+        try
         {
-            Console.WriteLine("========== INFO: Running pending database migrations. ==========");
-            await SchemaMigrator.MigrateDbAsync(context);
-            Console.WriteLine("========== Database migration successful. ==========");
-            Console.WriteLine("=======================================================================");
-        }
-        else
-            Console.WriteLine("========== No database migration needs to run. ==========");
-
-        return;
-    }
-    else
-    {
-        if (pendingMigrations.Any())
-        {
-            // don't run migration
-            // but show message if have pending
-            Console.WriteLine("========== WARNING: You have pending migrations not run yet! ==========");
-            Console.WriteLine("========== Use 'dotnet run migratedb' to run the migration. ==========");
-            foreach (var migration in pendingMigrations)
-                Console.WriteLine("### " + migration);
-            Console.WriteLine("=======================================================================");
-            return;
-        }
-        else
-            Console.WriteLine("========== No database migration needs to run. ==========");
-    }
-
-    // ----- DATA SEEDING -----
-    // ----- Run Identity Seeding -----
-    // if (args.Length == 1 && args[0].ToLower() == "seed") { var initialSeedingDataConfig = builder.Configuration.GetSection("InitialSeedingData").Get<InitialSeedingDataConfig>() ?? throw new MetricsInvalidConfigurationException("InitialSeedingData > DefaultUserData section is not configured properly. Check your configuration files."); await InitialUserSeeder.InitAsync(scope.ServiceProvider, initialSeedingDataConfig); }
-    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-    var sysadminUser = await userManager.FindByNameAsync("sysadmin");
-
-    if (args.Contains("inituser"))
-    {
-        if (sysadminUser != null)
-        {
-            Console.WriteLine("========== INFO: There is sysadmin user already! ==========");
-            return;
-        }
-        else
-        {
-            Console.WriteLine("========== INFO: Creating inital user: sysadmin ==========");
-
-            string? passwordInput;
-            string? confirmPasswordInput;
-            while (true)
+            if (context.Database.GetDbConnection().State == System.Data.ConnectionState.Open)
             {
-                passwordInput = ConsoleUtils.ReadPassword("Enter password for sysadmin: ");
-                confirmPasswordInput = ConsoleUtils.ReadPassword("Confirm password: ");
-
-                if (!passwordInput.Equals(confirmPasswordInput))
-                    Console.WriteLine("Password does not match. Please try again.");
-                else
-                    break;
+                await context.Database.CloseConnectionAsync();
             }
-            var seedUserCreateDto = new SeedUserCreateDto()
-            {
-                Username = "sysadmin",
-                Email = "sysadmin@metricshrm.com",
-                Password = passwordInput ?? "00000000",
-                UserTitleName = "Admin",
-                RolesList = ["Admin", "Staff"],
-                FullName = "System Admin",
-                DepartmentName = "Admin Department",
-                UserCode = new Guid().ToString(),
-                ContactAddress = "",
-                PhoneNumber = ""
-            };
-            await InitialUserSeeder.InitAsync(scope.ServiceProvider, seedUserCreateDto);
-            Console.WriteLine("========== INFO: sysadmin user created. ==========");
-            Console.WriteLine($"Username: {seedUserCreateDto.Username}");
-            Console.WriteLine($"Email: {seedUserCreateDto.Email}");
-            Console.WriteLine($"User title: {seedUserCreateDto.UserTitleName}");
-            string rolesList = string.Join(", ", seedUserCreateDto.RolesList);
-            Console.WriteLine($"Roles: {rolesList}");
-            Console.WriteLine($"Department: {seedUserCreateDto.DepartmentName}");
-
-
-            return;
         }
-    }
-    else
-    {
-        if (sysadminUser == null)
+        catch (Exception ex)
         {
-            Console.WriteLine(" ========== WARNING: You have no sysadmin user yet! ==========");
-            Console.WriteLine("========== Use 'dotnet run inituser' to add sysadmin user. ==========");
-            return;
+            Log.Error(ex, "Error closing database connection during startup");
         }
-        else
-            Console.WriteLine(" ========== INFO: sysadmin user exist! ==========");
     }
 }
+
+Console.WriteLine("========== Starting web application... ==========");
+
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -350,6 +396,7 @@ if (app.Environment.IsDevelopment())
 }
 else
 {
+    Console.WriteLine("========== Application is in Production Mode ==========");
     app.UseExceptionHandler("/Error");
     app.UseStatusCodePagesWithReExecute("/Error/{0}");
     app.UseStatusCodePages();
@@ -389,6 +436,9 @@ lifetime.ApplicationStopping.Register(() =>
     Log.Information("Application is shutting down...");
     Log.CloseAndFlush();
 });
+
+
+Console.WriteLine("========== Before RUN() ==========");
 
 app.Run();
 
