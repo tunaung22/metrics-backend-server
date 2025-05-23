@@ -224,21 +224,23 @@ using (var scope = app.Services.CreateScope())
     try
     {
         // Attempt to open a connection to the database
-        Console.WriteLine("========== Testing Database Connection... ==========");
+        Console.WriteLine("========== Testing database connection... ==========");
         await context.Database.OpenConnectionAsync();
         Console.WriteLine("========== Database connection successful. ==========");
 
         // ----- RUN DB MIGRATION -----
+        // var dbContext = scope.ServiceProvider.GetRequiredService<MetricsDbContext>();
+        // await SchemaMigrator.MigrateDbAsync(args, context);
         var pendingMigrations = await context.Database.GetPendingMigrationsAsync();
 
         if (args.Length == 1 && args.Contains("migratedb"))
         {
             if (pendingMigrations.Any())
             {
-                Console.WriteLine(" ========== INFO: Running pending database migrations. ==========");
+                Console.WriteLine("========== INFO: Running pending database migrations. ==========");
                 await SchemaMigrator.MigrateDbAsync(context);
                 Console.WriteLine("========== Database migration successful. ==========");
-                Console.WriteLine("=================================================================");
+                Console.WriteLine("=======================================================================");
             }
             else
                 Console.WriteLine("========== No database migration needs to run. ==========");
@@ -255,11 +257,11 @@ using (var scope = app.Services.CreateScope())
             {
                 // don't run migration
                 // but show message if have pending
-                Console.WriteLine(" ========== WARNING: You have pending migrations not run yet! ==========");
-                Console.WriteLine("========== Use 'migratedb' to run the migration. =======================");
+                Console.WriteLine("========== WARNING: You have pending migrations not run yet! ==========");
+                Console.WriteLine("========== Use 'migratedb' to run the migration. ==========");
                 foreach (var migration in pendingMigrations)
                     Console.WriteLine("### " + migration);
-                Console.WriteLine("========================================================================");
+                Console.WriteLine("=======================================================================");
 
                 // await context.Database.CloseConnectionAsync();
                 // return;
@@ -268,7 +270,7 @@ using (var scope = app.Services.CreateScope())
                 Environment.Exit(1);
             }
             else
-                Console.WriteLine("========== No database migration needs to run. ============");
+                Console.WriteLine("========== No database migration needs to run. ==========");
         }
 
         // ----- DATA SEEDING -----
@@ -283,7 +285,9 @@ using (var scope = app.Services.CreateScope())
             if (sysadminUser != null)
             {
                 Console.WriteLine("========== INFO: There is sysadmin user already! ==========");
-                Console.WriteLine("========== InitUser mode complete. Exiting. ===============");
+                // await context.Database.CloseConnectionAsync();
+                // return;
+                Console.WriteLine("========== InitUser mode complete. Exiting. ==========");
                 Environment.Exit(0);
             }
             else
@@ -335,7 +339,7 @@ using (var scope = app.Services.CreateScope())
             if (sysadminUser == null)
             {
                 Console.WriteLine(" ========== WARNING: You have no sysadmin user yet! ==========");
-                Console.WriteLine("========== Use 'inituser' to add sysadmin user. ==============");
+                Console.WriteLine("========== Use 'dotnet run inituser' to add sysadmin user. ==========");
                 // await context.Database.CloseConnectionAsync();
                 // return;
                 Console.WriteLine("========== Cannot start application without sysadmin user. Exiting. ==========");
@@ -378,6 +382,8 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
+Console.WriteLine("========== Starting web application... ==========");
+
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -390,6 +396,7 @@ if (app.Environment.IsDevelopment())
 }
 else
 {
+    Console.WriteLine("========== Application is in Production Mode ==========");
     app.UseExceptionHandler("/Error");
     app.UseStatusCodePagesWithReExecute("/Error/{0}");
     app.UseStatusCodePages();
@@ -429,6 +436,9 @@ lifetime.ApplicationStopping.Register(() =>
     Log.Information("Application is shutting down...");
     Log.CloseAndFlush();
 });
+
+
+Console.WriteLine("========== Before RUN() ==========");
 
 app.Run();
 
