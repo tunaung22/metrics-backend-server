@@ -350,7 +350,7 @@ if (app.Environment.IsDevelopment())
 }
 else
 {
-    app.UseExceptionHandler(" /Error");
+    app.UseExceptionHandler("/Error");
     app.UseStatusCodePagesWithReExecute("/Error/{0}");
     app.UseStatusCodePages();
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
