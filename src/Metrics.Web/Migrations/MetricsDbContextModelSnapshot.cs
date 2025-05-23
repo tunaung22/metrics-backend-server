@@ -589,12 +589,7 @@ namespace Metrics.Web.Migrations
                         .IsUnique()
                         .HasDatabaseName("ix_kpi_submission_periods_period_name");
 
-                    b.ToTable("kpi_submission_periods", "metrics", t =>
-                        {
-                            t.HasCheckConstraint("ck_kpi_submission_periods_is_correct_period_code_format", "period_name ~ '^[0-9]{4}-[0-9]{2}$'");
-
-                            t.HasCheckConstraint("ck_kpi_submission_periods_start_date_lt_end_date", "submission_start_date < submission_end_date");
-                        });
+                    b.ToTable("kpi_submission_periods", "metrics");
                 });
 
             modelBuilder.Entity("Metrics.Application.Domains.UserTitle", b =>

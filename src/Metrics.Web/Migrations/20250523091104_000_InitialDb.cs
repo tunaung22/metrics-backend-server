@@ -122,8 +122,6 @@ namespace Metrics.Web.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("pk_kpi_submission_periods", x => x.id);
-                    table.CheckConstraint("ck_kpi_submission_periods_is_correct_period_code_format", "period_name ~ '^[0-9]{4}-[0-9]{2}$'");
-                    table.CheckConstraint("ck_kpi_submission_periods_start_date_lt_end_date", "submission_start_date < submission_end_date");
                 });
 
             migrationBuilder.CreateTable(
