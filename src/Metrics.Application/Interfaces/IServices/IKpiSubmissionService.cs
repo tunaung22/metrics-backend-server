@@ -14,7 +14,8 @@ public interface IKpiSubmissionService
     Task<KpiSubmission> FindBySubmissionDateAsync(DateOnly submissionDate);
     Task<List<KpiSubmission>> FindBySubmitterAndKpiPeriodAndDepartmentListAsync(ApplicationUser candidate, long kpiPeriodId, List<long> departmentIdList); // find by Employee & KpiPeriod & Department ID list
     Task<List<KpiSubmission>> FindByKpiPeriodAndDepartmentListAsync(long kpiPeriodId, List<long> departmentIdList); // find by KpiPeriod & Department ID List
-    Task<List<KpiSubmission>> FindByKpiPeriodAndDepartmentAsync(long kpiPeriodId, long departmentId); // find by KpiPeriod & Department
+    Task<List<KpiSubmission>> FindByKpiPeriodAndDepartmentAsync(long kpiPeriodId, long departmentId); // find by KpiPeriod+Department
+    // Task<List<KpiSubmission>> FindByKpiPeriodByDepartmentByUserGroupAsync(long kpiPeriodId, long departmentId, long userTitleId); // find by KpiPeriod+Department+UserGroup
     Task<IEnumerable<KpiSubmission>> FindAllAsync();
     // Task<IEnumerable<Department>> FindAsync(string keyword); // Search feature
     Task<long> FindCountByUserIdByKpiPeriodIdAsync(string currentUserId, long kpiPeriodId);
