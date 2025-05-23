@@ -40,6 +40,9 @@ public class ApplicationUserConfig : IEntityTypeConfiguration<ApplicationUser>
         builder.Property(e => e.ProfilePictureUrl)
             .HasColumnName("profile_picture_url")
             .HasColumnType("text");
+        builder.Property(e => e.PermissionLevel)
+            .HasColumnName("permission_level")
+            .HasColumnType("int");
         builder.Property(e => e.CreatedAt)
             .HasColumnName("created_at")
             .HasColumnType("timestamp with time zone");

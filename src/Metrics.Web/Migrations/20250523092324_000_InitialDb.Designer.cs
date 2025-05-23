@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Metrics.Web.Migrations
 {
     [DbContext(typeof(MetricsDbContext))]
-    [Migration("20250519182317_000_InitialDb")]
+    [Migration("20250523092324_000_InitialDb")]
     partial class _000_InitialDb
     {
         /// <inheritdoc />
@@ -157,6 +157,10 @@ namespace Metrics.Web.Migrations
                     b.Property<string>("PasswordHash")
                         .HasColumnType("text")
                         .HasColumnName("password_hash");
+
+                    b.Property<int>("PermissionLevel")
+                        .HasColumnType("int")
+                        .HasColumnName("permission_level");
 
                     b.Property<string>("PhoneNumber")
                         .HasColumnType("varchar(200)")
