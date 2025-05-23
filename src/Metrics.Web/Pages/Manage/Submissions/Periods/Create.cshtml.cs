@@ -68,8 +68,8 @@ public class CreateModel : PageModel
             var entity = new KpiSubmissionPeriod
             {
                 PeriodName = FormInput.PeriodName,
-                SubmissionStartDate = FormInput.SubmissionStartDate.UtcDateTime,
-                SubmissionEndDate = FormInput.SubmissionEndDate.UtcDateTime
+                SubmissionStartDate = startDate,
+                SubmissionEndDate = endDate
             };
             await _kpiPeriodService.CreateAsync(entity);
             return RedirectToPage("Index");

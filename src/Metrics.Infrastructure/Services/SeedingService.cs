@@ -47,14 +47,14 @@ public class SeedingService : ISeedingService
                 adminDepartment = entity;
             }
 
-            var adminTitle = await _userTitleRepository.FindByTitleNameAsync(createDto.UserTitleName);
+            var userTitle = await _userTitleRepository.FindByTitleNameAsync(createDto.UserTitleName);
 
-            if (adminTitle == null)
+            if (userTitle == null)
             {
                 var entity = new UserTitle { TitleCode = Guid.NewGuid(), TitleName = createDto.UserTitleName };
                 _userTitleRepository.Create(entity);
                 await _context.SaveChangesAsync();
-                adminTitle = entity;
+                userTitle = entity;
             }
 
             if (createDto.RolesList.Count > 0)
@@ -78,7 +78,7 @@ public class SeedingService : ISeedingService
                     FullName = createDto.FullName,
                     ContactAddress = createDto.ContactAddress ?? string.Empty,
                     PhoneNumber = createDto.PhoneNumber ?? string.Empty,
-                    UserTitleId = adminTitle.Id,
+                    UserTitleId = userTitle.Id,
                     DepartmentId = adminDepartment.Id
                 };
                 var identityResult = await _userManager.CreateAsync(userInstance, createDto.Password);

@@ -66,8 +66,9 @@ public class UserTitleService : IUserTitleService
             var query = await _userTitleRepository
                 .FindAllAsync();
 
-            return query
-                .Where(t => t.TitleName != "Admin");
+            // return query
+            // .Where(t => t.TitleName != "Admin");
+            return query;
         }
         catch (Exception ex)
         {
