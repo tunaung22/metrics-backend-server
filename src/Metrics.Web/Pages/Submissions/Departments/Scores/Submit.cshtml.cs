@@ -168,7 +168,7 @@ public class SubmitModel : PageModel
         // }).ToList();
 
         // Assign: DepartmentList
-        DepartmentList = await GetDepartmentList(EmployeeId);
+        DepartmentList = await GetDepartmentList();
         if (DepartmentList.Count == 0)
             return Page();
 
@@ -253,7 +253,7 @@ public class SubmitModel : PageModel
         CurrentUserTitleName = Submitter.UserTitle?.TitleName ?? string.Empty;
 
         // Assign: DepartmentList
-        DepartmentList = await GetDepartmentList(EmployeeId);
+        DepartmentList = await GetDepartmentList();
         if (DepartmentList.Count == 0)
             return Page();
 
@@ -392,23 +392,17 @@ public class SubmitModel : PageModel
         return await _userService.FindByIdAsync(userId);
     }
 
-    private async Task<List<DepartmentModel>> GetDepartmentList(long employeeId)
+    private async Task<List<DepartmentModel>> GetDepartmentList()
     {
-        // find Department ID of the Employee by ID
-        // findDepartmentIdByEmployeeId()
-        var employee = await _employeeService.FindByIdAsync(employeeId);
-        var excludedDepartmentId = employee?.DepartmentId;
         var departments = await _departmentService.FindAllAsync();
         if (departments.Any())
         {
-            return departments
-                .Where(d => d.Id != excludedDepartmentId)
-                .Select(e => new DepartmentModel
-                {
-                    Id = e.Id,
-                    DepartmentCode = e.DepartmentCode,
-                    DepartmentName = e.DepartmentName
-                }).ToList();
+            return departments.Select(e => new DepartmentModel
+            {
+                Id = e.Id,
+                DepartmentCode = e.DepartmentCode,
+                DepartmentName = e.DepartmentName
+            }).ToList();
         }
 
         ModelState.AddModelError("", "No departments to submit score. Please contact authorities.");
