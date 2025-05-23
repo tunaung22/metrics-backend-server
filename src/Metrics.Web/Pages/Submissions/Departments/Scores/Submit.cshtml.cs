@@ -168,7 +168,7 @@ public class SubmitModel : PageModel
         // }).ToList();
 
         // Assign: DepartmentList
-        DepartmentList = await GetDepartmentList();
+        DepartmentList = await GetDepartmentList(Submitter.Id);
         if (DepartmentList.Count == 0)
             return Page();
 
@@ -253,7 +253,7 @@ public class SubmitModel : PageModel
         CurrentUserTitleName = Submitter.UserTitle?.TitleName ?? string.Empty;
 
         // Assign: DepartmentList
-        DepartmentList = await GetDepartmentList();
+        DepartmentList = await GetDepartmentList(Submitter.Id);
         if (DepartmentList.Count == 0)
             return Page();
 
@@ -392,7 +392,7 @@ public class SubmitModel : PageModel
         return await _userService.FindByIdAsync(userId);
     }
 
-    private async Task<List<DepartmentModel>> GetDepartmentList()
+    private async Task<List<DepartmentModel>> GetDepartmentList(string userId)
     {
         var departments = await _departmentService.FindAllAsync();
         if (departments.Any())
@@ -444,25 +444,20 @@ public class SubmitModel : PageModel
 
         return Task.FromResult(result);
     }
-
-    // TODO: Unused method
-    // private async Task<List<SelectListItem>> LoadKpiPeriodListItems()
-    // {
-    //     var kpiPeriods = await _kpiPeriodService.FindAllByDateAsync(DateTimeOffset.UtcNow);
-
-    //     if (!kpiPeriods.Any())
-    //         return [];
-
-    //     return kpiPeriods.Select(e => new SelectListItem
-    //     {
-    //         Value = e.Id.ToString(),
-    //         Text = $"{e.PeriodName} ({e.SubmissionStartDate:dd/MMM/yyyy} - {e.SubmissionEndDate:dd/MMM/yyyy})"
-    //     }).ToList();
-    // }
-
-
-
-
-
-
 }
+
+// TODO: Unused method
+// private async Task<List<SelectListItem>> LoadKpiPeriodListItems()
+// {
+//     var kpiPeriods = await _kpiPeriodService.FindAllByDateAsync(DateTimeOffset.UtcNow);
+
+//     if (!kpiPeriods.Any())
+//         return [];
+
+//     return kpiPeriods.Select(e => new SelectListItem
+//     {
+//         Value = e.Id.ToString(),
+//         Text = $"{e.PeriodName} ({e.SubmissionStartDate:dd/MMM/yyyy} - {e.SubmissionEndDate:dd/MMM/yyyy})"
+//     }).ToList();
+// }
+// }

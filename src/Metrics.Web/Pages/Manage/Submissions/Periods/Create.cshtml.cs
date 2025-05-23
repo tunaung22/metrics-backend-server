@@ -60,6 +60,11 @@ public class CreateModel : PageModel
             //     SubmissionEndDate = FormInput.SubmissionEndDate
             // };
             // await _kpiPeriodService.Create_Async(createDto);
+            var startDate = FormInput.SubmissionStartDate.UtcDateTime;
+            var endDate = FormInput.SubmissionEndDate.UtcDateTime;
+            if (startDate > endDate)
+                ModelState.AddModelError(string.Empty, "Invalid Start Date and End Date");
+
             var entity = new KpiSubmissionPeriod
             {
                 PeriodName = FormInput.PeriodName,
