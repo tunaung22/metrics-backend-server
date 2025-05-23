@@ -47,12 +47,12 @@ class KpiSubmissionPeriodConfig : IEntityTypeConfiguration<KpiSubmissionPeriod>
         {
             // CONSTRAINT ck_kpi_periods_start_date_lt_end_date CHECK(submission_start_date < submission_end_date)
             // CONSTRAINT ck_kpi_periods_is_correct_period_code_format CHECK(period_code ~ '^[0-9]{4}-[-9]{2}$')
-            b.HasCheckConstraint(
-                "ck_kpi_submission_periods_start_date_lt_end_date",
-                "submission_start_date < submission_end_date");
-            b.HasCheckConstraint(
-                "ck_kpi_submission_periods_is_correct_period_code_format",
-                "period_name ~ '^[0-9]{4}-[0-9]{2}$'");
+            // b.HasCheckConstraint(
+            //     "ck_kpi_submission_periods_start_date_lt_end_date",
+            //     "submission_start_date < submission_end_date");
+            // b.HasCheckConstraint(
+            //     "ck_kpi_submission_periods_is_correct_period_code_format",
+            //     "period_name ~ '^[0-9]{4}-[0-9]{2}$'");
         });
     }
 }

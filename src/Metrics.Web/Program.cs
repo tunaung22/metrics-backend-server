@@ -22,8 +22,11 @@ using Metrics.Web.Security.PolicyHandlers;
 
 
 // ========== Load .env ===========================================
+// if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
+// {
 var dotenv = Path.Combine(Directory.GetCurrentDirectory(), ".env");
 DotenvLoader.Load(dotenv);
+// }
 
 // ========== Serilog ================
 var enviroment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production";
@@ -339,7 +342,7 @@ using (var scope = app.Services.CreateScope())
             if (sysadminUser == null)
             {
                 Console.WriteLine(" ========== WARNING: You have no sysadmin user yet! ==========");
-                Console.WriteLine("========== Use 'dotnet run inituser' to add sysadmin user. ==========");
+                Console.WriteLine("========== Use 'inituser' to add sysadmin user. ==========");
                 // await context.Database.CloseConnectionAsync();
                 // return;
                 Console.WriteLine("========== Cannot start application without sysadmin user. Exiting. ==========");

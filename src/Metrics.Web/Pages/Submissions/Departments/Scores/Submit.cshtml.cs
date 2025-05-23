@@ -401,12 +401,14 @@ public class SubmitModel : PageModel
         var departments = await _departmentService.FindAllAsync();
         if (departments.Any())
         {
-            return departments.Select(e => new DepartmentModel
-            {
-                Id = e.Id,
-                DepartmentCode = e.DepartmentCode,
-                DepartmentName = e.DepartmentName
-            }).ToList();
+            return departments
+                .Where(d => d.Id != excludedDepartmentId)
+                .Select(e => new DepartmentModel
+                {
+                    Id = e.Id,
+                    DepartmentCode = e.DepartmentCode,
+                    DepartmentName = e.DepartmentName
+                }).ToList();
         }
 
         ModelState.AddModelError("", "No departments to submit score. Please contact authorities.");
