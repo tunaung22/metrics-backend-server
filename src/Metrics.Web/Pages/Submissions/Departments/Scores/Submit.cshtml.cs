@@ -394,15 +394,21 @@ public class SubmitModel : PageModel
 
     private async Task<List<DepartmentModel>> GetDepartmentList(string userId)
     {
+        // find Department ID of the Employee by ID
+        // findDepartmentIdByEmployeeId()
+        var employee = await _userService.FindByIdAsync(userId);
+        var excludedDepartmentId = employee?.DepartmentId;
         var departments = await _departmentService.FindAllAsync();
         if (departments.Any())
         {
-            return departments.Select(e => new DepartmentModel
-            {
-                Id = e.Id,
-                DepartmentCode = e.DepartmentCode,
-                DepartmentName = e.DepartmentName
-            }).ToList();
+            return departments
+                .Where(d => d.Id != excludedDepartmentId)
+                .Select(e => new DepartmentModel
+                {
+                    Id = e.Id,
+                    DepartmentCode = e.DepartmentCode,
+                    DepartmentName = e.DepartmentName
+                }).ToList();
         }
 
         ModelState.AddModelError("", "No departments to submit score. Please contact authorities.");
