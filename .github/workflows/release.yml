@@ -33,13 +33,10 @@ jobs:
         run: dotnet restore
 
       - name: Build
-        run: dotnet build --configuration ${{ env.CONFIGURATION}} --no-restore --verbosity detailed
-
-      - name: List Build Output
-        run: ls -R
+        run: dotnet build --configuration ${{ env.CONFIGURATION}} --no-restore
 
       - name: Test
-        run: dotnet test --configuration ${{ env.CONFIGURATION}} --no-build --verbosity normal
+        run: dotnet test --configuration ${{ env.CONFIGURATION}} --no-build
 
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
@@ -61,9 +58,6 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
-
-      - name: List Build Output
-        run: ls -R bin/${{ env.CONFIGURATION }}
 
       - name: Download Build Artifacts
         uses: actions/download-artifact@v4
