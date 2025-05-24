@@ -26,13 +26,9 @@ jobs:
       - name: Print Current Working Directory
         run: pwd
 
-      - name: Create bin directory
+      - name: Create necessary directories
         run: |
-          mkdir -p bin
-
-      - name: Create release directory
-        run: |
-          mkdir -p release
+          mkdir -p bin release sql
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
