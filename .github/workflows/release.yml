@@ -90,23 +90,25 @@ jobs:
 
       - name: Publish *
         run: |
+          FILE_VERSION=$(echo "${{ steps.get_version.outputs.VERSION}}" | sed 's/[^0-9.]//g' | awk -F. '{printf "%d.%d.%d.%d", $1,$2,$3,$4}')
           cd src/Metrics.Web/ &&
           dotnet publish --configuration ${{ env.CONFIGURATION }} \
             --self-contained false \
             --output $GITHUB_WORKSPACE/release/all-${{ steps.get_version.outputs.VERSION }} \
             -p:Version=${{ steps.get_version.outputs.VERSION }} \
-            -p:FileVersion=${{ steps.get_version.outputs.VERSION }} \
+            -p:FileVersion=$FILE_VERSION \
             -p:InformationalVersion=${{ steps.get_version.outputs.VERSION }}
 
       - name: Publish win-x64
         run: |
+          FILE_VERSION=$(echo "${{ steps.get_version.outputs.VERSION}}" | sed 's/[^0-9.]//g' | awk -F. '{printf "%d.%d.%d.%d", $1,$2,$3,$4}')
           cd src/Metrics.Web/ &&
           dotnet publish --configuration ${{ env.CONFIGURATION }} \
             -r win-x64 \
             --self-contained false \
             --output $GITHUB_WORKSPACE/release/win-x64-${{ steps.get_version.outputs.VERSION }} \
             -p:Version=${{ steps.get_version.outputs.VERSION }} \
-            -p:FileVersion=${{ steps.get_version.outputs.VERSION }} \
+            -p:FileVersion=$FILE_VERSION \
             -p:InformationalVersion=${{ steps.get_version.outputs.VERSION }}
 
       - name: Print  Working Directory
