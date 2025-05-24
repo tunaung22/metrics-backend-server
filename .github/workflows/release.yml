@@ -32,6 +32,9 @@ jobs:
       - name: Build
         run: dotnet build --configuration ${{ env.CONFIGURATION}} --no-restore
 
+      - name: List Build Output
+        run: ls -R bin/
+        
       - name: Test
         run: dotnet test --configuration ${{ env.CONFIGURATION}} --no-build --verbosity normal
 
