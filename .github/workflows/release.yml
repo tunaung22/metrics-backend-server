@@ -94,13 +94,13 @@ jobs:
         run: cp src/Metrics.Web/Migrations/*.sql ${{ steps.set_release_dir.outputs.RELEASE_DIR }}/
 
       - name: Print Current Working Directory
-        run: pwd
+        run: pwd && ls -l
 
       - name: Create zip
         run: |
           cd ${{ steps.set_release_dir.outputs.RELEASE_DIR }} && \
           # Create zip archive for release (zip contents only, not the folder)
-          zip -r ${{ steps.set_release_dir.outputs.RELEASE_DIR }}.zip . && cd ..
+          zip -r ${{ steps.set_release_dir.outputs.RELEASE_DIR }}.zip .
 
       - name: Upload Release Zip as Artifact
         uses: actions/upload-artifact@v4
