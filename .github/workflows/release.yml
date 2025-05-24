@@ -30,6 +30,10 @@ jobs:
         run: |
           mkdir -p bin
 
+      - name: Create release directory
+        run: |
+          mkdir -p release
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
@@ -78,20 +82,23 @@ jobs:
       - name: Set Release Directory
         id: set_release_dir
         run: |
-          RELEASE_DIR="publish-${{ steps.get_version.outputs.VERSION }}"
+          RELEASE_DIR="release/publish-${{ steps.get_version.outputs.VERSION }}"
           echo "RELEASE_DIR=$RELEASE_DIR" >> $GITHUB_OUTPUT
 
       - name: Publish
         run: |
           dotnet publish --configuration ${{ env.CONFIGURATION }} \
             --self-contained false \
-            --output ${{ steps.set_release_dir.outputs.RELEASE_DIR }} \
+            --output release/${{ steps.set_release_dir.outputs.RELEASE_DIR }} \
             -p:Version=${{ steps.get_version.outputs.VERSION }} \
             -p:FileVersion=${{ steps.get_version.outputs.VERSION }} \
             -p:InformationalVersion=${{ steps.get_version.outputs.VERSION }}
 
+      - name: Print  Working Directory
+        run: pwd && ls -l
+
       - name: Copy SQL files
-        run: cp src/Metrics.Web/Migrations/*.sql ${{ steps.set_release_dir.outputs.RELEASE_DIR }}/
+        run: cp src/Metrics.Web/Migrations/*.sql ${{ steps.set_release_dir.outputs.RELEASE_DIR }}/sql
 
       - name: Print Current Working Directory
         run: pwd && ls -l
@@ -99,17 +106,17 @@ jobs:
       - name: Print Release Directory ${{ steps.set_release_dir.outputs.RELEASE_DIR }}
         run: ls -l ${{ steps.set_release_dir.outputs.RELEASE_DIR }}
 
-      - name: Create zip
-        run: |
-          cd ${{ steps.set_release_dir.outputs.RELEASE_DIR }} && \
-          # Create zip archive for release (zip contents only, not the folder)
-          zip -r ${{ steps.set_release_dir.outputs.RELEASE_DIR }}.zip .
+      # - name: Create zip
+      #   run: |
+      #     cd ${{ steps.set_release_dir.outputs.RELEASE_DIR }} && \
+      #     # Create zip archive for release (zip contents only, not the folder)
+      #     zip -r ${{ steps.set_release_dir.outputs.RELEASE_DIR }}.zip .
 
       - name: Upload Release Zip as Artifact
         uses: actions/upload-artifact@v4
         with:
           name: release-metrics-${{ steps.set_release_dir.outputs.RELEASE_DIR }}
-          path: ${{ steps.set_release_dir.outputs.RELEASE_DIR }}/${{ steps.set_release_dir.outputs.RELEASE_DIR }}.zip
+          path: ${{ steps.set_release_dir.outputs.RELEASE_DIR }}
 
       # - name: Create GitHub Release
       #   uses: softprops/action-gh-release@v2

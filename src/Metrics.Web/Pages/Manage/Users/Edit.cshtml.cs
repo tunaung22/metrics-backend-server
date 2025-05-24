@@ -59,9 +59,9 @@ public class EditModel : PageModel
     public List<SelectListItem> RoleListItems { get; set; } = []; // for select element
     [BindProperty]
     public string SelectedUserId { get; set; } = null!; // for get and post
-    public ApplicationUser TargetUser { get; set; }
+    public ApplicationUser TargetUser { get; set; } = null!;
 
-    public string ReturnUrl { get; set; } // return url
+    public string? ReturnUrl { get; set; } // return url
 
     // public string? UserName { get; set; }
     // public List<ApplicationRole> AvaiableRoles { get; set; } = [];

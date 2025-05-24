@@ -1,4 +1,5 @@
 using Metrics.Application.Domains;
+using Metrics.Application.Interfaces.IServices;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
@@ -9,10 +10,13 @@ namespace Metrics.Web.Pages.Account.Me;
 public class IndexModel : PageModel
 {
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly IUserService _userService;
 
-    public IndexModel(UserManager<ApplicationUser> userManager)
+
+    public IndexModel(UserManager<ApplicationUser> userManager, IUserService userService)
     {
         _userManager = userManager;
+        _userService = userService;
     }
 
     public class UserModel
@@ -29,7 +33,7 @@ public class IndexModel : PageModel
     }
 
     public UserModel UserInfo { get; set; } = new();
-    public string CurrentUserId { get; set; }
+    public string CurrentUserId { get; set; } = null!;
 
     public async Task<PageResult> OnGetAsync()
     {
@@ -41,10 +45,11 @@ public class IndexModel : PageModel
         }
 
         // var currentUser = await _userManager.FindByIdAsync(userId);
-        var currentUser = await _userManager.Users
-            .Include(u => u.Department)
-            .Include(u => u.UserTitle)
-            .FirstOrDefaultAsync(u => u.Id == userId);
+        // var currentUser = await _userManager.Users
+        //     .Include(u => u.Department)
+        //     .Include(u => u.UserTitle)
+        //     .FirstOrDefaultAsync(u => u.Id == userId);
+        var currentUser = await GetCurrentUser();
 
         if (currentUser != null)
         {
@@ -67,5 +72,15 @@ public class IndexModel : PageModel
 
 
         return Page();
+    }
+
+
+    private async Task<ApplicationUser> GetCurrentUser()
+    {
+        // Less likely to cause user not found, so throw just in case
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)
+            ?? throw new Exception("User not found. Please login again.");
+
+        return await _userService.FindByIdAsync(userId);
     }
 }

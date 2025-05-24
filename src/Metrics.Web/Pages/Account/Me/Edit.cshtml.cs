@@ -48,7 +48,7 @@ public class EditModel : PageModel
     public required InputModel Input { get; set; } // form
 
 
-    public string ReturnUrl { get; set; } // return url
+    public string? ReturnUrl { get; set; } // return url
 
     // ========== HANDLERS ==================================================
     public async Task<IActionResult> OnGetAsync(string? returnUrl)
