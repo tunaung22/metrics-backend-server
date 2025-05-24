@@ -23,13 +23,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Print Current Working Directory
-        run: pwd
-
-      - name: Create necessary directories
-        run: |
-          mkdir -p bin release
-
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
@@ -65,6 +58,11 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
+      - name: Create necessary directories
+        run: |
+          pwd &&
+          mkdir -p bin release &&
+          ls -l
       # - name: Download Build Artifacts
       #   uses: actions/download-artifact@v4
       #   with:
@@ -75,36 +73,51 @@ jobs:
         id: get_version
         run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
 
-      - name: Set Release Directory
-        id: set_release_dir
-        run: |
-          RELEASE_DIR="release/publish-${{ steps.get_version.outputs.VERSION }}"
-          echo "RELEASE_DIR=$RELEASE_DIR" >> $GITHUB_OUTPUT
+      # - name: Set Release Directory
+      #   id: set_release_dir
+      #   run: |
+      #     RELEASE_DIR="release/publish-${{ steps.get_version.outputs.VERSION }}"
+      #     echo "RELEASE_DIR=$RELEASE_DIR" >> $GITHUB_OUTPUT
 
-      - name: Publish
+      - name: Publish *
         run: |
+          cd src/Metrics.Web/ &&
           dotnet publish --configuration ${{ env.CONFIGURATION }} \
             --self-contained false \
-            --output release/${{ steps.set_release_dir.outputs.RELEASE_DIR }} \
+            --output release/all-${{ steps.get_version.outputs.VERSION }} \
+            -p:Version=${{ steps.get_version.outputs.VERSION }} \
+            -p:FileVersion=${{ steps.get_version.outputs.VERSION }} \
+            -p:InformationalVersion=${{ steps.get_version.outputs.VERSION }}
+
+      - name: Publish win-x64
+        run: |
+          cd src/Metrics.Web/ &&
+          dotnet publish --configuration ${{ env.CONFIGURATION }} \
+            -r win-x64
+            --self-contained false \
+            --output release/win-x64-${{ steps.get_version.outputs.VERSION }} \
             -p:Version=${{ steps.get_version.outputs.VERSION }} \
             -p:FileVersion=${{ steps.get_version.outputs.VERSION }} \
             -p:InformationalVersion=${{ steps.get_version.outputs.VERSION }}
 
       - name: Print  Working Directory
-        run: pwd && ls -l
+        run: |
+          pwd && ls -l
 
       - name: Create sql directory
         run: |
-          mkdir -p ${{ steps.set_release_dir.outputs.RELEASE_DIR }}/sql
+          mkdir -p release/publish-${{ steps.get_version.outputs.VERSION }}/sql
 
       - name: Copy SQL files
-        run: cp src/Metrics.Web/Migrations/*.sql ${{ steps.set_release_dir.outputs.RELEASE_DIR }}/sql
+        run: |
+          cp src/Metrics.Web/Migrations/*.sql release/all-${{ steps.get_version.outputs.VERSION }}/sql &&
+          cp src/Metrics.Web/Migrations/*.sql release/win-x64-${{ steps.get_version.outputs.VERSION }}/sql
 
       - name: Print Current Working Directory
         run: pwd && ls -l
 
-      - name: Print Release Directory ${{ steps.set_release_dir.outputs.RELEASE_DIR }}
-        run: ls -l ${{ steps.set_release_dir.outputs.RELEASE_DIR }}
+      - name: Print Release Directory
+        run: ls -R release/
 
       # - name: Create zip
       #   run: |
@@ -112,11 +125,17 @@ jobs:
       #     # Create zip archive for release (zip contents only, not the folder)
       #     zip -r ${{ steps.set_release_dir.outputs.RELEASE_DIR }}.zip .
 
-      - name: Upload Release Artifact
+      - name: Upload Release Artifact for *
         uses: actions/upload-artifact@v4
         with:
           name: release-metrics-${{ steps.get_version.outputs.VERSION }}
-          path: ${{ steps.set_release_dir.outputs.RELEASE_DIR }}/
+          path: release/all-${{ steps.get_version.outputs.VERSION }}
+
+      - name: Upload Release Artifact for win-x64
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-metrics-${{ steps.get_version.outputs.VERSION }}
+          path: release/win-x64-${{ steps.get_version.outputs.VERSION }}
 
       # - name: Create GitHub Release
       #   uses: softprops/action-gh-release@v2
