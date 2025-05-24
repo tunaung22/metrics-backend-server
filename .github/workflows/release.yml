@@ -28,7 +28,7 @@ jobs:
 
       - name: Create necessary directories
         run: |
-          mkdir -p bin release sql
+          mkdir -p bin release
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
@@ -92,6 +92,10 @@ jobs:
 
       - name: Print  Working Directory
         run: pwd && ls -l
+
+      - name: Create sql directory
+        run: |
+          mkdir -p ${{ steps.set_release_dir.outputs.RELEASE_DIR }}/sql
 
       - name: Copy SQL files
         run: cp src/Metrics.Web/Migrations/*.sql ${{ steps.set_release_dir.outputs.RELEASE_DIR }}/sql
