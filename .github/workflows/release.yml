@@ -106,7 +106,8 @@ jobs:
 
       - name: Create sql directory
         run: |
-          mkdir -p release/publish-${{ steps.get_version.outputs.VERSION }}/sql
+          mkdir -p release/all-${{ steps.get_version.outputs.VERSION }}/sql &&
+          mkdir -p release/win-x64-${{ steps.get_version.outputs.VERSION }}/sql &&
 
       - name: Copy SQL files
         run: |
