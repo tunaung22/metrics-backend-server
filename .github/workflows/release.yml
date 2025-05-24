@@ -101,6 +101,9 @@ jobs:
           # Create zip archive for release (zip contents only, not the folder)
           zip -r ${{ steps.set_release_dir.outputs.RELEASE_DIR }}.zip . && cd ..
 
+      - name: ls -l
+        run: ls
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
