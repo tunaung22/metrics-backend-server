@@ -96,6 +96,9 @@ jobs:
       - name: Print Current Working Directory
         run: pwd && ls -l
 
+      - name: Print Release Directory ${{ steps.set_release_dir.outputs.RELEASE_DIR }}
+        run: ls -l ${{ steps.set_release_dir.outputs.RELEASE_DIR }}
+
       - name: Create zip
         run: |
           cd ${{ steps.set_release_dir.outputs.RELEASE_DIR }} && \
@@ -106,7 +109,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: release-metrics-${{ steps.set_release_dir.outputs.RELEASE_DIR }}
-          path: ${{ steps.set_release_dir.outputs.RELEASE_DIR }}.zip
+          path: ${{ steps.set_release_dir.outputs.RELEASE_DIR }}/${{ steps.set_release_dir.outputs.RELEASE_DIR }}.zip
 
       # - name: Create GitHub Release
       #   uses: softprops/action-gh-release@v2
