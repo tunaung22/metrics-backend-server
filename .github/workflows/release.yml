@@ -104,13 +104,13 @@ jobs:
       - name: ls -l
         run: ls
 
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ github.ref }}
-          name: Release ${{ steps.get_version.outputs.VERSION }}
-          body: Release ${{ steps.get_version.outputs.VERSION }}
-          files: publish-${{ steps.get_version.outputs.VERSION }}.zip
+      # - name: Create GitHub Release
+      #   uses: softprops/action-gh-release@v2
+      #   with:
+      #     tag_name: ${{ github.ref }}
+      #     name: Release ${{ steps.get_version.outputs.VERSION }}
+      #     body: Release ${{ steps.get_version.outputs.VERSION }}
+      #     files: publish-${{ steps.get_version.outputs.VERSION }}.zip
 
       - name: Clean Runner (Optional)
         run: rm -rf publish-* # Clean up release directory
