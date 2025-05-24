@@ -112,11 +112,11 @@ jobs:
       #     # Create zip archive for release (zip contents only, not the folder)
       #     zip -r ${{ steps.set_release_dir.outputs.RELEASE_DIR }}.zip .
 
-      - name: Upload Release Zip as Artifact
+      - name: Upload Release Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: release-metrics-${{ steps.set_release_dir.outputs.RELEASE_DIR }}
-          path: ${{ steps.set_release_dir.outputs.RELEASE_DIR }}
+          name: release-metrics-${{ steps.get_version.outputs.VERSION }}
+          path: ${{ steps.set_release_dir.outputs.RELEASE_DIR }}/
 
       # - name: Create GitHub Release
       #   uses: softprops/action-gh-release@v2
