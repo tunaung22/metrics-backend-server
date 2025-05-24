@@ -21,6 +21,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Print Current Working Directory
+        run: pwd
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
@@ -30,11 +33,11 @@ jobs:
         run: dotnet restore
 
       - name: Build
-        run: dotnet build --configuration ${{ env.CONFIGURATION}} --no-restore
+        run: dotnet build --configuration ${{ env.CONFIGURATION}} --no-restore --verbosity detailed
 
       - name: List Build Output
-        run: ls -R bin/
-        
+        run: ls -R
+
       - name: Test
         run: dotnet test --configuration ${{ env.CONFIGURATION}} --no-build --verbosity normal
 
