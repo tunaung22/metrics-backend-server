@@ -1,4 +1,4 @@
-name: Build, Test, Publish, and Release
+name: Release
 
 on:
   push:
@@ -73,13 +73,25 @@ jobs:
         run: |
           RELEASE_DIR="publish-${{ steps.get_version.outputs.VERSION }}"
           dotnet publish --configuration ${{ env.CONFIGURATION }} \
+            --self-contained false \
             --output $RELEASE_DIR \
             -p:Version=${{ steps.get_version.outputs.VERSION }} \
             -p:FileVersion=${{ steps.get_version.outputs.VERSION }} \
             -p:InformationalVersion=${{ steps.get_version.outputs.VERSION }}
 
           # Create zip archive for release
-          zip -r $RELEASE_DIR.zip $RELEASE_DIR/
+          # zip -r $RELEASE_DIR.zip $RELEASE_DIR/
+          # Create zip archive for release (zip contents only, not the folder)
+          # cd $RELEASE_DIR && zip -r ../$RELEASE_DIR.zip . && cd ..
+
+      - name: Copy SQL files
+        run: cp src/Metrics.Web/Migrations/*.sql $RELEASE_DIR/
+
+      - name: Create zip
+        run: |
+          cd $RELEASE_DIR && \
+          # Create zip archive for release (zip contents only, not the folder)
+          zip -r ../$RELEASE_DIR.zip . && cd ..
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2

@@ -16,7 +16,6 @@ using Metrics.Web.Middleware;
 using Metrics.Application.Exceptions;
 using Metrics.Infrastructure.Data.Seedings;
 using Microsoft.AspNetCore.Authorization;
-using Metrics.Infrastructure.Data.DatabaseMigrator;
 using Metrics.Application.DTOs.SeedingDtos;
 using Metrics.Web.Security.PolicyHandlers;
 
@@ -223,64 +222,51 @@ using (var scope = app.Services.CreateScope())
 
     try
     {
+        // Ensure the database is created
+        // await context.Database.EnsureCreatedAsync();
         // Attempt to open a connection to the database
         Console.WriteLine("========== Testing database connection... ==========");
         await context.Database.OpenConnectionAsync();
         Console.WriteLine("========== Database connection successful. ==========");
 
         // ----- RUN DB MIGRATION -----
-        // var dbContext = scope.ServiceProvider.GetRequiredService<MetricsDbContext>();
-        // await SchemaMigrator.MigrateDbAsync(args, context);
-        // var pendingMigrations = await context.Database.GetPendingMigrationsAsync();
+        Console.WriteLine("========== Checking Database Schema Migrations... ==========");
+        var pendingMigrations = await context.Database.GetPendingMigrationsAsync();
+        if (args.Length == 1 && args.Contains("migratedb"))
+        {
+            if (pendingMigrations.Any())
+            {
+                Console.WriteLine("========== INFO: Running pending database migrations... ==========");
+                foreach (var migration in pendingMigrations)
+                    Console.WriteLine("### " + migration);
+                // Ensure the database is created
+                // await context.Database.EnsureCreatedAsync();
+                // Run migrations
+                context.Database.Migrate();
+                Console.WriteLine("========== Database migration successful. =====");
+                Console.WriteLine("===============================================");
+            }
+            else
+                Console.WriteLine("========== No database migration needs to run. =================");
 
-        // if (args.Length == 1 && args.Contains("migratedb"))
-        // {
-        //     if (pendingMigrations.Any())
-        //     {
-        //         Console.WriteLine("========== INFO: Running pending database migrations. ==========");
-        //         await SchemaMigrator.MigrateDbAsync(context);
-        //         Console.WriteLine("========== Database migration successful. ==========");
-        //         Console.WriteLine("=======================================================================");
-        //     }
-        //     else
-        //         Console.WriteLine("========== No database migration needs to run. ==========");
-
-        //     // await context.Database.CloseConnectionAsync();
-        //     // return;
-        //     // Clean exit for migration mode
-        //     Console.WriteLine("========== Migration mode complete. Exiting. ==========");
-        //     Environment.Exit(0);
-        // }
-        // else
-        // {
-        // if (pendingMigrations.Any())
-        // {
-        //     Console.WriteLine("========== INFO: Running pending database migrations. =======");
-        //     await SchemaMigrator.MigrateDbAsync(context);
-        //     Console.WriteLine("========== Database migration successful. ===================");
-        //     Console.WriteLine("=============================================================");
-        // }
-        // else
-        //     Console.WriteLine("========== No database migration needs to run. ==========");
-        //     if (pendingMigrations.Any())
-        // {
-        //     // don't run migration
-        //     // but show message if have pending
-        //     Console.WriteLine("========== WARNING: You have pending migrations not run yet! ==========");
-        //     Console.WriteLine("========== Use 'migratedb' to run the migration. ==========");
-        //     foreach (var migration in pendingMigrations)
-        //         Console.WriteLine("### " + migration);
-        //     Console.WriteLine("=======================================================================");
-
-        //     // await context.Database.CloseConnectionAsync();
-        //     // return;
-        //     // Clean exit for migration mode
-        //     Console.WriteLine("========== Pending migrations detected. Exiting. ==========");
-        //     Environment.Exit(1);
-        // }
-        // else
-        //     Console.WriteLine("========== No database migration needs to run. ==========");
-        // }
+            Console.WriteLine("========== Database Schema Migration complete. Exiting. ========");
+            Environment.Exit(0);
+        }
+        else
+        {
+            if (pendingMigrations.Any()) // don't run migration, but show message if have pending
+            {
+                Console.WriteLine("========== WARNING: You have pending migrations not run yet! ========");
+                Console.WriteLine("========== Use 'migratedb' to run the migration. ====================");
+                foreach (var migration in pendingMigrations)
+                    Console.WriteLine("   - " + migration);
+                Console.WriteLine("=====================================================================");
+                Console.WriteLine("========== Pending migrations detected. Exiting. ====================");
+                Environment.Exit(1);
+            }
+            else
+                Console.WriteLine("========== No database migration needs to run. =============");
+        }
 
         // ----- DATA SEEDING -----
         // ----- Run Identity Seeding -----
@@ -293,23 +279,19 @@ using (var scope = app.Services.CreateScope())
         {
             if (sysadminUser != null)
             {
-                Console.WriteLine("========== INFO: There is sysadmin user already! ==========");
-                // await context.Database.CloseConnectionAsync();
-                // return;
-                Console.WriteLine("========== InitUser mode complete. Exiting. ==========");
+                Console.WriteLine("========== INFO: There is sysadmin user already! ========");
+                Console.WriteLine("========== InitUser mode complete. Exiting. =============");
                 Environment.Exit(0);
             }
             else
             {
                 Console.WriteLine("========== INFO: Creating inital user: sysadmin ==========");
-
                 string? passwordInput;
                 string? confirmPasswordInput;
                 while (true)
                 {
                     passwordInput = ConsoleUtils.ReadPassword("Enter password for sysadmin: ");
                     confirmPasswordInput = ConsoleUtils.ReadPassword("Confirm password: ");
-
                     if (!passwordInput.Equals(confirmPasswordInput))
                         Console.WriteLine("Password does not match. Please try again.");
                     else
@@ -329,16 +311,13 @@ using (var scope = app.Services.CreateScope())
                     PhoneNumber = ""
                 };
                 await InitialUserSeeder.InitAsync(scope.ServiceProvider, seedUserCreateDto);
-                Console.WriteLine("========== INFO: sysadmin user created. ==========");
+                Console.WriteLine("========== INFO: sysadmin user created. ==============");
                 Console.WriteLine($"Username: {seedUserCreateDto.Username}");
                 Console.WriteLine($"Email: {seedUserCreateDto.Email}");
                 Console.WriteLine($"User title: {seedUserCreateDto.UserTitleName}");
                 string rolesList = string.Join(", ", seedUserCreateDto.RolesList);
                 Console.WriteLine($"Roles: {rolesList}");
                 Console.WriteLine($"Department: {seedUserCreateDto.DepartmentName}");
-
-                // await context.Database.CloseConnectionAsync();
-                // return;
                 Console.WriteLine("========== InitUser mode complete. Exiting. ==========");
                 Environment.Exit(0);
             }
@@ -347,8 +326,8 @@ using (var scope = app.Services.CreateScope())
         {
             if (sysadminUser == null)
             {
-                Console.WriteLine(" ========== WARNING: You have no sysadmin user yet! ==========");
-                Console.WriteLine("========== Use 'inituser' to add sysadmin user. ==========");
+                Console.WriteLine("========== WARNING: You have no sysadmin user yet! ==========");
+                Console.WriteLine("========== Use 'inituser' to add sysadmin user. =============");
                 // await context.Database.CloseConnectionAsync();
                 // return;
                 Console.WriteLine("========== Cannot start application without sysadmin user. Exiting. ==========");
@@ -356,40 +335,43 @@ using (var scope = app.Services.CreateScope())
             }
             else
             {
-                Console.WriteLine(" ========== INFO: sysadmin user exist! ==========");
+                Console.WriteLine("========== INFO: sysadmin user exist! ==========");
                 Console.WriteLine("========== Database startup checks completed successfully. ==========");
             }
         }
     }
+    catch (NpgsqlException ex)
+    {
+        if (ex.SqlState == "3D000")
+        {
+            Console.WriteLine("========== ERROR: Database connection failed. ==========");
+            Console.WriteLine($"   Details :: {ex.Message}");
+            Log.Error(ex, "Startup database operations failed");
+        }
+        Environment.Exit(1);
+    }
     catch (Exception ex)
     {
-        // Console.WriteLine($"========== Database connection failed: {ex.Message} ==========");
-        // // Optionally, you can exit the application if the connection fails
-        // await context.Database.CloseConnectionAsync();
-        // return; // Exit the application
         Console.WriteLine($"========== ERROR during startup: {ex.Message} ==========");
-        Log.Error(ex, "Startup database operations failed");
-        // Clean exit on error
         Environment.Exit(1);
     }
     finally
     {
-        // // Ensure the connection is closed
-        // await context.Database.CloseConnectionAsync();
-        // Let EF Core handle connection cleanup, but ensure it's closed
+        // Ensure the connection is closed. Let EF Core handle connection cleanup, but ensure it's closed.
         try
         {
             if (context.Database.GetDbConnection().State == System.Data.ConnectionState.Open)
-            {
-                await context.Database.CloseConnectionAsync();
-            }
+            { await context.Database.CloseConnectionAsync(); }
         }
         catch (Exception ex)
         {
             Log.Error(ex, "Error closing database connection during startup");
+            Environment.Exit(1);
         }
     }
 }
+
+Console.WriteLine("========== Starting Server... ========== ");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
