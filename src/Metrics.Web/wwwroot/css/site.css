@@ -92,3 +92,7 @@ button#goToTop {
   -moz-user-select: none; /* For Firefox */
   -ms-user-select: none; /* For Internet Explorer/Edge */
 }
+
+div .sectionTitle {
+  margin: 0em 3em;
+}

@@ -5,14 +5,23 @@
 }
 
 
-<div class="container">
+<div class="sectionTitle">
     <h4>Dashboard</h4>
+    @* <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-page="/Index">Home</a></li>
+            <li class="breadcrumb-item active">Dashboard</li>
+        </ol>
+    </nav> *@
+</div>
+
+<div class="container">
 
     <div class="row">
         <div class="col col-xs-12 col-sm-12 col-md-4 col-xl-3">
             <div class="card my-4">
                 <div class="card-header">
-                    Company
+                    <strong>Company</strong>
                 </div>
                 <ul class="list-group list-group-flush">
                     <li class="list-group-item p-2">
@@ -33,7 +42,7 @@
         <div class="col col-xs-12 col-sm-12 col-md-4 col-xl-3">
             <div class="card my-4">
                 <div class="card-header">
-                    Score Submissions
+                    <strong>Score Submissions</strong>
                 </div>
                 <ul class="list-group list-group-flush">
                     <li class="list-group-item p-2">
@@ -52,7 +61,7 @@
         <div class="col col-xs-12 col-sm-12 col-md-5 col-xl-4">
             <div class="card my-4">
                 <div class="card-header">
-                    Reports
+                    <strong>Reports</strong>
                 </div>
                 <ul class="list-group list-group-flush">
                     <li class="list-group-item p-2">
@@ -70,12 +79,13 @@
 @section Styles {
     <style>
         .card .list-group-item > a {
+            color: #003e84;
             @* color: #0057ba; *@
             margin: .4em .4em;
             padding: .4em .4em;
         }
         .card .list-group-item > a:hover {
-            @* color: #0099ff; *@
+            color: #0099ff;
             @* background: #3465a443; *@
             @* color: #3465a4; *@
             @* border-radius: 0.4em; *@

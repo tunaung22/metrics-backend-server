@@ -28,7 +28,8 @@ public class IndexModel : PageModel
         _kpiSubmissionPeriodService = kpiSubmissionPeriodService;
     }
 
-    public class KpiSubmissionPeriodModel
+
+    public class KpiSubmissionPeriodModel // Overview info of submission for the Period
     {
         // public long Id { get; set; }
         public string PeriodName { get; set; } = string.Empty;
@@ -36,9 +37,7 @@ public class IndexModel : PageModel
         public DateTimeOffset SubmissionEndDate { get; set; }
         public bool IsSubmitted { get; set; } = false;
     }
-
     public List<KpiSubmissionPeriodModel> KpiSubmissionPeriods { get; set; } = []; // model for rendering table
-
     public DateTimeOffset SubmissionTime { get; set; } = DateTimeOffset.UtcNow;
     public List<KpiSubmissionPeriod> KpiPeriodList { get; set; } = [];
     public bool IsSubmissionAvaiable { get; set; } = false;
@@ -95,7 +94,7 @@ public class IndexModel : PageModel
             // submission count by user
             var submissionCount = await _kpiSubmissionService
                 .FindCountByUserIdByKpiPeriodIdAsync(currentUser.Id, KpiPeriodList[i].Id);
-            if (departmentCount != submissionCount)
+            if (departmentCount - 1 != submissionCount)
             {
                 // KpiPeriodList[i] = incomplete
                 KpiSubmissionPeriods.Add(new KpiSubmissionPeriodModel

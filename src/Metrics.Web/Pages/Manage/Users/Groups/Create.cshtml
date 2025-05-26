@@ -4,8 +4,18 @@
     ViewData["Title"] = "Add User Group";
 }
 
-<div class="container">
+
+<div class="sectionTitle">
     <h4>Add New User Group</h4>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/Dashboard/Index">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="/Manage/Users/Groups/Index">Groups</a></li>
+            <li class="breadcrumb-item active">Add</li>
+        </ol>
+    </nav>
+</div>
+<div class="container">
 
     @* ========================================================================== *@
     @if (!ModelState.IsValid)
@@ -22,40 +32,34 @@
     }
 
     @* =============== Form ===================================================== *@
-    <div class="col-sm-12 col-md-4 mx-auto px-4 py-4 bg-light">
+     <div class="col-sm-12 col-md-4 border px-4 py-4 me-auto">
         <form method="post" asp-route-returnUrl="@Model.ReturnUrl">
-            <div class="row">
-                <div class="form-group col">
-                    <label asp-for="Input.TitleName">Title</label>
-                    <input asp-for="Input.TitleName" class="form-control" />
-                    <div><span asp-validation-for="Input.TitleName" class="text-danger"></span></div>
+            <div class="col justify-content-center">
+                <div class="row">
+                    <div class="form-group col">
+                        <label asp-for="Input.TitleName">Group Name</label>
+                        <input asp-for="Input.TitleName" class="form-control input__groupName" tabindex="1" />
+                        <div><span asp-validation-for="Input.TitleName" class="text-danger"></span></div>
+                    </div>
                 </div>
-            </div>
-            <div class="row">
-                <div class="form-group col">
-                    <label asp-for="Input.Description">Description (optional)</label>
-                    <input asp-for="Input.Description" class="form-control" />
-                    <div><span asp-validation-for="Input.Description" class="text-danger"></span></div>
+                <div class="row">
+                    <div class="form-group col">
+                        <label asp-for="Input.Description">Description (optional)</label>
+                        <input asp-for="Input.Description" class="form-control" tabindex="2" />
+                        <div><span asp-validation-for="Input.Description" class="text-danger"></span></div>
+                    </div>
                 </div>
-            </div>
-            <div class="row mt-4">
-                @* <div class="d-flex justify-content-end">
-                    <button asp-page-handler="Cancel" type="submit"
-                            class="btn btn-warning ms-2">
-                                <i class="bi bi-x-circle"> </i>Cancel</button>
-                    <button type="submit" 
-                            class="btn btn-primary ms-2">
-                                <i class="bi bi-check-circle"> </i>Update</button>
-                </div> *@
-                <div class="form-group col d-flex justify-content-end gap-2">
-                    <button type="submit" class="btn btn-warning"
-                        asp-page-handler="Cancel" formnovalidate>
-                        <i class="bi bi-x-circle"> </i>Cancel
-                    </button>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-check-circle"> </i>Save
-                    </button>
-                </div> 
+                <div class="row mt-4">
+                    <div class="gorm-group col d-flex justify-content-end gap-2">
+                        <button type="submit" class="btn btn-warning" tabindex="4"
+                            asp-page-handler="Cancel" formnovalidate>
+                                <i class="bi bi-x-circle"> </i>Cancel
+                        </button>
+                        <button type="submit" class="btn btn-primary" tabindex="3">
+                                <i class="bi bi-check-circle"> </i>Save
+                        </button>
+                    </div>
+                </div>
             </div>
         </form>
     </div>
@@ -68,5 +72,8 @@
     @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
 
     <script>
+        $(function() {
+            $('.input__groupName').focus();
+        });
     </script>
 }

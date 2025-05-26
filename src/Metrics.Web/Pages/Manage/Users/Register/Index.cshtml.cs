@@ -180,8 +180,14 @@ public class IndexModel : PageModel
                         assignedRoles.Add(role.Name!);
                 }
 
+                var groupName = "";
+                var userTitle = await _userTitleService.FindByIdAsync(createDto.UserTitleId);
+                if (userTitle != null)
+                    groupName = userTitle.TitleName;
+
                 TempData["Username"] = createDto.UserName.ToString();
                 TempData["FullName"] = createDto.FullName.ToString();
+                TempData["GroupName"] = groupName;
                 // TempData["RoleName"] = assignedRole?.Name ?? string.Empty;
                 TempData["AssignedRoles"] = JsonSerializer.Serialize(assignedRoles);
 

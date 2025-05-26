@@ -76,9 +76,12 @@ public class KpiSubmissionPeriodService : IKpiSubmissionPeriodService
 
             await _context.SaveChangesAsync();
             var updatedEntity = await _kpiSubmissionPeriodRepository.FindByPeriodNameAsync(periodName);
+            if (updatedEntity == null)
+                throw new MetricsNotFoundException("Submission not found");
 
             return updatedEntity;
         }
+        catch (MetricsNotFoundException) { throw; }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Unexpected error while updating KPI Period.");
@@ -114,10 +117,11 @@ public class KpiSubmissionPeriodService : IKpiSubmissionPeriodService
         {
             var kpiPeriod = await _kpiSubmissionPeriodRepository.FindByIdAsync(id);
             if (kpiPeriod == null)
-                throw new NotFoundException($"KPI Period with id {id} not found.");
+                throw new MetricsNotFoundException($"KPI Period with id {id} not found.");
 
             return kpiPeriod;
         }
+        catch (MetricsNotFoundException) { throw; }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Unexpected error while querying KPI Period.");
@@ -134,10 +138,11 @@ public class KpiSubmissionPeriodService : IKpiSubmissionPeriodService
 
             var kpiPeriod = await _kpiSubmissionPeriodRepository.FindByPeriodNameAsync(periodName);
             if (kpiPeriod == null)
-                throw new NotFoundException($"KPI Period with period name {periodName} not found.");
+                throw new MetricsNotFoundException($"KPI Period with period name {periodName} not found.");
 
             return kpiPeriod;
         }
+        catch (MetricsNotFoundException) { throw; }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Unexpected error while querying KPI Period by period name.");
@@ -154,10 +159,11 @@ public class KpiSubmissionPeriodService : IKpiSubmissionPeriodService
 
             var kpiPeriod = await _kpiSubmissionPeriodRepository.FindByPeriodNameAsync(periodName);
             if (kpiPeriod == null)
-                throw new NotFoundException($"KPI Period with period name {periodName} not found.");
+                throw new MetricsNotFoundException($"KPI Period with period name {periodName} not found.");
 
             return kpiPeriod.Id;
         }
+        catch (MetricsNotFoundException) { throw; }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Unexpected error while querying KPI Period by id.");

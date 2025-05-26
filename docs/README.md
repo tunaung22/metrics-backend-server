@@ -175,15 +175,22 @@ KPI Score are submitted by the following category:
 
 ---
 
-| Reports                                                                         | Description                                    |
-| ------------------------------------------------------------------------------- | ---------------------------------------------- |
-| `/reports/submissions/departments/`                                             | summary                                        |
-| `/reports/submissions/departments/kpi`                                          | list kpi scores                                |
-| `/reports/submissions/departments/kpi/view/{period-name}`                       | list kpi scores by period                      |
-| `/reports/submissions/departments/kpi/view/{period-name}/?group={groupName}`    | list kpi scores by period filter by user group |
-| `/reports/submissions/departments/keykpi`                                       | list key kpi                                   |
-| `/reports/submissions/departments/keykpi/view/{period-name}`                    | list key kpi by period                         |
-| `/reports/submissions/departments/keykpi/view/{period-name}/?group={groupName}` | list key kpi by period filter by user group    |
+| Reports - Overview... | Description |
+| --------------------- | ----------- |
+| `/reports/`           | all reports |
+
+| Reports - Department Score Submissions (KPI)                                 | Description                                                      |
+| ---------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| ~~`/reports/submissions/departments/`~~                                      | summary or (index of department score submissions)               |
+| `/reports/submissions/departments/kpi`                                       | list (department kpi scores submissions)                         |
+| `/reports/submissions/departments/kpi/view/{period-name}`                    | list (department kpi scores submissions) by period               |
+| `/reports/submissions/departments/kpi/view/{period-name}/?group={groupName}` | list (department kpi scores submissions) by period by user group |
+
+| Reports - Department Score Submissions (KEY KPI)                                | Description                                 |
+| ------------------------------------------------------------------------------- | ------------------------------------------- |
+| `/reports/submissions/departments/keykpi`                                       | list key kpi                                |
+| `/reports/submissions/departments/keykpi/view/{period-name}`                    | list key kpi by period                      |
+| `/reports/submissions/departments/keykpi/view/{period-name}/?group={groupName}` | list key kpi by period filter by user group |
 
 ### Razor Pages
 

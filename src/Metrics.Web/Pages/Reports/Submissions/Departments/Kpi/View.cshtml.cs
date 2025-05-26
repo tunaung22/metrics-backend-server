@@ -56,14 +56,14 @@ public class ViewModel : PageModel
     {
         // ** Clear the list on each request.
         // Reason: Select option changes will cause this OnGet to execute multiple time.
-        // KpiReportList.Clear();
+        KpiReportList.Clear();
 
-        // if (!string.IsNullOrEmpty(returnUrl))
-        //     ReturnUrl = returnUrl;
+        // if (!string.IsNullOrEmpty(groupName))
+        //     UserGroup = groupName;
 
         if (string.IsNullOrEmpty(periodName))
         {
-            ModelState.AddModelError("", "A valid Period Name is require.");
+            ModelState.AddModelError(string.Empty, "A valid Period Name is require.");
             return Page();
         }
         // CHECK periodName exist in submissions

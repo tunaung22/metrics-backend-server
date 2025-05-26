@@ -6,7 +6,8 @@
     @* var a = @Url.Page(ViewContext.RouteData.Values["page"]?.ToString(), null, null, Request.Scheme); *@
 }
 
-<div class="container">
+
+<div class="sectionTitle">
     <div class="d-flex align-items-center my-2">
         <h4 class="flex-grow-1">Departments List</h4>
         <span class="justify-content-end gap-2">
@@ -16,9 +17,16 @@
                 <i class="bi bi-plus"> </i>New</a>
         </span>
     </div>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-page="/Dashboard/Index">Dashboard</a></li>
+            <li class="breadcrumb-item active">Departments</li>
+        </ol>
+    </nav>
+</div>
 
+<div class="container">
     <div>
-        @* ========================================================================== *@
         @if (!ModelState.IsValid)
         {
             <div class="form bg-light p-4">
@@ -63,11 +71,11 @@
                                 <td>
                                     <form method="post" style="display:inline;">
                                         <input type="hidden" name="departmentCode" value="@department.DepartmentCode" />
-                                        <a class="btn btn-primary"
+                                        <a class="btn btn-sm btn-outline-primary my-2 my-lg-0 me-2"
                                             asp-page="Edit"
                                             asp-route-departmentCode="@department.DepartmentCode"
                                             asp-route-returnUrl="@HttpContext.Request.Path">
-                                            Edit
+                                            <i class="bi bi-pencil-square"> </i>Edit
                                         </a>
                                         @* <button class="btn btn-success" 
                                             asp-route-departmentCode="@department.DepartmentCode"

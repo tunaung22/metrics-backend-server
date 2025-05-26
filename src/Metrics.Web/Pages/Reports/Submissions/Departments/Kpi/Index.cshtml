@@ -1,19 +1,27 @@
 ﻿@page
 @model Metrics.Web.Pages.Reports.Submissions.Departments.Kpi.IndexModel
 @{
-    ViewData["Title"] = "KPI Submission Reports";
+    ViewData["Title"] = "Department KPI Submission Report";
 }
 
-<div class="container">
-    <h4>Score Submission Reports</h4>
+
+<div class="sectionTitle">
+    <div class="d-flex align-items-center">
+        <h4 class="flex-grow-1">Department KPI Submission Report</h4>
+        <span class="justify-content-end gap-2"></span>
+    </div>
 
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a asp-page="/Dashboard/Index">Dashboard</a></li>
+            @* <li class="breadcrumb-item"><a asp-page="/Reports/Submissions/Departments/Index">Reports</a></li> *@
+            <li class="breadcrumb-item">Reports</li>
             <li class="breadcrumb-item active">Submissions</li>
         </ol>
     </nav>
+</div>
 
+<div class="container">
     <div class="bg-light p-4">
         <table id="reportIndexTable" class="table table-striped" style="width:100%">
             <thead>
@@ -32,7 +40,11 @@
                             <td>
                                 <a asp-page="View" 
                                     asp-route-periodName="@p.PeriodName"
-                                    class="link-primary link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover">@p.PeriodName</a>
+                                    class="link-primary 
+                                            link-offset-2 
+                                            link-underline-opacity-25 
+                                            link-underline-opacity-100-hover">
+                                    <strong>@p.PeriodName</strong></a>
                             </td>
                             <td>@p.SubmissionStartDate.ToLocalTime().UtcDateTime.ToString("MMM dd, yyyy hh:mm:ss tt")</td>
                             <td>@p.SubmissionEndDate.ToLocalTime().UtcDateTime.ToString("MMM dd, yyyy hh:mm:ss tt")</td>

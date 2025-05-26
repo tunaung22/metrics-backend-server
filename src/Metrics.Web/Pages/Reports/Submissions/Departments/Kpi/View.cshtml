@@ -4,12 +4,20 @@
     ViewData["Title"] = "Score Submission Report";
 }
 
-<div class="container">
+
+<div class="sectionTitle">
     <div class="d-flex align-items-center">
-        <h4>Score Submission Report (KPI)</h4>
-        <span class="mx-4">
-        Period: <strong>@Model.SelectedPeriod.PeriodName</strong>
-        <small>(@Model.SelectedPeriod.SubmissionStartDate.ToString("MMM dd, yyyy") - @Model.SelectedPeriod.SubmissionEndDate.ToString("MMM dd, yyyy"))</small>
+    </div>
+    <div class="d-flex align-items-center">
+        <span class="d-flex align-items-center flex-grow-1">
+            <h4>Score Submission Report (KPI)</h4>
+            <span class="mx-4">
+                Period: <strong>@Model.SelectedPeriod.PeriodName</strong>
+                <small>(@Model.SelectedPeriod.SubmissionStartDate.ToString("MMM dd, yyyy") - @Model.SelectedPeriod.SubmissionEndDate.ToString("MMM dd, yyyy"))</small>
+            </span>
+        </span>
+        <span class="justify-content-end gap-2">
+            @* <button class="btn btn-primary">ddd</button> *@
         </span>
     </div>
 
@@ -20,9 +28,10 @@
             <li class="breadcrumb-item active">@Model.SelectedPeriod.PeriodName</li>
         </ol>
     </nav>
+</div>
 
+<div class="container">
     <div class="bg-light p-4">
-
         <div class="filter-toolbar d-flex">
             <form method="get">
                 <select 
