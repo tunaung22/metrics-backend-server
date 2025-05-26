@@ -5,18 +5,22 @@
     decimal[] scoreList = new decimal[] { 1M, 2M, 3M, 4M, 5M, 6M, 7M, 8M, 9M, 10M };
 }
 
-<div class="container">
+
+<div class="sectionTitle">
     <h4>Submit Department Score</h4>
     @* <div id="submissionStatusBar" class="fixed-bottom mt-2 mb-0 px-4 p-2 d-flex align-items-center justify-content-center">
         <p class="px-4 mb-0"><strong>Progress:</strong> <span id="formProgress">0</span> of @Model.SubmissionInput.Count</p>
     </div> *@
     <nav aria-label="breadcrumb">
-        <ol class="breadcrumb bg-light px-4 py-2">
+        <ol class="breadcrumb">
             <li class="breadcrumb-item"><a asp-page="/Index">Home</a></li>
             <li class="breadcrumb-item"><a asp-page="/Submissions/Departments/Scores/Index">Submission List</a></li>
             <li class="breadcrumb-item active">Submit</li>
         </ol>
     </nav>
+</div>
+
+<div class="container">
 
     @if (!ModelState.IsValid && !Model.IsSubmissionsExist)
     {
@@ -24,10 +28,6 @@
             <div class="alert alert-danger">
                 <h5>There were some errors in the form.</h5>
                 <ul>
-                    @* @foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
-                    {
-                        <li>@error.ErrorMessage</li>
-                    } *@
                     <li>@ModelState.Values.SelectMany(v => v.Errors).First().ErrorMessage</li>
                 </ul>
             </div>
@@ -214,12 +214,12 @@
             </button>
 
         }
-        else  @* Already submitted (Submission exist.) *@
+        else  @* IsSubmissionsExist = true; => Already submitted (Submission exist.) *@
         {
             <h5 class="my-4 text-success">You already submitted for this period <strong>@Model.TargetKpiPeriodName</strong>.</h5>
             <div class="my-4">
                 <span>
-                    Please check other <strong><a class="mx-2" asp-page="/Submissions/Departments/Scores/Index">Submissions</a></strong>.
+                    Check <strong><a class="" asp-page="/Submissions/Departments/Scores/Index">Submissions</a></strong>.
                 </span>
             </div>
 
@@ -228,17 +228,32 @@
                 <table id="dataTable" class="table table-striped" style="width: 100%;">
                     <thead>
                         <tr>
+                            <th>Date</th>
                             <th>Department</th>
-                            <th>Score</th>
-                            @if(Model.CurrentUserTitleName?.ToLower() != "staff")
+                            <th>Score Given</th>
+                            @* @if(Model.CurrentUserTitleName?.ToLower() != "staff")
                             {
                                 <th>Positive Aspects</th>
                                 <th>Negative Aspects</th>
                             }
-                            <th>Comments</th>
+                            <th>Comments</th> *@
                         </tr>
                     </thead>
                     <tbody>
+                        @if (Model.DoneKpiSubmissions.Any())
+                        {
+                            @foreach (var s in Model.DoneKpiSubmissions)
+                            {
+                                <tr>
+                                    <td>@s.SubmissionDate.ToString("MMM dd, yyyy")</td>
+                                    <td>@s.DepartmentName</td>
+                                    <td>@s.ScoreValue</td>
+                                </tr>
+                            }
+                        }
+
+
+
                         @* @if (Model.UsersList.Any())
                         {
                             @foreach (var e in Model.UsersList)

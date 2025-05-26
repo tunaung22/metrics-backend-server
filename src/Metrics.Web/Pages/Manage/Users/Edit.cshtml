@@ -4,11 +4,20 @@
     ViewData["Title"] = "Update User";
 }
 
-<div class="container">
-    <div class="d-flex align-items-center my-2">
-        <h4 class="flex-grow-1">Edit User</h4>
-    </div>
 
+<div class="sectionTitle">
+    <div class="d-flex align-items-center my-2">
+        <h4 class="flex-grow-1">Edit user <i>@(Model.TargetUser != null ? @Model.TargetUser.FullName : "")</i></h4>
+    </div>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-page="/Manage/Users/Index">Home</a></li>
+            <li class="breadcrumb-item active">Edit</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="container">
     <div class="col-sm-12 col-md-10 col-xl-8 mx-auto bg-light p-4">
         @if (@Model.TargetUser != null)
         {

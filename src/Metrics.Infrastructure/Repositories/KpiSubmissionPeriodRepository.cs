@@ -30,22 +30,22 @@ public class KpiSubmissionPeriodRepository : IKpiSubmissionPeriodRepository
         _context.KpiSubmissionPeriods.Remove(entity);
     }
 
-    public async Task<KpiSubmissionPeriod> FindByIdAsync(long id)
+    public async Task<KpiSubmissionPeriod?> FindByIdAsync(long id)
     {
         var kpiPeriod = await _context.KpiSubmissionPeriods
             // .Include(e => e.KpiSubmissions)
             .OrderBy(e => e.PeriodName)
             .Where(e => e.Id == id)
             .FirstOrDefaultAsync();
-        if (kpiPeriod == null)
-            // TODO
-            // throw new EntityNotFoundException();
-            throw new Exception("Kpi Period not found.");
+        // if (kpiPeriod == null)
+        //     // TODO
+        //     // throw new EntityNotFoundException();
+        //     throw new Exception("Kpi Period not found.");
 
         return kpiPeriod;
     }
 
-    public async Task<KpiSubmissionPeriod> FindByPeriodNameAsync(string periodName)
+    public async Task<KpiSubmissionPeriod?> FindByPeriodNameAsync(string periodName)
     {
         var kpiPeriod = await _context.KpiSubmissionPeriods
             // .Include(e => e.KpiSubmissions)
@@ -53,10 +53,10 @@ public class KpiSubmissionPeriodRepository : IKpiSubmissionPeriodRepository
             .Where(e => e.PeriodName.Trim().ToLower() == periodName.Trim().ToLower())
             .FirstOrDefaultAsync();
 
-        if (kpiPeriod == null)
-            // TODO
-            // throw new EntityNotFoundException();
-            throw new Exception("Kpi Period not found.");
+        // if (kpiPeriod == null)
+        //     // TODO
+        //     // throw new EntityNotFoundException();
+        //     throw new Exception("Kpi Period not found.");
 
         return kpiPeriod;
     }

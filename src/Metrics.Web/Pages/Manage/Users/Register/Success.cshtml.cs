@@ -8,15 +8,19 @@ public class SuccessModel : PageModel
 {
     public string? Username { get; set; } = string.Empty;
     public string? FullName { get; set; } = string.Empty;
+    public string? GroupName { get; set; } = string.Empty;
     public List<string> AssignedRoles { get; set; } = [];
 
     public IActionResult OnGet()
     {
-        var rolesJson = TempData["AssignedRoles"] as string;
-
-        AssignedRoles = (rolesJson != null ? JsonSerializer.Deserialize<List<string>>(rolesJson) : new List<string>()) ?? [];
         Username = TempData["Username"] as string;
         FullName = TempData["FullName"] as string;
+        GroupName = TempData["GroupName"] as string;
+        var rolesJson = TempData["AssignedRoles"] as string;
+        AssignedRoles = (rolesJson != null ? JsonSerializer.Deserialize<List<string>>(rolesJson) : new List<string>()) ?? [];
+
+        if (string.IsNullOrEmpty(Username))
+            return RedirectToPage("./Index");
 
         return Page();
     }

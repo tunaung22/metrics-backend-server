@@ -4,17 +4,25 @@
     ViewData["Title"] = "KPI Periods";
 }
 
-<div class="container">
+
+<div class="sectionTitle">
     <div class="d-flex align-items-center">
-        <h3 class="flex-grow-1">Score Submission Periods</h3>
+        <h4 class="flex-grow-1">Score Submission Periods</h4>
         <span class="justify-content-end gap-2">
             <a class="btn btn-success" 
                 asp-page="Create"
                 asp-route-returnUrl="@Url.Page("Index")"><i class="bi bi-plus"> </i>New</a>
         </span>
     </div>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-page="/Dashboard/Index">Dashboard</a></li>
+            <li class="breadcrumb-item active">Submission Periods</li>
+        </ol>
+    </nav>
+</div>
 
-    @* ========================================================================== *@
+<div class="container">
     @if (!ModelState.IsValid)
     {
         <div class="form bg-light p-4">
@@ -72,11 +80,11 @@
                                 </button> *@
                                 <form method="post" style="display:inline;">
                                     <input type="hidden" name="periodName" value="@period.PeriodName" />
-                                    <a class="btn btn-primary"
+                                    <a class="btn btn-sm btn-outline-primary my-2 my-lg-0 me-2"
                                         asp-page="Edit"
                                         asp-route-periodName="@period.PeriodName" 
                                         asp-route-returnUrl="@HttpContext.Request.Path">
-                                        Edit
+                                        <i class="bi bi-pencil-square"> </i>Edit
                                     </a>
                                 </form>
                             </td>

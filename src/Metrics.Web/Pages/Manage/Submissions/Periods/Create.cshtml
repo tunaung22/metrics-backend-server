@@ -7,8 +7,21 @@
 }
 
 
+<div class="sectionTitle">
+    <div class="d-flex align-items-center">
+        <h4 class="flex-grow-1">New KPI Period</h4>
+        <span class="justify-content-end gap-2"></span>
+    </div>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-page="/Dashboard/Index">Dashboard</a></li>
+            <li class="breadcrumb-item"><a asp-page="/Manage/Submissions/Periods/Index">Submission Periods</a></li>
+            <li class="breadcrumb-item active">Add</li>
+        </ol>
+    </nav>
+</div>
+
 <div class="container">
-    <h3>New KPI Period</h3>
     @* ========================================================================== *@
     @if (!ModelState.IsValid)
     {
@@ -26,7 +39,8 @@
     }
 
     @* =============== Form ===================================================== *@
-    <div class="col-sm-12 col-lg-8 mx-auto bg-light px-4 py-4">
+    <div class="col-sm-12 col-lg-8 me-auto border px-4 py-4">
+    @* <div class="col-5 border px-4 py-2 me-auto"> *@
         <form method="post" asp-route-returnUrl="">
             <div class="row">
                 <div class="col-sm-12 col-md-6">
@@ -37,7 +51,7 @@
                                 (example: @currentYear-@currentMonth)
                             </small>
                         </label>
-                        <input asp-for="FormInput.PeriodName" class="form-control" autocomplete="off" />
+                        <input asp-for="FormInput.PeriodName" class="form-control" autocomplete="off" tabindex="1" />
                         <p id="textMessage__periodNameInput"></p>
                         <div id="feedback__periodNameInput"></div>
                         <div><span asp-validation-for="FormInput.PeriodName" class="text-danger"></span></div>
@@ -50,7 +64,7 @@
                         <label asp-for="FormInput.SubmissionStartDate" class="form-label">Start Date</label>
                         <input id="startDate__datePicker" class="form-control"
                                 asp-for="FormInput.SubmissionStartDate" 
-                                type="text" />
+                                type="text" tabindex="2" />
                         <div><span asp-validation-for="FormInput.SubmissionStartDate" class="text-danger"></span></div>
                     </div>
                 </div>
@@ -59,7 +73,7 @@
                         <label asp-for="FormInput.SubmissionEndDate" class="form-label">End Date</label>
                         <input id="endDate__datePicker" class="form-control"
                                 asp-for="FormInput.SubmissionEndDate"
-                                type="text" />
+                                type="text" tabindex="3" />
                         <div><span asp-validation-for="FormInput.SubmissionEndDate" class="text-danger"></span></div>
                     </div>
                 </div>
@@ -68,11 +82,11 @@
             <div class="row mt-4">
                 <div class="form-group col d-flex justify-content-end gap-2">
 
-                    <button type="submit" class="btn btn-warning mx-2"
+                    <button type="submit" class="btn btn-warning mx-2" tabindex="5"
                         asp-page-handler="Cancel" formnovalidate>
                         <i class="bi bi-x-circle"> </i>Cancel
                     </button>
-                    <button type="submit" class="btn btn-primary me-2">
+                    <button type="submit" class="btn btn-primary me-2" tabindex="4">
                         <i class="bi bi-check-circle"> </i>Save
                     </button>
                 </div>

@@ -27,6 +27,10 @@
                 <div class="col"><strong>@Model.FullName</strong></div>
             </div>
             <div class="row mb-2">
+                <div class="col col-2">Group:</div>
+                <div class="col"><strong>@Model.GroupName</strong></div>
+            </div>
+            <div class="row mb-2">
                 <div class="col col-2">Role:</div>
                 <div class="col">
                     @if(Model.AssignedRoles.Any())
@@ -41,36 +45,20 @@
                 </div>
             </div>
         </div>
+    }
 
-        <div class="my-4">
-            <p>
-                Add another <a class="" asp-page="/Manage/Users/Register/Index">Register</a>.
-            </p>
+    <div class="my-4">
+        <div class="row mb-2">
+            <div class="col-sm-4 col-xl-2">Users:</div>
+            <div class="col-sm-8 col-xl-10">
+                <a class="" asp-page="/Manage/Users/Index"><strong>User List</strong></a>
+            </div>
         </div>
-        <div class="my-4">
-            <p>
-                Add another <a class="" asp-page="/Manage/Users/Index">User List</a>.
-            </p>
+        <div class="row mb-2">
+            <div class="col-sm-4 col-xl-2">Add more user:</div>
+            <div class="col-sm-8 col-xl-10">
+                <a class="" asp-page="/Manage/Users/Register/Index"><strong>Register</strong></a>
+            </div>
         </div>
-    }
-    else
-    {
-        <div class="my-4">
-            <span>
-                <h5>To add more users, use the Registration Page.</h5>
-                <div class="row">
-                    <div class="col-sm-4 col-xl-2">Users:</div>
-                    <div class="col-sm-8 col-xl-10">
-                        <a class="" asp-page="/Manage/Users/Index"><strong>User List</strong></a>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-sm-4 col-xl-2">Add more user:</div>
-                    <div class="col-sm-8 col-xl-10">
-                        <a class="" asp-page="/Manage/Users/Register/Index"><strong>Register</strong></a>
-                    </div>
-                </div>
-            </span>
-        </div>
-    }
+    </div>
 </div>

@@ -4,7 +4,8 @@
     ViewData["Title"] = "Change Password";
 }
 
-<div class="container">
+
+<div class="sectionTitle">
     <div class="d-flex align-items-center my-2">
         <h4 class="flex-grow-1">Change Password</h4>
     </div>
@@ -16,9 +17,12 @@
             <li class="breadcrumb-item active">Change Password</li>
         </ol>
     </nav>
+</div>
+
+<div class="container">
 
     <partial name="../../_StatusMessage" for="StatusMessage" />
-    
+
     <div class="col-sm-12 col-md-8 col-lg-6 col-xl-4 px-4 py-2 mt-4">
                 @* <p class="text-muted"></p> *@
         <form id="change-password-form" method="post">
