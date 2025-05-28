@@ -71,10 +71,10 @@
                     @foreach (var period in Model.KpiPeriods)
                     {
                         <tr>
-                            <td>@period.PeriodName</td>
-                            <td>@period.SubmissionStartDate.LocalDateTime.ToString("MMM dd, yyyy")</td>
-                            <td>@period.SubmissionEndDate.LocalDateTime.Date.ToString("MMM dd, yyyy")</td>
-                            <td>
+                            <td class="text-center">@period.PeriodName</td>
+                            <td class="text-center">@period.SubmissionStartDate.LocalDateTime.ToString("MMM dd, yyyy")</td>
+                            <td class="text-center">@period.SubmissionEndDate.LocalDateTime.Date.ToString("MMM dd, yyyy")</td>
+                            <td class="text-center">
                                 @* <button class="btn btn-success">
                                     Edit
                                 </button> *@
@@ -132,13 +132,21 @@
 
 @section Scripts {
     <script>
-        new DataTable('#kpiPeriodTable', {
-            paging: false,
-            info: false,
-            searching: false
-        });
-
         $(function() {
+            new DataTable('#kpiPeriodTable', {
+                paging: false,
+                info: false,
+                searching: false,
+                    columnDefs: [
+                        { width: '20%', targets: 3 },
+                    ],
+                    initComplete: function() {
+                        // Center align the header cells
+                        $('#kpiPeriodTable thead th').addClass('text-light text-center ');
+                        $('#kpiPeriodTable thead th').addClass('bg-brand-color');
+                    }
+            });
+
             // update QueryString On Selection Changed
             $('#myDropdown').on('change', function() {
                 var selectedValue = $(this).val();

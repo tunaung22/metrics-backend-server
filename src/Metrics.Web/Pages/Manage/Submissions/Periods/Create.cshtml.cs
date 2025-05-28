@@ -11,10 +11,12 @@ namespace Metrics.Web.Pages.Manage.Submissions.Periods;
 [Authorize(Policy = "CanAccessAdminFeaturePolicy")]
 public class CreateModel : PageModel
 {
+    private readonly ILogger<CreateModel> _logger;
     private readonly IKpiSubmissionPeriodService _kpiPeriodService;
 
-    public CreateModel(IKpiSubmissionPeriodService kpiPeriodService)
+    public CreateModel(ILogger<CreateModel> logger, IKpiSubmissionPeriodService kpiPeriodService)
     {
+        _logger = logger;
         _kpiPeriodService = kpiPeriodService;
     }
 
@@ -28,11 +30,11 @@ public class CreateModel : PageModel
 
         [DisplayFormat(ApplyFormatInEditMode = true, DataFormatString = "{0:dd/MMM/yyyy HH:mm}")]
         [DataType(DataType.DateTime)]
-        public DateTimeOffset SubmissionStartDate { get; set; } = DateTimeOffset.UtcNow.UtcDateTime;
+        public DateTimeOffset SubmissionStartDate { get; set; }
 
         [DisplayFormat(ApplyFormatInEditMode = true, DataFormatString = "{0:dd/MMM/yyyy}")]
         [DataType(DataType.DateTime)]
-        public DateTimeOffset SubmissionEndDate { get; set; } = DateTimeOffset.UtcNow.UtcDateTime;
+        public DateTimeOffset SubmissionEndDate { get; set; }
     }
 
     // ========== Binding Models ===============================================
@@ -60,16 +62,20 @@ public class CreateModel : PageModel
             //     SubmissionEndDate = FormInput.SubmissionEndDate
             // };
             // await _kpiPeriodService.Create_Async(createDto);
-            var startDate = FormInput.SubmissionStartDate.UtcDateTime;
-            var endDate = FormInput.SubmissionEndDate.UtcDateTime;
+            var startDate = new DateTimeOffset(FormInput.SubmissionStartDate.Date.AddHours(6));
+            var endDate = new DateTimeOffset(FormInput.SubmissionEndDate.Date.AddDays(1).AddSeconds(-1));
+
             if (startDate > endDate)
+            {
                 ModelState.AddModelError(string.Empty, "Invalid Start Date and End Date");
+                return Page();
+            }
 
             var entity = new KpiSubmissionPeriod
             {
                 PeriodName = FormInput.PeriodName,
-                SubmissionStartDate = startDate,
-                SubmissionEndDate = endDate
+                SubmissionStartDate = startDate.UtcDateTime,
+                SubmissionEndDate = endDate.UtcDateTime
             };
             await _kpiPeriodService.CreateAsync(entity);
             return RedirectToPage("Index");
@@ -79,9 +85,11 @@ public class CreateModel : PageModel
         {
             ModelState.AddModelError("DuplicateContent", "Duplicate KPI Period");
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            throw;
+            _logger.LogError(ex.Message);
+            ModelState.AddModelError("string.Empty", "Error adding KPI Period.");
+            return Page();
         }
 
         return Page();

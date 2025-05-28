@@ -1,9 +1,11 @@
 using Metrics.Application.Interfaces.IServices;
 using Metrics.Web.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace Metrics.Web.Pages.Reports.Submissions.Departments.Kpi;
 
+[Authorize(Policy = "CanAccessAdminFeaturePolicy")]
 public class IndexModel : PageModel
 {
     private readonly IKpiSubmissionPeriodService _kpiPeriodService;

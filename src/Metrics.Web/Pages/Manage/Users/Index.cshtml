@@ -34,11 +34,11 @@
     }
 
     <div class="mt-4">
-        <table id="userTable" class="table table-striped" style="width: 100%;">
+        <table id="userTable" class="table table-bordered table-striped">
             <thead>
                 <tr>
                     <th>Account</th>
-                    <th>Position</th>
+                    <th>Group</th>
                     <th>Name</th>
                     <th>Department</th>
                     <th>Authority</th>
@@ -53,8 +53,8 @@
                     @foreach (var e in Model.UsersList)
                     {
                         <tr class="align-middle">
-                            <td>@e.UserName</td>
-                            <td>
+                            <td class="text-center">@e.UserName</td>
+                            <td class="text-center">
                                 <p>@e.UserTitleName</p>
                                 @* <span class="badge rounded-2 rounded-pill text-bg-primary">
                                     <small>@e.UserTitleName</small>
@@ -65,17 +65,17 @@
                             </td>
                             <td>@e.FullName </td>
                             <td>@e.DepartmentName</td>
-                            <td>
+                            <td class="text-center">
                                 @foreach(var roleName in e.UserRoles)
                                 {
-                                    @* var color = roleName.StartsWith("Admin") ? "success" : "secondary";
-                                    <span class="badge rounded-2 rounded-pill text-bg-@color">
+                                    var color = roleName.StartsWith("Admin") ? "danger" : "success";
+                                    <p class="text-@color"><strong>@roleName</strong></p>
+                                    @* <span class="badge rounded-2 rounded-pill text-bg-@color">
                                         @roleName</span> *@
-                                    <p><strong>@roleName</strong></p>
                                 } </td>
                             @* <td>@e.Address</td> *@
                             @* <td>@e.PhoneNumber</td> *@
-                            <td>
+                            <td class="text-center">
                                     <a asp-page="Edit" 
                                         asp-route-userId="@e.Id"
                                         asp-route-returnUrl="@Request.Path"
@@ -109,13 +109,24 @@
 
 @section Scripts {
     <script>
-        new DataTable('#userTable', {
-            paging: false,
-            info: false,
-            searching: false
-        });
-
         $(function() {
+            var colActions = 5;
+            new DataTable('#userTable', {
+                paging: false,
+                info: false,
+                searching: false,
+                autoWidth: true,
+                columnDefs: [
+                    @* @* { width: "20%", targets: 0 },
+                    { width: "20%", targets: 1 }, *@
+                    { width: "20%", targets: [colActions] },
+                    { orderable: false, targets: [colActions] }
+                ],
+                initComplete: function() {
+                    $('thead th').addClass('text-light text-center ');
+                    $('thead th').addClass('bg-brand-color');
+                }
+            });
             @* setTimeout(function() {
                 if ($('.btn-close').length) {
                     $('.btn-close').click();

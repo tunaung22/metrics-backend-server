@@ -14,8 +14,9 @@
     <script type="importmap"></script>
     <link rel="icon" type="image/svg" href="~/favicon.svg" />
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/lib/datatables/dataTables.bootstrap5.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="~/lib/bootstrap-icons/font/bootstrap-icons.css" />
-    <link rel="stylesheet" href="~/lib/datatables/datatables.min.css" rel="stylesheet" />
+    @* <link rel="stylesheet" href="~/lib/datatables/datatables.min.css" rel="stylesheet" /> *@
     <link rel="stylesheet" href="~/lib/jquery-ui-1.14.1.custom/jquery-ui.css" rel="stylesheet" />
 
     @* <link rel="stylesheet" href="~/lib/tempus-dominus/tempus-dominus.min.css" /> *@
@@ -69,6 +70,9 @@
                             <li class="nav-item">
                                 <strong><a class="nav-link " asp-area="" asp-page="/Dashboard/Index">Dashboard</a></strong>
                             </li>
+                            @* <li class="nav-item">
+                                <strong><a class="nav-link " asp-area="" asp-page="/Reports/Index">Reports</a></strong>
+                            </li> *@
                         }
 
                         @* ========================== Employee Area ========================== *@
@@ -106,6 +110,7 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/lib/datatables/datatables.min.js"></script>
+    <script src="~/lib/datatables/dataTables.bootstrap5.min.js"></script>
     @* <script src="~/lib/tempus-dominus/tempus-dominus.min.js"></script> *@
     <script src="~/lib/jquery-ui-1.14.1.custom/jquery-ui.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>

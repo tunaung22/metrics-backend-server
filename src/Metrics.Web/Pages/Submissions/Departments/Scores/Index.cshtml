@@ -48,22 +48,24 @@
                                 @if(period.IsSubmitted) { 
                                     <i class="bi bi-check2-circle text-success"> </i><label>Done</label> 
                                 }
-                                else { 
-                                    <i class="bi bi-exclamation-circle text-danger"> </i><label>Pending</label> 
+                                else {
+                                    @if(period.IsValid) {
+                                        <i class="bi bi-exclamation-circle text-danger"> </i><label>Pending</label> 
+                                    }
+                                    else {
+                                        <i class="bi bi-exclamation-diamond text-secondary"> </i><label class="text-secondary">Invalid</label> 
+                                    }
                                 }
                             </td>
-                            <td>
-                                <a asp-page="Submit" 
-                                    asp-route-periodName="@period.PeriodName"
-                                    class="link-offset-2"><strong>View</strong></a>
-                                @* @if(period.IsSubmitted) {
-                                    <a href="" class="btn btn-link disabled" aria-disabled="true">Submit</a>
-                                    <a href="" class="btn btn-link">View</a>
+                            <td> 
+                                @if(period.IsSubmitted || period.IsValid) {
+                                    <a asp-page="Submit" 
+                                        asp-route-periodName="@period.PeriodName"
+                                        class="link-offset-2"><strong>View</strong></a>
                                 }
                                 else {
-                                    <a href="" class="btn btn-link">Submit</a>
-                                    <a href="" class="btn btn-link disabled" aria-disabled="true">View</a>
-                                } *@
+                                    <a aria-disabled="true" class="link-offset-2 text-secondary">View</a>
+                                }
                             </td>
                         </tr>
                     }

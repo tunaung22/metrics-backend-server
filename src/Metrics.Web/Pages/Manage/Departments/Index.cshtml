@@ -53,10 +53,11 @@
 
         @* ================ Table =================================================== *@
         <div class="bg-light p-4">
-            <table id="departmentsTable" class="table">
+            <table id="departmentsTable" class="table table-bordered table-striped">
                 <thead>
                     <tr>
                         <th>Department Name</th>
+                        <th>Users</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -68,7 +69,8 @@
                         {
                             <tr>
                                 <td>@department.DepartmentName</td>
-                                <td>
+                                <td class="text-center">@department.NumberOfUsers</td>
+                                <td class="text-center">
                                     <form method="post" style="display:inline;">
                                         <input type="hidden" name="departmentCode" value="@department.DepartmentCode" />
                                         <a class="btn btn-sm btn-outline-primary my-2 my-lg-0 me-2"
@@ -131,10 +133,22 @@
 
 @section Scripts {
     <script>
+        var colActions = 2;
         new DataTable('#departmentsTable', {
             paging: false,
             info: false,
-            searching: false
+            searching: false,
+            autoWidth: true,
+            columnDefs: [
+                { width: "20%", targets: 0 },
+                { width: "20%", targets: 1 },
+                { width: "20%", targets: [colActions] },
+                { orderable: false, targets: [colActions] },
+            ],
+            initComplete: function() {
+                $('thead th').addClass('text-light text-center ');
+                $('thead th').addClass('bg-brand-color');
+            }
         });
     </script>
 }

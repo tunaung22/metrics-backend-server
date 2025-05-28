@@ -36,6 +36,7 @@ public class IndexModel : PageModel
         public DateTimeOffset SubmissionStartDate { get; set; }
         public DateTimeOffset SubmissionEndDate { get; set; }
         public bool IsSubmitted { get; set; } = false;
+        public bool IsValid { get; set; } = false;
     }
     public List<KpiSubmissionPeriodModel> KpiSubmissionPeriods { get; set; } = []; // model for rendering table
     public DateTimeOffset SubmissionTime { get; set; } = DateTimeOffset.UtcNow;
@@ -52,18 +53,17 @@ public class IndexModel : PageModel
     public bool ShowNext => CurrentPage < TotalPages;
 
 
-    public async Task<IActionResult> OnGet()
+    public async Task<IActionResult> OnGetAsync()
     {
 
         // var listItems = await LoadKpiPeriodListItems();
-        var listItems = await LoadKpiSubmissionPeriodListItems();
-        if (listItems.Count <= 0)
+        var KpiPeriodList = await LoadKpiSubmissionPeriodListItems();
+        if (KpiPeriodList.Count <= 0)
         {
             // ModelState.AddModelError("", "No KPI Periods Avaiable Currently");
             IsSubmissionAvaiable = false;
             return Page();
         }
-        KpiPeriodList = listItems;
         IsSubmissionAvaiable = true;
 
         // which period is already submitted?
@@ -94,6 +94,7 @@ public class IndexModel : PageModel
             // submission count by user
             var submissionCount = await _kpiSubmissionService
                 .FindCountByUserIdByKpiPeriodIdAsync(currentUser.Id, KpiPeriodList[i].Id);
+
             if (departmentCount - 1 != submissionCount)
             {
                 // KpiPeriodList[i] = incomplete
@@ -102,7 +103,9 @@ public class IndexModel : PageModel
                     PeriodName = KpiPeriodList[i].PeriodName,
                     SubmissionStartDate = KpiPeriodList[i].SubmissionStartDate,
                     SubmissionEndDate = KpiPeriodList[i].SubmissionEndDate,
-                    IsSubmitted = false
+                    IsSubmitted = false,
+                    IsValid = DateTimeOffset.Now.UtcDateTime > KpiPeriodList[i].SubmissionStartDate
+                        && DateTimeOffset.Now.UtcDateTime < KpiPeriodList[i].SubmissionEndDate
                 });
             }
             else
@@ -142,10 +145,6 @@ public class IndexModel : PageModel
     private async Task<List<KpiSubmissionPeriod>> LoadKpiSubmissionPeriodListItems()
     {
         var kpiPeriods = await _kpiSubmissionPeriodService.FindAllAsync();
-
-        if (!kpiPeriods.Any())
-            return [];
-
         return kpiPeriods.ToList();
     }
 
