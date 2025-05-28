@@ -351,7 +351,7 @@ public class UserService : IUserService
                 .Where(u =>
                     u.UserName != "sysadmin" &&
                     u.LockoutEnabled == true &&
-                    (u.LockoutEnd == null || u.LockoutEnd < DateTimeOffset.UtcNow))
+                    (u.LockoutEnd == null || u.LockoutEnd <= DateTimeOffset.UtcNow))
                 .ToListAsync();
 
             return users;

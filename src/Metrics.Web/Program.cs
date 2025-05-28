@@ -119,10 +119,6 @@ builder.Services.AddDbContext<MetricsDbContext>(options =>
         .LogTo(Console.WriteLine, LogLevel.Information);
 }, ServiceLifetime.Scoped);
 
-
-
-
-
 // ========== Identity ==================================================
 builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
     {
@@ -145,23 +141,7 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.AccessDeniedPath = "/error/unauthorized";
 });
 
-// ========== CONTROLLER, RAZOR PAGES ==========
-builder.Services.AddRazorPages(options =>
-{
-    // options.Conventions.AddPageRoute("/Kpi/Index", "/manage/kpi");
-    // options.Conventions.AddPageRoute("/Departments/Index", "/manage/departments");
-});
-builder.Services.AddControllers();
-
-// ----- Session -----
-builder.Services.AddDistributedMemoryCache();
-builder.Services.AddSession(options =>
-{
-    options.IdleTimeout = TimeSpan.FromSeconds(30);
-    options.Cookie.HttpOnly = true;
-    options.Cookie.IsEssential = true;
-});
-
+// ========== Authorization Policies ====================
 builder.Services.AddAuthorizationBuilder()
     .SetFallbackPolicy(new AuthorizationPolicyBuilder()
         .RequireAuthenticatedUser()
@@ -180,6 +160,27 @@ builder.Services.AddAuthorizationBuilder()
         // .RequireRole("management");
     });
 builder.Services.AddSingleton<IAuthorizationHandler, AllowLockedUserHandler>();
+
+
+// ========== CONTROLLER, RAZOR PAGES ====================
+builder.Services.AddRazorPages(options =>
+{
+    // options.Conventions.AddPageRoute("/Kpi/Index", "/manage/kpi");
+    // options.Conventions.AddPageRoute("/Departments/Index", "/manage/departments");
+    options.Conventions.AuthorizeFolder("/Manage", "CanAccessAdminFeaturePolicy");
+    options.Conventions.AuthorizeFolder("/Reports", "CanAccessAdminFeaturePolicy");
+});
+builder.Services.AddControllers();
+
+// ----- Session -----
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromSeconds(30);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
+
 
 builder.Services.AddOpenApi();
 

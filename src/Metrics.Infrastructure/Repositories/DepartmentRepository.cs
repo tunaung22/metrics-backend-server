@@ -87,6 +87,7 @@ public class DepartmentRepository : IDepartmentRepository
     public async Task<IEnumerable<Department>> FindAllAsync(int pageNumber, int pageSize)
     {
         return await _context.Departments
+            .Include(d => d.ApplicationUsers)
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();

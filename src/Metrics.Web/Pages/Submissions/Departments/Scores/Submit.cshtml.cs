@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.ComponentModel.DataAnnotations;
+using System.Runtime.Serialization;
 using System.Security.Claims;
 
 namespace Metrics.Web.Pages.Submissions.Departments.Scores;
@@ -139,43 +140,35 @@ public class SubmitModel : PageModel
         // Assign: IsSubmissionValid, TargetKpiPeriodId
         // if (!await GetKpiPeriodId(periodName)) // set targetPeriod + get submissionValidity
         //     return Page();
-        var kpiPeriod = await _kpiPeriodService.FindByKpiPeriodNameAsync(periodName);
+        var kpiPeriod = await _kpiPeriodService.FindByKpiPeriodNameAsync(TargetKpiPeriodName);
         if (kpiPeriod == null)
         {
-            ModelState.AddModelError("", $"Submission not found for the period {periodName}.");
+            ModelState.AddModelError(string.Empty, $"Submission not found for the period {TargetKpiPeriodName}.");
             IsSubmissionValid = false;
             return Page();
         }
         TargetKpiPeriodId = kpiPeriod.Id;
-        IsSubmissionValid = true;
-        // ---------- Check Today Submission is Valid based on KPI Period ----------
-        // var kpiPeriods = await _kpiPeriodService.FindAllByValidDate_Async(DateTimeOffset.UtcNow);
-        // if (!kpiPeriods.Any())
-        // {
-        //     ModelState.AddModelError("", "Submission not avaiable.");
-        //     IsSubmissionValid = false;
-        //     return Page();
-        // }
-        // IsSubmissionValid = true;
 
-        // Assign: IsSubmissionValid
-        // var submissionValidity = await GetIsSubmissionValid(DateTimeOffset.UtcNow);
-        // if (!submissionValidity)
-        //     return Page();
-        var kpiPeriods = await _kpiPeriodService.FindAllByDateAsync(DateTimeOffset.UtcNow);
-        if (!kpiPeriods.Any())
+        // ---------- Check Today Submission is Valid based on KPI Period ------
+        // ---------- CHECK TARGET PERIOD IS VALID OR NOT ----------------------
+        var utcNow = DateTimeOffset.UtcNow;
+        if (utcNow < kpiPeriod.SubmissionStartDate || utcNow > kpiPeriod.SubmissionEndDate)
         {
-            ModelState.AddModelError("", "Submission not avaiable.");
-            IsSubmissionValid = false;
+            if (utcNow < kpiPeriod.SubmissionStartDate)
+                ModelState.AddModelError(string.Empty, "Invalid submission. This submission is not ready yet.");
+            if (utcNow > kpiPeriod.SubmissionEndDate)
+                ModelState.AddModelError(string.Empty, "Invalid submission. This submission is due.");
+            // IsSubmissionValid = false;
             return Page();
         }
-        IsSubmissionValid = true;
 
+        IsSubmissionValid = true;
 
         // ---------- Employee ID ----------------------------------------
         // EmployeeId = await GetEmployeeId();
         Submitter = await GetCurrentUser();
         CurrentUserTitleName = Submitter.UserTitle?.TitleName ?? string.Empty;
+
         // ----- Load Kpi Period List for Dropdown -----
         // var listItems = await LoadKpiPeriodListItems();
         // if (listItems == null)
@@ -220,7 +213,6 @@ public class SubmitModel : PageModel
         //         IsSubmissionsExist = true;
         //         return Page();
         //     }
-
         //     // ============================================================
         //     // var a = from d in DepartmentList
         //     //         join s in existingSubmissions
@@ -230,7 +222,6 @@ public class SubmitModel : PageModel
         //     //         select d;
         //     // DepartmentList = a.ToList();
         //     // ============================================================
-
         //     // Filter DepartmentList only for new Submissions
         //     DepartmentList = DepartmentList
         //         .Where(d => !existingSubmissions.Any(s => s.DepartmentId == d.Id))
@@ -263,10 +254,8 @@ public class SubmitModel : PageModel
                         Comments = s.Comments
                     }).ToList();
                 }
-
                 return Page();
             }
-
             DepartmentList = await UpdateDepartmentList(DepartmentList, existingSubmissions);
         }
         // no previous submissions found (continue)
@@ -372,10 +361,6 @@ public class SubmitModel : PageModel
         try
         {
             var appliedRecords = await _kpiSubmissionService.CreateRangeAsync(submissionList);
-
-            // HttpContext.Session.SetString("SubmissionSuccessful", "true");
-            // HttpContext.Session.SetString("TargetKpiPeriodName", TargetKpiPeriodName);
-            // TempData["SubmissionSuccessful"] = true;
             TempData["TargetKpiPeriodName"] = TargetKpiPeriodName;
 
             return RedirectToPage("Success");

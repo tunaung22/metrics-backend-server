@@ -24,13 +24,9 @@ public class IndexModel : PageModel
     // =============== MODELS ==================================================
     public class DepartmentModel
     {
-        [Required]
-        // [StringLength(100)]
         public Guid DepartmentCode { get; set; }
-
-        [Required]
-        [StringLength(200)]
         public string DepartmentName { get; set; } = null!;
+        public long NumberOfUsers { get; set; }
     }
 
     public class DepartmentInputModel
@@ -101,7 +97,8 @@ public class IndexModel : PageModel
             return result.Select(e => new DepartmentModel
             {
                 DepartmentCode = e.DepartmentCode,
-                DepartmentName = e.DepartmentName
+                DepartmentName = e.DepartmentName,
+                NumberOfUsers = e.ApplicationUsers.Count
             }).ToList();
         }
 

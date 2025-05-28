@@ -1,3 +1,7 @@
+:root {
+  --brand-color: #3465a4;
+}
+
 html {
   font-size: 14px;
 }
@@ -6,14 +10,6 @@ html {
   html {
     font-size: 16px;
   }
-}
-
-.btn:focus,
-.btn:active:focus,
-.btn-link.nav-link:focus,
-.form-control:focus,
-.form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
 }
 
 html {
@@ -25,8 +21,20 @@ body {
   margin-bottom: 60px;
 }
 
+.bg-brand-color {
+  background: #3465a4 !important;
+}
+
 #main-content {
   min-height: 90vh; /* 100% of the viewport height */
+}
+
+.btn:focus,
+.btn:active:focus,
+.btn-link.nav-link:focus,
+.form-control:focus,
+.form-check-input:focus {
+  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
 }
 
 a {

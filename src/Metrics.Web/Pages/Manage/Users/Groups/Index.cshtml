@@ -23,8 +23,8 @@
 </div>
 
 <div class="container">
-    <div class="mt-4">
-        <table id="dataTable" class="table" style="width:100%">
+    <div class="mt-4 col-sm-12 col-md-6">
+        <table id="groupTable" class="table table-bordered table-striped">
             <thead>
                 <tr>
                     @* <th>ID</th> *@
@@ -59,10 +59,18 @@
 
 @section Scripts {
     <script>
-        new DataTable('#dataTable', {
-            paging: false,
-            info: false,
-            searching: false
+        $(function() {
+            new DataTable('#groupTable', {
+                paging: false,
+                info: false,
+                searching: false,
+                @* columnDefs: [
+                    { width: '20%', targets: 0 },
+                ], *@
+                initComplete: function() {
+                    $('#groupTable thead th').addClass('bg-brand-color text-light');
+                }
+            });
         });
     </script>
 }

@@ -29,13 +29,12 @@
         </ol>
     </nav>
 </div>
-
-<div class="container">
-    <div class="bg-light p-4">
-        <div class="filter-toolbar d-flex">
+<div class="content-body container-fluid">
+    <div class="bg-light p-4 border-2">
+        <div class="filter-toolbar d-flex mb-4">
             <form method="get">
                 <select 
-                    asp-for="UserGroup"
+                    asp-for="SelectedUserGroupName"
                     asp-items="Model.UserTitleListItems"
                     onchange="this.form.submit()"
                     class="form-select" 
@@ -44,41 +43,245 @@
                 </select>
             </form>
         </div>
-
-        <table id="reportTable" class="table table-striped" style="width:100%">
-            <thead>
-                <tr>
-                    <th>Departments</th>
-                    <th>Submissions (Total submissions)</th>
-                    <th>Total Score</th>
-                    <th>KPI Score</th>
-                </tr>
-            </thead>
-            <tbody>
-                @if (Model.KpiReportList.Any())
-                {
-                    @foreach(var r in Model.KpiReportList)
+        <div class="table-responsive">
+            <table id="reportTable" class="table table-bordered table-striped">
+                <thead>
+                    @if(Model.KpiSubmissionReportList.Any() || Model.ExpReportViewModels.Any())
+                    {
+                        @if(Model.SelectedUserGroupName != null && !string.IsNullOrEmpty(Model.SelectedUserGroupName.ToString()))
+                        { // Display for selected user group
+                            <tr>
+                                @* <th class="px-4">Period</th> *@
+                                <th class="px-4">Departments</th>
+                                <th class="px-4">Submissions</th>
+                                <th class="px-4">Score</th>
+                                <th class="px-4">KPI Score</th>
+                            </tr>
+                        }
+                        else
+                        { // Display for all user groups
+                            @if(Model.ExpReportViewModels.Any())
+                            {
+                                <tr>
+                                    @* <th class="px-4" rowspan="2">Period</th> *@
+                                    <th class="px-4" rowspan="2">Departments</th>
+                                    @foreach(var g in Model.UserGroups)
+                                    {
+                                        <th class="px-4 no-sort" colspan="2">@g.TitleName</th>
+                                    }
+                                    <th class="px-4" rowspan="2">Total Submissions</th>
+                                    <th class="px-4" rowspan="2">Total Score</th>
+                                    <th class="px-4" rowspan="2">KPI Score</th>
+                                </tr>
+                                <tr>
+                                        @foreach(var g in Model.UserGroups)
+                                        {
+                                            <th class="px-4">Submissions</th>
+                                            <th class="px-4">Score</th>
+                                        }
+                                </tr>
+                            }
+                        }
+                    }
+                    else
                     {
                         <tr>
-                            <td>@r.DepartmentName</td>
-                            <td>@r.TotalReceivedSubmissions.ToString("0")</td>
-                            <td>@r.TotalScoreReceived.ToString("0.00")</td>
-                            <td>@r.FinalKpiScore.ToString("0.00")</td>
+                            <th>No Data</th>
                         </tr>
                     }
-                }
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @if(Model.SelectedUserGroupName != null) // for selected user group
+                    {
+                        @if(Model.KpiSubmissionReportList.Any())
+                        {
+                            @foreach(var r in Model.KpiSubmissionReportList)
+                            {
+                                <tr>
+                                    @* <td>@r.PeriodName</td> *@
+                                    <td class="text-center">@r.DepartmentName</td>
+                                    <td class="text-center">@r.TotalSubmissions.ToString("0")</td>
+                                    <td class="text-center">@r.TotalScore.ToString("0.00")</td>
+                                    <td class="text-center">@r.KpiScore.ToString("0.00")</td>
+                                </tr>
+                            }
+                        }
+                    }
+                    else // for all user group
+                    {
+                        if(Model.ExpReportViewModels.Any())
+                        {
+                            @foreach(var r in Model.ExpReportViewModels)
+                            {
+                                <tr>
+                                    @* <td class="_periodName"><strong>@r.PeriodName</strong></td> *@
+                                    <td class="_departmentName"><strong>@r.DepartmentName</strong></td>
+                                    @foreach(var g in r.UserGroupSubmissions)
+                                    {
+                                        @* <td>@g.GroupName</td> *@
+                                        <td class="_groupTotalSubmissions @(g.GroupName + "_groupTotalSubmissions")">@g.TotalSubmissions</td>
+                                        <td class="_groupTotalScore @(g.GroupName + "_groupTotalScore")">@g.TotalScore</td>
+                                    }
+                                    <td class="_totalSubmissions">@r.TotalSubmissions.ToString("0")</td>
+                                    <td class="text-center">@r.TotalScore.ToString("0.0")</td>
+                                    <td class="text-center">@r.KpiScore.ToString("0.0")</td>
+                                </tr>
+                            }
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
+@section Styles {
+    <style>
+        .dt-column-title {
+            padding-right: .5em;
+        }
+        .dt-column-title {
+        }
+        .valign-middle {
+            vertical-align: middle;
+            @* height: 50px; /* Set a fixed height */ *@
+        }
+    </style>
+}
 
 @section Scripts {
     <script>
-        new DataTable('#reportTable', {
-            paging: false,
-            info: false,
-            searching: false
+        $(function() {
+            @* const userGroupCount = @Model.UserGroups.Count; // Get the number of user groups
+            const noSortTargets = [0]; // Start with the Departments column index *@
+
+            // Add indexes for the no-sort columns (each user group has 2 columns)
+            @* for (let i = 0; i < userGroupCount; i++) {
+                noSortTargets.push(1 + i * 2); // Submissions column
+                noSortTargets.push(2 + i * 2); // Score column
+            } *@
+            new DataTable('#reportTable', {
+                paging: false,
+                info: false,
+                searching: false,
+                autoWidth: true,
+                columnDefs: [
+                    { width: '20%', targets: 0 },
+                    @* { sortable: false, targets: ['.no-sort'] }, *@
+                    @* { orderable: false, targets: noSortTargets } // Disable sorting for specified columns *@
+                ],
+                @* scrollX: true, *@
+                @* columnDefs: [
+                    { width: '15%', targets: 0 }, // Width for the first column (Period)
+                    { width: '20%', targets: 1 }, // Width for the second column (Departments)
+                    { width: '15%', targets: 2 }, // Width for the third column (Submissions)
+                    { width: '15%', targets: 3 }, // Width for the fourth column (Score)
+                    { width: '15%', targets: 4 }  // Width for the fifth column (KPI Score)
+                ], *@
+                initComplete: function() {
+                    // Center align the header cells
+                    $('#reportTable thead th').addClass('text-light text-center ');
+                    $('#reportTable thead th').addClass('valign-middle bg-brand-color');
+                    $('#reportTable tbody td').addClass('valign-middle');
+                }
+            });
         });
     </script>
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            @* <table id="reportTable2" class="table">
+            <thead>
+                <tr>
+                    @if(Model.KpiSubmissionReportList.Any() || Model.MasterReportList.Any())
+                    {
+                        @if(Model.SelectedUserGroupName != null && !string.IsNullOrEmpty(Model.SelectedUserGroupName.ToString()))
+                        { // Display for selected user group
+                            <th class="px-4">Period</th>
+                            <th class="px-4">Departments</th>
+                            <th class="px-4">Submissions</th>
+                            <th class="px-4">Score</th>
+                            <th class="px-4">KPI Score</th>
+                        }
+                        else
+                        { // Display for all user groups
+                            <th class="px-4">Departments</th>
+                            <th class="px-4">Group</th>
+                            <th class="px-4">Submissions</th>
+                            <th class="px-4">Score</th>
+                            <th class="px-4">KPI Score</th>
+                        }
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @if(Model.SelectedUserGroupName != null) // for selected user group
+                {
+                    @if(Model.KpiSubmissionReportList.Any())
+                    {
+                        @foreach(var r in Model.KpiSubmissionReportList)
+                        {
+                            <tr>
+                                <td>@r.PeriodName</td>
+                                <td>@r.DepartmentName</td>
+                                <td>@r.TotalSubmissions.ToString("0")</td>
+                                <td>@r.TotalScore.ToString("0.0")</td>
+                                <td>@r.KpiScore.ToString("0.0")</td>
+                            </tr>
+                        }
+                    }
+                }
+                else // for all user group
+                {
+                    if(Model.MasterReportList.Any())
+                    {
+                        @foreach(var m in Model.MasterReportList)
+                        {
+                            @if (m.ReportDetails.Any())
+                            {
+                                var firstRow = true;
+                                @foreach(var r in m.ReportDetails)
+                                {
+                                    <tr>
+                                        @if (firstRow)
+                                        {
+                                            <td rowspan="3" valign="middle">
+                                                <strong>@m.DepartmentName</strong>
+                                            </td>
+                                            firstRow=false;
+                                        }
+                                        <td>@r.UserGroupName</td>
+                                        <td>@r.TotalSubmissions.ToString("0")</td>
+                                        <td>@r.TotalScore.ToString("0.0")</td>
+                                        <td>@r.KpiScore.ToString("0.0")</td>
+                                    </tr>
+                                }
+                            }
+                        }
+                    }
+                }
+            </tbody>
+        </table> *@
