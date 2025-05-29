@@ -18,7 +18,7 @@ html {
 }
 
 body {
-  margin-bottom: 60px;
+  /* margin-bottom: 60px; */
 }
 
 .bg-brand-color {
@@ -26,7 +26,8 @@ body {
 }
 
 #main-content {
-  min-height: 90vh; /* 100% of the viewport height */
+  min-height: 90vh;
+  /* 100% of the viewport height */
 }
 
 .btn:focus,

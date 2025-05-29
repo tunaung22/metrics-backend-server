@@ -18,6 +18,9 @@ using Metrics.Infrastructure.Data.Seedings;
 using Microsoft.AspNetCore.Authorization;
 using Metrics.Application.DTOs.SeedingDtos;
 using Metrics.Web.Security.PolicyHandlers;
+using System.Reflection;
+using System.Diagnostics;
+using Metrics.Web.Models;
 
 
 // ========== Load .env ===========================================
@@ -50,6 +53,20 @@ Log.Logger = new LoggerConfiguration()
 // ========== BUILDER ===========================
 var builder = WebApplication.CreateBuilder(args);
 
+// ---------- Retrieve Version Number ----------
+// Get the current assembly
+var assembly = Assembly.GetExecutingAssembly();
+var versionInfo = new VersionInfo
+{
+    AssemblyVersion = assembly.GetName().Version,
+    FileVersion = FileVersionInfo.GetVersionInfo(assembly.Location).ToString(),
+    InformationalVersion = assembly
+        .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
+        .InformationalVersion
+};
+builder.Services.AddSingleton(versionInfo);
+
+// ---------- Serilog ----------
 builder.Host.UseSerilog();
 
 /* Configuration loading orders: 
@@ -57,6 +74,7 @@ builder.Host.UseSerilog();
     4) appsettings.{Environment}.json -> 5) appsettings.json -> 
     6) build-in config providers -> 7) custom config
 */
+// ---------- Route Options --------------------
 builder.Services.Configure<RouteOptions>(o =>
 {
     o.LowercaseUrls = true;
@@ -73,18 +91,20 @@ builder.Services.ConfigureHttpJsonOptions(o =>
 
 
 // TODO: Test only  (to remove)
-var securitySection = builder.Configuration.GetSection("Security");
-var jwtSettings = securitySection.GetSection("JwtSettings");
+// var securitySection = builder.Configuration.GetSection("Security");
+// var jwtSettings = securitySection.GetSection("JwtSettings");
 // Console.WriteLine("JWT SECRET: " + jwtSettings["SecretKey"]);
 
 
 
 
-// ========== PostgreSQL ===========
+// ========== PostgreSQL =======================================================
+// ---------- Read from appsettings.json -> DatabaseSettings.PostgresDbConfig
 var pgConfig = builder.Configuration
     .GetSection("DatabaseSettings:PostgresDbConfig")
     .Get<PostgresDbConfig>()
-    ?? throw new MetricsInvalidConfigurationException("PostgresDbConfig section is not configured properly.");
+    ?? throw new MetricsInvalidConfigurationException(
+        "PostgresDbConfig section is not configured properly.");
 
 builder.Services.Configure<PostgresDbConfig>(options =>
 {
