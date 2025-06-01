@@ -11,7 +11,7 @@
         <span class="justify-content-end gap-2">
             <a class="btn btn-success" 
                 asp-page="Register/Index"
-                asp-route-returnUrl="@Url.Page("Index")"><i class="bi bi-plus"></i> Register</a>
+                asp-route-returnUrl="@Url.Page("Index")"><i class="bi bi-plus-lg"></i> Register</a>
         </span>
     </div>
     <nav aria-label="breadcrumb">
@@ -32,6 +32,8 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     }
+
+    @* <partial name="~/Shared/_StatusMessage" for="StatusMessage" /> *@
 
     <div class="mt-4">
         <table id="userTable" class="table table-bordered table-striped">
@@ -54,22 +56,20 @@
                     {
                         <tr class="align-middle">
                             <td class="text-center">@e.UserName</td>
-                            <td class="text-center">
-                                <p>@e.UserTitleName</p>
+                            <td class="text-center">@e.UserTitleName</td>
                                 @* <span class="badge rounded-2 rounded-pill text-bg-primary">
                                     <small>@e.UserTitleName</small>
                                 </span></td> *@
                                 @* <span class="badge rounded-2 rounded-pill text-bg-primary">
                                     @e.UserTitleName
                                 </span> *@
-                            </td>
-                            <td>@e.FullName </td>
+                            <td>@e.FullName</td>
                             <td>@e.DepartmentName</td>
                             <td class="text-center">
                                 @foreach(var roleName in e.UserRoles)
                                 {
                                     var color = roleName.StartsWith("Admin") ? "danger" : "success";
-                                    <p class="text-@color"><strong>@roleName</strong></p>
+                                    <span class="text-@color"><strong>@roleName</strong></span>
                                     @* <span class="badge rounded-2 rounded-pill text-bg-@color">
                                         @roleName</span> *@
                                 } </td>
@@ -90,6 +90,11 @@
                                             else 
                                             { <i class="bi bi-unlock-fill"></i> <text>Unlock</text> } 
                                     </a>
+                                    <a asp-page="Reset" 
+                                        asp-route-userId="@e.Id"
+                                        asp-route-returnUrl="@Request.Path"
+                                        class="btn__actionButtons btn btn-sm btn-outline-primary my-2 my-lg-0 me-2">
+                                        <i class="bi bi-fingerprint"></i> Reset Password</a>
                             </td>
                         </tr>
                     }
@@ -102,7 +107,7 @@
 @section Styles {
     <style>
         .btn__actionButtons {
-            width: 6em;
+            width: auto;
         }
     </style>
 }
@@ -117,9 +122,7 @@
                 searching: false,
                 autoWidth: true,
                 columnDefs: [
-                    @* @* { width: "20%", targets: 0 },
-                    { width: "20%", targets: 1 }, *@
-                    { width: "20%", targets: [colActions] },
+                    { width: "30%", targets: [colActions] },
                     { orderable: false, targets: [colActions] }
                 ],
                 initComplete: function() {

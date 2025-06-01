@@ -21,275 +21,315 @@
 </div>
 
 <div class="container">
-
-    @if (!ModelState.IsValid && !Model.IsSubmissionsExist)
-    {
-        <div class="form bg-light p-4">
-            <div class="alert alert-danger">
-                <h5>There were some errors in the form.</h5>
-                <ul>
-                    <li>@ModelState.Values.SelectMany(v => v.Errors).First().ErrorMessage</li>
-                </ul>
-            </div>
-        </div>
-    }
-
-    @if(Model.IsSubmissionValid)  @* Date is due or early. *@
-    {
-        @if(!Model.IsSubmissionsExist)  @* New Submission (No submission exist.) *@
+    <div class="bg-light p-4">
+        @if (!ModelState.IsValid && !Model.IsSubmissionsExist)
         {
-            @if (Model.DepartmentList.Count > 0)
+            <div class="form bg-light p-4">
+                <div class="alert alert-danger">
+                    <h5>There were some errors in the form.</h5>
+                    <ul>
+                        <li>@ModelState.Values.SelectMany(v => v.Errors).First().ErrorMessage</li>
+                    </ul>
+                </div>
+            </div>
+        }
+
+        @if(Model.IsSubmissionValid)  @* Date is due or early. *@
+        {
+            @if(!Model.IsSubmissionsExist)  @* New Submission (No submission exist.) *@
             {
-                <form method="post">
+                @if (Model.DepartmentList.Count > 0)
+                {
+                    <form method="post">
 
-                        <div class="row mt-4">
-                            <div class="form-group col-md d-flex justify-content-between align-items-center">
-                                <div class="flex-item">KPI Period: <strong>@Model.TargetKpiPeriodName</strong></div>
-                                <div class="flex-item">Departments: <strong>@Model.DepartmentList.Count</strong></div>
-                            </div>
-                            <div class="form-group col-md d-flex justify-content-end align-items-center gap-2">
-                                <button type="button" class="btn btn-warning me-2" 
-                                        data-bs-toggle="modal" 
-                                        data-bs-target="#cancelDialogstaticBackdrop">
-                                    <i class="bi bi-x-circle"> </i>Cancel</button>
-                                @* <button type="submit" class="btn btn-primary me-2">
-                                    <i class="bi bi-check-circle"> </i>Submit
-                                </button> *@
-                                <button type="button" class="btn btn-primary me-2" 
-                                        data-bs-toggle="modal" 
-                                        data-bs-target="#submitDialogBackdrop">
-                                    <i class="bi bi-check-circle"> </i>Submit</button>
-                            </div>
-                        </div>
-
-                        @for(int i=0 ; i< Model.DepartmentList.Count; i++) @* ==== Cards ===== *@
-                        {
-                            <div class="card mt-2 px-4 py-2">
-                                <div class="row pb-2"> <!-- Department -->
-                                    <label class="col-3 col-sm-3 col-md-3 col-lg-2" asp-for="SubmissionInput[i].DepartmentId">Department:</label>
-                                    <div class="col-9 col-sm-9 col-md-9 col-lg-10">
-                                        <span class="d-flex">
-                                            <strong class="flex-grow-1 justify-content-start">@Model.DepartmentList[i].DepartmentName</strong>
-                                            <label class="justify-content-end"><strong>@(i+1)</strong>/@Model.DepartmentList.Count</label>
-                                        </span>
-                                    </div>
-                                    <input type="hidden" asp-for="SubmissionInput[i].DepartmentId" />
+                            <div class="row mt-4">
+                                <div class="form-group col-md d-flex justify-content-between align-items-center">
+                                    <div class="flex-item">KPI Period: <strong>@Model.TargetKpiPeriodName</strong></div>
+                                    <div class="flex-item">Departments: <strong>@Model.DepartmentList.Count</strong></div>
                                 </div>
-
-                                <div class="row pb-2"> <!-- radio Inputs -->
-                                    <label class="col-3 col-sm-3 col-md-3 col-lg-2 form-label" asp-for="SubmissionInput[i].KpiScore">KPI Score: </label>
-                                    <div class="radio__scoreValue form-check form-check-inline col d-flex flex-wrap gap-2">
-                                        @for(int x = 0; x < scoreList.Length; x++)
-                                        {
-                                            <label for="radio_[@i][@x]" 
-                                                    class="radioLabel__kpiscore 
-                                                            form-check-label
-                                                            rounded-3 
-                                                            ps-2 pe-4">
-                                                <input class="radioInput__kpiscore"
-                                                        type="radio" 
-                                                        asp-for="SubmissionInput[i].KpiScore" 
-                                                        value="@scoreList[x]" 
-                                                        id="radio_[@i][@x]" />
-                                                        @* name="submissionFormRadioButton_@i" /> *@
-                                                <strong>@scoreList[x]</strong>
-                                            </label>
-                                        }
-                                    </div>
-                                    <div>
-                                        <span asp-validation-for="SubmissionInput[i].KpiScore" class="text-danger"></span>
-                                    </div>
-                                        @* <input asp-for="SubmissionInput[i].KpiScore" name="@Model.DepartmentList[@i].Id" value="@Model.SubmissionInput[i].KpiScore" /> *@
-                                </div>
-
-                                @* Hide Aspect section, if User Group is Staff *@
-                                @if(Model.CurrentUserTitleName?.ToLower() != "staff") @* ===== Check Staff or Others ===== *@
-                                {
-                                <div class="row pb-2"> <!-- Aspects -->
-                                    <label class="col-md-2 col-lg-2 form-label">Aspects: </label>
-                                    <div class="col-md-10 col-lg-10 d-flex gap-2">
-                                        <div class="col">
-                                            <div class="row pb-2">
-                                                <label asp-for="SubmissionInput[i].PositiveAspects" class="form-label">Positive: </label>
-                                                <div>
-                                                    <textarea asp-for="SubmissionInput[i].PositiveAspects" class="form-control" id="exampleFormControlTextarea1" rows="2"></textarea>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col">
-                                            <div class="row pb-2">
-                                                <label asp-for="SubmissionInput[i].NegativeAspects" class="form-label">Negative: </label>
-                                                <div>
-                                                    <textarea asp-for="SubmissionInput[i].NegativeAspects" class="form-control" id="exampleFormControlTextarea1" rows="2"></textarea>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                }
-
-                                <div class="row pb-2">
-                                        <label asp-for="SubmissionInput[i].Comments" 
-                                                    class="col-3 col-sm-3 col-md-3 col-lg-2 form-label">Comments: </label>
-                                    <div class="col-9 col-sm-9 col-md-9 col-lg-10">
-                                        <textarea asp-for="SubmissionInput[i].Comments" class="form-control" id="exampleFormControlTextarea1" rows="2"></textarea>
-                                    </div>
-                                </div>
-                            </div>
-                        }
-
-                        <div class="row mt-4">
-                            <div class="form-group col-md d-flex justify-content-end align-items-center gap-2">
-                                <button type="button" class="btn btn-warning me-2" 
-                                        data-bs-toggle="modal" 
-                                        data-bs-target="#cancelDialogstaticBackdrop">
-                                    <i class="bi bi-x-circle"> </i>Cancel</button>
-                                @* <button type="submit" class="btn btn-primary me-2">
-                                    <i class="bi bi-check-circle"> </i>Submit
-                                </button> *@
-                                <button type="button" class="btn btn-primary me-2" 
-                                        data-bs-toggle="modal" 
-                                        data-bs-target="#submitDialogBackdrop">
-                                    <i class="bi bi-check-circle"> </i>Submit</button>
-                            </div>
-                        </div>
-
-
-                    @* =========== MODAL =========== *@
-                    @* ---------- CANCEL DIALOG ---------- *@
-                    <div class="modal fade" id="cancelDialogstaticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="cancelDialogStaticBackdropLabel" aria-hidden="true">
-                        <div class="modal-dialog">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h1 class="modal-title fs-5" id="cancelDialogStaticBackdropLabel">Cancel</h1>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                </div>
-                                <div class="modal-body">
-                                    Are you sure you want to cancel the submission?
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" 
-                                            class="btn btn-secondary"
-                                            data-bs-dismiss="modal">
-                                        <i class="bi bi-x-circle"> </i>No</button>
-                                    
-                                        <button asp-page-handler="Cancel" type="submit" 
-                                                class="btn btn-primary ms-2" formnovalidate>
-                                            <i class="bi bi-check-circle"> </i>Yes</button>
-
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    @* ---------- SUBMIT DIALOG ---------- *@
-                    <div class="modal fade" id="submitDialogBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="submitDialogStaticBackdropLabel" aria-hidden="true">
-                        <div class="modal-dialog">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h1 class="modal-title fs-5" id="submitDialogStaticBackdropLabel">Confirmation</h1>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                </div>
-                                <div class="modal-body">
-                                    Are you sure you want to submit the form?
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" 
-                                            class="btn btn-secondary"
-                                            data-bs-dismiss="modal">
-                                        <i class="bi bi-x-circle"> </i>No</button>
-                                    <button type="submit"
-                                            class="btn btn-primary me-2">
+                                <div class="form-group col-md d-flex justify-content-end align-items-center gap-2">
+                                    <button type="button" class="btn btn-warning me-2" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#cancelDialogstaticBackdrop">
+                                        <i class="bi bi-x-circle"> </i>Cancel</button>
+                                    @* <button type="submit" class="btn btn-primary me-2">
+                                        <i class="bi bi-check-circle"> </i>Submit
+                                    </button> *@
+                                    <button type="button" class="btn btn-primary me-2" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#submitDialogBackdrop">
                                         <i class="bi bi-check-circle"> </i>Submit</button>
                                 </div>
                             </div>
+
+                            @for(int i=0 ; i< Model.DepartmentList.Count; i++) @* ==== Cards ===== *@
+                            {
+                                <div class="card mt-2 px-4 py-2">
+                                    <div class="row pb-2"> <!-- Department -->
+                                        <label class="col-3 col-sm-3 col-md-3 col-lg-2" asp-for="SubmissionInput[i].DepartmentId">Department:</label>
+                                        <div class="col-9 col-sm-9 col-md-9 col-lg-10">
+                                            <span class="d-flex">
+                                                <strong class="flex-grow-1 justify-content-start">@Model.DepartmentList[i].DepartmentName</strong>
+                                                <label class="justify-content-end"><strong>@(i+1)</strong>/@Model.DepartmentList.Count</label>
+                                            </span>
+                                        </div>
+                                        <input type="hidden" asp-for="SubmissionInput[i].DepartmentId" />
+                                    </div>
+
+                                    <div class="row pb-2"> <!-- radio Inputs -->
+                                        <label class="col-3 col-sm-3 col-md-3 col-lg-2 form-label" asp-for="SubmissionInput[i].KpiScore">KPI Score: </label>
+                                        <div class="radio__scoreValue form-check form-check-inline col d-flex flex-wrap gap-2">
+                                            @for(int x = 0; x < scoreList.Length; x++)
+                                            {
+                                                <label for="radio_[@i][@x]" 
+                                                        class="radioLabel__kpiscore 
+                                                                form-check-label
+                                                                rounded-3 
+                                                                ps-2 pe-4">
+                                                    <input class="radioInput__kpiscore"
+                                                            type="radio" 
+                                                            asp-for="SubmissionInput[i].KpiScore" 
+                                                            value="@scoreList[x]" 
+                                                            id="radio_[@i][@x]" />
+                                                            @* name="submissionFormRadioButton_@i" /> *@
+                                                    <strong>@scoreList[x]</strong>
+                                                </label>
+                                            }
+                                        </div>
+                                        <div>
+                                            <span asp-validation-for="SubmissionInput[i].KpiScore" class="text-danger"></span>
+                                        </div>
+                                            @* <input asp-for="SubmissionInput[i].KpiScore" name="@Model.DepartmentList[@i].Id" value="@Model.SubmissionInput[i].KpiScore" /> *@
+                                    </div>
+
+                                    @* Hide Aspect section, if User Group is Staff *@
+                                    @* What if Staff was renamed to Employee?? *@
+                                    @if(Model.CurrentUserTitleName?.ToLower() != "staff") @* ===== Check Staff or Others ===== *@
+                                    {
+                                    <div class="row pb-2"> <!-- Aspects -->
+                                        <label class="col-md-2 col-lg-2 form-label">Aspects: </label>
+                                        <div class="col-md-10 col-lg-10 d-flex gap-2">
+                                            <div class="col">
+                                                <div class="row pb-2">
+                                                    <label asp-for="SubmissionInput[i].PositiveAspects" class="form-label">Positive: </label>
+                                                    <div>
+                                                        <textarea asp-for="SubmissionInput[i].PositiveAspects" class="form-control" id="exampleFormControlTextarea1" rows="2"></textarea>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col">
+                                                <div class="row pb-2">
+                                                    <label asp-for="SubmissionInput[i].NegativeAspects" class="form-label">Negative: </label>
+                                                    <div>
+                                                        <textarea asp-for="SubmissionInput[i].NegativeAspects" class="form-control" id="exampleFormControlTextarea1" rows="2"></textarea>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    }
+
+                                    <div class="row pb-2">
+                                            <label asp-for="SubmissionInput[i].Comments" 
+                                                        class="col-3 col-sm-3 col-md-3 col-lg-2 form-label">Comments: </label>
+                                        <div class="col-9 col-sm-9 col-md-9 col-lg-10">
+                                            <textarea asp-for="SubmissionInput[i].Comments" class="form-control" id="exampleFormControlTextarea1" rows="2"></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+
+                            <div class="row mt-4">
+                                <div class="form-group col-md d-flex justify-content-end align-items-center gap-2">
+                                    <button type="button" class="btn btn-warning me-2" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#cancelDialogstaticBackdrop">
+                                        <i class="bi bi-x-circle"> </i>Cancel</button>
+                                    @* <button type="submit" class="btn btn-primary me-2">
+                                        <i class="bi bi-check-circle"> </i>Submit
+                                    </button> *@
+                                    <button type="button" class="btn btn-primary me-2" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#submitDialogBackdrop">
+                                        <i class="bi bi-check-circle"> </i>Submit</button>
+                                </div>
+                            </div>
+
+
+                        @* =========== MODAL =========== *@
+                        @* ---------- CANCEL DIALOG ---------- *@
+                        <div class="modal fade" id="cancelDialogstaticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="cancelDialogStaticBackdropLabel" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h1 class="modal-title fs-5" id="cancelDialogStaticBackdropLabel">Cancel</h1>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        Are you sure you want to cancel the submission?
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" 
+                                                class="btn btn-secondary"
+                                                data-bs-dismiss="modal">
+                                            <i class="bi bi-x-circle"> </i>No</button>
+
+                                            <button asp-page-handler="Cancel" type="submit" 
+                                                    class="btn btn-primary ms-2" formnovalidate>
+                                                <i class="bi bi-check-circle"> </i>Yes</button>
+
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </form>
+
+                        @* ---------- SUBMIT DIALOG ---------- *@
+                        <div class="modal fade" id="submitDialogBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="submitDialogStaticBackdropLabel" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h1 class="modal-title fs-5" id="submitDialogStaticBackdropLabel">Confirmation</h1>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        Are you sure you want to submit the form?
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" 
+                                                class="btn btn-secondary"
+                                                data-bs-dismiss="modal">
+                                            <i class="bi bi-x-circle"> </i>No</button>
+                                        <button type="submit"
+                                                class="btn btn-primary me-2">
+                                            <i class="bi bi-check-circle"> </i>Submit</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                }
+
+                @* Go to Top button *@
+                <button id="goToTop" class="btn btn-outline-primary">
+                    <i class="bi bi-arrow-up-circle"></i> Top
+                </button>
+
             }
+            else  @* IsSubmissionsExist = true; => Already submitted (Submission exist.) *@
+            {
+                <h5 class="my-4 text-success">You already submitted for the period <strong>@Model.TargetKpiPeriodName</strong>.</h5>
+                <div class="my-4">
+                    <span>
+                        Check <strong><a class="" asp-page="/Submissions/Departments/Scores/Index">Submissions</a></strong>.
+                    </span>
+                </div>
 
-            @* Go to Top button *@
-            <button id="goToTop" class="btn btn-outline-primary">
-                <i class="bi bi-arrow-up-circle"></i> Top
-            </button>
-
-        }
-        else  @* IsSubmissionsExist = true; => Already submitted (Submission exist.) *@
-        {
-            <h5 class="my-4 text-success">You already submitted for this period <strong>@Model.TargetKpiPeriodName</strong>.</h5>
-            <div class="my-4">
-                <span>
-                    Check <strong><a class="" asp-page="/Submissions/Departments/Scores/Index">Submissions</a></strong>.
-                </span>
-            </div>
-
-            @* display already submitted data *@
-            <div class="mt-4">
-                <table id="dataTable" class="table table-striped" style="width: 100%;">
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Department</th>
-                            <th>Score Given</th>
-                            @* @if(Model.CurrentUserTitleName?.ToLower() != "staff")
-                            {
-                                <th>Positive Aspects</th>
-                                <th>Negative Aspects</th>
-                            }
-                            <th>Comments</th> *@
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @if (Model.DoneKpiSubmissions.Any())
-                        {
-                            @foreach (var s in Model.DoneKpiSubmissions)
-                            {
+                @* display already submitted data *@
+                <div class="mt-4">
+                    <div class="table-responsive">
+                        <table id="dataTable" class="table table-bordered table-striped" style="width: 100%;">
+                            <thead>
                                 <tr>
-                                    <td>@s.SubmissionDate.ToString("MMM dd, yyyy")</td>
-                                    <td>@s.DepartmentName</td>
-                                    <td>@s.ScoreValue</td>
+                                    @* <th>Date</th> *@
+                                    <th id="colDepartment">Department</th>
+                                    <th id="colScore">Score Given</th>
+                                    @if(Model.CurrentUserTitleName?.ToLower() != "staff")
+                                    {
+                                        <th id="colPositiveAspects">Positive Aspects</th>
+                                        <th id="colNegativeAspects">Negative Aspects</th>
+                                    }
+                                    <th id="colComments">Comments</th>
                                 </tr>
-                            }
-                        }
+                            </thead>
+                            <tbody>
+                                @if (Model.DoneKpiSubmissions.Any())
+                                {
+                                    @foreach (var s in Model.DoneKpiSubmissions)
+                                    {
+                                        <tr>
+                                            @* <td class="text-center">@s.SubmissionDate.ToString("MMM dd, yyyy")</td> *@
+                                            <td><strong>@s.DepartmentName</strong></td>
+                                            <td class="text-center">@s.ScoreValue</td>
 
+                                            @if(Model.CurrentUserTitleName?.ToLower() != "staff")
+                                            {
+                                                <td>
+                                                    @if(s.PositiveAspects != null && s.PositiveAspects.Any()) {
+                                                        if(s.PositiveAspects.Length > 150) {
+                                                            @(s.PositiveAspects.Substring(0, 150) + "...")
+                                                            <button data-details="@s.PositiveAspects" data-label="Positive Aspects"
+                                                                    class="moreButton_positiveAspects btn btn-link p-0 pb-2">More</button>
+                                                        }
+                                                        else {
+                                                            @s.PositiveAspects
+                                                        }
+                                                    }
+                                                    else {
+                                                        @:None
+                                                    }
+                                                </td>
 
-
-                        @* @if (Model.UsersList.Any())
-                        {
-                            @foreach (var e in Model.UsersList)
-                            {
-                                <tr>
-                                    <td>@e.UserName</td>
-                                    <td>@e.FullName </td>
-                                    <td>
-                                        <span class="badge rounded-2 rounded-pill text-bg-primary">
-                                            <small>@e.UserTitleName</small>
-                                        </span></td>
-                                    <td>
-                                        @foreach(var roleName in e.UserRoles)
-                                        {
-                                            <span class="badge rounded-2 rounded-pill text-bg-primary">
-                                                <small>@roleName</small></span>
-                                        } </td>
-                                    <td>@e.DepartmentName</td>
-                                    <td>
-                                        <a asp-page="Edit" 
-                                            asp-route-user="@e.UserCode"
-                                            asp-route-returnUrl="@Url.Page("Index")"
-                                            class="link-underline-primary">Edit</a>
-                                    </td>
-                                </tr>
-                            }
-                        } *@
-                    </tbody>
-                </table>
-            </div>
+                                                <td>
+                                                    @if(s.NegativeAspects != null && s.NegativeAspects.Any()) {
+                                                        if(s.NegativeAspects.Length > 150) {
+                                                            @(s.NegativeAspects.Substring(0, 150) + "...")
+                                                            <button data-details="@s.NegativeAspects" data-label="Negative Aspects"
+                                                                    class="moreButton_negativeAspects btn btn-link p-0 pb-2">More</button>
+                                                        }
+                                                        else {
+                                                            @s.NegativeAspects
+                                                        }
+                                                    }
+                                                    else {
+                                                        @:None
+                                                    }
+                                                </td>
+                                            }
+                                            <td>
+                                                @if(s.Comments != null && s.Comments.Any()) {
+                                                    if(s.Comments.Length > 150) {
+                                                        @(s.Comments.Substring(0, 150) + "...")
+                                                        <button data-details="@s.Comments" data-label="Comments"
+                                                                class="moreButton_comments btn btn-link p-0 pb-2">More</button>
+                                                    }
+                                                    else {
+                                                        @s.Comments
+                                                    }
+                                                }
+                                                else {
+                                                    @:None
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            }
         }
-    }
-
-    @* </div> *@
+    </div>
 </div>
 
+
+<!--Modal Dialog -->
+<div id="dialog_textDetail" class="modal" tabindex="-1" aria-labelledby="dialogTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="dialogTitle"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p id="dialogContent"></p>
+            </div>
+             <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 
 
@@ -312,7 +352,7 @@
         .radioLabel__kpiscore .radioInput__kpiscore-check-input {
             margin-top: 0;
         }
-        
+
         .radioLabel__kpiscore:has(.radioInput__kpiscore:checked) {
             border: .1em solid #007bff;
         }
@@ -322,30 +362,62 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+
     <script>
-        new DataTable('#dataTable', {
-            paging: false,
-            info: false,
-            searching: false,
-        });
-        // ------------------- goToTop button implementation -------------------
-        // Get the button
-        var mybutton = document.getElementById("goToTop");
+        $(function() {
+            // ------------------- Data Table ----------------------------------
+            new DataTable('#dataTable', {
+                paging: false,
+                info: false,
+                searching: false,
+                columnDefs: [
+                    { orderable: false, targets: [ "#colPositiveAspects", "#colNegativeAspects", "#colComments"] },
+                    { width: "20%", targets: ["#colDepartment"] },
+                    { width: "10%", targets: ["#colScore"] },
+                ],
+                initComplete: function() {
+                    $('thead th').addClass('text-light text-center ');
+                    $('thead th').addClass('bg-brand-color');
+                }
+            });
+            
+            // ------------------- Show Dialog ---------------------------------
+            $('.moreButton_positiveAspects, .moreButton_negativeAspects, .moreButton_comments').click(function() {
+                var fullText = $(this).data('details');
+                var label = $(this).data('label');
+                $("#dialogTitle").text(label);
 
-        // When the user scrolls down 20px from the top of the document, show the button
-        window.onscroll = function() {
-            if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
-                mybutton.style.display = "block";
-            } else {
-                mybutton.style.display = "none";
+                if (fullText !== undefined) {
+                    $("#dialogContent").text(fullText);
+                    $("#dialog_textDetail").modal("show");
+                } else {
+                    console.error('data is undefined');
+                }
+            });
+
+            // ------------------- goToTop button implementation ---------------
+            // Get the button
+            var mybutton = document.getElementById("goToTop");
+
+            if(mybutton != null)
+            {
+                // When the user scrolls down 20px from the top of the document, show the button
+                window.onscroll = function() {
+                    if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
+                        mybutton.style.display = "block";
+                    } else {
+                        mybutton.style.display = "none";
+                    }
+                };
+
+                // When the user clicks on the button, scroll to the top of the document
+                mybutton.onclick = function() {
+                    document.body.scrollTop = 0; // For Safari
+                    document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE, and Opera
+                };
             }
-        };
 
-        // When the user clicks on the button, scroll to the top of the document
-        mybutton.onclick = function() {
-            document.body.scrollTop = 0; // For Safari
-            document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE, and Opera
-        };
+        });
         //-----------------------------------------------------------------------
     </script>
 }

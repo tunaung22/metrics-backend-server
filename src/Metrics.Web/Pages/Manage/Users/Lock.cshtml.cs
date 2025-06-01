@@ -38,7 +38,7 @@ public class LockModel : PageModel
     public string? ReturnUrl { get; set; } = string.Empty;
 
 
-    public async Task<PageResult> OnGetAsync(string userId, string? returnUrl)
+    public async Task<IActionResult> OnGetAsync(string userId, string? returnUrl)
     {
         if (!string.IsNullOrEmpty(returnUrl))
             ReturnUrl = returnUrl;
@@ -54,8 +54,9 @@ public class LockModel : PageModel
             {
                 if (!targetUser.LockoutEnabled)
                 {
-                    TempData["Message"] = "Cannot lock this user. Reason: lockout not enabled.";
-                    return Page();
+                    TempData["StatusMessage"] = "Cannot lock this user. Reason: lockout not enabled.";
+                    // return Page();
+                    return RedirectToPage("Index");
                 }
                 else
                 {
@@ -82,10 +83,16 @@ public class LockModel : PageModel
                 };
             }
             else
-                TempData["Message"] = "User does not exist.";
+            {
+                TempData["StatusMessage"] = "User does not exist.";
+                return RedirectToPage("Index");
+            }
         }
         else
-            TempData["Message"] = "User does not exist.";
+        {
+            TempData["StatusMessage"] = "User does not exist.";
+            return RedirectToPage("Index");
+        }
 
         return Page();
     }
@@ -115,7 +122,7 @@ public class LockModel : PageModel
                     var result = await _userManager
                         .SetLockoutEndDateAsync(targetUser, DateTimeOffset.UtcNow);
                     if (result.Succeeded)
-                        TempData["StatusMessage"] = $"The account <strong>{targetUser.UserName}</strong> has been locked.";
+                        TempData["StatusMessage"] = $"The account <strong>{targetUser.UserName}</strong> has been unlocked.";
                     else
                         TempData["StatusMessage"] = "Error: Failed to lock out the user.";
                 }
@@ -124,7 +131,7 @@ public class LockModel : PageModel
                     var result = await _userManager
                           .SetLockoutEndDateAsync(targetUser, DateTimeOffset.UtcNow.AddYears(100));
                     if (result.Succeeded)
-                        TempData["StatusMessage"] = $"The account <strong>{targetUser.UserName}</strong> has been unlocked.";
+                        TempData["StatusMessage"] = $"The account <strong>{targetUser.UserName}</strong> has been locked.";
                     else
                         TempData["StatusMessage"] = "Error: Failed to unlock the user.";
                 }

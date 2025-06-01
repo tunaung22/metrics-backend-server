@@ -35,9 +35,8 @@ public class EditModel : PageModel
     // ========== MODELS ==================================================
     public class InputModel
     {
-        [Required]
+        public string UserCode { get; set; } = null!;
         public string Email { get; set; } = null!;
-        [Required]
         public string FullName { get; set; } = null!;
         public string? ContactAddress { get; set; } = string.Empty;
         public string? PhoneNumber { get; set; } = string.Empty;
@@ -47,6 +46,7 @@ public class EditModel : PageModel
     [BindProperty]
     public required InputModel Input { get; set; } // form
 
+    public bool IsAdmin { get; set; }
 
     public string? ReturnUrl { get; set; } // return url
 
@@ -59,9 +59,13 @@ public class EditModel : PageModel
         var currentUser = await _userManager.GetUserAsync(User);
         if (currentUser == null)
             return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
+        var roles = await _userManager.GetRolesAsync(currentUser);
+
+        IsAdmin = roles.Contains("Admin");
 
         Input = new InputModel
         {
+            UserCode = currentUser.UserCode,
             Email = currentUser.Email ?? string.Empty,
             FullName = currentUser.FullName,
             ContactAddress = currentUser.ContactAddress,
@@ -83,9 +87,12 @@ public class EditModel : PageModel
             var currentUser = await _userManager.GetUserAsync(User);
             if (currentUser == null)
                 return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
+            var roles = await _userManager.GetRolesAsync(currentUser);
+            IsAdmin = roles.Contains("Admin");
 
             var updateDto = new UserProfileUpdateDto
             {
+                UserCode = IsAdmin ? Input.UserCode : currentUser.UserCode,
                 Email = Input.Email,
                 FullName = Input.FullName,
                 ContactAddress = Input.ContactAddress,
@@ -96,6 +103,8 @@ public class EditModel : PageModel
             var returnUrl = ViewData["ReturnUrl"] as string;
             if (!string.IsNullOrEmpty(returnUrl))
                 return LocalRedirect(returnUrl);
+
+            TempData["StatusMessage"] = $"User profile updated successfully.";
 
             return RedirectToPage("/Account/Me/Index");
         }

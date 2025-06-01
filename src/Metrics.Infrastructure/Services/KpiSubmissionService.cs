@@ -7,6 +7,7 @@ using Metrics.Application.Interfaces.IServices;
 using Metrics.Application.Interfaces.IRepositories;
 using Metrics.Application.Exceptions;
 using Metrics.Application.Domains;
+using System.Net.Security;
 
 namespace Metrics.Infrastructure.Services;
 
@@ -82,6 +83,8 @@ public class KpiSubmissionService : IKpiSubmissionService
             {
                 SubmittedAt = s.SubmittedAt,
                 ScoreValue = s.ScoreValue,
+                PositiveAspects = s.PositiveAspects,
+                NegativeAspects = s.NegativeAspects,
                 Comments = s.Comments,
                 KpiSubmissionPeriodId = s.KpiSubmissionPeriodId,
                 DepartmentId = s.DepartmentId,

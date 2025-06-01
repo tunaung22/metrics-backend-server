@@ -21,7 +21,7 @@
     @if(Model.IsSubmissionAvaiable)
     {
         @* <div class="my-4 pb-4">check Submissions is avaiable (early or late)</div> *@
-        <table id="dataTable" class="table table-striped" style="width: 100%;">
+        <table id="dataTable" class="table table-bordered table-striped" style="width: 100%;">
             <thead>
                 <tr>
                     <th>Period</th>
@@ -36,15 +36,15 @@
                     @foreach(var period in Model.KpiSubmissionPeriods)
                     {
                         <tr>
-                            <td>
+                            <td class="text-center">
                                 <strong>@period.PeriodName</strong>
                             </td>
-                            <td>
+                            <td class="text-center">
                                 <label>
                                     <i class="bi bi-calendar4-week text-primary"> </i> 
                                     @period.SubmissionStartDate.ToLocalTime().ToString("dd MMM, yyyy") - @period.SubmissionEndDate.ToLocalTime().ToString("dd MMM, yyyy")</label>
                             </td>
-                            <td>
+                            <td class="text-center">
                                 @if(period.IsSubmitted) { 
                                     <i class="bi bi-check2-circle text-success"> </i><label>Done</label> 
                                 }
@@ -57,14 +57,21 @@
                                     }
                                 }
                             </td>
-                            <td> 
-                                @if(period.IsSubmitted || period.IsValid) {
+                            <td class="text-center"> 
+                                @if(period.IsSubmitted) { 
                                     <a asp-page="Submit" 
                                         asp-route-periodName="@period.PeriodName"
                                         class="link-offset-2"><strong>View</strong></a>
                                 }
                                 else {
-                                    <a aria-disabled="true" class="link-offset-2 text-secondary">View</a>
+                                    @if(period.IsValid) {
+                                        <a asp-page="Submit" 
+                                            asp-route-periodName="@period.PeriodName"
+                                            class="link-offset-2"><strong>Submit</strong></a>
+                                    }
+                                    else {
+                                        <a aria-disabled="true" class="link-offset-2 text-secondary">-</a>
+                                    }
                                 }
                             </td>
                         </tr>
@@ -89,6 +96,10 @@
             paging: false,
             info: false,
             searching: false,
+            initComplete: function() {
+                $('thead th').addClass('text-light text-center ');
+                $('thead th').addClass('bg-brand-color');
+            }
         });
     </script>
 }

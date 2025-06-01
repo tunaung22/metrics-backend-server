@@ -1,0 +1,166 @@
+﻿@page
+@model Metrics.Web.Pages.Reports.Submissions.IndexModel
+@{
+    ViewData["Title"] = "Reports List for Department Score Submissions";
+}
+
+
+<div class="sectionTitle">
+    <div class="d-flex align-items-center">
+        <h4>Department Score Reports</h4>
+        <span class="justify-content-end gap-2"></span>
+    </div>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-page="/Dashboard/Index">Dashboard</a></li>
+            @* <li class="breadcrumb-item"><a aria-disabled="true">Reports</a></li> *@
+            <li class="breadcrumb-item active">Reports</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="container">
+    @* ========================================================================== *@
+    @if (!ModelState.IsValid)
+    {
+        <div class="form bg-light p-4">
+            <div class="alert alert-danger">
+                <h4>There were some errors:</h4>
+                <ul>
+                    @foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
+                    {
+                        <li>@error.ErrorMessage</li>
+                    }
+                </ul>
+            </div>
+        </div>
+    }
+
+    @* =============== Filter Bar =============================================== *@
+    @* <div id="filter-bar" class="d-flex bg-light p-4 mt-2"><div class="col-sm-4 mx-2"></div></div> *@
+
+    @* ================ Table =================================================== *@
+    <div class="row">
+        <div class="col-xs-12 col-md-6 col-xl-4">
+            <div class="card my-4">
+                <div class="card-header">
+                    Department Score Reports (KPI)
+                </div>
+                <div class="card-body">
+                    @* <h5 class="card-title">Department Score Reports</h5> *@
+                    @* <p class="card-text">Department Score Submissions reports</p> *@
+                    <span class="d-flex justify-content-end">
+                        <a asp-page="./Kpi/Index" class="btn btn-primary">View</a>
+                    </span>
+                </div>
+                @* <div class="card-footer text-body-secondary">
+                    2 days ago
+                </div> *@
+            </div>
+        </div>
+        <div class="col-xs-12 col-md-6 col-xl-4">
+            <div class="card my-4">
+                <div class="card-header">
+                    Department Score Reports (KPI)
+                </div>
+                <div class="card-body">
+                    @* <h5 class="card-title">Department Score Reports</h5>
+                    <p class="card-text">Department Score Submissions reports</p> *@
+                    <span class="d-flex justify-content-end">
+                        <a asp-page="./Kpi/Index" class="btn btn-primary">View</a>
+                    </span>
+                </div>
+                @* <div class="card-footer text-body-secondary">
+                    2 days ago
+                </div> *@
+            </div>
+        </div>
+        <div class="col-xs-12 col-md-6 col-xl-4">
+            <div class="card my-4">
+                <div class="card-header">
+                    Department Score Reports (KPI)
+                </div>
+                <div class="card-body">
+                    @* <h5 class="card-title">Department Score Reports</h5>
+                    <p class="card-text">Department Score Submissions reports</p> *@
+                    <span class="d-flex justify-content-end">
+                        <a asp-page="./Kpi/Index" class="btn btn-primary">View</a>
+                    </span>
+                </div>
+                @* <div class="card-footer text-body-secondary">
+                    2 days ago
+                </div> *@
+            </div>
+        </div>
+    </div>
+    @* <div class="bg-light p-4 rounded-2">
+        <table id="reportIndexTable" class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>Period Name</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>KPI</th>
+                    <th>KEY KPI</th>
+                    <th>CASE FEEDBACK</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.KpiPeriodList.Any())
+                {
+                    @foreach(var p in Model.KpiPeriodList)
+                    {
+                        <tr>
+                            <td class="text-center">
+                                <strong>@p.PeriodName</strong>
+                            </td>
+                            <td class="text-center">@p.SubmissionStartDate.ToLocalTime().ToString("MMM dd, yyyy")</td>
+                            <td class="text-center">@p.SubmissionEndDate.ToLocalTime().ToString("MMM dd, yyyy")</td>
+                            <td class="text-center">
+                                <a asp-page="./Kpi/View"
+                                    asp-route-periodName="@p.PeriodName"
+                                    class="link my-2 my-lg-0 me-2">
+                                    <strong><i class="bi bi-clipboard2-data"> </i>Details</strong></a>
+                            </td>
+                            <td class="text-center">
+                                <a asp-page="./Kpi/View" 
+                                    asp-route-periodName="@p.PeriodName"
+                                    class="link my-2 my-lg-0 me-2">
+                                    <strong><i class="bi bi-clipboard2-data"> </i>Details</strong></a>
+                            </td>
+                            <td class="text-center">
+                                <a asp-page="View" 
+                                    asp-route-periodName="@p.PeriodName"
+                                    class="link my-2 my-lg-0 me-2">
+                                    <strong><i class="bi bi-clipboard2-data"> </i>Details</strong></a>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div> *@
+</div>
+
+
+@section Scripts {
+    <script>
+        $(function() {
+            var colActions = 2;
+            new DataTable('#reportIndexTable', {
+                paging: false,
+                info: false,
+                searching: false,
+                autoWidth: true,
+                columnDefs: [
+                    { width: "20%", targets: [0] },
+                    { orderable: false, targets: [3] }
+                ],
+                initComplete: function() {
+                    $('thead th').addClass('text-light text-center ');
+                    $('thead th').addClass('bg-brand-color');
+                }
+            });
+        });
+    </script>
+}

@@ -1,6 +1,9 @@
 #
 .env
 
+# ods open office
+.~lock.*.ods#
+
 # draw.io backup
 *.drawio.bkp
 *.drawio.dtmp

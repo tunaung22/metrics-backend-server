@@ -151,6 +151,8 @@ public class EditModel : PageModel
             if (!string.IsNullOrEmpty(returnUrl))
                 return LocalRedirect(returnUrl);
 
+            TempData["StatusMessage"] = $"Update user {updatedUser.UserName} successfully.";
+
             return RedirectToPage("./Index");
         }
         catch (Exception)

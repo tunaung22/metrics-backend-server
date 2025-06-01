@@ -59,6 +59,13 @@ public class UserService : IUserService
                 // newUserIdentityResult.Errors.Append(new IdentityError { Code = "", Description = "Email address is already taken." });
                 errors.Add(new IdentityError { Code = "DuplicateEmail", Description = "Email address is already taken." });
 
+            var accountWithUserCodeExists = await FindByUserCodeAsync(createDto.UserCode);
+            if (accountWithUserCodeExists != null)
+                // throw new MetricsDuplicateContentException("Email address is already taken.");
+                // newUserIdentityResult.Errors.Append(new IdentityError { Code = "", Description = "Email address is already taken." });
+                errors.Add(new IdentityError { Code = "DuplicateUserCode", Description = "User code is already taken." });
+
+
             if (errors.Any())
             {
                 return IdentityResult.Failed(errors.ToArray());
@@ -251,6 +258,7 @@ public class UserService : IUserService
 
             // Note: This is full update (**not partial update)
             // 1. Update ApplicationUser
+            targetUser.UserCode = updateDto.UserCode;
             targetUser.Email = updateDto.Email;
             targetUser.FullName = updateDto.FullName;
             targetUser.ContactAddress = updateDto.ContactAddress ?? string.Empty;
@@ -327,11 +335,11 @@ public class UserService : IUserService
             if (string.IsNullOrEmpty(userCode))
                 throw new Exception("Parameter usercode is required.");
 
-            var employee = await _userRepository.FindByUserCodeAsync(userCode);
-            if (employee == null)
-                throw new Exception($"User with code {userCode} not found.");
+            var user = await _userRepository.FindByUserCodeAsync(userCode);
+            // if (employee == null)
+            //     throw new Exception($"User with code {userCode} not found.");
 
-            return employee;
+            return user;
         }
         catch (Exception ex)
         {

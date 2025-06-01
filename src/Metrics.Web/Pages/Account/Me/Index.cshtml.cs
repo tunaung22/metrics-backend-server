@@ -1,6 +1,7 @@
 using Metrics.Application.Domains;
 using Metrics.Application.Interfaces.IServices;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
@@ -34,6 +35,9 @@ public class IndexModel : PageModel
 
     public UserModel UserInfo { get; set; } = new();
     public string CurrentUserId { get; set; } = null!;
+
+    [TempData]
+    public string? StatusMessage { get; set; }
 
     public async Task<PageResult> OnGetAsync()
     {
