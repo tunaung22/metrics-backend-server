@@ -70,7 +70,7 @@
 
                     @foreach (var period in Model.KpiPeriods)
                     {
-                        <tr>
+                        <tr class="align-middle">
                             <td class="text-center">@period.PeriodName</td>
                             <td class="text-center">@period.SubmissionStartDate.LocalDateTime.ToString("MMM dd, yyyy")</td>
                             <td class="text-center">@period.SubmissionEndDate.LocalDateTime.Date.ToString("MMM dd, yyyy")</td>
@@ -80,7 +80,7 @@
                                 </button> *@
                                 <form method="post" style="display:inline;">
                                     <input type="hidden" name="periodName" value="@period.PeriodName" />
-                                    <a class="btn btn-sm btn-outline-primary my-2 my-lg-0 me-2"
+                                    <a class="btn__actionButtons btn btn-sm btn-outline-primary my-2 my-lg-0 me-2"
                                         asp-page="Edit"
                                         asp-route-periodName="@period.PeriodName" 
                                         asp-route-returnUrl="@HttpContext.Request.Path">

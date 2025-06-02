@@ -1,6 +1,7 @@
 ﻿@page
 @model Metrics.Web.Pages.Account.Me.EditModel
 @{
+    ViewData["Title"] = "Edit Profile";
 }
 
 
@@ -24,6 +25,20 @@
     <div class="col-lg-12 col-xl-10 pt-2 mx-auto">
          <form id="change-password-form" method="post">
             <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+            @if(Model.IsAdmin)
+            {
+                <div class="mb-3 col-sm-12 col-md-8 col-lg-6">
+                    <div class="mb-3"> <!-- Staff ID -->
+                        <label asp-for="Input.UserCode" class="form-label">Staff ID</label>
+                        <input asp-for="Input.UserCode" type="text"
+                                class="form-control"
+                                aria-required="true"
+                                placeholder="Please enter your staff id." 
+                                required />
+                        <span asp-validation-for="Input.UserCode" class="text-danger"></span>
+                    </div>
+                </div>
+            }
             <div class="mb-3 col-sm-12 col-md-8 col-lg-6">
                 <div class="mb-3"> <!-- Email -->
                     <label asp-for="Input.Email" class="form-label">Email</label>
@@ -89,3 +104,7 @@
 
 
 </div>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}

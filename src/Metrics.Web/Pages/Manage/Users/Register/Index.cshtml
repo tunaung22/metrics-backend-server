@@ -178,20 +178,8 @@
 
     <script>
         $(document).ready(function() {
-            $("#input__userName").on("input", function() {
-                var start = this.selectionStart;
-                var end = this.selectionEnd; // Store the current selection range
-                $(this).val($(this).val().toLowerCase()); // Convert text to lowercase
-                this.setSelectionRange(start, end); // Restore the selection range
-            });
-
-            $("#input__userCode").on("input", function() {
-                var start = this.selectionStart; // Store the current selection range
-                var end = this.selectionEnd;
-                $(this).val($(this).val().replace(/\s+/g, '-')); // space to '-'
-                // $(this).val($(this).val().toLowerCase()); // Convert text to lowercase
-                this.setSelectionRange(start, end); // Restore the selection range
-            });
+            $("#input__userName, #input__userCode").on("input", forceLowerCase);
+            $("#input__userName, #input__userCode").on("input", forceSpaceToDash);
 
             $("#generateId").on("click", function() {
                 // https://stackoverflow.com/questions/105034/how-do-i-create-a-guid-uuid#2117523
@@ -204,6 +192,20 @@
                 $("#input__userCode").val(generatedEmployeeCode);
             });
         });
+
+        function forceLowerCase(event) {
+            var start = this.selectionStart;
+            var end = this.selectionEnd; // Store the current selection range
+            $(this).val($(this).val().toLowerCase()); // Convert text to lowercase
+            this.setSelectionRange(start, end); // Restore the selection range
+        }
+        function forceSpaceToDash(event) {
+            var start = this.selectionStart; // Store the current selection range
+            var end = this.selectionEnd;
+            $(this).val($(this).val().replace(/\s+/g, '-')); // space to '-'
+            // $(this).val($(this).val().toLowerCase()); // Convert text to lowercase
+            this.setSelectionRange(start, end); // Restore the selection range
+        }
     </script>
 }
 

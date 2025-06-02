@@ -1,0 +1,93 @@
+﻿@page "/Manage/Users/{userId}/Password/Reset"
+@model Metrics.Web.Pages.Manage.Users.ResetModel
+@{
+    ViewData["Title"] = "Reset User Password";
+}
+
+
+<div class="sectionTitle">
+    <div class="d-flex align-items-center my-2">
+        <h4 class="flex-grow-1">Reset Password for @Model.TargetUserName</h4>
+    </div>
+
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/Dashboard">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="/Manage/Users/Index">Users</a></li>
+            <li class="breadcrumb-item active">Change Password</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="container">
+
+    @* <partial name="~/Pages/Shared/_StatusMessage" for="StatusMessage" /> *@
+    @if (!string.IsNullOrEmpty(Model.StatusMessage))
+    {
+        var color = Model.StatusMessage.StartsWith("Error") ? "danger" : "info";
+        <div id="alert__actionFeedback" class="alert alert-@color alert-dismissible fade show mt-4 m-2" role="alert">
+            @Html.Raw(Model.StatusMessage)
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="col-sm-12 col-md-8 col-lg-6 col-xl-4 px-4 py-2 mt-4">
+                @* <p class="text-muted"></p> *@
+        <form method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+
+            <input type="hidden" asp-for="TargetUserId" />
+
+            <div class="mb-3">
+                <label asp-for="Input.NewPassword" class="form-label"></label>
+                <input asp-for="Input.NewPassword" id="Input_NewPassword"
+                        type="password"
+                        class="form-control" 
+                        autocomplete="new-password" 
+                        aria-required="true"
+                        autocomplete="new-password" 
+                        placeholder="Please enter your new password." 
+                        tabindex="1"
+                        required />
+                <span asp-validation-for="Input.NewPassword" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="Input.ConfirmPassword" class="form-label"></label>
+                <input asp-for="Input.ConfirmPassword" 
+                        type="password"
+                        class="form-control" 
+                        autocomplete="new-password" 
+                        aria-required="true" 
+                        autocomplete="new-password" 
+                        placeholder="Please confirm your new password."
+                        tabindex="2"
+                        required />
+                <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <div class="d-flex justify-content-end pe-0 gap-2">
+                            @* class="btn btn-primary ms-2">Save</button> *@
+                    <a asp-page="/Manage/Users/Index" tabindex="4" 
+                        class="btn btn-warning mb-3">
+                        <i class="bi bi-arrow-left"></i> Back</a>
+                    <button type="submit" tabindex="3"
+                        class="btn btn-primary mb-3">
+                        <i class="bi bi-check-circle"></i> Submit</button>
+                    @* <button asp-page-handler="Cancel" 
+                            type="submit" 
+                            class="btn btn-warning ms-2" formnovalidate><i class="bi bi-x-circle"> </i>Cancel</button> *@
+                </div>
+            </div>
+        </form>
+    </div>
+</div>  
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        $(document).ready(function() {
+            $('#Input_NewPassword').focus();
+        });
+    </script>
+}

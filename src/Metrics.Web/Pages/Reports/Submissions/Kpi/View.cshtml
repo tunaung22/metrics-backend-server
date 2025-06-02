@@ -1,5 +1,5 @@
 ﻿@page "{periodName}"
-@model Metrics.Web.Pages.Reports.Submissions.Departments.Kpi.ViewModel
+@model Metrics.Web.Pages.Reports.Submissions.Kpi.ViewModel
 @{
     ViewData["Title"] = "Score Submission Report";
 }
@@ -29,38 +29,54 @@
         </ol>
     </nav>
 </div>
+
+
 <div class="content-body container-fluid">
     <div class="bg-light p-4 border-2">
-        <div class="filter-toolbar d-flex mb-4">
-            <form method="get">
-                <select 
-                    asp-for="SelectedUserGroupName"
-                    asp-items="Model.UserTitleListItems"
-                    onchange="this.form.submit()"
-                    class="form-select" 
-                    aria-label="Select User Group">
-                        <option value="">All</option>
-                </select>
+        <div class="filter-toolbar mb-4 d-flex justify-content-between">
+            <form id="form__groupSelection" method="get" class="">
+                    <select 
+                        asp-for="Group"
+                        asp-items="Model.UserGroupListItems"
+                        onchange="this.form.submit()"
+                        class="form-select"
+                        aria-label="Select User Group">
+                            <option value="All">All</option>
+                    </select>
             </form>
+            <div class="exportData">
+                @{string groupName = "";}
+                @{
+                    if(Model.AllUserScoreSubmissionsReports.Any())
+                    {
+                        groupName = "all";
+                    }
+                    if(Model.UserGroupScoreSubmissionsReports.Any())
+                    {
+                        groupName = Model.Group ?? string.Empty;
+                    }
+                }
+                @* <a asp-page="Export"
+                    asp-route-period=@Model.SelectedPeriod.PeriodName
+                    asp-route-group=@groupName
+                    class="btn btn-success">Export</a> *@
+
+                <form method="post" asp-page-handler="ExportExcel">
+                    <input type="hidden" asp-for="Group" />
+                    @* <input type="hidden" asp-for="@Model.SelectedPeriod.PeriodName" name="periodName" /> *@
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-file-earmark-spreadsheet"></i> Export</button>
+                </form>
+            </div>
         </div>
         <div class="table-responsive">
             <table id="reportTable" class="table table-bordered table-striped">
                 <thead>
-                    @if(Model.KpiSubmissionReportList.Any() || Model.ExpReportViewModels.Any())
+                    @if(Model.UserGroupScoreSubmissionsReports.Any() || Model.AllUserScoreSubmissionsReports.Any())
                     {
-                        @if(Model.SelectedUserGroupName != null && !string.IsNullOrEmpty(Model.SelectedUserGroupName.ToString()))
-                        { // Display for selected user group
-                            <tr>
-                                @* <th class="px-4">Period</th> *@
-                                <th class="px-4">Departments</th>
-                                <th class="px-4">Submissions</th>
-                                <th class="px-4">Score</th>
-                                <th class="px-4">KPI Score</th>
-                            </tr>
-                        }
-                        else
+                        @if(string.IsNullOrEmpty(Model.Group) || Model.Group == "All")
                         { // Display for all user groups
-                            @if(Model.ExpReportViewModels.Any())
+                            @if(Model.AllUserScoreSubmissionsReports.Any())
                             {
                                 <tr>
                                     @* <th class="px-4" rowspan="2">Period</th> *@
@@ -82,6 +98,17 @@
                                 </tr>
                             }
                         }
+                        @* else if (!string.IsNullOrEmpty(Model.Group.ToString())) *@
+                        else
+                        { // Display for selected user group
+                            <tr>
+                                @* <th class="px-4">Period</th> *@
+                                <th class="px-4">Departments</th>
+                                <th class="px-4">Submissions</th>
+                                <th class="px-4">Score</th>
+                                <th class="px-4">KPI Score</th>
+                            </tr>
+                        }
                     }
                     else
                     {
@@ -91,40 +118,54 @@
                     }
                 </thead>
                 <tbody>
-                    @if(Model.SelectedUserGroupName != null) // for selected user group
+                    @if( string.IsNullOrEmpty(Model.Group) || Model.Group == "All") // for all user group
                     {
-                        @if(Model.KpiSubmissionReportList.Any())
+                        if(Model.AllUserScoreSubmissionsReports.Any())
                         {
-                            @foreach(var r in Model.KpiSubmissionReportList)
+                            @foreach(var r in Model.AllUserScoreSubmissionsReports)
                             {
                                 <tr>
-                                    @* <td>@r.PeriodName</td> *@
-                                    <td class="text-center">@r.DepartmentName</td>
-                                    <td class="text-center">@r.TotalSubmissions.ToString("0")</td>
-                                    <td class="text-center">@r.TotalScore.ToString("0.00")</td>
-                                    <td class="text-center">@r.KpiScore.ToString("0.00")</td>
+                                    @* <td class="_periodName"><strong>@r.PeriodName</strong></td> *@
+                                    <td class="">
+                                        <strong>
+                                            <a asp-page="./Department"
+                                                asp-route-departmentName=@r.DepartmentName>
+                                                @r.DepartmentName
+                                            </a>
+                                        </strong>
+                                    </td>
+                                    @foreach(var g in r.UserGroupSubmissions)
+                                    {
+                                        <td class="pe-4 @(g.GroupName + "_groupTotalSubmissions")">@g.TotalSubmissions.ToString("0")</td>
+                                        <td class="pe-4 _groupTotalScore @(g.GroupName + "_groupTotalScore")">@g.TotalScore.ToString("0.00")</td>
+                                    }
+                                    <td class="pe-4">@r.TotalSubmissions.ToString("0")</td>
+                                    <td class="px-4">@r.TotalScore.ToString("0.00")</td>
+                                    <td class="px-4">
+                                        <strong>
+                                            @r.KpiScore.ToString("0.00")
+                                        </strong>
+                                    </td>
                                 </tr>
                             }
                         }
                     }
-                    else // for all user group
+                    else // for selected user group
                     {
-                        if(Model.ExpReportViewModels.Any())
+                        @if(Model.UserGroupScoreSubmissionsReports.Any())
                         {
-                            @foreach(var r in Model.ExpReportViewModels)
+                            @foreach(var r in Model.UserGroupScoreSubmissionsReports)
                             {
                                 <tr>
-                                    @* <td class="_periodName"><strong>@r.PeriodName</strong></td> *@
-                                    <td class="_departmentName"><strong>@r.DepartmentName</strong></td>
-                                    @foreach(var g in r.UserGroupSubmissions)
-                                    {
-                                        @* <td>@g.GroupName</td> *@
-                                        <td class="_groupTotalSubmissions @(g.GroupName + "_groupTotalSubmissions")">@g.TotalSubmissions</td>
-                                        <td class="_groupTotalScore @(g.GroupName + "_groupTotalScore")">@g.TotalScore</td>
-                                    }
-                                    <td class="_totalSubmissions">@r.TotalSubmissions.ToString("0")</td>
-                                    <td class="text-center">@r.TotalScore.ToString("0.0")</td>
-                                    <td class="text-center">@r.KpiScore.ToString("0.0")</td>
+                                    @* <td>@r.PeriodName</td> *@
+                                    <td class=""><strong>@r.DepartmentName</strong></td>
+                                    <td class="text-center px-2">@r.TotalSubmissions.ToString("0")</td>
+                                    <td class="text-center px-2">@r.TotalScore.ToString("0.00")</td>
+                                    <td class="text-center px-2">
+                                        <strong>
+                                            @r.KpiScore.ToString("0.00")
+                                        </strong>
+                                    </td>
                                 </tr>
                             }
                         }
@@ -216,7 +257,7 @@
             @* <table id="reportTable2" class="table">
             <thead>
                 <tr>
-                    @if(Model.KpiSubmissionReportList.Any() || Model.MasterReportList.Any())
+                    @if(Model.UserGroupScoreSubmissionsReports.Any() || Model.MasterReportList.Any())
                     {
                         @if(Model.SelectedUserGroupName != null && !string.IsNullOrEmpty(Model.SelectedUserGroupName.ToString()))
                         { // Display for selected user group
@@ -240,9 +281,9 @@
             <tbody>
                 @if(Model.SelectedUserGroupName != null) // for selected user group
                 {
-                    @if(Model.KpiSubmissionReportList.Any())
+                    @if(Model.UserGroupScoreSubmissionsReports.Any())
                     {
-                        @foreach(var r in Model.KpiSubmissionReportList)
+                        @foreach(var r in Model.UserGroupScoreSubmissionsReports)
                         {
                             <tr>
                                 <td>@r.PeriodName</td>

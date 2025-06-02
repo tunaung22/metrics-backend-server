@@ -6,10 +6,10 @@
     <title>@ViewData["Title"] - RazorApp</title>
     <script type="importmap"></script>
     <link rel="icon" type="image/svg" href="~/favicon.svg" />
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/lib/bootstrap-icons/font/bootstrap-icons.css" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/lib/bootstrap-icons/font/bootstrap-icons.min.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/RazorApp.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 
     @RenderSection("Styles", required: false)
 </head>
@@ -36,7 +36,7 @@
         </nav>
     </header> *@
 
-    <div id="main-content" class="container" style="padding-top: 4em;">
+    <div id="main-content" class="container" style="padding-top: 4em; min-height: 90vh;">
         <main role="main" class="pb-3">
             @RenderBody()
         </main>
@@ -44,8 +44,8 @@
 
     <partial name="_Footer" />
 
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/lib/jquery/dist/jquery.min.js" asp-append-version="true"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js" asp-append-version="true"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
 
     @await RenderSectionAsync("Scripts", required: false)

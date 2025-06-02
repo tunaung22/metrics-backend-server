@@ -7,7 +7,7 @@ public class KpiPeriodViewModel
     public long Id { get; set; }
     // [BindProperty]
     // [Required(ErrorMessage = "Period Name is required.")]
-    public required string PeriodName { get; set; }
+    public string PeriodName { get; set; } = null!;
 
     // [BindProperty]
     [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true)]

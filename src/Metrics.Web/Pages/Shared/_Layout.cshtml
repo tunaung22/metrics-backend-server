@@ -7,27 +7,23 @@
 
 <!DOCTYPE html>
 <html lang="en">
+ @* data-bs-theme="dark"> *@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Metrics Backend</title>
     <script type="importmap"></script>
     <link rel="icon" type="image/svg" href="~/favicon.svg" />
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/lib/datatables/dataTables.bootstrap5.min.css" rel="stylesheet" />
-    <link rel="stylesheet" href="~/lib/bootstrap-icons/font/bootstrap-icons.css" />
-    @* <link rel="stylesheet" href="~/lib/datatables/datatables.min.css" rel="stylesheet" /> *@
-    <link rel="stylesheet" href="~/lib/jquery-ui-1.14.1.custom/jquery-ui.css" rel="stylesheet" />
-
-    @* <link rel="stylesheet" href="~/lib/tempus-dominus/tempus-dominus.min.css" /> *@
-    @* <link rel="stylesheet" href="~/metrics-backend.styles.css" asp-append-version="true" /> *@
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/lib/datatables/dataTables.bootstrap5.min.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/lib/bootstrap-icons/font/bootstrap-icons.min.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/lib/jquery-ui-1.14.1.custom/jquery-ui.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     @* ========== CSS Section ========== *@
     @RenderSection("Styles", required: false)
 </head>
-<body>
+<body class="d-flex flex-column min-vh-100">
     <header>
-        @* <nav class="navbar navbar-expand-lg bg-body-tertiary" aria-label="Main navigation"> *@
         <nav class="navbar fixed-top bg-body-tertiary
                         navbar-collapse-xs
                         navbar-collapse-sm
@@ -69,9 +65,9 @@
                             <li class="nav-item">
                                 <strong><a class="nav-link " asp-area="" asp-page="/Dashboard/Index">Dashboard</a></strong>
                             </li>
-                            @* <li class="nav-item">
-                                <strong><a class="nav-link " asp-area="" asp-page="/Reports/Index">Reports</a></strong>
-                            </li> *@
+                            <li class="nav-item">
+                                <strong><a class="nav-link " asp-area="" asp-page="/Reports/Submissions/Index">Reports</a></strong>
+                            </li>
                         }
 
                         @* ========================== Employee Area ========================== *@
@@ -88,12 +84,15 @@
                             <strong><a class="nav-link" asp-area="" asp-page="/About/Index">About</a></strong>
                         </li>
                     </ul>
+                    @* <span id="theme-toggle" aria-label="Toggle dark mode" class="px-4">
+                        <i class="bi bi-sun-fill"></i> <!-- Sun icon for dark mode -->
+                        <i class="bi bi-moon-stars-fill"></i> <!-- Moon icon for light mode -->
+                    </span> *@
                     <partial name="Shared/_LoginPartial" />
                 </div>
             </div>
         </nav>
     </header>
-
     <div id="main-content" class="container-fluid" style="padding-top: 4em;">
         <main role="main" class="pb-3">
             @RenderBody()
@@ -103,16 +102,36 @@
     <partial name="_Footer" />
 
 
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/lib/datatables/datatables.min.js"></script>
-    <script src="~/lib/datatables/dataTables.bootstrap5.min.js"></script>
-    @* <script src="~/lib/tempus-dominus/tempus-dominus.min.js"></script> *@
-    <script src="~/lib/jquery-ui-1.14.1.custom/jquery-ui.js"></script>
+    <script src="~/lib/jquery/dist/jquery.min.js" asp-append-version="true"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js" asp-append-version="true"></script>
+    <script src="~/lib/datatables/datatables.min.js" asp-append-version="true"></script>
+    <script src="~/lib/datatables/dataTables.bootstrap5.min.js" asp-append-version="true"></script>
+    <script src="~/lib/jquery-ui-1.14.1.custom/jquery-ui.js" asp-append-version="true"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    @* <script src="~/lib/tempus-dominus/tempus-dominus.min.js"></script> *@
     <script>
         const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
         const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
+
+        /*
+        const toggleButton = document.getElementById("theme-toggle");
+
+        // Function to toggle theme
+        toggleButton.addEventListener("click", function () {
+            const currentTheme = document.documentElement.getAttribute("data-bs-theme");
+            const newTheme = currentTheme === "dark" ? "light" : "dark";
+            document.documentElement.setAttribute("data-bs-theme", newTheme);
+            // Save user preference
+            localStorage.setItem("theme", newTheme);
+        });
+
+        // Check for saved user preference
+        const savedTheme = localStorage.getItem("theme");
+        if (savedTheme) {
+            document.documentElement.setAttribute("data-bs-theme", savedTheme);
+        }
+        */
+
     </script>
 
     @await RenderSectionAsync("Scripts", required: false)

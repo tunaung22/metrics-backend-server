@@ -198,9 +198,11 @@ public class IndexModel : PageModel
             foreach (var error in result.Errors)
             {
                 if (error.Code == "DuplicateUserName")
-                    ModelState.AddModelError("FormInput.UserName", "Username is already taken.");
+                    ModelState.AddModelError("FormInput.UserName", $"This username is already in use.");
                 else if (error.Code == "DuplicateEmail")
-                    ModelState.AddModelError("FormInput.Email", "Email is already registered.");
+                    ModelState.AddModelError("FormInput.Email", $"This email is already use.");
+                else if (error.Code == "DuplicateUserCode")
+                    ModelState.AddModelError("FormInput.UserCode", $"This staff id is already in use.");
                 else
                     ModelState.AddModelError(string.Empty, error.Description);
             }

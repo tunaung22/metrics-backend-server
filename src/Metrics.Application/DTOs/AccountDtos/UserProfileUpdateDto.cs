@@ -4,6 +4,7 @@ namespace Metrics.Application.DTOs.AccountDtos;
 
 public class UserProfileUpdateDto
 {
+    public string UserCode { get; set; } = null!;
     [Required]
     public string Email { get; set; } = null!;
     [Required]
