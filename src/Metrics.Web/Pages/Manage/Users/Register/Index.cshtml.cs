@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
+using System.Security.Claims;
 using System.Text.Json;
 
 namespace Metrics.Web.Pages.Manage.Users.Register;
@@ -17,6 +18,7 @@ namespace Metrics.Web.Pages.Manage.Users.Register;
 public class IndexModel : PageModel
 {
     private readonly ILogger<IndexModel> _logger;
+    private readonly UserManager<ApplicationUser> _userManager;
     private readonly RoleManager<ApplicationRole> _roleManager;
     // private readonly IUserAccountService _userAccountService;
     private readonly IUserService _userService;
@@ -25,6 +27,7 @@ public class IndexModel : PageModel
 
     public IndexModel(
         ILogger<IndexModel> logger,
+        UserManager<ApplicationUser> userManager,
         RoleManager<ApplicationRole> roleManager,
         // IUserAccountService userAccountService,
         IUserService userService,
@@ -32,6 +35,7 @@ public class IndexModel : PageModel
         IDepartmentService departmentService)
     {
         _logger = logger;
+        _userManager = userManager;
         _roleManager = roleManager;
         // _userAccountService = userAccountS/ervice;
         _userService = userService;
@@ -168,28 +172,36 @@ public class IndexModel : PageModel
             };
 
             // var result = await _userAccountService.RegisterUserAsync(createDto);
+            // ----- GET User Group Name -------------------------------
+            // ----- 1. CREATE user
+            // ----- 2. ADD Claim -----------------------------------------
             var result = await _userService.RegisterUserAsync(createDto);
             if (result.Succeeded)
             {
-                // var assignedRole = await _roleManager.FindByIdAsync(createDto.RoleId);
-                List<string> assignedRoles = [];
-                for (int i = 0; i < createDto.RoleIds.Count; i++) // foreach cannot execute async operation
+                var user = await _userManager.FindByNameAsync(createDto.UserName);
+
+                if (user != null)
                 {
-                    var role = await _roleManager.FindByIdAsync(createDto.RoleIds[i]);
-                    if (role != null)
-                        assignedRoles.Add(role.Name!);
+                    var groupName = "";
+                    var userTitle = await _userTitleService.FindByIdAsync(createDto.UserTitleId);
+                    if (userTitle != null)
+                        groupName = userTitle.TitleName;
+
+                    // var assignedRole = await _roleManager.FindByIdAsync(createDto.RoleId);
+                    List<string> assignedRoles = [];
+                    for (int i = 0; i < createDto.RoleIds.Count; i++) // foreach cannot execute async operation
+                    {
+                        var role = await _roleManager.FindByIdAsync(createDto.RoleIds[i]);
+                        if (role != null)
+                            assignedRoles.Add(role.Name!);
+                    }
+
+                    TempData["Username"] = createDto.UserName.ToString();
+                    TempData["FullName"] = createDto.FullName.ToString();
+                    TempData["GroupName"] = groupName;
+                    // TempData["RoleName"] = assignedRole?.Name ?? string.Empty;
+                    TempData["AssignedRoles"] = JsonSerializer.Serialize(assignedRoles);
                 }
-
-                var groupName = "";
-                var userTitle = await _userTitleService.FindByIdAsync(createDto.UserTitleId);
-                if (userTitle != null)
-                    groupName = userTitle.TitleName;
-
-                TempData["Username"] = createDto.UserName.ToString();
-                TempData["FullName"] = createDto.FullName.ToString();
-                TempData["GroupName"] = groupName;
-                // TempData["RoleName"] = assignedRole?.Name ?? string.Empty;
-                TempData["AssignedRoles"] = JsonSerializer.Serialize(assignedRoles);
 
                 return RedirectToPage("Success");
             }

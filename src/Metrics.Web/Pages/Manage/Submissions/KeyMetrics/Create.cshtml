@@ -1,0 +1,165 @@
+﻿@page "/Manage/Submissions/Key-Metrics/Create"
+@model Metrics.Web.Pages.Manage.Submissions.KeyMetrics.CreateModel
+@{
+    ViewData["Title"] = "Create Key Metric";
+}
+
+<div class="sectionTitle">
+    <h4>Create New Key Metric</h4>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-page="/Dashboard/Index">Dashboard</a></li>
+            <li class="breadcrumb-item"><a asp-page="/Manage/Submissions/KeyMetrics/Index">Key Metrics</a></li>
+            <li class="breadcrumb-item active">Create</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="content-body container">
+    <div class="p-4 border rounded-3">
+
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+        @* @if (!ModelState.IsValid)
+        {
+            <div class="alert alert-danger">
+                <h4>There were some errors:</h4>
+                <ul>
+                    @foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
+                    {
+                        <li>@error.ErrorMessage</li>
+                    }
+                </ul>
+            </div>
+        } *@
+        
+        
+        @* <div class="filter-toolbar mb-4 d-flex justify-content-between">
+            <div class="d-flex gap-2">
+            </div>
+        </div> *@
+
+        @* =============== Form ================================================ *@
+        <div class="col-12 mx-auto">
+            <form method="post" asp-route-returnUrl="@Model.ReturnUrl"> 
+                <input type="hidden" id="selectedTitle" asp-for="SelectedMetricTitle" />
+                <div class="row">
+                    <div class="mb-3 col-sm-12 col-md-12 col-lg-6">
+                        <label asp-for="Input.MetricTitle" class="form-label">Metric Title (KEY)</label>
+                        <textarea asp-for="Input.MetricTitle" tabindex="1"
+                                    id="input__metricTitle" 
+                                    class="form-control"
+                                    placeholder="Enter title for key metric"
+                                    rows="4"></textarea>
+                        <div class="feedback__title"></div>
+                        <div><span asp-validation-for="Input.MetricTitle" class="text-danger"></span></div>
+                    </div>
+                    <div class="mb-3 col-sm-12 col-md-12 col-lg-6 ">
+                        <label asp-for="Input.Description" class="form-label">Description</label>
+                        <textarea asp-for="Input.Description" tabindex="2"
+                                    id="input__description" 
+                                    class="form-control" 
+                                    placeholder="Enter description"
+                                    rows="4"></textarea>
+                        <div><span asp-validation-for="Input.Description" class="text-danger"></span></div>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-end gap-2">
+                    @* <button type="button" 
+                        class="btn btn-warning ms-2" formnovalidate>
+                        <i class="bi bi-x-circle"></i> Cancel</button> *@
+                    <a asp-page="Index" tabindex="4"
+                        class="btn btn-warning">
+                        <i class="bi bi-arrow-left"></i> Back</a>
+                    <button type="submit" tabindex="3"
+                        id="btnSave"
+                        class="btn btn-primary">
+                        <i class="bi bi-check-circle"></i> Save</button>
+                </div>
+            </form>
+        </div>
+
+        <div id="wrapper__searchResult" class="mt-4">
+            <h6>Existing Titles</h6>
+            <ul id="matchedTitle" class="list-group">
+            </ul>
+        </div>
+    </div>
+</div>
+          
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+    
+    <script>
+        $(function() {
+            $("#wrapper__searchResult").hide();
+            $("#input__metricTitle").focus();
+            $("#input__metricTitle").on('input', function() {
+                var userInput = $(this).val();
+                var currentTitle = @Html.Raw(Json.Serialize(Model.SelectedMetricTitle));
+                if (currentTitle != userInput) 
+                {
+                    // Search by User Input Value
+                    if (userInput.length > 0) {
+                        $.ajax({
+                            url: "@Url.Page("Edit", "SearchTitle")",
+                            type: "GET",
+                            data: { 
+                                value: userInput,
+                                currentTitle: currentTitle, 
+                            }, 
+                            success: function(response) {
+                                if (response.data.length > 0) {
+                                    $("#wrapper__searchResult").show();
+                                    $("#matchedTitle").empty();
+                                    response.data.forEach(function(result) {
+                                        var newRow = `<li class="list-group-item text-danger">${result.metricTitle}</li>`;
+                                        $("#matchedTitle").append(newRow);
+                                    });
+                                } else {
+                                    $("#wrapper__searchResult").hide();
+                                    $("#matchedTitle").empty();
+                                }
+                            },
+                            error: function(xhr) {
+                                console.log("Error fetching data.");
+                                $("#matchedTitle").empty();
+                                var err = `<li class="list-group-item">Loading error...</li>`;
+                                $("#matchedTitle").append(err);
+                            }
+                        });
+                    }
+
+                    // Check Duplicate
+                    $.ajax({
+                        url: "@Url.Page("Edit", "CheckDuplicateTitle")",
+                        type: "GET",
+                        data: { title: userInput },
+                        success: function(response) {
+                            $(".feedback__title").text("");
+                            $(".feedback__title")
+                                .removeClass("text-danger")
+                                .addClass("text-success");
+                            $("#btnSave").prop("disabled", false);
+                        },
+                        error: function(jqXHR) {
+                            if (jqXHR.status === 409) {
+                                var errorMessage = jqXHR.responseJSON.message;
+                                $(".feedback__title").text(errorMessage);
+                                $(".feedback__title")
+                                    .removeClass("text-success")
+                                    .addClass("text-danger");                        
+                                $("#btnSave").prop("disabled", true);
+                            }
+                            else {
+                                $(".feedback__title").text("Error checking period name avaibility.");
+                            }
+                        }
+                    });
+                }
+            });
+            
+        });
+    </script>
+}

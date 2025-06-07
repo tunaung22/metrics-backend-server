@@ -5,11 +5,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.ValueGeneration;
 
 namespace Metrics.Infrastructure.Data.EntityConfig;
 
-public class KeyKpiConfig : IEntityTypeConfiguration<KeyKpi>
+public class KeyMetricConfig : IEntityTypeConfiguration<KeyMetric>
 {
-    public void Configure(EntityTypeBuilder<KeyKpi> builder)
+    public void Configure(EntityTypeBuilder<KeyMetric> builder)
     {
-        builder.ToTable("key_kpis");
+        builder.ToTable("key_metrics");
 
         // ===== Index =====
         builder.HasKey(e => e.Id);
@@ -20,7 +20,7 @@ public class KeyKpiConfig : IEntityTypeConfiguration<KeyKpi>
         builder.Property(e => e.Id)
             .HasColumnName("id")
             .HasColumnType("bigint")
-            .UseHiLo("key_kpis_id_seq");
+            .UseHiLo("key_metrics_id_seq");
         // .UseHiLo();
         builder.Property(e => e.MetricCode)
            .HasColumnName("metric_code")

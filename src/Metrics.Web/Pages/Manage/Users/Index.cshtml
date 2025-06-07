@@ -39,10 +39,10 @@
         <table id="userTable" class="table table-bordered table-striped">
             <thead>
                 <tr>
-                    <th>Account</th>
                     <th>Group</th>
-                    <th>Name</th>
                     <th>Department</th>
+                    <th>Name</th>
+                    <th>Account</th>
                     <th>Authority</th>
                     @* <th>Address</th> *@
                     @* <th>Phone Number</th> *@
@@ -55,17 +55,13 @@
                     @foreach (var e in Model.UsersList)
                     {
                         <tr class="align-middle">
-                            <td class="text-center">@e.UserName</td>
-                            <td class="text-center">@e.UserTitleName</td>
-                                @* <span class="badge rounded-2 rounded-pill text-bg-primary">
-                                    <small>@e.UserTitleName</small>
-                                </span></td> *@
-                                @* <span class="badge rounded-2 rounded-pill text-bg-primary">
-                                    @e.UserTitleName
-                                </span> *@
-                            <td>@e.FullName</td>
-                            <td>@e.DepartmentName</td>
-                            <td class="text-center">
+                            <td class="ps-4 text-success">
+                                <strong>@e.UserTitleName</strong>
+                            </td>
+                            <td class="ps-4">@e.DepartmentName</td>
+                            <td class="ps-4">@e.FullName</td>
+                            <td class="ps-4">@e.UserName</td>
+                            <td class="ps-4">
                                 @foreach(var roleName in e.UserRoles)
                                 {
                                     var color = roleName.StartsWith("Admin") ? "danger" : "success";

@@ -12,7 +12,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace Metrics.Web.Pages.Account;
 
@@ -20,6 +19,7 @@ namespace Metrics.Web.Pages.Account;
 public class LoginModel : PageModel
 {
     private readonly ILogger<LoginModel> _logger;
+    private readonly UserManager<ApplicationUser> _userManager;
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly IUserService _userService;
     private readonly IUserTitleService _userTitleService;
@@ -27,10 +27,12 @@ public class LoginModel : PageModel
     public LoginModel(
         ILogger<LoginModel> logger,
         SignInManager<ApplicationUser> signInManager,
+        UserManager<ApplicationUser> userManager,
         IUserService userService,
         IUserTitleService userTitleService)
     {
         _logger = logger;
+        _userManager = userManager;
         _signInManager = signInManager;
         _userService = userService;
         _userTitleService = userTitleService;
@@ -125,7 +127,7 @@ public class LoginModel : PageModel
 
     public async Task<IActionResult> OnPostAsync(string returnUrl = null)
     {
-        returnUrl ??= Url.Content("~/");
+        // returnUrl ??= Url.Content("~/");
 
         ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
 
@@ -143,7 +145,13 @@ public class LoginModel : PageModel
                 var user = await _userService.FindByUsernameAsync(Input.Username);
                 if (user != null)
                 {
-                    var userTitle = await _userTitleService.FindByIdAsync(user.UserTitleId);
+                    // // Retrieve existing claims
+                    // var existingClaims = await _userManager.GetClaimsAsync(user);
+                    // // Remove existing claims (optional: you can choose to remove specific claims)
+                    // foreach (var claim in existingClaims)
+                    // {
+                    //     await _userManager.RemoveClaimAsync(user, claim);
+                    // }
                     var claims = new List<Claim>
                     {
                         // new Claim(ClaimTypes.NameIdentifier, user.Id),
@@ -155,14 +163,21 @@ public class LoginModel : PageModel
                         // new Claim("PhoneNumber", user.PhoneNumber ?? string.Empty),
                         // new Claim("DepartmentName", user.Department?.DepartmentName ?? string.Empty),
                         // new Claim("TitleName", userTitle?.TitleName ?? string.Empty)
-                        new Claim("UserTitle", userTitle?.TitleName ?? string.Empty),
+                        new Claim("UserGroup", user.UserTitle.TitleCode.ToString() ?? string.Empty),
                     };
-
-                    var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-                    await _signInManager.SignInWithClaimsAsync(user, Input.RememberMe, claims);
+                    // var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
                     // var claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
                     // await _signInManager.SignInAsync(user, isPersistent: Input.RememberMe);
+
                     // await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, claimsPrincipal);
+
+                    await _signInManager.SignInWithClaimsAsync(user, Input.RememberMe, claims);
+
+                    var roles = await _userManager.GetRolesAsync(user);
+                    if (roles.Contains("Admin"))
+                        returnUrl ??= Url.Content("~/Dashboard");
+                    else
+                        returnUrl ??= Url.Content("~/");
 
                     LoggedIn = true;
 
@@ -178,21 +193,18 @@ public class LoginModel : PageModel
             {
                 ModelState.AddModelError(string.Empty, "Account is locked! Please contact Administrator.");
                 _logger.LogWarning("User account locked out.");
-                // return RedirectToPage("./Locked/Index");
-                // **Workaround
                 ViewData["Message"] = "<div>Locked!</div><div>Your account is locked. Please contact Administrator.</div>";
+                // **Workaround
+                // return RedirectToPage("./Locked/Index");
                 return Page();
             }
             else
             {
                 ModelState.AddModelError(string.Empty, "Username or password invalid! Try again.");
-                // ModelState.AddModelError("Input.Username", "Invalid login credentials.");
-                // ModelState.AddModelError("Input.Password", "Invalid login credentials.");
                 return Page();
             }
         }
 
-        // If we got this far, something failed, redisplay form
         return Page();
     }
 }

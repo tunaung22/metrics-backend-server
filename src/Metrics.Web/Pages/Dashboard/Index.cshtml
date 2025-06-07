@@ -25,16 +25,18 @@
                 <ul class="list-group list-group-flush">
                     <li class="list-group-item p-2">
                         <a asp-page="/Manage/Departments/Index">
-                            <i class="bi bi-building"> </i>Departments</a></li>
+                            <i class="bi bi-building"></i> Departments</a></li>
                     <li class="list-group-item p-2">
                         <a asp-page="/Manage/Users/Index">
-                            <i class="bi bi-person"> </i>Users</a></li>
+                            <i class="bi bi-person"></i> Users</a></li>
                     <li class="list-group-item p-2">
                         <a asp-page="/Manage/Users/Groups/Index">
-                            <i class="bi bi-people"> </i>Groups</a></li>
+                            <i class="bi bi-people"></i> Groups</a></li>
                     <li class="list-group-item p-2">
                         <a asp-page="/Manage/Users/Roles/Index">
-                            <i class="bi bi-person-lock"> </i>Authorities</a></li>
+                            <i class="bi bi-person-lock"></i> Authorities</a></li>
+                    <li class="list-group-item p-2 disabled" aria-disabled="true"><a href=""></a></li>
+
                 </ul>
             </div>
         </div>
@@ -46,15 +48,24 @@
                 <ul class="list-group list-group-flush">
                     <li class="list-group-item p-2">
                         <a class="" asp-page="/Manage/Submissions/Periods/Index">
-                            <i class="bi bi-calendar2-week"> </i>Submissions Periods</a></li>
+                            <i class="bi bi-calendar2-week"></i> Submissions Periods</a></li>
                     <li class="list-group-item p-2">
+                        <a class="" asp-page="/Manage/Submissions/KeyMetrics/Index">
+                            <i class="bi bi-ui-checks"></i> Key Metrics</a></li>
+                    <li class="list-group-item p-2">
+                        <a class="" asp-page="/Manage/Submissions/DepartmentKeyMetrics/Index">
+                            <i class="bi bi-ui-checks"></i> Department Key Metrics</a></li>
+                    @* <li class="list-group-item p-2">
                         <a class="" asp-page="/Manage/Submissions/Departments/Scores/Index">
-                            <i class="bi bi-clipboard2-check"> </i>Score Submissions Status</a></li>
+                            <i class="bi bi-clipboard2-check"></i> Score Submissions Status</a></li> *@
                     <li class="list-group-item p-2 disabled" aria-disabled="true"><a href=""></a></li>
                     <li class="list-group-item p-2 disabled" aria-disabled="true"><a href=""></a></li>
+
                 </ul>
             </div>
         </div>
+       
+        
         
     </div>
 </div>

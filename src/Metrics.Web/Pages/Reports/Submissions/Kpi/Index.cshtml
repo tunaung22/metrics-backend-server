@@ -1,22 +1,21 @@
 ﻿@page
 @model Metrics.Web.Pages.Reports.Submissions.Departments.Kpi.IndexModel
 @{
-    ViewData["Title"] = "Department KPI Submission Report";
+    ViewData["Title"] = "Department Score Reports (KPI)";
 }
 
 
 <div class="sectionTitle">
-    <div class="d-flex align-items-center">
-        <h4 class="flex-grow-1">Reports for Department Performance Assetments</h4>
+    <div class="d-flex align-items-center my-2">
+        <h4 class="flex-grow-1">Department Score Reports (KPI)</h4>
         <span class="justify-content-end gap-2"></span>
     </div>
 
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a asp-page="/Dashboard/Index">Dashboard</a></li>
-            @* <li class="breadcrumb-item"><a asp-page="/Reports/Submissions/Departments/Index">Reports</a></li> *@
-            <li class="breadcrumb-item">Reports</li>
-            <li class="breadcrumb-item active">Submissions</li>
+            <li class="breadcrumb-item"><a asp-page="/Reports/Submissions/Index">Reports</a></li>
+            <li class="breadcrumb-item active">Department Score</li>
         </ol>
     </nav>
 </div>

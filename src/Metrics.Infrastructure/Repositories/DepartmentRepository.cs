@@ -60,13 +60,11 @@ public class DepartmentRepository : IDepartmentRepository
 
     public async Task<Department?> FindByIdAsync(long id)
     {
-        var department = await _context.Departments
-            // .Include(e => e.Employees)
-            .Where(e => e.Id == id)
-            .FirstOrDefaultAsync();
-
-        // if (department == null)
-        //     throw new NotFoundException("Department not found.");
+        // var department = await _context.Departments
+        //     .Include(e => e.ApplicationUsers)
+        //     .Where(e => e.Id == id)
+        //     .FirstOrDefaultAsync();
+        var department = await _context.Departments.FindAsync(id);
 
         return department;
     }

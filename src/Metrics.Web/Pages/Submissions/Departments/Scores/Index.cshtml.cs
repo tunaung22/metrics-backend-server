@@ -8,7 +8,7 @@ using System.Security.Claims;
 
 namespace Metrics.Web.Pages.Submissions.Departments.Scores;
 
-[Authorize(Policy = "CanSubmitScorePolicy")]
+[Authorize(Policy = "CanSubmitBaseScorePolicy")]
 public class IndexModel : PageModel
 {
     private readonly IUserService _userService;
@@ -55,17 +55,6 @@ public class IndexModel : PageModel
 
     public async Task<IActionResult> OnGetAsync()
     {
-
-        // var listItems = await LoadKpiPeriodListItems();
-        var KpiPeriodList = await LoadKpiSubmissionPeriodListItems();
-        if (KpiPeriodList.Count <= 0)
-        {
-            // ModelState.AddModelError("", "No KPI Periods Avaiable Currently");
-            IsSubmissionAvaiable = false;
-            return Page();
-        }
-        IsSubmissionAvaiable = true;
-
         // which period is already submitted?
         /*
             - select user_id
@@ -84,6 +73,15 @@ public class IndexModel : PageModel
                                     - complete
         */
 
+        // var listItems = await LoadKpiPeriodListItems();
+        var KpiPeriodList = await LoadKpiSubmissionPeriodListItems();
+        if (KpiPeriodList.Count <= 0)
+        {
+            IsSubmissionAvaiable = false;
+            return Page();
+        }
+        IsSubmissionAvaiable = true;
+
         KpiSubmissionPeriods = [];
 
         var currentUser = await GetCurrentUser();
@@ -95,9 +93,24 @@ public class IndexModel : PageModel
             var submissionCount = await _kpiSubmissionService
                 .FindCountByUserIdByKpiPeriodIdAsync(currentUser.Id, KpiPeriodList[i].Id);
 
-            if (departmentCount - 1 != submissionCount)
+            departmentCount -= 1; // Reduce for own department
+
+            // ---------- COMPLETE ----------------------------------------
+            if (departmentCount == submissionCount)
             {
-                // KpiPeriodList[i] = incomplete
+                KpiSubmissionPeriods.Add(new KpiSubmissionPeriodModel
+                {
+                    PeriodName = KpiPeriodList[i].PeriodName,
+                    SubmissionStartDate = KpiPeriodList[i].SubmissionStartDate,
+                    SubmissionEndDate = KpiPeriodList[i].SubmissionEndDate,
+                    IsSubmitted = true
+                });
+            }
+            // ---------- INCOMPLETE -----------------------------------
+            // ----- departmentCound > submissionCount -----
+            // ----- departmentCound < submissionCount -----
+            else
+            {
                 KpiSubmissionPeriods.Add(new KpiSubmissionPeriodModel
                 {
                     PeriodName = KpiPeriodList[i].PeriodName,
@@ -108,25 +121,13 @@ public class IndexModel : PageModel
                         && DateTimeOffset.Now.UtcDateTime < KpiPeriodList[i].SubmissionEndDate
                 });
             }
-            else
-            {
-                // KpiPeriodList[i] = complete
-                KpiSubmissionPeriods.Add(new KpiSubmissionPeriodModel
-                {
-                    PeriodName = KpiPeriodList[i].PeriodName,
-                    SubmissionStartDate = KpiPeriodList[i].SubmissionStartDate,
-                    SubmissionEndDate = KpiPeriodList[i].SubmissionEndDate,
-                    IsSubmitted = true
-                });
-            }
-
         }
-
 
         return Page();
     }
 
 
+    // ========== METHODS ======================================================
     private async Task<List<KpiPeriodGetDto>> LoadKpiPeriodListItems()
     {
         var kpiPeriods = await _kpiSubmissionPeriodService.FindAllByDateAsync(SubmissionTime = DateTimeOffset.UtcNow);

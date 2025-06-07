@@ -35,6 +35,7 @@ public class IndexModel : PageModel
         [StringLength(200, ErrorMessage = "Department name must not exceed the length of 200 characters.")]
         public string DepartmentName { get; set; } = null!;
     }
+
     // =========================================================================
 
 
@@ -43,6 +44,10 @@ public class IndexModel : PageModel
 
     public IEnumerable<DepartmentModel> Departments { get; set; } = [];
 
+    [TempData]
+    public string? StatusMessage { get; set; }
+
+    // =============== Pagination ==============================================
     [BindProperty(SupportsGet = true)]
     public int CurrentPage { get; set; } = 1;
     public int PageSize { get; set; } = 10;

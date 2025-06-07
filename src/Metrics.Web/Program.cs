@@ -168,16 +168,24 @@ builder.Services.AddAuthorizationBuilder()
         .Build())
     .AddPolicy("CanAccessAdminFeaturePolicy", policy =>
     {
-        // policy.RequireClaim("Permission", "CanAccessAdminFeature");
         policy.RequireRole("Admin");
     })
-    .AddPolicy("CanSubmitScorePolicy", policy =>
+    .AddPolicy("CanSubmitBaseScorePolicy", policy =>
     {
-        // policy.RequireClaim("Permission", "ScoreSubmissionCandidate");
-        policy
-            .RequireRole("Staff");
-        // .RequireRole("hod")
-        // .RequireRole("management");
+        policy.RequireRole("Staff");
+        policy.RequireClaim("UserGroup", ["Staff", "HOD", "Management"]);
+    })
+    .AddPolicy("CanSubmitKeyScorePolicy", policy =>
+    {
+        policy.RequireRole("Staff");
+        // Requires HOD, Management
+        policy.RequireClaim("UserGroup", ["HOD", "Management"]);
+    })
+    .AddPolicy("CanSubmitCaseFeedbackPolicy", policy =>
+    {
+        policy.RequireRole("Staff");
+        // Requires HOD, Management
+        policy.RequireClaim("UserGroup", ["HOD", "Management"]);
     });
 builder.Services.AddSingleton<IAuthorizationHandler, AllowLockedUserHandler>();
 
@@ -190,6 +198,7 @@ builder.Services.AddRazorPages(options =>
     options.Conventions.AuthorizeFolder("/Manage", "CanAccessAdminFeaturePolicy");
     options.Conventions.AuthorizeFolder("/Reports", "CanAccessAdminFeaturePolicy");
 });
+// builder.Services.AddControllersWithViews();
 builder.Services.AddControllers();
 
 // ----- Session -----
@@ -209,20 +218,25 @@ builder.Services.AddOpenApi();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 // ===== Repository =========
-builder.Services.AddScoped<IDepartmentRepository, DepartmentRepository>();
-builder.Services.AddScoped<IKpiSubmissionPeriodRepository, KpiSubmissionPeriodRepository>();
-builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<IUserTitleRepository, UserTitleRepository>();
-builder.Services.AddScoped<IKpiSubmissionRepository, KpiSubmissionRepository>();
+builder.Services.AddScoped<IDepartmentRepository, DepartmentRepository>()
+    .AddScoped<IKpiSubmissionPeriodRepository, KpiSubmissionPeriodRepository>()
+    .AddScoped<IUserRepository, UserRepository>()
+    .AddScoped<IUserTitleRepository, UserTitleRepository>()
+    .AddScoped<IKpiSubmissionRepository, KpiSubmissionRepository>()
+    .AddScoped<IKeyMetricRepository, KeyMetricRepository>()
+    .AddScoped<IDepartmentKeyMetricRepository, DepartmentKeyMetricRepository>();
 // ===== Service ============
-builder.Services.AddScoped<ISeedingService, SeedingService>();
-builder.Services.AddScoped<IDepartmentService, DepartmentService>();
-builder.Services.AddScoped<IKpiSubmissionPeriodService, KpiSubmissionPeriodService>();
-builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<IUserTitleService, UserTitleService>();
-builder.Services.AddScoped<IUserAccountService, UserAccountService>();
-builder.Services.AddScoped<IUserRoleService, UserRoleService>();
-builder.Services.AddScoped<IKpiSubmissionService, KpiSubmissionService>();
+builder.Services
+    .AddScoped<ISeedingService, SeedingService>()
+    .AddScoped<IDepartmentService, DepartmentService>()
+    .AddScoped<IKpiSubmissionPeriodService, KpiSubmissionPeriodService>()
+    .AddScoped<IUserService, UserService>()
+    .AddScoped<IUserTitleService, UserTitleService>()
+    .AddScoped<IUserAccountService, UserAccountService>()
+    .AddScoped<IUserRoleService, UserRoleService>()
+    .AddScoped<IKpiSubmissionService, KpiSubmissionService>()
+    .AddScoped<IKeyMetricService, KeyMetricService>()
+    .AddScoped<IDepartmentKeyMetricService, DepartmentKeyMetricService>();
 
 // ========== Exception Handling ==============================
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
@@ -433,7 +447,7 @@ app.MapControllers();
 //     // pattern: "mvc/{controller=Home}/{action=Index}")
 // app.MapControllerRoute(
 //     name: "default",
-//     pattern: "app/{controller=Home}/{action=Index}/{id?}");
+//     pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.MapOpenApi();
 
