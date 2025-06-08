@@ -1,9 +1,8 @@
-﻿@page
+﻿@page "/Manage/Submissions/Department-Key-Metrics/{periodName}/View"
 @model Metrics.Web.Pages.Manage.Submissions.DepartmentKeyMetrics.ViewModel
 @{
     ViewData["Title"] = $"Key Metrics for {Model.CurrentPeriodName}";
 }
-
 
 <div class="sectionTitle">
     <div class="d-flex align-items-center my-2">
@@ -14,98 +13,194 @@
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a asp-page="/Dashboard/Index">Dashboard</a></li>
-            <li class="breadcrumb-item"><a asp-page="/Manage/Submissions/KeyMetrics/Index">Key Metrics</a></li>
+            <li class="breadcrumb-item"><a asp-page="/Manage/Submissions/DepartmentKeyMetrics/Index">Period List</a></li>
             <li class="breadcrumb-item active">View</li>
         </ol>
     </nav>
 </div>
 
 <div class="container">
-    <div class="bg-light p-4 rounded-2">
-        <div class="filter-toolbar mb-4 d-flex justify-content-between">
-          
-        </div>
-        <div class="">
-            <div class="col-4">
-                @* <form id="form__departmentSelection" method="get"> *@
-                            @* onchange="this.form.submit()" *@
-                    @* <select asp-for="Department"
-                            asp-items="Model.DepartmentListItems"
-                            class="form-select" 
-                            size="10" 
-                            aria-label="Select Department">
-                    </select> *@
-                @* </form> *@
-            </div>
-            <div class="col-8">
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="" id="checkDefault">
-                    <label class="form-check-label" for="checkDefault">
-                        Default checkbox
-                    </label>
-                </div>
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="" id="checkChecked" checked>
-                    <label class="form-check-label" for="checkChecked">
-                        Checked checkbox
-                    </label>
-                </div>
-            </div>
-        </div>
 
-        @* <table id="keyMetricTable" class="table table-bordered table-striped">
-            <thead>
-                <tr>
-                    <th>Key Metric</th>
-                    <th>Description</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @if (Model.DepartmentKeyMetrics.Any())
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class=" p-4 rounded-2">
+        @* <div class="filter-toolbar mb-4 d-flex justify-content-between">
+        </div> *@
+
+        <div class="col">
+            <div class="row mb-3">
+                <div class="d-flex align-items-center gap-4">
+                    <span class="col-sm-12 col-md-4">
+                        <form id="form__departmentSelection" method="get">
+                            <label class="form-label" for="CurrentDepartmentCode">Department</label>
+                            <select asp-for="CurrentDepartmentCode"
+                                    asp-items="Model.DepartmentListItems"
+                                    name="department"
+                                    onchange="this.form.submit()"
+                                    class="form-select p-2" 
+                                    aria-label="Select Department">
+                            </select>
+                        </form>
+                        <span class="mx-4">
+                        </span>
+                    </span>
+                    @* <span class="justify-content-end gap-2">
+                        <button type="submit" class="btn btn-primary me-2">
+                            <i class="bi bi-check-circle"></i> Save</button>
+                    </span> *@
+                </div>
+            </div>
+
+            @* @if(Model.CurrentDepartmentCode != null)
+            {
+                <div class="row mb-3">
+                    <form method="get">
+                        <label for="">Key Metrics</label>
+                       <select asp-for="CurrentDepartmentCode"
+                                    asp-items="Model.DepartmentListItems"
+                                    name="department"
+                                    onchange="this.form.submit()"
+                                    size="10"
+                                    class="form-select p-2" 
+                                    aria-label="Select Department">
+                            </select>
+                    </form>
+                </div>
+            } *@
+
+            @* @if(Model.DepartmentKeyMetrics.Any()) *@
+            @if (Model.CurrentDepartmentCode != null)
+            {
+                @if(Model.KeyMetrics.Any())
                 {
-                    @foreach(var p in Model.DepartmentKeyMetrics)
-                    {
-                        <tr>
-                            <td class="text-center">
-                                <a asp-page="View" 
-                                    asp-route-periodName="@p.MetricTitle"
-                                    class="link-primary 
-                                            link-offset-2 
-                                            link-underline-opacity-25 
-                                            link-underline-opacity-100-hover">
-                                    <strong>@p.MetricTitle</strong></a>
-                            </td>
-                            <td class="text-center">
-                                <a asp-page="View" 
-                                    asp-route-periodName="@p.PeriodName"
-                                    class="btn btn-sm btn-outline-primary my-2 my-lg-0 me-2">
-                                    <strong><i class="bi bi-clipboard2-data"> </i>Details</strong></a>
-                            </td>
-                        </tr>
-                    }
+                    @* <div class="row mb-3" style="max-height: 40vh; overflow-y: auto;">
+                        @foreach(var key in Model.KeyMetrics)
+                        {
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" 
+                                        type="checkbox" 
+                                        id="@key.MetricCode"
+                                        value="@key.MetricCode">
+                                <label class="form-check-label" for="@key.MetricCode">
+                                    @key.MetricTitle
+                                </label>
+                            </div>
+                        }
+                    </div> *@
+                    <div class="table-container row">
+                    <table id="departmentKeyMetricTable" class="table table-bordered" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th class="">Key Metric</th>
+                                <th class="colActions">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if(Model.KeyMetrics.Any())
+                            {
+                                @foreach(var k in Model.KeyMetrics)
+                                {
+                                    // find KeyMetric included in DepartmentKeyMetrics
+                                    // Null === true       -> "SET"
+                                    // Null === false
+                                    // ...isDeleted === true  -> "SET"
+                                    // ...isDeleted === false -> "UNSET"
+                                    bool toAssign = false;
+
+                                    var isExist= Model.DepartmentKeyMetrics
+                                        .Any(i => i.KeyMetricId == k.Id);
+                                    if (isExist) {
+                                        // check IS DELETED?
+                                        // show TO UNSET
+                                        var existingRecord = Model.DepartmentKeyMetrics
+                                            .Where(i => i.KeyMetricId == k.Id).First();
+
+                                        if(existingRecord.IsDeleted) {
+                                            toAssign = true;
+                                        } else {
+                                            toAssign = false;
+                                        }
+                                    } else {
+                                        // show TO SET
+                                        toAssign = true;
+                                    }
+
+                                    var textColor = toAssign
+                                        ? "text-secondary" 
+                                        : "text-success";
+                                    var buttonColor = toAssign 
+                                        ? "btn-outline-primary" 
+                                        : "btn-outline-secondary";
+
+                                    <tr>
+                                        <td class="@textColor">
+                                            @Html.Raw(toAssign
+                                                ? $"<i class='bi bi-x-circle'></i> {k.MetricTitle}" 
+                                                : $"<i class='bi bi-check-circle'></i> {k.MetricTitle}"
+                                            )
+                                        </td>
+                                        <td class="text-center">
+                                            <form method="post">
+                                                <button asp-page-handler="ToggleKeyMetric"
+                                                        asp-route-department="@Model.CurrentDepartmentCode"
+                                                        asp-route-keyMetric="@k.MetricCode"
+                                                        type="submit" style=";"
+                                                        class="btn__actionButtons btn btn-sm @(buttonColor) my-2 my-lg-0 me-2">
+                                                    
+                                                    @Html.Raw(toAssign
+                                                        ? "<i class='bi bi-check-circle-fill'></i> Assign"
+                                                        : "<i class='bi bi-x-circle-fill'></i> Remove"
+                                                    )
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                    </div>
                 }
-            </tbody>
-        </table> *@
+            }
+        </div>
     </div>
 </div>
 
 
+@section Styles {
+    <style>
+        .btn__actionButtons {
+            width: 8em;
+        }
+        .table-container {
+            max-height: 50vh; /* Set the desired height */
+            overflow-y: auto;  /* Enable vertical scrolling */
+        }
+    </style>
+}
+
+
 @section Scripts {
-    
     <script>
+        new DataTable('#example');
         $(function() {
-            new DataTable('#keyMetricTable', {
+            new DataTable('#departmentKeyMetricTable', {
                 paging: false,
                 info: false,
                 searching: false,
                 autoWidth: true,
+                columnDefs: [
+                    { width: "18%", targets: ["colActions"] },
+                    { orderable: false, targets: ["colActions"] },
+                ],
                 initComplete: function() {
+                    $('#departmentKeyMetricTable thead th')
+                        .addClass('text-center text-white bg-brand-color');
                     // Center align the header cells
                     @* $('#reportTable thead th').addClass('text-light text-center ');
-                    $('#reportTable thead th').addClass('valign-middle bg-brand-color');
                     $('#reportTable tbody td').addClass('valign-middle'); *@
                 }
+            });
         });
     </script>
 }

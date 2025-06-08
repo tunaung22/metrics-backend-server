@@ -54,9 +54,46 @@ public class DepartmentKeyMetricService : IDepartmentKeyMetricService
         }
     }
 
-    public Task<bool> DeleteAsync(Guid metricCode)
+    public async Task<bool> DeleteAsync(Guid code) // Soft Delete
     {
-        throw new NotImplementedException();
+        try
+        {
+            var targetKeyKpi = await _departmentKeyMetricRepository.FindByCodeAsync(code);
+            if (targetKeyKpi == null)
+                throw new NotFoundException("Department not found.");
+
+            targetKeyKpi.IsDeleted = true;
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while deleting Department Key Metric.");
+            throw new Exception("An unexpected error occurred. Please try again later.");
+        }
+    }
+
+    public async Task<bool> UnDeleteAsync(Guid DepartmentKeyMetricCode) // Soft Delete
+    {
+        try
+        {
+            var targetKeyKpi = await _departmentKeyMetricRepository
+                .FindByCodeAsync(DepartmentKeyMetricCode);
+
+            if (targetKeyKpi == null)
+                throw new NotFoundException("Department not found.");
+
+            targetKeyKpi.IsDeleted = false;
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while undeleting Department Key Metric.");
+            throw new Exception("An unexpected error occurred. Please try again later.");
+        }
     }
 
     public async Task<IEnumerable<DepartmentKeyMetric>> FindAllAsync()
@@ -149,17 +186,70 @@ public class DepartmentKeyMetricService : IDepartmentKeyMetricService
     //     }
     // }
 
-    public async Task<IEnumerable<DepartmentKeyMetric>> FindByPeriodIdAsync(long periodId)
+    public async Task<IEnumerable<DepartmentKeyMetric>> FindAllByPeriodIdAsync(long periodId)
     {
         try
         {
-            var keyKpis = await _departmentKeyMetricRepository.FindByPeriodIdAsync(periodId);
+            var keyKpis = await _departmentKeyMetricRepository.FindAllByPeriodIdAsync(periodId);
 
             return keyKpis ?? [];
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Unexpected error while querying Key KPI by period id.");
+            throw new Exception("An unexpected error occurred. Please try again later.");
+        }
+    }
+
+    public async Task<IEnumerable<DepartmentKeyMetric>> FindAllByPeriodNameAsync(string periodName)
+    {
+        try
+        {
+            var keyKpis = await _departmentKeyMetricRepository.FindAllByPeriodNameAsync(periodName);
+
+            return keyKpis ?? [];
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while querying Key KPI by period id.");
+            throw new Exception("An unexpected error occurred. Please try again later.");
+        }
+    }
+
+    public async Task<IEnumerable<DepartmentKeyMetric>> FindAllByPeriodAndDepartmentAsync(
+        string CurrentPeriodName,
+        Guid CurrentDepartmentCode)
+    {
+        try
+        {
+            var result = await _departmentKeyMetricRepository
+                .FindAllByPeriodAndDepartmentAsync(CurrentPeriodName, CurrentDepartmentCode);
+
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while querying Department Key Metric by period, department.");
+            throw new Exception("An unexpected error occurred. Please try again later.");
+        }
+    }
+
+    // FindBy PeriodName And DepartmentCode And KeyMetricCode
+    public async Task<DepartmentKeyMetric?> FindByPeriodAndDepartmentAndKeyMetricAsync(
+        string periodName,
+        Guid departmentCode,
+        Guid keyMetricCode)
+    {
+        try
+        {
+            var keyKpi = await _departmentKeyMetricRepository
+                .FindByPeriodAndDepartmentAndKeyMetricAsync(periodName, departmentCode, keyMetricCode);
+
+            return keyKpi;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while querying Department Key Metric by period, department, key metric.");
             throw new Exception("An unexpected error occurred. Please try again later.");
         }
     }

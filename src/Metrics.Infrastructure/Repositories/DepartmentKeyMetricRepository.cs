@@ -85,11 +85,49 @@ public class DepartmentKeyMetricRepository : IDepartmentKeyMetricRepository
         _context.Entry(entity).State = EntityState.Modified;
     }
 
-    public async Task<IEnumerable<DepartmentKeyMetric>> FindByPeriodIdAsync(long periodId)
+    public async Task<DepartmentKeyMetric?> FindByPeriodAndDepartmentAndKeyMetricAsync(
+           string periodName,
+           Guid departmentCode,
+           Guid keyMetricCode)
     {
         return await _context.DepartmentKeyMetrics
+        .Where(k => k.KpiSubmissionPeriod.PeriodName == periodName
+                && k.TargetDepartment.DepartmentCode == departmentCode
+                && k.KeyMetric.MetricCode == keyMetricCode)
+        .FirstOrDefaultAsync();
+    }
+
+    public async Task<IEnumerable<DepartmentKeyMetric>> FindAllByPeriodIdAsync(long periodId)
+    {
+        return await _context.DepartmentKeyMetrics
+            .Include(k => k.KpiSubmissionPeriod)
+            .Include(k => k.KeyMetric)
+            .Include(k => k.TargetDepartment)
             .OrderBy(k => k.TargetDepartment.DepartmentName)
             .Where(k => k.KpiSubmissionPeriodId == periodId)
+            .ToListAsync();
+    }
+
+    public async Task<IEnumerable<DepartmentKeyMetric>> FindAllByPeriodNameAsync(string periodName)
+    {
+        return await _context.DepartmentKeyMetrics
+            .Include(k => k.KpiSubmissionPeriod)
+            .Include(k => k.KeyMetric)
+            .Include(k => k.TargetDepartment)
+            .OrderBy(k => k.TargetDepartment.DepartmentName)
+            .Where(k => k.KpiSubmissionPeriod.PeriodName == periodName)
+            .ToListAsync();
+    }
+
+    public async Task<IEnumerable<DepartmentKeyMetric>> FindAllByPeriodAndDepartmentAsync(string periodName, Guid departmentCode)
+    {
+        return await _context.DepartmentKeyMetrics
+            .Include(k => k.KpiSubmissionPeriod)
+            .Include(k => k.KeyMetric)
+            .Include(k => k.TargetDepartment)
+            .OrderBy(k => k.TargetDepartment.DepartmentName)
+            .Where(k => k.KpiSubmissionPeriod.PeriodName == periodName
+                && k.TargetDepartment.DepartmentCode == departmentCode)
             .ToListAsync();
     }
 

@@ -64,9 +64,20 @@ public class KeyMetricService : IKeyMetricService
         throw new NotImplementedException();
     }
 
-    public Task<IEnumerable<KeyMetric>> FindAllAsync()
+    public async Task<IEnumerable<KeyMetric>> FindAllAsync()
     {
-        throw new NotImplementedException();
+        try
+        {
+            var keyMetrics = await _keyMetricRepository
+                .FindAllAsync();
+
+            return keyMetrics;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while querying Key Metrics.");
+            throw new Exception("An unexpected error occurred. Please try again later.");
+        }
     }
 
     public async Task<IEnumerable<KeyMetric>> FindAllAsync(int pageNumber = 1, int pageSize = 20)
