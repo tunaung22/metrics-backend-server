@@ -29,7 +29,7 @@
     "editor.fontSize": 14,
     "editor.letterSpacing": 0.25,
     "editor.lineHeight": 22,
-    "editor.renderWhitespace": "trailing",
+    "editor.renderWhitespace": "none",
     "editor.formatOnSave": true,
     "editor.formatOnPaste": true,
     "editor.suggestSelection": "first",

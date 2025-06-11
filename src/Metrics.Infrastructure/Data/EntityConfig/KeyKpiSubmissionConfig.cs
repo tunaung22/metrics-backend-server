@@ -17,6 +17,7 @@ public class KeyKpiSubmissionConfig : IEntityTypeConfiguration<KeyKpiSubmission>
             .HasIndex(e => new
             {
                 e.ScoreSubmissionPeriodId,
+                e.DepartmentId,
                 e.ApplicationUserId
             })
             .IsUnique();
@@ -50,12 +51,15 @@ public class KeyKpiSubmissionConfig : IEntityTypeConfiguration<KeyKpiSubmission>
             .HasForeignKey(e => e.ScoreSubmissionPeriodId)
             .OnDelete(DeleteBehavior.Restrict)
             .IsRequired();
+        builder.HasOne(e => e.TargetDepartment)
+            .WithMany()
+            .HasForeignKey(e => e.DepartmentId)
+            .OnDelete(DeleteBehavior.Restrict)
+            .IsRequired();
         builder.HasOne(e => e.SubmittedBy)
             .WithMany(e => e.KeyKpiSubmissions)
             .HasForeignKey(e => e.ApplicationUserId)
             .OnDelete(DeleteBehavior.Restrict)
             .IsRequired();
-
-
     }
 }

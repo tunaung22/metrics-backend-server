@@ -21,9 +21,10 @@ namespace Metrics.Web.Migrations
                 .HasAnnotation("ProductVersion", "9.0.2")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
+            NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "citext");
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.HasSequence("department_key_kpis_id_seq")
+            modelBuilder.HasSequence("department_key_metrics_id_seq")
                 .IncrementsBy(10);
 
             modelBuilder.HasSequence("departments_id_seq")
@@ -35,7 +36,7 @@ namespace Metrics.Web.Migrations
             modelBuilder.HasSequence("key_kpi_submissions_id_seq")
                 .IncrementsBy(10);
 
-            modelBuilder.HasSequence("key_kpis_id_seq")
+            modelBuilder.HasSequence("key_metrics_id_seq")
                 .IncrementsBy(10);
 
             modelBuilder.HasSequence("kpi_submission_periods_id_seq")
@@ -212,6 +213,8 @@ namespace Metrics.Web.Migrations
                         .IsUnique()
                         .HasDatabaseName("ix_application_users_user_code");
 
+                    NpgsqlIndexBuilderExtensions.UseCollation(b.HasIndex("UserCode"), new[] { "en_US.utf8" });
+
                     b.HasIndex("UserTitleId")
                         .HasDatabaseName("ix_application_users_user_title_id");
 
@@ -238,7 +241,7 @@ namespace Metrics.Web.Migrations
                     b.Property<string>("DepartmentName")
                         .IsRequired()
                         .HasMaxLength(200)
-                        .HasColumnType("varchar(200)")
+                        .HasColumnType("citext")
                         .HasColumnName("department_name");
 
                     b.Property<bool>("IsDeleted")
@@ -263,14 +266,14 @@ namespace Metrics.Web.Migrations
                     b.ToTable("departments", "metrics");
                 });
 
-            modelBuilder.Entity("Metrics.Application.Domains.DepartmentKeyKpi", b =>
+            modelBuilder.Entity("Metrics.Application.Domains.DepartmentKeyMetric", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
                         .HasColumnName("id");
 
-                    NpgsqlPropertyBuilderExtensions.UseHiLo(b.Property<long>("Id"), "department_key_kpis_id_seq");
+                    NpgsqlPropertyBuilderExtensions.UseHiLo(b.Property<long>("Id"), "department_key_metrics_id_seq");
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
@@ -280,40 +283,192 @@ namespace Metrics.Web.Migrations
                         .HasColumnType("bigint")
                         .HasColumnName("department_id");
 
+                    b.Property<Guid>("DepartmentKeyMetricCode")
+                        .HasColumnType("uuid")
+                        .HasColumnName("department_key_metric_code");
+
                     b.Property<bool>("IsDeleted")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
                         .HasDefaultValue(false)
                         .HasColumnName("is_deleted");
 
-                    b.Property<long>("KeyKpiMetricId")
+                    b.Property<long>("KeyMetricId")
                         .HasColumnType("bigint")
-                        .HasColumnName("key_kpi_metric_id");
+                        .HasColumnName("key_metric_id");
+
+                    b.Property<long>("KpiSubmissionPeriodId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("kpi_submission_period_id");
 
                     b.Property<DateTimeOffset>("ModifiedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("modified_at");
 
                     b.HasKey("Id")
-                        .HasName("pk_department_key_kpis");
+                        .HasName("pk_department_key_metrics");
 
                     b.HasIndex("DepartmentId")
-                        .HasDatabaseName("ix_department_key_kpis_department_id");
+                        .HasDatabaseName("ix_department_key_metrics_department_id");
 
-                    b.HasIndex("KeyKpiMetricId")
-                        .HasDatabaseName("ix_department_key_kpis_key_kpi_metric_id");
+                    b.HasIndex("KeyMetricId")
+                        .HasDatabaseName("ix_department_key_metrics_key_metric_id");
 
-                    b.ToTable("department_key_kpis", "metrics");
+                    b.HasIndex("KpiSubmissionPeriodId", "DepartmentId", "KeyMetricId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_department_key_metrics_kpi_submission_period_id_department_");
+
+                    b.ToTable("department_key_metrics", "metrics");
                 });
 
-            modelBuilder.Entity("Metrics.Application.Domains.KeyKpi", b =>
+            modelBuilder.Entity("Metrics.Application.Domains.KeyKpiSubmission", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
                         .HasColumnName("id");
 
-                    NpgsqlPropertyBuilderExtensions.UseHiLo(b.Property<long>("Id"), "key_kpis_id_seq");
+                    NpgsqlPropertyBuilderExtensions.UseHiLo(b.Property<long>("Id"), "key_kpi_submissions_id_seq");
+
+                    b.Property<string>("ApplicationUserId")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("application_user_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<long>("DepartmentId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("department_id");
+
+                    b.Property<long?>("DepartmentId1")
+                        .HasColumnType("bigint")
+                        .HasColumnName("department_id1");
+
+                    b.Property<long?>("DepartmentKeyMetricId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("department_key_metric_id");
+
+                    b.Property<long?>("KeyMetricId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("key_metric_id");
+
+                    b.Property<DateTimeOffset>("ModifiedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("modified_at");
+
+                    b.Property<long>("ScoreSubmissionPeriodId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("score_submission_period_id");
+
+                    b.Property<DateOnly>("SubmissionDate")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("date")
+                        .HasColumnName("submission_date")
+                        .HasComputedColumnSql("(submitted_at AT TIME ZONE 'UTC')::date", true);
+
+                    b.Property<DateTimeOffset>("SubmittedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("submitted_at");
+
+                    b.HasKey("Id")
+                        .HasName("pk_key_kpi_submissions");
+
+                    b.HasIndex("ApplicationUserId")
+                        .HasDatabaseName("ix_key_kpi_submissions_application_user_id");
+
+                    b.HasIndex("DepartmentId")
+                        .HasDatabaseName("ix_key_kpi_submissions_department_id");
+
+                    b.HasIndex("DepartmentId1")
+                        .HasDatabaseName("ix_key_kpi_submissions_department_id1");
+
+                    b.HasIndex("DepartmentKeyMetricId")
+                        .HasDatabaseName("ix_key_kpi_submissions_department_key_metric_id");
+
+                    b.HasIndex("KeyMetricId")
+                        .HasDatabaseName("ix_key_kpi_submissions_key_metric_id");
+
+                    b.HasIndex("ScoreSubmissionPeriodId", "DepartmentId", "ApplicationUserId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_key_kpi_submissions_score_submission_period_id_department_i");
+
+                    b.ToTable("key_kpi_submissions", "metrics");
+                });
+
+            modelBuilder.Entity("Metrics.Application.Domains.KeyKpiSubmissionItem", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseHiLo(b.Property<long>("Id"), "key_kpi_submission_items_id_seq");
+
+                    b.Property<string>("Comments")
+                        .HasColumnType("text")
+                        .HasColumnName("comments");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<long?>("DepartmentId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("department_id");
+
+                    b.Property<long>("KeyKpiMetricsId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("key_kpi_metrics_id");
+
+                    b.Property<long>("KeyKpiSubmissionId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("key_kpi_submission_id");
+
+                    b.Property<long?>("KeyMetricId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("key_metric_id");
+
+                    b.Property<DateTimeOffset>("ModifiedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("modified_at");
+
+                    b.Property<decimal>("ScoreValue")
+                        .HasColumnType("decimal(4,2)")
+                        .HasColumnName("score_value");
+
+                    b.HasKey("Id")
+                        .HasName("pk_key_kpi_submission_items");
+
+                    b.HasIndex("DepartmentId")
+                        .HasDatabaseName("ix_key_kpi_submission_items_department_id");
+
+                    b.HasIndex("KeyKpiMetricsId")
+                        .HasDatabaseName("ix_key_kpi_submission_items_key_kpi_metrics_id");
+
+                    b.HasIndex("KeyMetricId")
+                        .HasDatabaseName("ix_key_kpi_submission_items_key_metric_id");
+
+                    b.HasIndex("KeyKpiSubmissionId", "KeyKpiMetricsId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_key_kpi_submission_items_key_kpi_submission_id_key_kpi_metr");
+
+                    b.ToTable("key_kpi_submission_items", "metrics", t =>
+                        {
+                            t.HasCheckConstraint("ck_kpi_submissions_kpi_score_gt_0", "score_value >= 0");
+                        });
+                });
+
+            modelBuilder.Entity("Metrics.Application.Domains.KeyMetric", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseHiLo(b.Property<long>("Id"), "key_metrics_id_seq");
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
@@ -343,136 +498,17 @@ namespace Metrics.Web.Migrations
                         .HasColumnName("modified_at");
 
                     b.HasKey("Id")
-                        .HasName("pk_key_kpis");
+                        .HasName("pk_key_metrics");
 
                     b.HasIndex("MetricCode")
                         .IsUnique()
-                        .HasDatabaseName("ix_key_kpis_metric_code");
+                        .HasDatabaseName("ix_key_metrics_metric_code");
 
                     b.HasIndex("MetricTitle")
                         .IsUnique()
-                        .HasDatabaseName("ix_key_kpis_metric_title");
+                        .HasDatabaseName("ix_key_metrics_metric_title");
 
-                    b.ToTable("key_kpis", "metrics");
-                });
-
-            modelBuilder.Entity("Metrics.Application.Domains.KeyKpiSubmission", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseHiLo(b.Property<long>("Id"), "key_kpi_submissions_id_seq");
-
-                    b.Property<string>("ApplicationUserId")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("application_user_id");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<long?>("DepartmentId")
-                        .HasColumnType("bigint")
-                        .HasColumnName("department_id");
-
-                    b.Property<long?>("KeyKpiId")
-                        .HasColumnType("bigint")
-                        .HasColumnName("key_kpi_id");
-
-                    b.Property<DateTimeOffset>("ModifiedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("modified_at");
-
-                    b.Property<long>("ScoreSubmissionPeriodId")
-                        .HasColumnType("bigint")
-                        .HasColumnName("score_submission_period_id");
-
-                    b.Property<DateOnly>("SubmissionDate")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("date")
-                        .HasColumnName("submission_date")
-                        .HasComputedColumnSql("(submitted_at AT TIME ZONE 'UTC')::date", true);
-
-                    b.Property<DateTimeOffset>("SubmittedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("submitted_at");
-
-                    b.HasKey("Id")
-                        .HasName("pk_key_kpi_submissions");
-
-                    b.HasIndex("ApplicationUserId")
-                        .HasDatabaseName("ix_key_kpi_submissions_application_user_id");
-
-                    b.HasIndex("DepartmentId")
-                        .HasDatabaseName("ix_key_kpi_submissions_department_id");
-
-                    b.HasIndex("KeyKpiId")
-                        .HasDatabaseName("ix_key_kpi_submissions_key_kpi_id");
-
-                    b.HasIndex("ScoreSubmissionPeriodId", "ApplicationUserId")
-                        .IsUnique()
-                        .HasDatabaseName("ix_key_kpi_submissions_score_submission_period_id_application_");
-
-                    b.ToTable("key_kpi_submissions", "metrics");
-                });
-
-            modelBuilder.Entity("Metrics.Application.Domains.KeyKpiSubmissionItem", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseHiLo(b.Property<long>("Id"), "key_kpi_submission_items_id_seq");
-
-                    b.Property<string>("Comments")
-                        .HasColumnType("text")
-                        .HasColumnName("comments");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<long>("DepartmentId")
-                        .HasColumnType("bigint")
-                        .HasColumnName("department_id");
-
-                    b.Property<long>("KeyKpiMetricsId")
-                        .HasColumnType("bigint")
-                        .HasColumnName("key_kpi_metrics_id");
-
-                    b.Property<long>("KeyKpiSubmissionId")
-                        .HasColumnType("bigint")
-                        .HasColumnName("key_kpi_submission_id");
-
-                    b.Property<DateTimeOffset>("ModifiedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("modified_at");
-
-                    b.Property<decimal>("ScoreValue")
-                        .HasColumnType("decimal(4,2)")
-                        .HasColumnName("score_value");
-
-                    b.HasKey("Id")
-                        .HasName("pk_key_kpi_submission_items");
-
-                    b.HasIndex("DepartmentId")
-                        .HasDatabaseName("ix_key_kpi_submission_items_department_id");
-
-                    b.HasIndex("KeyKpiMetricsId")
-                        .HasDatabaseName("ix_key_kpi_submission_items_key_kpi_metrics_id");
-
-                    b.HasIndex("KeyKpiSubmissionId", "KeyKpiMetricsId", "DepartmentId")
-                        .IsUnique()
-                        .HasDatabaseName("ix_key_kpi_submission_items_key_kpi_submission_id_key_kpi_metr");
-
-                    b.ToTable("key_kpi_submission_items", "metrics", t =>
-                        {
-                            t.HasCheckConstraint("ck_kpi_submissions_kpi_score_gt_0", "score_value >= 0");
-                        });
+                    b.ToTable("key_metrics", "metrics");
                 });
 
             modelBuilder.Entity("Metrics.Application.Domains.KpiSubmission", b =>
@@ -623,7 +659,7 @@ namespace Metrics.Web.Migrations
 
                     b.Property<string>("TitleName")
                         .IsRequired()
-                        .HasColumnType("varchar (200)")
+                        .HasColumnType("citext")
                         .HasColumnName("title_name");
 
                     b.HasKey("Id")
@@ -794,25 +830,34 @@ namespace Metrics.Web.Migrations
                     b.Navigation("UserTitle");
                 });
 
-            modelBuilder.Entity("Metrics.Application.Domains.DepartmentKeyKpi", b =>
+            modelBuilder.Entity("Metrics.Application.Domains.DepartmentKeyMetric", b =>
                 {
-                    b.HasOne("Metrics.Application.Domains.Department", "Department")
-                        .WithMany("DepartmentKeyKpiMetrics")
+                    b.HasOne("Metrics.Application.Domains.Department", "TargetDepartment")
+                        .WithMany("DepartmentKeyMetrics")
                         .HasForeignKey("DepartmentId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
-                        .HasConstraintName("fk_department_key_kpis_departments_department_id");
+                        .HasConstraintName("fk_department_key_metrics_departments_department_id");
 
-                    b.HasOne("Metrics.Application.Domains.KeyKpi", "KeyKpi")
-                        .WithMany("DepartmentKeyKpis")
-                        .HasForeignKey("KeyKpiMetricId")
+                    b.HasOne("Metrics.Application.Domains.KeyMetric", "KeyMetric")
+                        .WithMany("DepartmentKeyMetrics")
+                        .HasForeignKey("KeyMetricId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
-                        .HasConstraintName("fk_department_key_kpis_key_kpis_key_kpi_metric_id");
+                        .HasConstraintName("fk_department_key_metrics_key_metrics_key_metric_id");
 
-                    b.Navigation("Department");
+                    b.HasOne("Metrics.Application.Domains.KpiSubmissionPeriod", "KpiSubmissionPeriod")
+                        .WithMany()
+                        .HasForeignKey("KpiSubmissionPeriodId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_department_key_metrics_kpi_submission_periods_kpi_submissio");
 
-                    b.Navigation("KeyKpi");
+                    b.Navigation("KeyMetric");
+
+                    b.Navigation("KpiSubmissionPeriod");
+
+                    b.Navigation("TargetDepartment");
                 });
 
             modelBuilder.Entity("Metrics.Application.Domains.KeyKpiSubmission", b =>
@@ -824,15 +869,27 @@ namespace Metrics.Web.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_key_kpi_submissions_users_application_user_id");
 
-                    b.HasOne("Metrics.Application.Domains.Department", null)
-                        .WithMany("DepartmentMetricsScores")
+                    b.HasOne("Metrics.Application.Domains.Department", "TargetDepartment")
+                        .WithMany()
                         .HasForeignKey("DepartmentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
                         .HasConstraintName("fk_key_kpi_submissions_departments_department_id");
 
-                    b.HasOne("Metrics.Application.Domains.KeyKpi", null)
+                    b.HasOne("Metrics.Application.Domains.Department", null)
+                        .WithMany("DepartmentMetricsScores")
+                        .HasForeignKey("DepartmentId1")
+                        .HasConstraintName("fk_key_kpi_submissions_departments_department_id1");
+
+                    b.HasOne("Metrics.Application.Domains.DepartmentKeyMetric", null)
                         .WithMany("KeyKpiSubmissions")
-                        .HasForeignKey("KeyKpiId")
-                        .HasConstraintName("fk_key_kpi_submissions_key_kpis_key_kpi_id");
+                        .HasForeignKey("DepartmentKeyMetricId")
+                        .HasConstraintName("fk_key_kpi_submissions_department_key_metrics_department_key_m");
+
+                    b.HasOne("Metrics.Application.Domains.KeyMetric", null)
+                        .WithMany("KeyKpiSubmissions")
+                        .HasForeignKey("KeyMetricId")
+                        .HasConstraintName("fk_key_kpi_submissions_key_metrics_key_metric_id");
 
                     b.HasOne("Metrics.Application.Domains.KpiSubmissionPeriod", "TargetPeriod")
                         .WithMany("KeyKpiSubmissions")
@@ -843,24 +900,24 @@ namespace Metrics.Web.Migrations
 
                     b.Navigation("SubmittedBy");
 
+                    b.Navigation("TargetDepartment");
+
                     b.Navigation("TargetPeriod");
                 });
 
             modelBuilder.Entity("Metrics.Application.Domains.KeyKpiSubmissionItem", b =>
                 {
-                    b.HasOne("Metrics.Application.Domains.Department", "TargetDepartment")
+                    b.HasOne("Metrics.Application.Domains.Department", null)
                         .WithMany("KeyKpiSubmissionItems")
                         .HasForeignKey("DepartmentId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired()
                         .HasConstraintName("fk_key_kpi_submission_items_departments_department_id");
 
-                    b.HasOne("Metrics.Application.Domains.KeyKpi", "TargetMetric")
+                    b.HasOne("Metrics.Application.Domains.DepartmentKeyMetric", "TargetMetric")
                         .WithMany("KeyKpiSubmissionItems")
                         .HasForeignKey("KeyKpiMetricsId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
-                        .HasConstraintName("fk_key_kpi_submission_items_key_kpis_key_kpi_metrics_id");
+                        .HasConstraintName("fk_key_kpi_submission_items_department_key_metrics_key_kpi_met");
 
                     b.HasOne("Metrics.Application.Domains.KeyKpiSubmission", "ParentSubmission")
                         .WithMany("KeyKpiSubmissionItems")
@@ -869,9 +926,12 @@ namespace Metrics.Web.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_key_kpi_submission_items_key_kpi_submissions_key_kpi_submis");
 
-                    b.Navigation("ParentSubmission");
+                    b.HasOne("Metrics.Application.Domains.KeyMetric", null)
+                        .WithMany("KeyKpiSubmissionItems")
+                        .HasForeignKey("KeyMetricId")
+                        .HasConstraintName("fk_key_kpi_submission_items_key_metrics_key_metric_id");
 
-                    b.Navigation("TargetDepartment");
+                    b.Navigation("ParentSubmission");
 
                     b.Navigation("TargetMetric");
                 });
@@ -974,7 +1034,7 @@ namespace Metrics.Web.Migrations
                 {
                     b.Navigation("ApplicationUsers");
 
-                    b.Navigation("DepartmentKeyKpiMetrics");
+                    b.Navigation("DepartmentKeyMetrics");
 
                     b.Navigation("DepartmentMetricsScores");
 
@@ -983,10 +1043,8 @@ namespace Metrics.Web.Migrations
                     b.Navigation("KeyKpiSubmissionItems");
                 });
 
-            modelBuilder.Entity("Metrics.Application.Domains.KeyKpi", b =>
+            modelBuilder.Entity("Metrics.Application.Domains.DepartmentKeyMetric", b =>
                 {
-                    b.Navigation("DepartmentKeyKpis");
-
                     b.Navigation("KeyKpiSubmissionItems");
 
                     b.Navigation("KeyKpiSubmissions");
@@ -995,6 +1053,15 @@ namespace Metrics.Web.Migrations
             modelBuilder.Entity("Metrics.Application.Domains.KeyKpiSubmission", b =>
                 {
                     b.Navigation("KeyKpiSubmissionItems");
+                });
+
+            modelBuilder.Entity("Metrics.Application.Domains.KeyMetric", b =>
+                {
+                    b.Navigation("DepartmentKeyMetrics");
+
+                    b.Navigation("KeyKpiSubmissionItems");
+
+                    b.Navigation("KeyKpiSubmissions");
                 });
 
             modelBuilder.Entity("Metrics.Application.Domains.KpiSubmissionPeriod", b =>

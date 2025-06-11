@@ -1,0 +1,160 @@
+﻿@page
+@model Metrics.Web.Pages.Manage.Submissions.DepartmentKeyMetrics.CreateModel
+@{
+    ViewData["Title"] = "Create Kpi Metric";
+}
+
+<div class="sectionTitle">
+    <h4>Create New KPI Metric</h4>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-page="/Dashboard/Index">Dashboard</a></li>
+            <li class="breadcrumb-item"><a asp-page="/Manage/Departments/Index">Departments</a></li>
+            <li class="breadcrumb-item active">Create</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="content-body container">
+    <div class="bg-light p-4 border-2">
+
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+        @* @if (!ModelState.IsValid)
+        {
+            <div class="alert alert-danger">
+                <h4>There were some errors:</h4>
+                <ul>
+                    @foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
+                    {
+                        <li>@error.ErrorMessage</li>
+                    }
+                </ul>
+            </div>
+        } *@
+        
+        
+        <div class="filter-toolbar mb-4 d-flex justify-content-between">
+            <div class="d-flex gap-2">
+                <form id="form__groupSelection" method="get" class="">
+                        <select 
+                            asp-for="Period"
+                            asp-items="Model.KpiPeriodListItems"
+                            onchange="this.form.submit()"
+                            class="form-select"
+                            aria-label="Select User Group">
+                            <option value="">--------------- Select Period ---------------</option>
+                        </select>
+                </form>
+                <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+                    Add
+                </button>
+            </div>
+        </div>
+
+        @* =============== Form ================================================ *@
+        <div class="col-12 px-4 py-2 mx-auto">
+            <form method="get">
+                <div class="row mb-3">
+                    <label asp-for="Input.KpiSubmissionPeriodId" class="form-label">Period</label>
+                    <div class="col-sm-10">
+                        <select asp-for="Input.KpiSubmissionPeriodId" 
+                                asp-items="Model.KpiPeriodListItems"
+                                class="form-select" 
+                                aria-label="Select Department">
+                            <option value="" selected hidden></option>
+                        </select>
+                    </div>
+                    <div><span asp-validation-for="Input.KpiSubmissionPeriodId" class="text-danger"></span></div>
+                </div>
+            </form>
+
+            
+
+            <div id="keyList">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Fast Customer Service</h5>
+                        <p class="card-text">blablablaalbalb....</p>
+                        <a href="#" class="card-link">Edit</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+<!-- Modal -->
+<div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="staticBackdropLabel">Modal title</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="modalForm" method="post" asp-route-returnUrl="@Model.ReturnUrl"> 
+                    <div class="p-4">
+                        <div class="row mb-3">
+                            <label asp-for="Input.MetricTitle" class="form-label">Metric Title (KEY)</label>
+                            <textarea asp-for="Input.MetricTitle" tabindex="1"
+                                        id="input__metricTitle" 
+                                        class="form-control" 
+                                        rows="2"></textarea>
+                            <div><span asp-validation-for="Input.MetricTitle" class="text-danger"></span></div>
+                        </div>
+                        <div class="row mb-3">
+                            <label asp-for="Input.Description" class="form-label">Description</label>
+                            <textarea asp-for="Input.Description" tabindex="2"
+                                        id="input__description" 
+                                        class="form-control" 
+                                        rows="3"></textarea>
+                            <div><span asp-validation-for="Input.Description" class="text-danger"></span></div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" tabindex="4" 
+                        class="btn btn-secondary" 
+                        data-bs-dismiss="modal">Close</button>
+                @* <button type="submit" tabindex="3"
+                        class="btn btn-primary ms-2">
+                    <i class="bi bi-check-circle"></i> Save</button> *@
+                <button type="submit" tabindex="3"
+                        class="btn btn-primary" 
+                        id="submitButton">Submit</button>
+            </div>
+            </div>
+        </div>
+</div>
+                
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+    
+    <script>
+        $(function() {
+            $("#staticBackdrop").on("shown.bs.modal", function() {
+                $("#input__metricTitle").focus();
+            });
+            $("#staticBackdrop").on("hidden.bs.modal", () => {
+                $("#input__metricTitle").val("");
+                $("#input__description").val("");
+            });
+
+            $("#submitButton").on("click", function() {
+                var form = $("#modalForm")[0];
+
+                if (form.checkValidity()) {
+                    form.submit();
+                } else {
+                    form.reportValidity();
+                }
+            });
+        });
+    </script>
+}

@@ -46,7 +46,7 @@ public class CreateModel : PageModel
         {
             var entity = new UserTitle
             {
-                TitleName = Input.TitleName,
+                TitleName = Input.TitleName.Trim(),
                 Description = Input.Description ?? string.Empty
             };
 

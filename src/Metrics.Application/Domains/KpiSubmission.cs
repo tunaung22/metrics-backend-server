@@ -12,7 +12,7 @@ public class KpiSubmission : IAuditColumn
     public string? NegativeAspects { get; set; } = string.Empty;
     public string? Comments { get; set; } = string.Empty;
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
-    public DateTimeOffset ModifiedAt { get; set; } = DateTimeOffset.UtcNow;
+    public DateTimeOffset ModifiedAt { get; set; }
 
     // Foreign Keys
     public long KpiSubmissionPeriodId { get; set; }

@@ -9,7 +9,7 @@ public partial class KpiSubmissionPeriod : IAuditColumn
     public DateTimeOffset SubmissionStartDate { get; set; }
     public DateTimeOffset SubmissionEndDate { get; set; }
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
-    public DateTimeOffset ModifiedAt { get; set; } = DateTimeOffset.UtcNow;
+    public DateTimeOffset ModifiedAt { get; set; }
 
     // Collection Navigational Properties
     public List<KpiSubmission> KpiSubmissions { get; set; } = [];

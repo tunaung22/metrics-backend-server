@@ -148,32 +148,37 @@ KPI Score are submitted by the following category:
 | `/manage/submissions/periods/create`            | create new kpi period |
 | `/manage/submissions/periods/{periodName}/edit` | edit kpi period       |
 
-| Manage score metrics (KEYS)                               | Description                         |
-| --------------------------------------------------------- | ----------------------------------- |
-| `/manage/submissions/keymetrics`                          | list score metrics                  |
-| `/manage/submissions/keymetrics/{department-code}`        | view score metrics for department   |
-| `/manage/submissions/keymetrics/create/{department-code}` | create score metrics for department |
-| `/manage/submissions/keymetrics/{department-code}/edit`   | edit score metrics for department   |
+---
+
+| Manage Key Metrics (KEYS)                                     | Description                             |
+| ------------------------------------------------------------- | --------------------------------------- |
+| `/manage/submissions/key-metrics`                             | list Key Metrics                        |
+| `/manage/submissions/key-metrics/create`                      | create Key Metrics                      |
+| `/manage/submissions/key-metrics/edit`                        | edit Key Metrics                        |
+| ~~`/manage/submissions/key-metrics/view`~~                    | ~~view Key Metrics~~                    |
+| `/manage/submissions/department-key-metrics`                  | list periods for Department Key Metric  |
+| `/manage/submissions/department-key-metrics/{2025-01}`        | list Department Key Metrics by {Period} |
+| `/manage/submissions/department-key-metrics/{2025-01}/create` | create Key Metrics for {Department}     |
+| `/manage/submissions/department-key-metrics/{2025-01}/edit`   | edit Key Metrics for {Department}       |
+
+## Submission Routes
+
+| Department Score Submission (for staff, hod, management) | Description            |
+| -------------------------------------------------------- | ---------------------- |
+| `/submissions`                                           | submissions index page |
+| `/submissions/departments/scores`                        | list submissions       |
+| `/submissions/departments/scores/submit/{period-name}`   | submit for kpi scores  |
+| `/submissions/departments/scores/success`                | submission success     |
+
+| KEY Metric Submission (KEY KPI)                            | Description               |
+| ---------------------------------------------------------- | ------------------------- |
+| `/submissions/departments/key-metric`                      | list submissions          |
+| `/submissions/departments/key-metric/submit/{period-name}` | submit for key kpi scores |
+| `/submissions/departments/key-metric/success`              | submission success        |
 
 ---
 
-| Submissions Index Page (for staff, hod, management) | Description            |
-| --------------------------------------------------- | ---------------------- |
-| `/submissions`                                      | submissions index page |
-
-| KPI Submission (for staff, hod, management)            | Description           |
-| ------------------------------------------------------ | --------------------- |
-| `/submissions/departments/scores`                      | list submissions      |
-| `/submissions/departments/scores/submit/{period-name}` | submit for kpi scores |
-| `/submissions/departments/scores/success`              | submission success    |
-
-| KEY KPI Submission                                           | Description               |
-| ------------------------------------------------------------ | ------------------------- |
-| `/submissions/departments/metricscores`                      | list submissions          |
-| `/submissions/departments/metricscores/submit/{period-name}` | submit for key kpi scores |
-| `/submissions/departments/metricscores/success`              | submission success        |
-
----
+## Reports
 
 | Reports - Overview... | Description |
 | --------------------- | ----------- |

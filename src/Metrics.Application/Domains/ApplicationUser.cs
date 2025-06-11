@@ -11,7 +11,7 @@ public class ApplicationUser : IdentityUser, IAuditColumn
     public string ProfilePictureUrl { get; set; } = string.Empty;
     public int PermissionLevel { get; set; }
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
-    public DateTimeOffset ModifiedAt { get; set; } = DateTimeOffset.UtcNow;
+    public DateTimeOffset ModifiedAt { get; set; }
 
     // ----- Foreign Keys
     public long DepartmentId { get; set; }

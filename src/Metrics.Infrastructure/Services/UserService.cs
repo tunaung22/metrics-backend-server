@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Npgsql;
+using System.Security.Claims;
 
 namespace Metrics.Infrastructure.Services;
 
@@ -18,19 +19,22 @@ public class UserService : IUserService
     private readonly ILogger<UserService> _logger;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly RoleManager<ApplicationRole> _roleManager;
+    private readonly IUserTitleService _userTitleService;
     private readonly IUserRepository _userRepository;
 
     public UserService(
         MetricsDbContext context,
         ILogger<UserService> logger,
-                UserManager<ApplicationUser> userManager,
+        UserManager<ApplicationUser> userManager,
         RoleManager<ApplicationRole> roleManager,
+        IUserTitleService userTitleService,
         IUserRepository userRepository)
     {
         _context = context;
         _logger = logger;
         _userManager = userManager;
         _roleManager = roleManager;
+        _userTitleService = userTitleService;
         _userRepository = userRepository;
     }
 
@@ -94,6 +98,17 @@ public class UserService : IUserService
             // throw new Exception("User account creation failed.");
 
             var newUser = await _userManager.FindByNameAsync(createDto.UserName);
+
+            if (newUser != null)
+            {
+                var userTitle = await _userTitleService.FindByIdAsync(createDto.UserTitleId);
+                if (userTitle != null)
+                {
+                    // ----- ADD Claim -----------------------------------------
+                    await _userManager.AddClaimAsync(newUser,
+                        new Claim("UserGroup", userTitle.TitleName.ToString()));
+                }
+            }
 
             // --- Assign Role SINGLE ---
             // var roleToAssign = await _roleManager.FindByIdAsync(dto.RoleId);
@@ -201,8 +216,6 @@ public class UserService : IUserService
             // if (existing.RowVersion != application_user.RowVersion)
             //     return Result<ApplicationUser>.Fail("Concurrency conflict.");
 
-            // Note: This is full update (**not partial update)
-
             // 1. Update ApplicationUser
             targetUser.UserCode = updateDto.UserCode;
             targetUser.DepartmentId = updateDto.DepartmentId;
@@ -210,10 +223,36 @@ public class UserService : IUserService
             var result = await _userManager.UpdateAsync(targetUser);
             if (!result.Succeeded)
                 throw new DbUpdateException("User update failed.");
+
             // 2. Update Role
             var currentRoles = await _userManager.GetRolesAsync(targetUser);
             await _userManager.RemoveFromRolesAsync(targetUser, currentRoles);
             await _userManager.AddToRolesAsync(targetUser, updateDto.RoleNames);
+
+            var updatedUser = await _userManager.FindByIdAsync(userId);
+            if (updatedUser == null)
+                throw new NotFoundException("Can't load updated user.");
+            else
+            {
+                // 3. Update Claim
+                var userTitle = await _userTitleService.FindByIdAsync(updateDto.UserTitleId);
+                if (userTitle != null)
+                {
+                    var existingClaims = await _userManager.GetClaimsAsync(updatedUser);
+                    if (existingClaims.Any())
+                    {
+                        // Remove existing claims of type "UserGroup"
+                        var userGroupClaims = existingClaims.Where(c => c.Type == "UserGroup").ToList();
+                        foreach (var claim in existingClaims)
+                        {
+                            await _userManager.RemoveClaimAsync(updatedUser, claim);
+                        }
+                    }
+                    // Add Current Claim fo type "UserGroup"
+                    await _userManager.AddClaimAsync(updatedUser,
+                            new Claim("UserGroup", userTitle.TitleName));
+                }
+            }
             // foreach (var roleId in updateDto.RoleIds)
             // {
             //     // role.id == roleId ? pass : assign role
@@ -221,12 +260,6 @@ public class UserService : IUserService
             //     // existing roles
             //     var existingRoles = await _userManager.GetRolesAsync(targetUser);
             // }
-
-            // refetch updated user
-            var updatedUser = await _userManager.FindByIdAsync(userId);
-            if (updatedUser == null)
-                throw new NotFoundException("Can't load updated user.");
-
             await _context.SaveChangesAsync();
             await transaction.CommitAsync();
 
@@ -315,7 +348,11 @@ public class UserService : IUserService
             if (string.IsNullOrEmpty(username))
                 throw new Exception("Username is required.");
 
-            var user = await _userManager.FindByNameAsync(username);
+            // var user = await _userManager.FindByNameAsync(username);
+            var user = await _userManager.Users
+                .Include(u => u.UserTitle)
+                .Where(u => u.UserName == username)
+                .FirstOrDefaultAsync();
             if (user == null)
                 throw new Exception($"User not found.");
 

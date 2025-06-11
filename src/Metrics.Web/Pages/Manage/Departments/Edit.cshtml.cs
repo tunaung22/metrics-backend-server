@@ -52,7 +52,7 @@ public class EditModel : PageModel
             // dto to inputmodel
             FormInput = new DepartmentInputModel
             {
-                DepartmentName = result.DepartmentName
+                DepartmentName = result.DepartmentName.Trim()
             };
         }
 
@@ -79,10 +79,13 @@ public class EditModel : PageModel
             };
             await _departmentService.UpdateAsync(DepartmentCode, entity);
 
+            TempData["StatusMessage"] = $"The department updated successfully.";
             // Redirect to return URL or default to Index
-            var returnUrl = ViewData["ReturnUrl"] as string;
-            if (!string.IsNullOrEmpty(returnUrl))
-                return LocalRedirect(returnUrl);
+            if (!string.IsNullOrEmpty(ReturnUrl))
+                return LocalRedirect(ReturnUrl);
+            // var returnUrl = ViewData["ReturnUrl"] as string;
+            // if (!string.IsNullOrEmpty(returnUrl))
+            //     return LocalRedirect(returnUrl);
 
             return RedirectToPage("./Index");
         }

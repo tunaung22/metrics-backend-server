@@ -3,17 +3,23 @@
 @inject SignInManager<ApplicationUser> SignInManager
 @inject UserManager<ApplicationUser> UserManager
 
+@{
+    var user = await UserManager.GetUserAsync(User);
+}
+
 <ul class="navbar-nav">
 @if (SignInManager.IsSignedIn(User))
 {
     <li class="nav-item">
-        <a id="manage" class="nav-link" 
+        <a id="loginPartial__userInfo"
+            class="nav-link" 
             data-bs-toggle="tooltip" 
             data-bs-title="Profile" 
             data-bs-placement="bottom"
             asp-area="" 
             asp-page="/Account/Me/Index" 
-            title="Profile"><strong>@UserManager.GetUserName(User)</strong></a>
+            title="Profile">
+            <strong>@UserManager.GetUserName(User)</strong></a>
     </li>
     <li class="nav-item">
         <form id="logoutForm" class="form-inline" asp-area="" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Page("/Account/Login", new { area = "" })">

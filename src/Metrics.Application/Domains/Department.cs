@@ -9,13 +9,13 @@ public class Department : IAuditColumn, ISoftDelete
     public string DepartmentName { get; set; } = null!;
     public bool IsDeleted { get; set; }
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
-    public DateTimeOffset ModifiedAt { get; set; } = DateTimeOffset.UtcNow;
+    public DateTimeOffset ModifiedAt { get; set; }
 
     // Collection Navigational Properties
     public List<ApplicationUser> ApplicationUsers { get; set; } = [];
     public List<KpiSubmission> DepartmentScores { get; set; } = [];
     public List<KeyKpiSubmission> DepartmentMetricsScores { get; set; } = [];
     public List<KeyKpiSubmissionItem> KeyKpiSubmissionItems { get; set; } = [];
-    public List<DepartmentKeyKpi> DepartmentKeyKpiMetrics { get; set; } = [];
+    public List<DepartmentKeyMetric> DepartmentKeyMetrics { get; set; } = [];
 
 }

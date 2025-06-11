@@ -1,4 +1,4 @@
-﻿@page
+﻿@page "/Reports/Submissions"
 @model Metrics.Web.Pages.Reports.Submissions.IndexModel
 @{
     ViewData["Title"] = "Reports List for Department Score Submissions";
@@ -58,21 +58,22 @@
                 </div> *@
             </div>
         </div>
-        <div class="col-xs-12 col-md-6 col-xl-4">
+
+        @* <div class="col-xs-12 col-md-6 col-xl-4">
             <div class="card my-4">
                 <div class="card-header">
                     Department Score Reports (KPI)
                 </div>
                 <div class="card-body">
-                    @* <h5 class="card-title">Department Score Reports</h5>
-                    <p class="card-text">Department Score Submissions reports</p> *@
+                    <h5 class="card-title">Department Score Reports</h5>
+                    <p class="card-text">Department Score Submissions reports</p>
                     <span class="d-flex justify-content-end">
                         <a asp-page="./Kpi/Index" class="btn btn-primary">View</a>
                     </span>
                 </div>
-                @* <div class="card-footer text-body-secondary">
+                <div class="card-footer text-body-secondary">
                     2 days ago
-                </div> *@
+                </div>
             </div>
         </div>
         <div class="col-xs-12 col-md-6 col-xl-4">
@@ -81,17 +82,18 @@
                     Department Score Reports (KPI)
                 </div>
                 <div class="card-body">
-                    @* <h5 class="card-title">Department Score Reports</h5>
-                    <p class="card-text">Department Score Submissions reports</p> *@
+                    <h5 class="card-title">Department Score Reports</h5>
+                    <p class="card-text">Department Score Submissions reports</p>
                     <span class="d-flex justify-content-end">
                         <a asp-page="./Kpi/Index" class="btn btn-primary">View</a>
                     </span>
                 </div>
-                @* <div class="card-footer text-body-secondary">
+                <div class="card-footer text-body-secondary">
                     2 days ago
-                </div> *@
+                </div>
             </div>
-        </div>
+        </div> *@
+
     </div>
     @* <div class="bg-light p-4 rounded-2">
         <table id="reportIndexTable" class="table table-bordered table-striped">
@@ -146,7 +148,7 @@
 @section Scripts {
     <script>
         $(function() {
-            var colActions = 2;
+            @* var colActions = 2;
             new DataTable('#reportIndexTable', {
                 paging: false,
                 info: false,
@@ -160,7 +162,7 @@
                     $('thead th').addClass('text-light text-center ');
                     $('thead th').addClass('bg-brand-color');
                 }
-            });
+            }); *@
         });
     </script>
 }

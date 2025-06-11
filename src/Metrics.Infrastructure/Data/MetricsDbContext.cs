@@ -25,10 +25,10 @@ public class MetricsDbContext : IdentityDbContext<ApplicationUser, ApplicationRo
     // public DbSet<ApplicationRole> ApplicationRoles { get; set; }
     public DbSet<UserTitle> UserTitles { get; set; }
     public DbSet<Department> Departments { get; set; }
-    public DbSet<DepartmentKeyKpi> DepartmentKeyKpis { get; set; }
-    public DbSet<KeyKpi> KeyKpis { get; set; }
     public DbSet<KpiSubmissionPeriod> KpiSubmissionPeriods { get; set; }
     public DbSet<KpiSubmission> KpiSubmissions { get; set; }
+    public DbSet<KeyMetric> KeyMetrics { get; set; }
+    public DbSet<DepartmentKeyMetric> DepartmentKeyMetrics { get; set; }
     public DbSet<KeyKpiSubmission> KeyKpiSubmissions { get; set; }
     public DbSet<KeyKpiSubmissionItem> KeyKpiSubmissionItems { get; set; }
 
@@ -98,6 +98,14 @@ public class MetricsDbContext : IdentityDbContext<ApplicationUser, ApplicationRo
     {
         base.OnModelCreating(builder);
 
+        // for Case Insensitive Collation
+        // builder.HasCollation("metric_ci_collation",
+        //     locale: "en-u-ks-primary",
+        //     provider: "icu",
+        //     deterministic: false
+        // );
+        builder.HasPostgresExtension("citext");
+
         // ** EFCore.NamingConventions package doesn't change the table name
         //    to snakecase properly.
         foreach (var entity in builder.Model.GetEntityTypes())
@@ -118,15 +126,19 @@ public class MetricsDbContext : IdentityDbContext<ApplicationUser, ApplicationRo
         */
         builder.ApplyConfiguration(new ApplicationUserConfig());
         builder.ApplyConfiguration(new ApplicationRoleConfig());
-        builder.ApplyConfiguration(new UserTitleConfig());
+        builder.ApplyConfiguration(new UserTitleConfig()); // -------------- User Group
 
         builder.ApplyConfiguration(new DepartmentConfig());
-        builder.ApplyConfiguration(new DepartmentKeyKpiConfig());
-        builder.ApplyConfiguration(new KeyKpiConfig());
-        builder.ApplyConfiguration(new KpiSubmissionPeriodConfig());
-        builder.ApplyConfiguration(new KpiSubmissionConfig());
-        builder.ApplyConfiguration(new KeyKpiSubmissionConfig());
-        builder.ApplyConfiguration(new KeyKpiSubmissionItemConfig());
+        builder.ApplyConfiguration(new KpiSubmissionPeriodConfig()); // ---- KPI Period
+
+        builder.ApplyConfiguration(new KpiSubmissionConfig()); // ---------- KPI Submission
+
+        builder
+            .ApplyConfiguration(new KeyMetricConfig()) // ---------------- Key Metric
+            .ApplyConfiguration(new DepartmentKeyMetricConfig()) // ------ Key KPI
+            .ApplyConfiguration(new KeyKpiSubmissionConfig()) // --------- Key KPI
+            .ApplyConfiguration(new KeyKpiSubmissionItemConfig()); // ---- Key KPI
+
         // ----------- Seeding -----------
         // builder.Entity<...>().HasData(...);
         // builder.Entity<Department>().HasData(

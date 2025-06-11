@@ -1,25 +1,72 @@
 ﻿@page
-
 @model Metrics.Web.Pages.IndexModel
+
+@using Microsoft.AspNetCore.Authorization
+@inject IAuthorizationService AuthorizationService
 
 @{
     ViewData["Title"] = "Home";
+    var claims = User.Claims.ToList();
+    var canSubmitBaseScore = await AuthorizationService.AuthorizeAsync(User, "CanSubmitBaseScorePolicy");
+    var canSubmitKeyKpiScore = true;
+    var canSubmitCaseFeedbackScore = true;
+    var isScoreSubmitter = (canSubmitBaseScore!= null 
+        && canSubmitKeyKpiScore 
+        && canSubmitCaseFeedbackScore);
 }
-
 
 <div class="sectionTitle">
     <div class="d-flex align-items-center">
-        <h4 class="flex-grow-1">Welcome</h4>
+        <h4 class="flex-grow-1">Welcome
+            <strong>@Model.FullName</strong>
+        </h4>
         <span class="justify-content-end gap-2"></span>
     </div>
-    @* <nav aria-label="breadcrumb">
+    <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a asp-page="/Index">Home</a></li>
-            <li class="breadcrumb-item active">Submit</li>
+            @* <li class="breadcrumb-item"><a asp-page="/Index">Home</a></li> *@
+            @* <li class="breadcrumb-item active">/ Home</li> *@
         </ol>
-    </nav> *@
+    </nav>
 </div>
 
 <div class="container">
+
+    @* <div class="p-4">
+        <h5>Your have <strong>@Model.PendingSubmission</strong> pending submissions.</h5>
+    </div> *@
+    @if(isScoreSubmitter) {
+
+        <div class="card mb-4">
+            <div class="card-header">Submissions</div>
+            <div class="card-body nav-item">
+                <strong><a class="nav-link" asp-area="" asp-page="/Submissions/Departments/Scores/Index">Submissions</a></strong>
+            </div>
+        </div>
+
+
+        @* <div class="card mb-4">
+            <div class="card-header">Pending Submissions</div>
+            <div class="card-body">
+                <h6>Department Score</h6>
+                <h6>Metric Score</h6>
+                <h6>Case Feedback</h6>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">Active Submissions</div>
+            <div class="card-body">
+
+            @if(Model.PeriodList.Any())
+            {
+                foreach(var p in Model.PeriodList)
+                {
+                    <h6>@p.PeriodName</h6>
+                }
+            }
+            </div>
+        </div> *@
+    }
 
 </div>

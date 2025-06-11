@@ -2,7 +2,7 @@
 @inject IAuthorizationService AuthorizationService
 @{
     var canAccessAdminFeatures = await AuthorizationService.AuthorizeAsync(User, "CanAccessAdminFeaturePolicy");
-    var canSubmitScore = await AuthorizationService.AuthorizeAsync(User, "CanSubmitScorePolicy");
+    var canSubmitBaseScore = await AuthorizationService.AuthorizeAsync(User, "CanSubmitBaseScorePolicy");
 }
 
 <!DOCTYPE html>
@@ -19,6 +19,9 @@
     <link rel="stylesheet" href="~/lib/bootstrap-icons/font/bootstrap-icons.min.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/lib/jquery-ui-1.14.1.custom/jquery-ui.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    @* <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet"> *@
     @* ========== CSS Section ========== *@
     @RenderSection("Styles", required: false)
 </head>
@@ -71,8 +74,8 @@
                         }
 
                         @* ========================== Employee Area ========================== *@
-                        @if(canSubmitScore.Succeeded)
-                        @* @if (User.IsInRole("staff")) *@
+                        @if(canSubmitBaseScore.Succeeded)
+                        @* @if((await AuthorizationService.AuthorizeAsync(User, "CanSubmitBaseScorePolicy")).Succeeded) *@
                         {
                             <li class="nav-item">
                                 <strong><a class="nav-link" asp-area="" asp-page="/Submissions/Departments/Scores/Index">Submissions</a></strong>

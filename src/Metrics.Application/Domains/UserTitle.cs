@@ -10,7 +10,7 @@ public class UserTitle : IAuditColumn, ISoftDelete
     public string? Description { get; set; } = string.Empty;
     public bool IsDeleted { get; set; }
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
-    public DateTimeOffset ModifiedAt { get; set; } = DateTimeOffset.UtcNow;
+    public DateTimeOffset ModifiedAt { get; set; }
 
     // ----- Collection Navigational Properties
     public List<ApplicationUser> ApplicationUsers { get; set; } = [];

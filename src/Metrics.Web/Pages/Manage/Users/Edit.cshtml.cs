@@ -145,7 +145,11 @@ public class EditModel : PageModel
 
         try
         {
+            // ----- Update User -----
+            // 1. Update User
+            // 2. Update Claim
             var updatedUser = await _userService.UpdateAsync(SelectedUserId, updateDto);
+
 
             var returnUrl = ViewData["ReturnUrl"] as string;
             if (!string.IsNullOrEmpty(returnUrl))

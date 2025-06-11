@@ -39,12 +39,12 @@
                             <td class="text-center">
                                 <strong>@period.PeriodName</strong>
                             </td>
-                            <td class="text-center">
+                            <td class="" style="padding-left: 6em;">
                                 <label>
                                     <i class="bi bi-calendar4-week text-primary"> </i> 
                                     @period.SubmissionStartDate.ToLocalTime().ToString("dd MMM, yyyy") - @period.SubmissionEndDate.ToLocalTime().ToString("dd MMM, yyyy")</label>
                             </td>
-                            <td class="text-center">
+                            <td class="" style="padding-left: 4em;">
                                 @if(period.IsSubmitted) { 
                                     <i class="bi bi-check2-circle text-success"> </i><label>Done</label> 
                                 }

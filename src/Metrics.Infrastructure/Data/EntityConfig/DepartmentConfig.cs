@@ -13,8 +13,11 @@ class DepartmentConfig : IEntityTypeConfiguration<Department>
 
         // ===== Index ======
         builder.HasKey(e => e.Id);
-        builder.HasIndex(e => e.DepartmentCode).IsUnique();
-        builder.HasIndex(e => e.DepartmentName).IsUnique();
+        builder.HasIndex(e => e.DepartmentCode)
+            .IsUnique();
+        builder.HasIndex(e => e.DepartmentName)
+            .IsUnique();
+
 
         // ===== Columns =====
         builder.Property(e => e.Id)
@@ -29,7 +32,7 @@ class DepartmentConfig : IEntityTypeConfiguration<Department>
             .IsRequired();
         builder.Property(e => e.DepartmentName)
             .HasColumnName("department_name")
-            .HasColumnType("varchar(200)")
+            .HasColumnType("citext")
             .HasMaxLength(200)
             .IsRequired();
         builder.Property(e => e.IsDeleted)

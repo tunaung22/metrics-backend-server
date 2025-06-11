@@ -9,6 +9,6 @@ public class KeyKpiMetricCategory : IAuditColumn
 
     public string CategoryName { get; set; } = null!;
     public string? Description { get; set; } = string.Empty;
-    public DateTimeOffset CreatedAt { get; set; }
+    public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
     public DateTimeOffset ModifiedAt { get; set; }
 }

@@ -86,7 +86,8 @@
                         asp-page-handler="Cancel" formnovalidate>
                         <i class="bi bi-x-circle"> </i>Cancel
                     </button>
-                    <button type="submit" class="btn btn-primary me-2" tabindex="4">
+                    <button type="submit" class="btn btn-primary me-2" tabindex="4"
+                            id="btnSave">
                         <i class="bi bi-check-circle"> </i>Save
                     </button>
                 </div>
@@ -106,7 +107,6 @@
 
             // ----- Check Period Name conflict -----
             $('#FormInput_PeriodName').on('input', function() {
-                console.log("user started typing...");
                 var inputVal = $(this).val();
                 $.ajax({
                     url: "@Url.Page("Create", "CheckKpiName")",
@@ -118,6 +118,7 @@
                         $("#feedback__periodNameInput")
                             .removeClass("text-danger")
                             .addClass("text-success");
+                        $("#btnSave").prop("disabled", false);
                     },
                     error: function(jqXHR) {
                         if (jqXHR.status === 409) {
@@ -127,7 +128,9 @@
                             $("#feedback__periodNameInput").text(errorMessage);
                             $("#feedback__periodNameInput")
                                 .removeClass("text-success")
-                                .addClass("text-danger");                        }
+                                .addClass("text-danger");
+                            $("#btnSave").prop("disabled", true);
+                            }
                         else {
                             $("#feedback__periodNameInput").text("Error checking period name avaibility.");
                         }

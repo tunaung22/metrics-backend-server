@@ -7,8 +7,6 @@
 
 <div class="sectionTitle">
     <div class="d-flex align-items-center">
-    </div>
-    <div class="d-flex align-items-center">
         <span class="d-flex align-items-center flex-grow-1">
             <h4>Score Submission Report (KPI)</h4>
             <span class="mx-4">
@@ -17,7 +15,6 @@
             </span>
         </span>
         <span class="justify-content-end gap-2">
-            @* <button class="btn btn-primary">ddd</button> *@
         </span>
     </div>
 
@@ -31,8 +28,8 @@
 </div>
 
 
-<div class="content-body container-fluid">
-    <div class="bg-light p-4 border-2">
+<div class="container-fluid">
+    <div class="bg-light p-4 rounded-2">
         <div class="filter-toolbar mb-4 d-flex justify-content-between">
             <form id="form__groupSelection" method="get" class="">
                     <select 
@@ -128,10 +125,10 @@
                                     @* <td class="_periodName"><strong>@r.PeriodName</strong></td> *@
                                     <td class="">
                                         <strong>
-                                            <a asp-page="./Department"
-                                                asp-route-departmentName=@r.DepartmentName>
+                                            @* <a asp-page="./Department"
+                                                asp-route-departmentName=@r.DepartmentName> *@
                                                 @r.DepartmentName
-                                            </a>
+                                            @* </a> *@
                                         </strong>
                                     </td>
                                     @foreach(var g in r.UserGroupSubmissions)

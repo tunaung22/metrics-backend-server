@@ -85,7 +85,8 @@
                         asp-page-handler="Cancel" formnovalidate>
                         <i class="bi bi-x-circle"> </i>Cancel
                     </button>
-                    <button type="submit" class="btn btn-success me-2" tabindex="4">
+                    <button type="submit" class="btn btn-success me-2" tabindex="4"
+                            id="btnUpdate">
                         <i class="bi bi-check-circle"> </i>Update
                     </button>
                 </div>
@@ -104,7 +105,6 @@
 
             // ----- Check Period Name conflict -----
             $('#FormInput_PeriodName').on('input', function() {
-                console.log("user started typing...");
                 var inputVal = $(this).val();
                 var currentPeriodName = @Html.Raw(Json.Serialize(Model.PeriodName));
                 if (currentPeriodName != inputVal) 
@@ -119,6 +119,7 @@
                             $("#feedback__periodNameInput")
                                 .removeClass("text-danger")
                                 .addClass("text-success");
+                            $("#btnUpdate").prop("disabled", false);
                         },
                         error: function(jqXHR) {
                             if (jqXHR.status === 409) {
@@ -128,7 +129,9 @@
                                 $("#feedback__periodNameInput").text(errorMessage);
                                 $("#feedback__periodNameInput")
                                     .removeClass("text-success")
-                                    .addClass("text-danger");                        }
+                                    .addClass("text-danger");     
+                                $("#btnUpdate").prop("disabled", true);
+                                }
                             else {
                                 $("#feedback__periodNameInput").text("Error checking period name avaibility.");
                             }

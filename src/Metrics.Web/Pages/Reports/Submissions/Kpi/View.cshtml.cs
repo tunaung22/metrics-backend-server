@@ -369,7 +369,7 @@ public class ViewModel : PageModel
                 {
                     var dict = new Dictionary<string, object>();
 
-                    dict["Department Name"] = report.DepartmentName;
+                    dict["Department Name"] = report.DepartmentName ?? "Undefined Department";
                     // Flatten UserGroupSubmissionInfos
                     // int groupIndex = 1;
                     if (report.UserGroupSubmissions != null)
