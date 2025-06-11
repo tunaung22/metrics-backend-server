@@ -1,18 +1,24 @@
+using Metrics.Application.Domains;
 using Metrics.Application.Interfaces.IServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using MiniExcelLibs;
 
 namespace Metrics.Web.Pages.Manage.Submissions.KeyMetrics;
 
 [Authorize(Policy = "CanAccessAdminFeaturePolicy")]
 public class IndexModel : PageModel
 {
+    private readonly Microsoft.Extensions.Configuration.IConfiguration _config;
+
+
     private readonly IKeyMetricService _keyMetricService;
 
 
-    public IndexModel(IKeyMetricService keyMetricService)
+    public IndexModel(Microsoft.Extensions.Configuration.IConfiguration config, IKeyMetricService keyMetricService)
     {
+        _config = config;
         _keyMetricService = keyMetricService;
     }
 
@@ -35,6 +41,14 @@ public class IndexModel : PageModel
     public int TotalPages => (int)Math.Ceiling(decimal.Divide(TotalItems, PageSize));
     public bool ShowPrevious => CurrentPage > 1;
     public bool ShowNext => CurrentPage < TotalPages;
+
+    [BindProperty]
+    public bool DisplayAll { get; set; } = false;
+
+    [BindProperty]
+    public IFormFile UploadedFile { get; set; }
+    public bool UploadSuccess { get; set; }
+
     // Return URL
     public string? ReturnUrl { get; set; }
 
@@ -42,16 +56,73 @@ public class IndexModel : PageModel
     public string? StatusMessage { get; set; }
 
 
+
+
+    public class KeyKpi
+    {
+        public string Title { get; set; } = null!;
+    }
+
     // ========== HANDLERS =====================================================
     public async Task<IActionResult> OnGetAsync(
         string? returnUrl,
-        int currentPage,
-        int pageSize)
+        [FromQuery] int currentPage,
+        [FromQuery] int pageSize)
     {
         // ReturnUrl = returnUrl ??= "Index";
-        CurrentPage = currentPage == 0 ? 1 : currentPage;
-        PageSize = pageSize == 0 ? 20 : pageSize;
-        KeyMetrics = await LoadKeyMetrics(CurrentPage, PageSize);
+        // TotalDepartments = await _departmentService.FindCountAsync();
+        // Departments = await LoadDepartments(CurrentPage, PageSize);
+        // CurrentPage = currentPage == 0 ? 1 : currentPage;
+        TotalItems = await _keyMetricService.FindCountAsync();
+        PageSize = _config.GetValue<int>("Pagination:PageSize");
+        KeyMetrics = await LoadKeyMetrics(
+            currentPage > 0 ? currentPage : CurrentPage,
+            pageSize > 0 ? pageSize : PageSize);
+
+        return Page();
+    }
+
+    public async Task<IActionResult> OnPostUploadAsync(
+        IFormFile file,
+        [FromQuery] int currentPage,
+        [FromQuery] int pageSize)
+    {
+        if (file != null && file.Length > 0)
+        {
+            try
+            {
+                using (var stream = file.OpenReadStream())
+                {
+                    var rows = stream.Query<KeyKpi>().ToList();
+                    if (rows.Any())
+                    {
+                        var entitiesToAdd = rows
+                            .Where(r => !string.IsNullOrEmpty(r.Title))
+                            .Select(r => new KeyMetric
+                            {
+                                MetricTitle = r.Title.Trim()
+                            }).ToList();
+                        var createdEntities = await _keyMetricService.CreateRangeAsync(entitiesToAdd);
+                    }
+
+                    return RedirectToPage();
+                }
+
+            }
+            catch (System.Exception)
+            {
+                ModelState.AddModelError(string.Empty, "Problem uploading file.");
+                return Page();
+            }
+        }
+        else
+        {
+            ModelState.AddModelError("", "File not readable.");
+        }
+
+        KeyMetrics = await LoadKeyMetrics(
+            currentPage > 0 ? currentPage : CurrentPage,
+            pageSize > 0 ? pageSize : PageSize);
 
         return Page();
     }

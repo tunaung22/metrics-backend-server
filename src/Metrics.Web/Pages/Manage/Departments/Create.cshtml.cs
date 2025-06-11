@@ -43,7 +43,7 @@ public class CreateModel : PageModel
         {
             var entity = new Department
             {
-                DepartmentName = Input.DepartmentName
+                DepartmentName = Input.DepartmentName.Trim()
             };
 
             var created = await _departmentService.CreateAsync(entity);

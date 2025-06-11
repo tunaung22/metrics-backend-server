@@ -163,31 +163,41 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 // ========== Authorization Policies ====================
 builder.Services.AddAuthorizationBuilder()
-    .SetFallbackPolicy(new AuthorizationPolicyBuilder()
-        .RequireAuthenticatedUser()
-        .Build())
-    .AddPolicy("CanAccessAdminFeaturePolicy", policy =>
-    {
-        policy.RequireRole("Admin");
-    })
-    .AddPolicy("CanSubmitBaseScorePolicy", policy =>
-    {
-        policy.RequireRole("Staff");
-        policy.RequireClaim("UserGroup", ["Staff", "HOD", "Management"]);
-    })
-    .AddPolicy("CanSubmitKeyScorePolicy", policy =>
-    {
-        policy.RequireRole("Staff");
-        // Requires HOD, Management
-        policy.RequireClaim("UserGroup", ["HOD", "Management"]);
-    })
-    .AddPolicy("CanSubmitCaseFeedbackPolicy", policy =>
-    {
-        policy.RequireRole("Staff");
-        // Requires HOD, Management
-        policy.RequireClaim("UserGroup", ["HOD", "Management"]);
-    });
+.SetFallbackPolicy(new AuthorizationPolicyBuilder()
+    .RequireAuthenticatedUser()
+    .Build())
+.AddPolicy("CanAccessAdminFeaturePolicy", policy =>
+{
+    policy.RequireRole("Admin");
+})
+.AddPolicy("CanSubmitBaseScorePolicy", policy =>
+{
+    policy.RequireRole("Staff");
+    policy.RequireClaim("UserGroup", ["Staff", "HOD", "Management"]);
+    // TODO: Implement Custom Authorization Requirement
+    // IAuthorizationRequirement
+    // policy.AddRequirements(new MinimumLevelRequirement(1000));
+})
+.AddPolicy("CanSubmitKeyScorePolicy", policy =>
+{
+    policy.RequireRole("Staff");
+    // Requires HOD, Management
+    policy.RequireClaim("UserGroup", ["HOD", "Management"]);
+    // TODO: Implement Custom Authorization Requirement
+    // IAuthorizationRequirement
+    // policy.AddRequirements(new MinimumLevelRequirement(2000));
+})
+.AddPolicy("CanSubmitCaseFeedbackPolicy", policy =>
+{
+    policy.RequireRole("Staff");
+    // Requires HOD, Management
+    policy.RequireClaim("UserGroup", ["HOD", "Management"]);
+    // TODO: Implement Custom Authorization Requirement
+    // IAuthorizationRequirement
+    // policy.AddRequirements(new MinimumLevelRequirement(2000));
+});
 builder.Services.AddSingleton<IAuthorizationHandler, AllowLockedUserHandler>();
+// builder.Services.AddSingleton<IAuthorizationHandler, MinimumLevelHandler>();
 
 
 // ========== CONTROLLER, RAZOR PAGES ====================

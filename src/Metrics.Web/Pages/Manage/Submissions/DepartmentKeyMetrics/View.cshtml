@@ -29,26 +29,116 @@
 
         <div class="col">
             <div class="row mb-3">
-                <div class="d-flex align-items-center gap-4">
-                    <span class="col-sm-12 col-md-4">
-                        <form id="form__departmentSelection" method="get">
-                            <label class="form-label" for="CurrentDepartmentCode">Department</label>
-                            <select asp-for="CurrentDepartmentCode"
-                                    asp-items="Model.DepartmentListItems"
-                                    name="department"
-                                    onchange="this.form.submit()"
-                                    class="form-select p-2" 
-                                    aria-label="Select Department">
-                            </select>
-                        </form>
-                        <span class="mx-4">
-                        </span>
-                    </span>
+                <div class="col-auto">
+                    <form id="form__departmentSelection" method="get">
+                        <label class="form-label" for="CurrentDepartmentCode">Department</label>
+                        <select asp-for="CurrentDepartmentCode"
+                                asp-items="Model.DepartmentListItems"
+                                name="department"
+                                onchange="this.form.submit()"
+                                class="form-select p-2" 
+                                size="18"
+                                aria-label="Select Department">
+                        </select>
+                    </form>
+                </div>
+                <div class="col">
+                    @if (Model.CurrentDepartmentCode != null)
+                    {
+                        @if(Model.KeyMetrics.Any())
+                        {
+                            <label class="form-label" for="departmentKeyMetricTable">Key Metrics</label>
+                            <div class="table-container row border rounded-2">
+                            <table id="departmentKeyMetricTable" class="table table-bordered" style="width:100%">
+                                <thead>
+                                    <tr>
+                                        <th class="">Key Metric</th>
+                                        <th class="colActions">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if(Model.KeyMetrics.Any())
+                                    {
+                                        var count = 0;
+                                        @foreach(var k in Model.KeyMetrics)
+                                        {
+                                            count += 1;
+                                            var lineNumber = count.ToString("00");
+                                            // find KeyMetric included in DepartmentKeyMetrics
+                                            // Null === true       -> "SET"
+                                            // Null === false
+                                            // ...isDeleted === true  -> "SET"
+                                            // ...isDeleted === false -> "UNSET"
+                                            bool toAssign = false;
+
+                                            var isExist= Model.DepartmentKeyMetrics
+                                                .Any(i => i.KeyMetricId == k.Id);
+                                            if (isExist) {
+                                                // check IS DELETED?
+                                                // show TO UNSET
+                                                var existingRecord = Model.DepartmentKeyMetrics
+                                                    .Where(i => i.KeyMetricId == k.Id).First();
+
+                                                if(existingRecord.IsDeleted) {
+                                                    toAssign = true;
+                                                } else {
+                                                    toAssign = false;
+                                                }
+                                            } else {
+                                                // show TO SET
+                                                toAssign = true;
+                                            }
+
+                                            var textColor = toAssign
+                                                ? "text-secondary" 
+                                                : "text-success";
+                                            var buttonColor = toAssign 
+                                                ? "btn-outline-primary" 
+                                                : "btn-outline-danger";
+
+                                            <tr>
+                                                <td class="@textColor">
+                                                    @Html.Raw(toAssign
+                                                        ? $"<i class='bi bi-x-circle'></i> {lineNumber}. {k.MetricTitle}" 
+                                                        : $"<i class='bi bi-check-circle'></i> {lineNumber}. {k.MetricTitle}"
+                                                    )
+                                                </td>
+                                                <td class="text-center">
+                                                    <form method="post">
+                                                        <button asp-page-handler="ToggleKeyMetric"
+                                                                asp-route-department="@Model.CurrentDepartmentCode"
+                                                                asp-route-keyMetric="@k.MetricCode"
+                                                                type="submit"
+                                                                class="btn__actionButtons btn btn-sm @(buttonColor) my-2 my-lg-0 me-2">
+                                                            
+                                                            @Html.Raw(toAssign
+                                                                ? "<i class='bi bi-check-circle-fill'></i> Assign"
+                                                                : "<i class='bi bi-x-circle-fill'></i> Remove"
+                                                            )
+                                                        </button>
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                        }
+                                    }
+                                </tbody>
+                            </table>
+                            </div>
+                        }
+                    }
+
+                </div>
+                @* <div class="d-flex align-items-center gap-4"> *@
+                    @* <span class="col-sm-12 col-md-4"> *@
+                        
+                        @* <span class="mx-4"> *@
+                        @* </span> *@
+                    @* </span> *@
                     @* <span class="justify-content-end gap-2">
                         <button type="submit" class="btn btn-primary me-2">
                             <i class="bi bi-check-circle"></i> Save</button>
                     </span> *@
-                </div>
+                @* </div> *@
             </div>
 
             @* @if(Model.CurrentDepartmentCode != null)
@@ -69,10 +159,6 @@
             } *@
 
             @* @if(Model.DepartmentKeyMetrics.Any()) *@
-            @if (Model.CurrentDepartmentCode != null)
-            {
-                @if(Model.KeyMetrics.Any())
-                {
                     @* <div class="row mb-3" style="max-height: 40vh; overflow-y: auto;">
                         @foreach(var key in Model.KeyMetrics)
                         {
@@ -87,81 +173,7 @@
                             </div>
                         }
                     </div> *@
-                    <div class="table-container row">
-                    <table id="departmentKeyMetricTable" class="table table-bordered" style="width:100%">
-                        <thead>
-                            <tr>
-                                <th class="">Key Metric</th>
-                                <th class="colActions">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @if(Model.KeyMetrics.Any())
-                            {
-                                @foreach(var k in Model.KeyMetrics)
-                                {
-                                    // find KeyMetric included in DepartmentKeyMetrics
-                                    // Null === true       -> "SET"
-                                    // Null === false
-                                    // ...isDeleted === true  -> "SET"
-                                    // ...isDeleted === false -> "UNSET"
-                                    bool toAssign = false;
-
-                                    var isExist= Model.DepartmentKeyMetrics
-                                        .Any(i => i.KeyMetricId == k.Id);
-                                    if (isExist) {
-                                        // check IS DELETED?
-                                        // show TO UNSET
-                                        var existingRecord = Model.DepartmentKeyMetrics
-                                            .Where(i => i.KeyMetricId == k.Id).First();
-
-                                        if(existingRecord.IsDeleted) {
-                                            toAssign = true;
-                                        } else {
-                                            toAssign = false;
-                                        }
-                                    } else {
-                                        // show TO SET
-                                        toAssign = true;
-                                    }
-
-                                    var textColor = toAssign
-                                        ? "text-secondary" 
-                                        : "text-success";
-                                    var buttonColor = toAssign 
-                                        ? "btn-outline-primary" 
-                                        : "btn-outline-secondary";
-
-                                    <tr>
-                                        <td class="@textColor">
-                                            @Html.Raw(toAssign
-                                                ? $"<i class='bi bi-x-circle'></i> {k.MetricTitle}" 
-                                                : $"<i class='bi bi-check-circle'></i> {k.MetricTitle}"
-                                            )
-                                        </td>
-                                        <td class="text-center">
-                                            <form method="post">
-                                                <button asp-page-handler="ToggleKeyMetric"
-                                                        asp-route-department="@Model.CurrentDepartmentCode"
-                                                        asp-route-keyMetric="@k.MetricCode"
-                                                        type="submit" style=";"
-                                                        class="btn__actionButtons btn btn-sm @(buttonColor) my-2 my-lg-0 me-2">
-                                                    
-                                                    @Html.Raw(toAssign
-                                                        ? "<i class='bi bi-check-circle-fill'></i> Assign"
-                                                        : "<i class='bi bi-x-circle-fill'></i> Remove"
-                                                    )
-                                                </button>
-                                            </form>
-                                        </td>
-                                    </tr>
-                                }
-                            }
-                        </tbody>
-                    </table>
-                    </div>
-                }
-            }
+            
         </div>
     </div>
 </div>
@@ -173,8 +185,26 @@
             width: 8em;
         }
         .table-container {
-            max-height: 50vh; /* Set the desired height */
+            max-height: 60vh; /* Set the desired height */
             overflow-y: auto;  /* Enable vertical scrolling */
+            @* position: relative; *@
+        }
+        @* thead {
+            position: sticky; /* Make the header sticky */
+            top: 0; /* Position it at the top of the scrolling container */
+            background-color: white; /* Background color for the header */
+            z-index: 10; /* Ensure it stays above the table body */
+        } *@
+        
+        option[selected] {
+            background: var(--primary-color);
+            color: white;
+        }
+        option:focus,
+        option:active,
+        option:hover {
+            background: var(--primary-color);
+            color: white;
         }
     </style>
 }
@@ -182,7 +212,6 @@
 
 @section Scripts {
     <script>
-        new DataTable('#example');
         $(function() {
             new DataTable('#departmentKeyMetricTable', {
                 paging: false,

@@ -106,7 +106,7 @@ public class UserService : IUserService
                 {
                     // ----- ADD Claim -----------------------------------------
                     await _userManager.AddClaimAsync(newUser,
-                        new Claim("UserGroup", userTitle.TitleCode.ToString()));
+                        new Claim("UserGroup", userTitle.TitleName.ToString()));
                 }
             }
 

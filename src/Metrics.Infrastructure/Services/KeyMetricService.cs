@@ -59,6 +59,80 @@ public class KeyMetricService : IKeyMetricService
         }
     }
 
+    public async Task<IEnumerable<KeyMetric>> CreateRangeAsync(IEnumerable<KeyMetric> requestedEntities)
+    {
+        using var transaction = await _context.Database.BeginTransactionAsync();
+
+        try
+        {
+            IEnumerable<KeyMetric> createdEntities = [];
+
+            var existingKeys = await FindAllAsync();
+            if (existingKeys != null)
+            {
+                // get duplicated ids
+                // var duplicatedTitles = existingKeys
+                //     .Where(e =>
+                //         !requestedEntities.Select(k => k.MetricTitle)
+                //             .Contains(e.MetricTitle))
+                //     .Select(e => e.MetricTitle)
+                //     .ToList();
+                // filter out duplicated ids
+                // var filteredEntities = requestedEntities
+                //     .Where(e => !duplicatedTitles.Contains(e.MetricTitle));
+
+                // var filteredEntities = requestedEntities
+                //     .Except(existingKeys.Where(ee => ee.MetricTitle)).ToList();;
+
+                var existingTitles = existingKeys.Select(e => e.MetricTitle)
+                    .ToHashSet();
+                var filteredEntities = requestedEntities
+                    .Where(r => !existingTitles.Contains(r.MetricTitle))
+                    .ToList();
+
+
+                _keyMetricRepository.CreateRange(filteredEntities);
+                await _context.SaveChangesAsync();
+
+                createdEntities = filteredEntities;
+            }
+            else
+            {
+                _keyMetricRepository.CreateRange(requestedEntities);
+                await _context.SaveChangesAsync();
+
+                createdEntities = requestedEntities;
+            }
+
+            await transaction.CommitAsync();
+            return createdEntities;
+        }
+        catch (DbUpdateException ex)
+        {
+            transaction.Rollback();
+            // when (ex.InnerException is PostgresException postgresEx && postgresEx.SqlState == "23505")
+            if (ex.InnerException is PostgresException pgEx && pgEx.SqlState == "23505")
+            {
+                _logger.LogError(ex, pgEx.MessageText);
+                // TODO: DuplicateEntityException
+                throw new MetricsDuplicateContentException($"Title already exist.", ex.InnerException);
+            }
+            else
+            {
+                // Handle database-specific errors
+                _logger.LogError(ex, "Database error while creating department.");
+                // TODO: DatabaseException
+                throw new Exception("A database error occurred.");
+            }
+        }
+        catch (Exception ex)
+        {
+            transaction.Rollback();
+            _logger.LogError(ex, "Unexpected error while creating key metric.");
+            throw new Exception("An unexpected error occurred. Please try again later.");
+        }
+    }
+
     public Task<bool> DeleteAsync(Guid metricCode)
     {
         throw new NotImplementedException();
@@ -155,9 +229,17 @@ public class KeyMetricService : IKeyMetricService
         }
     }
 
-    public Task<long> FindCountAsync()
+    public async Task<long> FindCountAsync()
     {
-        throw new NotImplementedException();
+        try
+        {
+            return await _keyMetricRepository.FindCountAsync();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while counting key metrics.");
+            throw new Exception("An unexpected error occurred. Please try again later.");
+        }
     }
 
     public async Task<KeyMetric> UpdateAsync(Guid code, KeyMetric entity)

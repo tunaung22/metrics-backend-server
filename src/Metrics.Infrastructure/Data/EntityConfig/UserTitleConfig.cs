@@ -13,8 +13,11 @@ public class UserTitleConfig : IEntityTypeConfiguration<UserTitle>
 
         // ===== Index ======
         builder.HasKey(e => e.Id);
-        builder.HasIndex(e => e.TitleCode).IsUnique();
-        builder.HasIndex(e => e.TitleName).IsUnique();
+        builder.HasIndex(e => e.TitleCode)
+            .IsUnique();
+        builder.HasIndex(e => e.TitleName)
+            .IsUnique();
+
 
         // ===== Columns =====
         builder.Property(e => e.Id)
@@ -28,7 +31,7 @@ public class UserTitleConfig : IEntityTypeConfiguration<UserTitle>
             .IsRequired();
         builder.Property(e => e.TitleName)
             .HasColumnName("title_name")
-            .HasColumnType("varchar (200)")
+            .HasColumnType("citext")
             .IsRequired();
         builder.Property(e => e.Description)
             .HasColumnName("description")

@@ -78,6 +78,7 @@ public class DepartmentRepository : IDepartmentRepository
     public async Task<IEnumerable<Department>> FindAllAsync()
     {
         return await _context.Departments
+            .Include(d => d.DepartmentKeyMetrics)
             .OrderBy(e => e.DepartmentName)
             .ToListAsync();
     }

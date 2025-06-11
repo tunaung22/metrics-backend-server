@@ -60,6 +60,8 @@ public class IndexModel : PageModel
 
     // =============== HANDLERS ================================================
     public async Task<IActionResult> OnGetAsync()
+    // [FromQuery] int currentPage,
+    // [FromQuery] int pageSize)
     {
         // try
         // {

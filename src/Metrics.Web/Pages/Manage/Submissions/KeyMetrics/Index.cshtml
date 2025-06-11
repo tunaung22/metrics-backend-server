@@ -7,11 +7,11 @@
 <div class="sectionTitle">
     <div class="d-flex align-items-center my-2">
         <h4 class="flex-grow-1">Key Metrics for Key KPI</h4>
-        <span class="justify-content-end gap-2">
+        <span class="d-flex justify-content-end gap-2">
             <a class="btn btn-success"
                 asp-page="Create"
                 asp-route-returnUrl="@Url.Page("Index")">
-                <i class="bi bi-plus-lg"> </i>New</a>
+                <i class="bi bi-plus-lg"></i> New</a>
         </span>
     </div>
     <nav aria-label="breadcrumb">
@@ -39,6 +39,38 @@
         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
        
         <div class="bg-light">
+            <div class="d-flex align-items-center px-4 pt-4">
+                <div class="d-flex flex-grow-1">
+                    <div class="me-4">
+                        <label for="">Total Key Metircs:</label>
+                        <label><strong>@Model.TotalItems</strong></label>
+                    </div>
+                    <div class="form-check">
+                        <form method="get">
+                                <input asp-for="DisplayAll"
+                                        type="checkbox" 
+                                        value="" 
+                                        class="form-check-input"
+                                        id="checkDefault"
+                                        onchange="this.form.submit()">
+                                <label class="form-check-label" for="checkDefault">
+                                    Show All
+                                </label>
+                        </form>
+                    </div>
+                </div>
+                <div class="justify-content-end">
+                    <form asp-page-handler="Upload" 
+                        method="post" 
+                        enctype="multipart/form-data" 
+                        id="uploadForm">
+                        <input type="file" id="fileInput" name="file" class="d-none" required accept=".xls,.xlsx,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+                        <button type="button" class="btn btn-primary" id="uploadButton">
+                            <i class="bi bi-upload"></i> Upload
+                        </button>
+                    </form>
+                </div>
+            </div>
             @* =============== Filter Bar =============================================== *@
             <div id="filter-bar" class="d-flex align-items-center px-4 pt-4">
                 <span class="d-flex flex-grow-1">
@@ -54,21 +86,25 @@
                 <table id="kpiPeriodTable" class="table table-bordered table-striped">
                     <thead>
                         <tr>
+                            <th class="colRowNo">No.</th>
                             <th class="colMetric">Key Metric</th>
-                            <th class="colDescription">Description</th>
+                            @* <th class="colDescription">Description</th> *@
                             <th class="colActions">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
+                        @{ var rowNo = 0; }
                         @if (Model.KeyMetrics.Any())
                         {
                             @foreach(var p in Model.KeyMetrics)
                             {
+                                rowNo += 1;
                                 <tr>
+                                    <td class="pe-4">@rowNo</td>
                                     <td class="">
-                                        <strong>@p.MetricTitle</strong>
+                                        @p.MetricTitle
                                     </td>
-                                    <td class="">
+                                    @* <td class="">
                                         @if(p.Description?.Length > 150) {
                                             @(p.Description.Substring(0, 150) + "...")
                                             <button data-details="@p.Description" data-label="Description"
@@ -76,13 +112,13 @@
                                         } else {
                                             @p.Description
                                         }
-                                    </td>
+                                    </td> *@
                                     <td class="text-center">
                                         <a asp-page="Edit" 
                                             asp-route-code="@p.MetricCode"
                                             asp-route-returnUrl="@Url.Page("Index")"
                                             class="btn btn-sm btn-outline-primary my-2 my-lg-0 me-2">
-                                            <strong><i class="bi bi-clipboard2-data"> </i>Edit</strong></a>
+                                            <strong><i class="bi bi-pencil-square"></i> Edit</strong></a>
                                     </td>
                                 </tr>
                             }
@@ -107,11 +143,14 @@
                             {
                                 @* Model.Pagination.Page = i; *@
 
-                                <li class="page-item">
+                                <li class="page-item @(Model.CurrentPage == i ? "active" : "")">
                                     <a class="page-link"
                                         asp-page="./Index"
                                         asp-route-currentPage="@i"
-                                        >@i</a>
+                                        aria-current=@(Model.CurrentPage == i
+                                        ? "page" 
+                                        : null)>
+                                        @i</a>
                                 </li>
                             }
 
@@ -158,6 +197,7 @@
                 searching: false,
                 autoWidth: true,
                 columnDefs: [
+                    { width: '2%', targets: ["colRowNo"] },
                     { width: '30%', targets: ["colMetric"] },
                     { width: '20%', targets: ["colDescription"] },
                     { width: '10%', targets: ["colActions"] },
@@ -180,6 +220,16 @@
                     console.error('data is undefined');
                 }
             });
+
+            $("#uploadButton").on('click', function() {
+                $("#fileInput").click();
+            })
+
+            $("#fileInput").on('change', function() {
+                if(this.files.length > 0) {
+                    $("#uploadForm").submit();
+                }
+            })
         });
     </script>
 }

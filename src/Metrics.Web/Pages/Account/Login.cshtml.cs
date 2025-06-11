@@ -152,24 +152,37 @@ public class LoginModel : PageModel
                     // {
                     //     await _userManager.RemoveClaimAsync(user, claim);
                     // }
-                    var claims = new List<Claim>
-                    {
-                        // new Claim(ClaimTypes.NameIdentifier, user.Id),
-                        // new Claim(ClaimTypes.Name, user.UserName),
-                        // new Claim(ClaimTypes.Email, user.Email),
-                        // new Claim("FullName", user.FullName ?? string.Empty),
-                        // new Claim("UserCode", user.UserCode ?? string.Empty),
-                        // new Claim("ContactAddress", user.ContactAddress ?? string.Empty),
-                        // new Claim("PhoneNumber", user.PhoneNumber ?? string.Empty),
-                        // new Claim("DepartmentName", user.Department?.DepartmentName ?? string.Empty),
-                        // new Claim("TitleName", userTitle?.TitleName ?? string.Empty)
-                        new Claim("UserGroup", user.UserTitle.TitleCode.ToString() ?? string.Empty),
-                    };
+                    // var claims = new List<Claim>
+                    // {
+                    // new Claim(ClaimTypes.NameIdentifier, user.Id),
+                    // new Claim(ClaimTypes.Name, user.UserName),
+                    // new Claim(ClaimTypes.Email, user.Email),
+                    // new Claim("FullName", user.FullName ?? string.Empty),
+                    // new Claim("UserCode", user.UserCode ?? string.Empty),
+                    // new Claim("ContactAddress", user.ContactAddress ?? string.Empty),
+                    // new Claim("PhoneNumber", user.PhoneNumber ?? string.Empty),
+                    // new Claim("DepartmentName", user.Department?.DepartmentName ?? string.Empty),
+                    // new Claim("TitleName", userTitle?.TitleName ?? string.Empty)
+                    // };
                     // var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
                     // var claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
                     // await _signInManager.SignInAsync(user, isPersistent: Input.RememberMe);
 
                     // await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, claimsPrincipal);
+
+                    // var claims = new List<Claim>
+                    // {
+                    //     new Claim("UserGroup", user.UserTitle.TitleName.ToString() ?? string.Empty)
+                    // };
+
+
+                    // Check for missing claims
+                    var claims = await _userManager.GetClaimsAsync(user);
+
+                    if (!claims.Any(c => c.Type == "UserGroup"))
+                    {
+                        await _userManager.AddClaimAsync(user, new Claim("UserGroup", user.UserTitle.TitleName.ToString()));
+                    }
 
                     await _signInManager.SignInWithClaimsAsync(user, Input.RememberMe, claims);
 

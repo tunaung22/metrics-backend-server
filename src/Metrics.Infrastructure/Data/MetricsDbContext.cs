@@ -98,6 +98,14 @@ public class MetricsDbContext : IdentityDbContext<ApplicationUser, ApplicationRo
     {
         base.OnModelCreating(builder);
 
+        // for Case Insensitive Collation
+        // builder.HasCollation("metric_ci_collation",
+        //     locale: "en-u-ks-primary",
+        //     provider: "icu",
+        //     deterministic: false
+        // );
+        builder.HasPostgresExtension("citext");
+
         // ** EFCore.NamingConventions package doesn't change the table name
         //    to snakecase properly.
         foreach (var entity in builder.Model.GetEntityTypes())

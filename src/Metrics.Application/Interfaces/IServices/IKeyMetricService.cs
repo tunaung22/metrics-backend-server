@@ -5,6 +5,7 @@ namespace Metrics.Application.Interfaces.IServices;
 public interface IKeyMetricService
 {
     Task<KeyMetric> CreateAsync(KeyMetric entity);
+    Task<IEnumerable<KeyMetric>> CreateRangeAsync(IEnumerable<KeyMetric> entities);
     Task<KeyMetric> UpdateAsync(Guid code, KeyMetric entity);
     Task<bool> DeleteAsync(Guid metricCode);
     Task<KeyMetric?> FindByIdAsync(long id);

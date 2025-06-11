@@ -20,6 +20,11 @@ public class KeyMetricRepository : IKeyMetricRepository
         _context.KeyMetrics.Add(entity);
     }
 
+    public void CreateRange(IEnumerable<KeyMetric> entites)
+    {
+        _context.KeyMetrics.AddRange(entites);
+    }
+
     public void Delete(KeyMetric entity)
     {
         _context.KeyMetrics.Remove(entity);

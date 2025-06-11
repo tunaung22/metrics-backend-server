@@ -42,7 +42,7 @@
         @* =============== Form ================================================ *@
         <div class="col-12 mx-auto">
             <form method="post" asp-route-returnUrl="@Model.ReturnUrl"> 
-                <input type="hidden" id="selectedTitle" asp-for="SelectedMetricTitle" />
+                @* <input type="hidden" id="selectedTitle" asp-for="SelectedMetricTitle" /> *@
                 <div class="row">
                     <div class="mb-3 col-sm-12 col-md-12 col-lg-6">
                         <label asp-for="Input.MetricTitle" class="form-label">Metric Title (KEY)</label>
@@ -97,7 +97,7 @@
             $("#input__metricTitle").focus();
             $("#input__metricTitle").on('input', function() {
                 var userInput = $(this).val();
-                var currentTitle = @Html.Raw(Json.Serialize(Model.SelectedMetricTitle));
+                var currentTitle = @Html.Raw(Json.Serialize(Model.Input.MetricTitle));
                 if (currentTitle != userInput) 
                 {
                     // Search by User Input Value

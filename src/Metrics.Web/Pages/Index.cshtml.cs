@@ -2,7 +2,6 @@ using Metrics.Application.Domains;
 using Metrics.Application.Interfaces.IServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using System.Threading.Tasks;
 
 namespace Metrics.Web.Pages;
 
@@ -24,9 +23,9 @@ public class IndexModel : PageModel
     public int PendingSubmission { get; set; }
 
     public List<KpiSubmissionPeriod> PeriodList { get; set; } = [];
-
     public async Task OnGet()
     {
+
         if (User != null && User.Identity != null && User.Identity.IsAuthenticated)
         {
             var username = User.Identity.Name;

@@ -98,6 +98,7 @@ a:hover {
 .btn-outline-primary:focus,
 .btn-outline-primary:active,
 .btn-outline-primary:hover {
+  color: #fff;
   background: var(--brand-color);
   border-color: var(--brand-color);
   /* box-shadow: 0 0 0 0.2rem rgba(52, 101, 164, 0.5); */
@@ -157,8 +158,8 @@ ul#metrics__main-navbar .nav-item .nav-link:hover {
 button#goToTop {
   display: none;
   position: fixed;
-  bottom: 45px;
-  right: 20px;
+  bottom: 4em;
+  right: 2em;
   z-index: 20;
 }
 
@@ -274,4 +275,13 @@ html[data-bs-theme="dark"] #theme-toggle .bi-sun-fill {
 
 html[data-bs-theme="dark"] #theme-toggle .bi-moon-stars-fill {
   display: inline; /* Show moon icon in dark mode */
+}
+
+a#loginPartial__userInfo,
+a#loginPartial__userInfo:active {
+  color: var(--brand-color);
+}
+
+a#loginPartial__userInfo:hover {
+  color: var(--brand-color-hover);
 }

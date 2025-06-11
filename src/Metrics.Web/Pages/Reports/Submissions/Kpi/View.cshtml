@@ -125,10 +125,10 @@
                                     @* <td class="_periodName"><strong>@r.PeriodName</strong></td> *@
                                     <td class="">
                                         <strong>
-                                            <a asp-page="./Department"
-                                                asp-route-departmentName=@r.DepartmentName>
+                                            @* <a asp-page="./Department"
+                                                asp-route-departmentName=@r.DepartmentName> *@
                                                 @r.DepartmentName
-                                            </a>
+                                            @* </a> *@
                                         </strong>
                                     </td>
                                     @foreach(var g in r.UserGroupSubmissions)

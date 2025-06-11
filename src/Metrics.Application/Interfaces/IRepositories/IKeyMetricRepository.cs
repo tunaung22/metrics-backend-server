@@ -6,6 +6,7 @@ namespace Metrics.Application.Interfaces.IRepositories;
 public interface IKeyMetricRepository
 {
     void Create(KeyMetric entity);
+    void CreateRange(IEnumerable<KeyMetric> entites);
     void Update(KeyMetric entity);
     void Delete(KeyMetric entity);
     Task<IEnumerable<KeyMetric>> FindAllAsync();

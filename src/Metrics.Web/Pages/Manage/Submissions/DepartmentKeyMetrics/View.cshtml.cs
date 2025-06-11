@@ -105,10 +105,10 @@ public class ViewModel : PageModel
                 CurrentDepartmentCode = departments.First().DepartmentCode.ToString();
         }
 
-        DepartmentListItems = departments.Select(d => new SelectListItem
+        DepartmentListItems = departments.Select((d, index) => new SelectListItem
         {
             Value = d.DepartmentCode.ToString(),
-            Text = d.DepartmentName
+            Text = $"{(index + 1).ToString("00")}. {d.DepartmentName}"
         }).ToList();
 
         // Key Metrics

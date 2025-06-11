@@ -52,7 +52,7 @@ public class EditModel : PageModel
             // dto to inputmodel
             FormInput = new DepartmentInputModel
             {
-                DepartmentName = result.DepartmentName
+                DepartmentName = result.DepartmentName.Trim()
             };
         }
 

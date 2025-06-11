@@ -46,7 +46,7 @@
                         <th>Period Name</th>
                         <th>Start Date</th>
                         <th>End Date</th>
-                        <th>No. of Key Metrics</th>
+                        <th>Status</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -69,12 +69,24 @@
                                 <td>@p.SubmissionEndDate.ToLocalTime().UtcDateTime.ToString("MMM dd, yyyy hh:mm:ss tt")</td> *@
                                 <td class="text-center">@p.SubmissionStartDate.ToLocalTime().ToString("MMM dd, yyyy")</td>
                                 <td class="text-center">@p.SubmissionEndDate.ToLocalTime().ToString("MMM dd, yyyy")</td>
-                                <td class="text-center">000</td>
+                                @* <td class="text-center">000</td> *@
+                                @{
+                                    var pillColor = "success";
+                                }
+                                <td class="text-center">
+                                    <span class="badge rounded-2 rounded-pill text-bg-@pillColor">
+                                        New
+                                    </span>
+                                </td>
                                 <td class="text-center">
                                     <a asp-page="View" 
                                         asp-route-periodName="@p.PeriodName"
                                         class="btn btn-sm btn-outline-primary my-2 my-lg-0 me-2">
-                                        <strong><i class="bi bi-clipboard2-data"> </i>Details</strong></a>
+                                        <strong><i class="bi bi-clipboard2-data"> </i>Assign</strong></a>
+                                    <a asp-page="Copy" 
+                                        asp-route-periodName="@p.PeriodName"
+                                        class="btn btn-sm btn-outline-primary my-2 my-lg-0 me-2">
+                                        <strong><i class="bi bi-clipboard2-data"> </i>Copy</strong></a>
                                 </td>
                             </tr>
                         }

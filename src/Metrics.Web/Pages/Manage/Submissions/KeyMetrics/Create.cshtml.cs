@@ -30,8 +30,8 @@ public class CreateModel : PageModel
 
     [BindProperty]
     public required InputModel Input { get; set; }
-    [BindProperty]
-    public string SelectedMetricTitle { get; set; } = null!;
+    // [BindProperty]
+    // public string SelectedMetricTitle { get; set; } = null!;
     public string? ReturnUrl { get; set; }
 
 

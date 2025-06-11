@@ -2,7 +2,7 @@
 @inject IAuthorizationService AuthorizationService
 @{
     var canAccessAdminFeatures = await AuthorizationService.AuthorizeAsync(User, "CanAccessAdminFeaturePolicy");
-    var canSubmitScore = await AuthorizationService.AuthorizeAsync(User, "CanSubmitBaseScorePolicy");
+    var canSubmitBaseScore = await AuthorizationService.AuthorizeAsync(User, "CanSubmitBaseScorePolicy");
 }
 
 <!DOCTYPE html>
@@ -74,8 +74,8 @@
                         }
 
                         @* ========================== Employee Area ========================== *@
-                        @if(canSubmitScore.Succeeded)
-                        @* @if (User.IsInRole("staff")) *@
+                        @if(canSubmitBaseScore.Succeeded)
+                        @* @if((await AuthorizationService.AuthorizeAsync(User, "CanSubmitBaseScorePolicy")).Succeeded) *@
                         {
                             <li class="nav-item">
                                 <strong><a class="nav-link" asp-area="" asp-page="/Submissions/Departments/Scores/Index">Submissions</a></strong>
