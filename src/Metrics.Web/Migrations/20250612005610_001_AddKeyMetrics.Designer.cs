@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Metrics.Web.Migrations
 {
     [DbContext(typeof(MetricsDbContext))]
-    [Migration("20250605090306_001_UpdateKeyMetricTable")]
-    partial class _001_UpdateKeyMetricTable
+    [Migration("20250612005610_001_AddKeyMetrics")]
+    partial class _001_AddKeyMetrics
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,6 +24,7 @@ namespace Metrics.Web.Migrations
                 .HasAnnotation("ProductVersion", "9.0.2")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
+            NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "citext");
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
             modelBuilder.HasSequence("department_key_metrics_id_seq")
@@ -241,7 +242,7 @@ namespace Metrics.Web.Migrations
                     b.Property<string>("DepartmentName")
                         .IsRequired()
                         .HasMaxLength(200)
-                        .HasColumnType("varchar(200)")
+                        .HasColumnType("citext")
                         .HasColumnName("department_name");
 
                     b.Property<bool>("IsDeleted")
@@ -343,10 +344,6 @@ namespace Metrics.Web.Migrations
                         .HasColumnType("bigint")
                         .HasColumnName("department_id");
 
-                    b.Property<long?>("DepartmentId1")
-                        .HasColumnType("bigint")
-                        .HasColumnName("department_id1");
-
                     b.Property<long?>("DepartmentKeyMetricId")
                         .HasColumnType("bigint")
                         .HasColumnName("department_key_metric_id");
@@ -382,9 +379,6 @@ namespace Metrics.Web.Migrations
                     b.HasIndex("DepartmentId")
                         .HasDatabaseName("ix_key_kpi_submissions_department_id");
 
-                    b.HasIndex("DepartmentId1")
-                        .HasDatabaseName("ix_key_kpi_submissions_department_id1");
-
                     b.HasIndex("DepartmentKeyMetricId")
                         .HasDatabaseName("ix_key_kpi_submissions_department_key_metric_id");
 
@@ -415,10 +409,6 @@ namespace Metrics.Web.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
 
-                    b.Property<long?>("DepartmentId")
-                        .HasColumnType("bigint")
-                        .HasColumnName("department_id");
-
                     b.Property<long>("KeyKpiMetricsId")
                         .HasColumnType("bigint")
                         .HasColumnName("key_kpi_metrics_id");
@@ -441,9 +431,6 @@ namespace Metrics.Web.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_key_kpi_submission_items");
-
-                    b.HasIndex("DepartmentId")
-                        .HasDatabaseName("ix_key_kpi_submission_items_department_id");
 
                     b.HasIndex("KeyKpiMetricsId")
                         .HasDatabaseName("ix_key_kpi_submission_items_key_kpi_metrics_id");
@@ -659,7 +646,7 @@ namespace Metrics.Web.Migrations
 
                     b.Property<string>("TitleName")
                         .IsRequired()
-                        .HasColumnType("varchar (200)")
+                        .HasColumnType("citext")
                         .HasColumnName("title_name");
 
                     b.HasKey("Id")
@@ -870,16 +857,11 @@ namespace Metrics.Web.Migrations
                         .HasConstraintName("fk_key_kpi_submissions_users_application_user_id");
 
                     b.HasOne("Metrics.Application.Domains.Department", "TargetDepartment")
-                        .WithMany()
+                        .WithMany("KeyKpiSubmissions")
                         .HasForeignKey("DepartmentId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_key_kpi_submissions_departments_department_id");
-
-                    b.HasOne("Metrics.Application.Domains.Department", null)
-                        .WithMany("DepartmentMetricsScores")
-                        .HasForeignKey("DepartmentId1")
-                        .HasConstraintName("fk_key_kpi_submissions_departments_department_id1");
 
                     b.HasOne("Metrics.Application.Domains.DepartmentKeyMetric", null)
                         .WithMany("KeyKpiSubmissions")
@@ -907,11 +889,6 @@ namespace Metrics.Web.Migrations
 
             modelBuilder.Entity("Metrics.Application.Domains.KeyKpiSubmissionItem", b =>
                 {
-                    b.HasOne("Metrics.Application.Domains.Department", null)
-                        .WithMany("KeyKpiSubmissionItems")
-                        .HasForeignKey("DepartmentId")
-                        .HasConstraintName("fk_key_kpi_submission_items_departments_department_id");
-
                     b.HasOne("Metrics.Application.Domains.DepartmentKeyMetric", "TargetMetric")
                         .WithMany("KeyKpiSubmissionItems")
                         .HasForeignKey("KeyKpiMetricsId")
@@ -1036,11 +1013,9 @@ namespace Metrics.Web.Migrations
 
                     b.Navigation("DepartmentKeyMetrics");
 
-                    b.Navigation("DepartmentMetricsScores");
-
                     b.Navigation("DepartmentScores");
 
-                    b.Navigation("KeyKpiSubmissionItems");
+                    b.Navigation("KeyKpiSubmissions");
                 });
 
             modelBuilder.Entity("Metrics.Application.Domains.DepartmentKeyMetric", b =>

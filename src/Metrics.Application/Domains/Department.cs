@@ -14,8 +14,7 @@ public class Department : IAuditColumn, ISoftDelete
     // Collection Navigational Properties
     public List<ApplicationUser> ApplicationUsers { get; set; } = [];
     public List<KpiSubmission> DepartmentScores { get; set; } = [];
-    public List<KeyKpiSubmission> DepartmentMetricsScores { get; set; } = [];
-    public List<KeyKpiSubmissionItem> KeyKpiSubmissionItems { get; set; } = [];
+    public List<KeyKpiSubmission> KeyKpiSubmissions { get; set; } = [];
     public List<DepartmentKeyMetric> DepartmentKeyMetrics { get; set; } = [];
 
 }

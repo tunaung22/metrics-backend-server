@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Metrics.Web.Migrations
 {
     /// <inheritdoc />
-    public partial class _001_UpdateKeyMetricTable : Migration
+    public partial class _001_AddKeyMetrics : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -45,7 +45,17 @@ namespace Metrics.Web.Migrations
                 table: "key_kpi_submissions");
 
             migrationBuilder.DropIndex(
+                name: "ix_key_kpi_submission_items_department_id",
+                schema: "metrics",
+                table: "key_kpi_submission_items");
+
+            migrationBuilder.DropIndex(
                 name: "ix_key_kpi_submission_items_key_kpi_submission_id_key_kpi_metr",
+                schema: "metrics",
+                table: "key_kpi_submission_items");
+
+            migrationBuilder.DropColumn(
+                name: "department_id",
                 schema: "metrics",
                 table: "key_kpi_submission_items");
 
@@ -69,6 +79,9 @@ namespace Metrics.Web.Migrations
                 table: "key_kpi_submissions",
                 newName: "ix_key_kpi_submissions_key_metric_id");
 
+            migrationBuilder.AlterDatabase()
+                .Annotation("Npgsql:PostgresExtension:citext", ",,");
+
             migrationBuilder.CreateSequence(
                 name: "department_key_metrics_id_seq",
                 schema: "metrics",
@@ -78,6 +91,15 @@ namespace Metrics.Web.Migrations
                 name: "key_metrics_id_seq",
                 schema: "metrics",
                 incrementBy: 10);
+
+            migrationBuilder.AlterColumn<string>(
+                name: "title_name",
+                schema: "metrics",
+                table: "user_titles",
+                type: "citext",
+                nullable: false,
+                oldClrType: typeof(string),
+                oldType: "varchar (200)");
 
             migrationBuilder.AlterColumn<long>(
                 name: "department_id",
@@ -91,27 +113,11 @@ namespace Metrics.Web.Migrations
                 oldNullable: true);
 
             migrationBuilder.AddColumn<long>(
-                name: "department_id1",
-                schema: "metrics",
-                table: "key_kpi_submissions",
-                type: "bigint",
-                nullable: true);
-
-            migrationBuilder.AddColumn<long>(
                 name: "department_key_metric_id",
                 schema: "metrics",
                 table: "key_kpi_submissions",
                 type: "bigint",
                 nullable: true);
-
-            migrationBuilder.AlterColumn<long>(
-                name: "department_id",
-                schema: "metrics",
-                table: "key_kpi_submission_items",
-                type: "bigint",
-                nullable: true,
-                oldClrType: typeof(long),
-                oldType: "bigint");
 
             migrationBuilder.AddColumn<long>(
                 name: "key_metric_id",
@@ -119,6 +125,17 @@ namespace Metrics.Web.Migrations
                 table: "key_kpi_submission_items",
                 type: "bigint",
                 nullable: true);
+
+            migrationBuilder.AlterColumn<string>(
+                name: "department_name",
+                schema: "metrics",
+                table: "departments",
+                type: "citext",
+                maxLength: 200,
+                nullable: false,
+                oldClrType: typeof(string),
+                oldType: "varchar(200)",
+                oldMaxLength: 200);
 
             migrationBuilder.CreateTable(
                 name: "key_metrics",
@@ -177,12 +194,6 @@ namespace Metrics.Web.Migrations
                         principalColumn: "id",
                         onDelete: ReferentialAction.Restrict);
                 });
-
-            migrationBuilder.CreateIndex(
-                name: "ix_key_kpi_submissions_department_id1",
-                schema: "metrics",
-                table: "key_kpi_submissions",
-                column: "department_id1");
 
             migrationBuilder.CreateIndex(
                 name: "ix_key_kpi_submissions_department_key_metric_id",
@@ -254,15 +265,6 @@ namespace Metrics.Web.Migrations
                 onDelete: ReferentialAction.Restrict);
 
             migrationBuilder.AddForeignKey(
-                name: "fk_key_kpi_submission_items_departments_department_id",
-                schema: "metrics",
-                table: "key_kpi_submission_items",
-                column: "department_id",
-                principalSchema: "metrics",
-                principalTable: "departments",
-                principalColumn: "id");
-
-            migrationBuilder.AddForeignKey(
                 name: "fk_key_kpi_submission_items_key_metrics_key_metric_id",
                 schema: "metrics",
                 table: "key_kpi_submission_items",
@@ -291,15 +293,6 @@ namespace Metrics.Web.Migrations
                 onDelete: ReferentialAction.Restrict);
 
             migrationBuilder.AddForeignKey(
-                name: "fk_key_kpi_submissions_departments_department_id1",
-                schema: "metrics",
-                table: "key_kpi_submissions",
-                column: "department_id1",
-                principalSchema: "metrics",
-                principalTable: "departments",
-                principalColumn: "id");
-
-            migrationBuilder.AddForeignKey(
                 name: "fk_key_kpi_submissions_key_metrics_key_metric_id",
                 schema: "metrics",
                 table: "key_kpi_submissions",
@@ -314,11 +307,6 @@ namespace Metrics.Web.Migrations
         {
             migrationBuilder.DropForeignKey(
                 name: "fk_key_kpi_submission_items_department_key_metrics_key_kpi_met",
-                schema: "metrics",
-                table: "key_kpi_submission_items");
-
-            migrationBuilder.DropForeignKey(
-                name: "fk_key_kpi_submission_items_departments_department_id",
                 schema: "metrics",
                 table: "key_kpi_submission_items");
 
@@ -338,11 +326,6 @@ namespace Metrics.Web.Migrations
                 table: "key_kpi_submissions");
 
             migrationBuilder.DropForeignKey(
-                name: "fk_key_kpi_submissions_departments_department_id1",
-                schema: "metrics",
-                table: "key_kpi_submissions");
-
-            migrationBuilder.DropForeignKey(
                 name: "fk_key_kpi_submissions_key_metrics_key_metric_id",
                 schema: "metrics",
                 table: "key_kpi_submissions");
@@ -354,11 +337,6 @@ namespace Metrics.Web.Migrations
             migrationBuilder.DropTable(
                 name: "key_metrics",
                 schema: "metrics");
-
-            migrationBuilder.DropIndex(
-                name: "ix_key_kpi_submissions_department_id1",
-                schema: "metrics",
-                table: "key_kpi_submissions");
 
             migrationBuilder.DropIndex(
                 name: "ix_key_kpi_submissions_department_key_metric_id",
@@ -379,11 +357,6 @@ namespace Metrics.Web.Migrations
                 name: "ix_key_kpi_submission_items_key_metric_id",
                 schema: "metrics",
                 table: "key_kpi_submission_items");
-
-            migrationBuilder.DropColumn(
-                name: "department_id1",
-                schema: "metrics",
-                table: "key_kpi_submissions");
 
             migrationBuilder.DropColumn(
                 name: "department_key_metric_id",
@@ -415,6 +388,9 @@ namespace Metrics.Web.Migrations
                 table: "key_kpi_submissions",
                 newName: "ix_key_kpi_submissions_key_kpi_id");
 
+            migrationBuilder.AlterDatabase()
+                .OldAnnotation("Npgsql:PostgresExtension:citext", ",,");
+
             migrationBuilder.CreateSequence(
                 name: "department_key_kpis_id_seq",
                 schema: "metrics",
@@ -425,6 +401,15 @@ namespace Metrics.Web.Migrations
                 schema: "metrics",
                 incrementBy: 10);
 
+            migrationBuilder.AlterColumn<string>(
+                name: "title_name",
+                schema: "metrics",
+                table: "user_titles",
+                type: "varchar (200)",
+                nullable: false,
+                oldClrType: typeof(string),
+                oldType: "citext");
+
             migrationBuilder.AlterColumn<long>(
                 name: "department_id",
                 schema: "metrics",
@@ -434,16 +419,24 @@ namespace Metrics.Web.Migrations
                 oldClrType: typeof(long),
                 oldType: "bigint");
 
-            migrationBuilder.AlterColumn<long>(
+            migrationBuilder.AddColumn<long>(
                 name: "department_id",
                 schema: "metrics",
                 table: "key_kpi_submission_items",
                 type: "bigint",
                 nullable: false,
-                defaultValue: 0L,
-                oldClrType: typeof(long),
-                oldType: "bigint",
-                oldNullable: true);
+                defaultValue: 0L);
+
+            migrationBuilder.AlterColumn<string>(
+                name: "department_name",
+                schema: "metrics",
+                table: "departments",
+                type: "varchar(200)",
+                maxLength: 200,
+                nullable: false,
+                oldClrType: typeof(string),
+                oldType: "citext",
+                oldMaxLength: 200);
 
             migrationBuilder.CreateTable(
                 name: "key_kpis",
@@ -500,6 +493,12 @@ namespace Metrics.Web.Migrations
                 table: "key_kpi_submissions",
                 columns: new[] { "score_submission_period_id", "application_user_id" },
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "ix_key_kpi_submission_items_department_id",
+                schema: "metrics",
+                table: "key_kpi_submission_items",
+                column: "department_id");
 
             migrationBuilder.CreateIndex(
                 name: "ix_key_kpi_submission_items_key_kpi_submission_id_key_kpi_metr",

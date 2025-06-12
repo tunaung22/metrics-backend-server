@@ -14,9 +14,7 @@ public class ApplicationUserConfig : IEntityTypeConfiguration<ApplicationUser>
         // ===== Index ======
         builder.HasKey(e => e.Id);
         // builder.HasIndex(e => e.UserName).IsUnique();
-        builder.HasIndex(e => e.UserCode)
-            .IsUnique()
-            .UseCollation("en_US.utf8");
+        builder.HasIndex(e => e.UserCode).IsUnique();
 
         // ===== Columns =====
         // builder.Property(e => e.UserName)

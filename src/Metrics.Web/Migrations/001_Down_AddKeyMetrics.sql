@@ -1,23 +1,17 @@
 ﻿START TRANSACTION;
 ALTER TABLE metrics.key_kpi_submission_items DROP CONSTRAINT fk_key_kpi_submission_items_department_key_metrics_key_kpi_met;
 
-ALTER TABLE metrics.key_kpi_submission_items DROP CONSTRAINT fk_key_kpi_submission_items_departments_department_id;
-
 ALTER TABLE metrics.key_kpi_submission_items DROP CONSTRAINT fk_key_kpi_submission_items_key_metrics_key_metric_id;
 
 ALTER TABLE metrics.key_kpi_submissions DROP CONSTRAINT fk_key_kpi_submissions_department_key_metrics_department_key_m;
 
 ALTER TABLE metrics.key_kpi_submissions DROP CONSTRAINT fk_key_kpi_submissions_departments_department_id;
 
-ALTER TABLE metrics.key_kpi_submissions DROP CONSTRAINT fk_key_kpi_submissions_departments_department_id1;
-
 ALTER TABLE metrics.key_kpi_submissions DROP CONSTRAINT fk_key_kpi_submissions_key_metrics_key_metric_id;
 
 DROP TABLE metrics.department_key_metrics;
 
 DROP TABLE metrics.key_metrics;
-
-DROP INDEX metrics.ix_key_kpi_submissions_department_id1;
 
 DROP INDEX metrics.ix_key_kpi_submissions_department_key_metric_id;
 
@@ -26,8 +20,6 @@ DROP INDEX metrics.ix_key_kpi_submissions_score_submission_period_id_department_
 DROP INDEX metrics.ix_key_kpi_submission_items_key_kpi_submission_id_key_kpi_metr;
 
 DROP INDEX metrics.ix_key_kpi_submission_items_key_metric_id;
-
-ALTER TABLE metrics.key_kpi_submissions DROP COLUMN department_id1;
 
 ALTER TABLE metrics.key_kpi_submissions DROP COLUMN department_key_metric_id;
 
@@ -45,11 +37,13 @@ CREATE SEQUENCE metrics.department_key_kpis_id_seq START WITH 1 INCREMENT BY 10 
 
 CREATE SEQUENCE metrics.key_kpis_id_seq START WITH 1 INCREMENT BY 10 NO CYCLE;
 
+ALTER TABLE metrics.user_titles ALTER COLUMN title_name TYPE varchar (200);
+
 ALTER TABLE metrics.key_kpi_submissions ALTER COLUMN department_id DROP NOT NULL;
 
-UPDATE metrics.key_kpi_submission_items SET department_id = 0 WHERE department_id IS NULL;
-ALTER TABLE metrics.key_kpi_submission_items ALTER COLUMN department_id SET NOT NULL;
-ALTER TABLE metrics.key_kpi_submission_items ALTER COLUMN department_id SET DEFAULT 0;
+ALTER TABLE metrics.key_kpi_submission_items ADD department_id bigint NOT NULL DEFAULT 0;
+
+ALTER TABLE metrics.departments ALTER COLUMN department_name TYPE varchar(200);
 
 CREATE TABLE metrics.key_kpis (
     id bigint NOT NULL,
@@ -76,6 +70,8 @@ CREATE TABLE metrics.department_key_kpis (
 
 CREATE UNIQUE INDEX ix_key_kpi_submissions_score_submission_period_id_application_ ON metrics.key_kpi_submissions (score_submission_period_id, application_user_id);
 
+CREATE INDEX ix_key_kpi_submission_items_department_id ON metrics.key_kpi_submission_items (department_id);
+
 CREATE UNIQUE INDEX ix_key_kpi_submission_items_key_kpi_submission_id_key_kpi_metr ON metrics.key_kpi_submission_items (key_kpi_submission_id, key_kpi_metrics_id, department_id);
 
 CREATE INDEX ix_department_key_kpis_department_id ON metrics.department_key_kpis (department_id);
@@ -95,7 +91,7 @@ ALTER TABLE metrics.key_kpi_submissions ADD CONSTRAINT fk_key_kpi_submissions_de
 ALTER TABLE metrics.key_kpi_submissions ADD CONSTRAINT fk_key_kpi_submissions_key_kpis_key_kpi_id FOREIGN KEY (key_kpi_id) REFERENCES metrics.key_kpis (id);
 
 DELETE FROM metrics.__ef_migrations_history
-WHERE migration_id = '20250605090306_001_UpdateKeyMetricTable';
+WHERE migration_id = '20250612005610_001_AddKeyMetrics';
 
 COMMIT;
 
