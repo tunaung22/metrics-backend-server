@@ -29,9 +29,9 @@ public class CopyModel : PageModel
     // public List<SelectListItem> SourcePeriodListItems { get; set; } = [];
     public List<SelectListItem> DestinationPeriodListItems { get; set; } = [];
 
-    public KpiPeriodViewModel SourcePeriod { get; set; }
-    public string SourcePeriodName { get; set; }
-    public string DestinationPeriodName { get; set; }
+    public KpiPeriodViewModel SourcePeriod { get; set; } = null!;
+    public string SourcePeriodName { get; set; } = null!;
+    public string DestinationPeriodName { get; set; } = null!;
 
     public class DepartmentKeyMetricViewModel
     {

@@ -8,12 +8,11 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using MiniExcelLibs;
-using System.Text.Json;
 
-namespace Metrics.Web.Pages.Reports.Submissions.Kpi;
+namespace Metrics.Web.Pages.Reports.Submissions.DepartmentKpi;
 
 [Authorize(Policy = "CanAccessAdminFeaturePolicy")]
-public class ViewModel : PageModel
+public class SummaryModel : PageModel
 {
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly IUserService _userService;
@@ -22,7 +21,7 @@ public class ViewModel : PageModel
     private readonly IKpiSubmissionService _kpiSubmissionService;
     private readonly IUserTitleService _userTitleService;
 
-    public ViewModel(
+    public SummaryModel(
         UserManager<ApplicationUser> userManager,
         IUserService userService,
         IKpiSubmissionPeriodService kpiPeriodService,
@@ -369,6 +368,7 @@ public class ViewModel : PageModel
                 {
                     var dict = new Dictionary<string, object>();
 
+
                     dict["Department Name"] = report.DepartmentName ?? "Undefined Department";
                     // Flatten UserGroupSubmissionInfos
                     // int groupIndex = 1;
@@ -376,8 +376,8 @@ public class ViewModel : PageModel
                     {
                         foreach (var groupInfo in report.UserGroupSubmissions)
                         {
-                            dict[$"{groupInfo.GroupName} Submissions"] = groupInfo.TotalSubmissions.ToString("0.00");
-                            dict[$"{groupInfo.GroupName} Score"] = groupInfo.TotalScore.ToString("0.00");
+                            dict[$"{groupInfo.GroupName} Submissions"] = Convert.ToDecimal(groupInfo.TotalSubmissions.ToString("0"));
+                            dict[$"{groupInfo.GroupName} Score"] = Convert.ToDecimal(groupInfo.TotalScore.ToString("0.00"));
                             // dict[$"GroupName {groupIndex}"] = groupInfo.GroupName;
                             // dict[$"Submissions {groupIndex}"] = groupInfo.TotalSubmissions;
                             // dict[$"Score {groupIndex}"] = groupInfo.TotalScore;
@@ -385,9 +385,9 @@ public class ViewModel : PageModel
                         }
                     }
 
-                    dict["Total Submissions"] = report.TotalSubmissions.ToString("0.00");
-                    dict["Total Score"] = report.TotalScore.ToString("0.00");
-                    dict["Kpi Score"] = report.KpiScore.ToString("0.00");
+                    dict["Total Submissions"] = Convert.ToDecimal(report.TotalSubmissions.ToString("0.00"));
+                    dict["Total Score"] = Convert.ToDecimal(report.TotalScore.ToString("0.00"));
+                    dict["KPI Score"] = Convert.ToDecimal(report.KpiScore.ToString("0.00"));
 
                     data.Add(dict);
                 }

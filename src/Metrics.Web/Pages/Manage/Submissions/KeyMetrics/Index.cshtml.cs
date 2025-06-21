@@ -46,7 +46,7 @@ public class IndexModel : PageModel
     public bool DisplayAll { get; set; } = false;
 
     [BindProperty]
-    public IFormFile UploadedFile { get; set; }
+    public IFormFile UploadedFile { get; set; } = null!;
     public bool UploadSuccess { get; set; }
 
     // Return URL
