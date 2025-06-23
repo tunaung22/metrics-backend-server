@@ -65,7 +65,7 @@ public class CreateModel : PageModel
     }
 
 
-    public async Task<IActionResult> OnPostAsync()
+    public IActionResult OnPostAsync()
     {
         if (!ModelState.IsValid)
         {

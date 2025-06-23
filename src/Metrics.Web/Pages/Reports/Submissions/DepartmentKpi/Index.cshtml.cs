@@ -3,7 +3,7 @@ using Metrics.Web.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace Metrics.Web.Pages.Reports.Submissions.Departments.Kpi;
+namespace Metrics.Web.Pages.Reports.Submissions.DepartmentKpi;
 
 [Authorize(Policy = "CanAccessAdminFeaturePolicy")]
 public class IndexModel : PageModel

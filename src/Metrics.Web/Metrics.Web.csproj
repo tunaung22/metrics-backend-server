@@ -36,10 +36,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Pages/Reports/Submissions/Kpi/View/" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Watch Include="**/*" Exclude="**/logs/*.log;*.log" />
   </ItemGroup>
 

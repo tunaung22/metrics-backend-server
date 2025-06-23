@@ -1,5 +1,5 @@
-﻿@page "{periodName}"
-@model Metrics.Web.Pages.Reports.Submissions.Kpi.ViewModel
+﻿@page "/Reports/Submissions/Department-Kpi/{periodName}"
+@model Metrics.Web.Pages.Reports.Submissions.DepartmentKpi.SummaryModel
 @{
     ViewData["Title"] = "Score Submission Report";
 }
@@ -21,7 +21,8 @@
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a asp-page="/Dashboard/Index">Dashboard</a></li>
-            <li class="breadcrumb-item"><a asp-page="/Reports/Submissions/Departments/Kpi/Index">Submissions</a></li>
+            <li class="breadcrumb-item"><a asp-page="/Reports/Submissions/Index">Reports</a></li>
+            <li class="breadcrumb-item"><a asp-page="/Reports/Submissions/DepartmentKpi/Index">Department KPI Period</a></li>
             <li class="breadcrumb-item active">@Model.SelectedPeriod.PeriodName</li>
         </ol>
     </nav>
@@ -31,16 +32,19 @@
 <div class="container-fluid">
     <div class="bg-light p-4 rounded-2">
         <div class="filter-toolbar mb-4 d-flex justify-content-between">
-            <form id="form__groupSelection" method="get" class="">
-                    <select 
-                        asp-for="Group"
-                        asp-items="Model.UserGroupListItems"
-                        onchange="this.form.submit()"
-                        class="form-select"
-                        aria-label="Select User Group">
-                            <option value="All">All</option>
-                    </select>
-            </form>
+            <span class="d-flex gap-4">
+                <h3>@Model.SelectedPeriod.PeriodName</h3>
+                <form id="form__groupSelection" method="get" class="">
+                        <select 
+                            asp-for="Group"
+                            asp-items="Model.UserGroupListItems"
+                            onchange="this.form.submit()"
+                            class="form-select"
+                            aria-label="Select User Group">
+                                <option value="All">All</option>
+                        </select>
+                </form>
+            </span>
             <div class="exportData">
                 @{string groupName = "";}
                 @{

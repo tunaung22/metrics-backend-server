@@ -1,5 +1,5 @@
-﻿@page
-@model Metrics.Web.Pages.Reports.Submissions.Departments.Kpi.IndexModel
+﻿@page "/Reports/Submissions/Department-Kpi/"
+@model Metrics.Web.Pages.Reports.Submissions.DepartmentKpi.IndexModel
 @{
     ViewData["Title"] = "Department Score Reports (KPI)";
 }
@@ -15,7 +15,7 @@
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a asp-page="/Dashboard/Index">Dashboard</a></li>
             <li class="breadcrumb-item"><a asp-page="/Reports/Submissions/Index">Reports</a></li>
-            <li class="breadcrumb-item active">Department Score</li>
+            <li class="breadcrumb-item active">Department KPI Period</li>
         </ol>
     </nav>
 </div>
@@ -38,7 +38,7 @@
                     {
                         <tr>
                             <td class="text-center">
-                                <a asp-page="View" 
+                                <a asp-page="Summary" 
                                     asp-route-periodName="@p.PeriodName"
                                     class="link-primary 
                                             link-offset-2 
@@ -51,7 +51,11 @@
                             <td class="text-center">@p.SubmissionStartDate.ToLocalTime().ToString("MMM dd, yyyy")</td>
                             <td class="text-center">@p.SubmissionEndDate.ToLocalTime().ToString("MMM dd, yyyy")</td>
                             <td class="text-center">
-                                <a asp-page="View" 
+                                <a asp-page="Summary" 
+                                    asp-route-periodName="@p.PeriodName"
+                                    class="btn btn-sm btn-outline-primary my-2 my-lg-0 me-2">
+                                    <strong><i class="bi bi-clipboard2-data"> </i>Summary</strong></a>
+                                <a asp-page="Detail" 
                                     asp-route-periodName="@p.PeriodName"
                                     class="btn btn-sm btn-outline-primary my-2 my-lg-0 me-2">
                                     <strong><i class="bi bi-clipboard2-data"> </i>Details</strong></a>
