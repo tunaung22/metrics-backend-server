@@ -236,7 +236,7 @@ public class KpiSubmissionService : IKpiSubmissionService
         }
     }
 
-    public async Task<List<KpiSubmission>> FindByCandidateIdAndKpiPeriodIdAsync(string candidateId, long kpiPeriodId)
+    public async Task<List<KpiSubmission>> FindByKpiPeriodAndSubmitterAsync(long kpiPeriodId, string candidateId)
     {
         try
         {
@@ -251,22 +251,23 @@ public class KpiSubmissionService : IKpiSubmissionService
 
             if (foundSubmissions != null)
             {
-                return foundSubmissions.Select(s => new KpiSubmission
-                {
-                    SubmittedAt = s.SubmittedAt,
-                    SubmissionDate = s.SubmissionDate,
-                    ScoreValue = s.ScoreValue,
-                    PositiveAspects = s.PositiveAspects,
-                    NegativeAspects = s.NegativeAspects,
-                    Comments = s.Comments,
-                    KpiSubmissionPeriodId = s.KpiSubmissionPeriodId,
-                    DepartmentId = s.DepartmentId,
-                    TargetDepartment = s.TargetDepartment,
-                    ApplicationUserId = s.ApplicationUserId
-                    // KpiPeriod = s.KpiPeriod.PeriodName,
-                    // Department = s.TargetDepartment.DepartmentName,
-                    // Candidate = s.Candidate.FullName
-                }).ToList();
+                return foundSubmissions;
+                // return foundSubmissions.Select(s => new KpiSubmission
+                // {
+                //     SubmittedAt = s.SubmittedAt,
+                //     SubmissionDate = s.SubmissionDate,
+                //     ScoreValue = s.ScoreValue,
+                //     PositiveAspects = s.PositiveAspects,
+                //     NegativeAspects = s.NegativeAspects,
+                //     Comments = s.Comments,
+                //     KpiSubmissionPeriodId = s.KpiSubmissionPeriodId,
+                //     DepartmentId = s.DepartmentId,
+                //     TargetDepartment = s.TargetDepartment,
+                //     ApplicationUserId = s.ApplicationUserId
+                //     // KpiPeriod = s.KpiPeriod.PeriodName,
+                //     // Department = s.TargetDepartment.DepartmentName,
+                //     // Candidate = s.Candidate.FullName
+                // }).ToList();
             }
             return [];
         }

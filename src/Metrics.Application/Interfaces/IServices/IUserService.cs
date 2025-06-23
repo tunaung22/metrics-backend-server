@@ -12,7 +12,7 @@ public interface IUserService
     Task<ApplicationUser> UpdateAsync(string userId, UserUpdateDto updateDto);
     Task<ApplicationUser> UpdateProfileAsync(string userId, UserProfileUpdateDto updateDto);
     Task<ApplicationUser> FindByUsernameAsync(string username);
-    Task<ApplicationUser> FindByIdAsync(string userId);
+    Task<ApplicationUser?> FindByIdAsync(string userId);
     // TODOs
     // Task<long> FindByUserIdAsync(string userId);
     // lock user

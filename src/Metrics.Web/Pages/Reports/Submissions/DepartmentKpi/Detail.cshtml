@@ -33,37 +33,42 @@
     <div class="bg-light p-4 rounded-2">
         <div class="filter-toolbar mb-4 d-flex justify-content-between">
             <span class="d-flex align-items-center gap-2">
-                <h3>@Model.SelectedPeriod.PeriodName</h3>
-
+                @* <h3>@Model.SelectedPeriod.PeriodName</h3>
                 @if(Model.Submitter!= null)
                 {
-                    <label for=""><strong>Selected user: ....</strong></label>
-                    <button class="btn btn-secondary">Filter</button>
+                    <button class="btn btn-primary">Filter</button>
                 }
                 <form id="form__userSelection" method="get">
-                    @* <select 
+                    <select 
                         asp-for="Group"
                         asp-items="Model.UserGroupListItems"
                         onchange="this.form.submit()"
                         class="form-select"
                         aria-label="Select User Group">
                             <option value="All">All</option>
-                    </select> *@
+                    </select>
                 </form>
+                <span class="d-flex align-items-center m-2">
+                    <input type="text" id="input__searchUser" class="form-control ms-2" placeholder="Search by User Name" />
+                </span> *@
             </span>
             <div class="exportData">
                 <form method="post" asp-page-handler="ExportExcel">
-                    @* <input type="hidden" asp-for="Group" /> *@
+                    <input type="hidden" asp-for="Submitter" />
                     <button type="submit" class="btn btn-success">
                         <i class="bi bi-file-earmark-spreadsheet"></i> Export</button>
                 </form>
             </div>
         </div>
+
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+
         <div class="table-responsive">
             <table id="reportTable" class="table table-bordered table-striped">
                 <thead>
-                    @if(Model.ScoreSubmissionDetailReports.Any())
-                    {
+                    @* @if(Model.ScoreSubmissionDetailReports.Any())
+                    { *@
                         <tr>    
                             <th class="px-4 colUser">User</th>
                             <th class="px-4 colDepartment">Department</th>
@@ -72,13 +77,13 @@
                             <th class="px-4 colNegativeAspects">Negative Aspects</th>
                             <th class="px-4 colComments">Comments</th>
                         </tr>
-                    }
-                    else
+                    @* } *@
+                    @* else
                     {
                         <tr>
                             <th>No Data</th>
                         </tr>
-                    }
+                    } *@
                 </thead>
                 <tbody>
                     @if(Model.ScoreSubmissionDetailReports.Any())
@@ -86,7 +91,7 @@
                         @foreach(var e in Model.ScoreSubmissionDetailReports)
                         {
                             <tr>
-                                <td><strong>@e.UserFullName</strong></td>
+                                <td><strong><a asp-page="">@e.UserFullName</a></strong></td>
                                 <td>@e.DepartmentName</td>
                                 <td class="text-center"><strong>@e.GivenScore</strong></td>
                                 <td>
@@ -186,7 +191,7 @@
                 paging: false,
                 info: false,
                 searching: false,
-                autoWidth: true,
+                @* autoWidth: true, *@
                 columnDefs: [
                     { width: "15%", targets: [0, 1] },
                     { width: "10%", targets: [2] },
@@ -214,6 +219,11 @@
                     console.error('data is undefined');
                 }
             });
+
+
+            $('#input__searchUser').on('input', function() {
+                var searchValue = $(this).val().toLowerCase();
+            })
         });
     </script>
 }

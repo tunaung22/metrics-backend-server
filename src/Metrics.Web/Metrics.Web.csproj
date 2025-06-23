@@ -20,8 +20,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="9.0.0"
-      ExcludeAssets="All" />
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="9.0.0" ExcludeAssets="All" />
     <PackageReference Include="MiniExcel" Version="1.41.2" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
     <PackageReference Include="Serilog" Version="4.2.0" />
@@ -34,9 +33,6 @@
     <ProjectReference Include="../Metrics.Infrastructure/Metrics.Infrastructure.csproj" />
     <ProjectReference Include="../Metrics.Shared/Metrics.Shared.csproj" />
     <ProjectReference Include="../Metrics.Application/Metrics.Application.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
   </ItemGroup>
 
   <ItemGroup>

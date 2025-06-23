@@ -317,7 +317,7 @@ public class UserService : IUserService
     }
 
 
-    public async Task<ApplicationUser> FindByIdAsync(string userId)
+    public async Task<ApplicationUser?> FindByIdAsync(string userId)
     {
         try
         {
@@ -329,8 +329,8 @@ public class UserService : IUserService
                 .Include(u => u.Department)
                 .Include(u => u.UserTitle)
                 .FirstOrDefaultAsync(u => u.Id == userId);
-            if (user == null)
-                throw new Exception($"User not found.");
+            // if (user == null)
+            //     throw new Exception($"User not found.");
 
             return user;
         }

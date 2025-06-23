@@ -58,7 +58,37 @@ public class DetailModel : PageModel
     [BindProperty(SupportsGet = true)]
     public string? Submitter { get; set; } // for filter by user
 
-    public class ExcelDtoModel
+    public class ExcelDtoAllUserModel
+    {
+        [ExcelColumnWidth(15)]
+        [ExcelColumn(Name = "Period Name")]
+        public string? PeriodName { get; set; }
+
+        [ExcelColumnWidth(20)]
+        [ExcelColumn(Name = "Scoring Department")]
+        public string? ScoringDepartment { get; set; }
+
+        [ExcelColumnWidth(10)]
+        [ExcelColumn(Name = "Score")]
+        public decimal GivenScore { get; set; }
+
+        [ExcelColumnWidth(15)]
+        [ExcelColumn(Name = "Submitted By")]
+        public string? SubmittedBy { get; set; }
+
+        [ExcelColumnWidth(20)]
+        [ExcelColumn(Name = "Positive Aspects")]
+        public string? PositiveAspects { get; set; }
+
+        [ExcelColumnWidth(20)]
+        [ExcelColumn(Name = "Negative Aspects")]
+        public string? NegativeAspects { get; set; }
+
+        [ExcelColumnWidth(20)]
+        [ExcelColumn(Name = "Comments")]
+        public string? Comments { get; set; }
+    }
+    public class ExcelDtoSingleUserModel
     {
         [ExcelColumnWidth(15)]
         [ExcelColumn(Name = "Period Name")]
@@ -91,7 +121,7 @@ public class DetailModel : PageModel
 
     // =============== HANDLERS ================================================
 
-    public async Task<IActionResult> OnGetAsync(string periodName)
+    public async Task<IActionResult> OnGetAsync([FromRoute] string periodName, [FromQuery] string? submitter)
     {
         if (string.IsNullOrEmpty(periodName))
         {
@@ -115,23 +145,53 @@ public class DetailModel : PageModel
             return Page();
         }
 
-        // BY USER
-        // var kpiSubmissions = await _kpiSubmissionService.FindByCandidateIdAndKpiPeriodIdAsyncFindByCandidateIdAndKpiPeriodIdAsync(string candidateId, long kpiPeriodId);
-        // BY ALL USERS
-        var kpiSubmissions = await _kpiSubmissionService.FindByKpiPeriodAsync(SelectedPeriod.Id);
-        if (kpiSubmissions.Any())
+
+        if (string.IsNullOrEmpty(submitter))
         {
-            ScoreSubmissionDetailReports = kpiSubmissions.Select(s => new ScoreSubmissionDetailReportViewModel
+            // BY ALL USERS
+            var kpiSubmissions = await _kpiSubmissionService.FindByKpiPeriodAsync(SelectedPeriod.Id);
+            if (kpiSubmissions.Any())
             {
-                PeriodName = s.TargetPeriod.PeriodName,
-                DepartmentName = s.TargetDepartment.DepartmentName,
-                GivenScore = s.ScoreValue,
-                UserFullName = s.SubmittedBy.FullName,
-                ApplicationUserId = s.SubmittedBy.Id,
-                PositiveAspects = s.PositiveAspects ?? string.Empty,
-                NegativeAspects = s.NegativeAspects ?? string.Empty,
-                Comments = s.Comments ?? string.Empty
-            }).ToList();
+                ScoreSubmissionDetailReports = kpiSubmissions.Select(s => new ScoreSubmissionDetailReportViewModel
+                {
+                    PeriodName = s.TargetPeriod.PeriodName,
+                    DepartmentName = s.TargetDepartment.DepartmentName,
+                    GivenScore = s.ScoreValue,
+                    UserFullName = s.SubmittedBy.FullName,
+                    ApplicationUserId = s.SubmittedBy.Id,
+                    PositiveAspects = s.PositiveAspects ?? string.Empty,
+                    NegativeAspects = s.NegativeAspects ?? string.Empty,
+                    Comments = s.Comments ?? string.Empty
+                }).ToList();
+            }
+        }
+        else
+        {
+            // BY USER
+            Submitter = submitter.Trim();
+            var foundSubmitter = await _userService.FindByIdAsync(Submitter);
+            if (foundSubmitter == null)
+            {
+                ModelState.AddModelError(string.Empty, $"Submitter with ID {Submitter} not found.");
+                return Page();
+            }
+            var kpiSubmissions = await _kpiSubmissionService
+                .FindByKpiPeriodAndSubmitterAsync(SelectedPeriod.Id, foundSubmitter.Id);
+            // FindByKpiPeriodAndCandidateIdAndKpiPeriodIdAsync(string candidateId, long kpiPeriodId);
+            if (kpiSubmissions.Any())
+            {
+                ScoreSubmissionDetailReports = kpiSubmissions.Select(s => new ScoreSubmissionDetailReportViewModel
+                {
+                    PeriodName = s.TargetPeriod.PeriodName,
+                    DepartmentName = s.TargetDepartment.DepartmentName,
+                    GivenScore = s.ScoreValue,
+                    UserFullName = s.SubmittedBy.FullName,
+                    ApplicationUserId = s.SubmittedBy.Id,
+                    PositiveAspects = s.PositiveAspects ?? string.Empty,
+                    NegativeAspects = s.NegativeAspects ?? string.Empty,
+                    Comments = s.Comments ?? string.Empty
+                }).ToList();
+            }
         }
 
 
@@ -162,73 +222,101 @@ public class DetailModel : PageModel
             return Page();
         }
 
-        // BY USER
-        // var kpiSubmissions = await _kpiSubmissionService.FindByCandidateIdAndKpiPeriodIdAsyncFindByCandidateIdAndKpiPeriodIdAsync(string candidateId, long kpiPeriodId);
-        // BY ALL USERS
-        var kpiSubmissions = await _kpiSubmissionService.FindByKpiPeriodAsync(SelectedPeriod.Id);
-        if (kpiSubmissions.Any())
+
+        if (string.IsNullOrEmpty(Submitter))
         {
-            ScoreSubmissionDetailReports = kpiSubmissions.Select(s => new ScoreSubmissionDetailReportViewModel
+            // BY ALL USERS
+            var kpiSubmissions = await _kpiSubmissionService.FindByKpiPeriodAsync(SelectedPeriod.Id);
+
+            // Prepare for Excel export
+            var data = new List<ExcelDtoAllUserModel>();
+            if (kpiSubmissions.Any())
             {
-                PeriodName = s.TargetPeriod.PeriodName,
-                DepartmentName = s.TargetDepartment.DepartmentName,
-                GivenScore = s.ScoreValue,
-                UserFullName = s.SubmittedBy.FullName,
-                ApplicationUserId = s.SubmittedBy.Id,
-                PositiveAspects = s.PositiveAspects ?? string.Empty,
-                NegativeAspects = s.NegativeAspects ?? string.Empty,
-                Comments = s.Comments ?? string.Empty
-            }).ToList();
-        }
+                data = kpiSubmissions.Select(s => new ExcelDtoAllUserModel
+                {
+                    PeriodName = s.TargetPeriod.PeriodName ?? string.Empty,
+                    ScoringDepartment = s.TargetDepartment.DepartmentName ?? string.Empty,
+                    GivenScore = s.ScoreValue,
+                    SubmittedBy = s.SubmittedBy.FullName ?? string.Empty,
+                    PositiveAspects = s.PositiveAspects ?? string.Empty,
+                    NegativeAspects = s.NegativeAspects ?? string.Empty,
+                    Comments = s.Comments ?? string.Empty
+                }).ToList();
+            }
 
-        // Export Excel file
-
-
-        // var data = new List<Dictionary<string, object>>();
-        var data = new List<ExcelDtoModel>();
-        foreach (var r in ScoreSubmissionDetailReports)
-        {
-            //     var dict = new Dictionary<string, object>
-            //     {
-            //         { "Period Name", r.PeriodName ?? string.Empty },
-            //         { "Scoring Department", r.DepartmentName ?? string.Empty},
-            //         { "Score", r.GivenScore },
-            //         { "Submitted By", r.UserFullName ?? string.Empty},
-            //     };
-            //     data.Add(dict);
-            data.Add(new ExcelDtoModel
+            // Export Excel file
+            try
             {
-                PeriodName = r.PeriodName ?? string.Empty,
-                ScoringDepartment = r.DepartmentName ?? string.Empty,
-                GivenScore = r.GivenScore,
-                SubmittedBy = r.UserFullName ?? string.Empty,
-                PositiveAspects = r.PositiveAspects ?? string.Empty,
-                NegativeAspects = r.NegativeAspects ?? string.Empty,
-                Comments = r.Comments ?? string.Empty
-            });
-        }
+                var memoryStream = new MemoryStream();
+                MiniExcel.SaveAs(
+                    stream: memoryStream,
+                    value: data
+                );
+                memoryStream.Position = 0; // Reset stream position
 
-        try
+                return File(
+                    memoryStream,
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    $"Report-Detail-All-{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.xlsx" // Added .xlsx extension
+                );
+            }
+            catch (System.Exception)
+            {
+                ModelState.AddModelError(string.Empty, "An error occurred while exporting the report to Excel.");
+                return RedirectToPage();
+            }
+        }
+        else
         {
-            var memoryStream = new MemoryStream();
-            MiniExcel.SaveAs(
-                stream: memoryStream,
-                value: data
-            );
-            memoryStream.Position = 0; // Reset stream position
+            // BY USER
+            var foundSubmitter = await _userService.FindByIdAsync(Submitter);
+            if (foundSubmitter == null)
+            {
+                ModelState.AddModelError(string.Empty, $"Submitter with ID {Submitter} not found.");
+                return Page();
+            }
+            var kpiSubmissions = await _kpiSubmissionService
+                .FindByKpiPeriodAndSubmitterAsync(SelectedPeriod.Id, foundSubmitter.Id);
+            // FindByKpiPeriodAndCandidateIdAndKpiPeriodIdAsync(string candidateId, long kpiPeriodId);
+            var data = new List<ExcelDtoSingleUserModel>();
 
-            return File(
-                memoryStream,
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                $"Report-Detail-All-{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.xlsx" // Added .xlsx extension
-            );
-        }
-        catch (System.Exception)
-        {
-            ModelState.AddModelError(string.Empty, "An error occurred while exporting the report to Excel.");
-            return RedirectToPage();
-        }
+            // Prepare for Excel export
+            if (kpiSubmissions.Any())
+            {
+                data = kpiSubmissions.Select(s => new ExcelDtoSingleUserModel
+                {
+                    PeriodName = s.TargetPeriod.PeriodName ?? string.Empty,
+                    ScoringDepartment = s.TargetDepartment.DepartmentName ?? string.Empty,
+                    GivenScore = s.ScoreValue,
+                    SubmittedBy = s.SubmittedBy.FullName ?? string.Empty,
+                    PositiveAspects = s.PositiveAspects ?? string.Empty,
+                    NegativeAspects = s.NegativeAspects ?? string.Empty,
+                    Comments = s.Comments ?? string.Empty
+                }).ToList();
+            }
 
+            // Export Excel file
+            try
+            {
+                var memoryStream = new MemoryStream();
+                MiniExcel.SaveAs(
+                    stream: memoryStream,
+                    value: data
+                );
+                memoryStream.Position = 0; // Reset stream position
+
+                return File(
+                    memoryStream,
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    $"Report-DepartmentScoreSubmission-Detail-{foundSubmitter.FullName}-{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.xlsx" // Added .xlsx extension
+                );
+            }
+            catch (System.Exception)
+            {
+                ModelState.AddModelError(string.Empty, "An error occurred while exporting the report to Excel.");
+                return RedirectToPage();
+            }
+        }
 
         // return Page();
     }

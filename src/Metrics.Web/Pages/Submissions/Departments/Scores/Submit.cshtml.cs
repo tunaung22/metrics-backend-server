@@ -239,7 +239,7 @@ public class SubmitModel : PageModel
                 IsSubmissionsExist = true;
                 // fetch submitted data for display
                 // Find submissions by Submitter and Period
-                var submissions = await _kpiSubmissionService.FindByCandidateIdAndKpiPeriodIdAsync(Submitter.Id, kpiPeriod.Id);
+                var submissions = await _kpiSubmissionService.FindByKpiPeriodAndSubmitterAsync(kpiPeriod.Id, Submitter.Id);
                 if (submissions.Count > 0)
                 {
                     DoneKpiSubmissions = submissions.Select(s => new KpiSubmissionGetModel

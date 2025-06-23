@@ -39,119 +39,53 @@
     @* =============== Filter Bar =============================================== *@
     @* <div id="filter-bar" class="d-flex bg-light p-4 mt-2"><div class="col-sm-4 mx-2"></div></div> *@
 
+
     @* ================ Table =================================================== *@
     <div class="row mb-4">
-        <h4>Department KPI Reports</h4>
         <div class="col-xs-12 col-md-6 col-xl-4">
             <div class="card my-4">
                 <div class="card-header">
-                    Department Score Reports (Summary)
+                    <strong>KPI Reports</strong>
                 </div>
                 <div class="card-body">
-                    @* <h5 class="card-title">Department Score Reports</h5> *@
-                    <p class="card-text">Score by All/User Group</p>
+                    <p class="card-text">Department KPI Reports</p>
                     <span class="d-flex justify-content-end">
                         <a asp-page="./DepartmentKpi/Index" class="btn btn-primary">View</a>
                     </span>
                 </div>
-                @* <div class="card-footer text-body-secondary">
-                    2 days ago
-                </div> *@
-            </div>
-            
-        </div>
-        <div class="col-xs-12 col-md-6 col-xl-4">
-            <div class="card my-4">
-                <div class="card-header">
-                    Department Score Reports (Details)
-                </div>
-                <div class="card-body">
-                    @* <h5 class="card-title">Department Score Reports</h5> *@
-                    <p class="card-text">Score by All/User Group</p>
-                    <span class="d-flex justify-content-end">
-                        <a asp-page="./DepartmentKpi/Index" class="btn btn-primary">View</a>
-                    </span>
-                </div>
-                @* <div class="card-footer text-body-secondary">
-                    2 days ago
-                </div> *@
-            </div>
-        </div>
-
-        @* <div class="col-xs-12 col-md-6 col-xl-4">
-            <div class="card my-4">
-                <div class="card-header">
-                    Department Score Reports (KPI)
-                </div>
-                <div class="card-body">
-                    <h5 class="card-title">Department Score Reports</h5>
-                    <p class="card-text">Department Score Submissions reports</p>
-                    <span class="d-flex justify-content-end">
-                        <a asp-page="./Kpi/Index" class="btn btn-primary">View</a>
-                    </span>
-                </div>
-                <div class="card-footer text-body-secondary">
-                    2 days ago
-                </div>
             </div>
         </div>
         <div class="col-xs-12 col-md-6 col-xl-4">
             <div class="card my-4">
                 <div class="card-header">
-                    Department Score Reports (KPI)
+                    <strong>KEY KPI Reports</strong>
                 </div>
                 <div class="card-body">
-                    <h5 class="card-title">Department Score Reports</h5>
-                    <p class="card-text">Department Score Submissions reports</p>
-                    <span class="d-flex justify-content-end">
-                        <a asp-page="./Kpi/Index" class="btn btn-primary">View</a>
-                    </span>
-                </div>
-                <div class="card-footer text-body-secondary">
-                    2 days ago
-                </div>
-            </div>
-        </div> *@
-
-    </div>
-    <div class="row mb-4">
-        <h4>Department Key KPI Reports</h4>
-        <div class="col-xs-12 col-md-6 col-xl-4">
-            <div class="card my-4">
-                <div class="card-header">
-                    Department Score Reports (Summary)
-                </div>
-                <div class="card-body">
-                    @* <h5 class="card-title">Department Score Reports</h5> *@
-                    <p class="card-text">Score by All/User Group</p>
+                    <p class="card-text">Department KEY KPI Reports</p>
                     <span class="d-flex justify-content-end">
                         <a asp-page="./DepartmentKeyKpi/Index" class="btn btn-primary">View</a>
                     </span>
                 </div>
-                @* <div class="card-footer text-body-secondary">
-                    2 days ago
-                </div> *@
             </div>
-            
         </div>
         <div class="col-xs-12 col-md-6 col-xl-4">
             <div class="card my-4">
                 <div class="card-header">
-                    Department Score Reports (Details)
+                    <strong>Case Feedback Reports</strong>
                 </div>
                 <div class="card-body">
-                    @* <h5 class="card-title">Department Score Reports</h5> *@
-                    <p class="card-text">Score by All/User Group</p>
+                    <p class="card-text">Department Case Feedback Reports</p>
                     <span class="d-flex justify-content-end">
-                        <a asp-page="./DepartmentKeyKpi/Index" class="btn btn-primary">View</a>
+                        <a asp-page="./DepartmentCaseFeedback/Index" class="btn btn-primary">View</a>
                     </span>
                 </div>
-                @* <div class="card-footer text-body-secondary">
-                    2 days ago
-                </div> *@
             </div>
         </div>
     </div>
+</div>
+
+
+
     @* <div class="bg-light p-4 rounded-2">
         <table id="reportIndexTable" class="table table-bordered table-striped">
             <thead>
@@ -199,7 +133,6 @@
             </tbody>
         </table>
     </div> *@
-</div>
 
 
 @section Scripts {
