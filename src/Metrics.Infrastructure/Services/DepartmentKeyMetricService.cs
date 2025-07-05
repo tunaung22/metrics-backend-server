@@ -60,7 +60,7 @@ public class DepartmentKeyMetricService : IDepartmentKeyMetricService
         {
             var targetKeyKpi = await _departmentKeyMetricRepository.FindByCodeAsync(code);
             if (targetKeyKpi == null)
-                throw new NotFoundException("Department not found.");
+                throw new NotFoundException("Department Key Metric not found.");
 
             targetKeyKpi.IsDeleted = true;
             await _context.SaveChangesAsync();
@@ -82,7 +82,7 @@ public class DepartmentKeyMetricService : IDepartmentKeyMetricService
                 .FindByCodeAsync(DepartmentKeyMetricCode);
 
             if (targetKeyKpi == null)
-                throw new NotFoundException("Department not found.");
+                throw new NotFoundException("Department Key Metric not found.");
 
             targetKeyKpi.IsDeleted = false;
             await _context.SaveChangesAsync();

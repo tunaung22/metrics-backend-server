@@ -1,0 +1,73 @@
+﻿@page "/Submissions/Department-Metric-Scores/{periodName}"
+@model Metrics.Web.Pages.Submissions.DepartmentMetricScores.SubmitModel
+@{
+    ViewData["Title"] = "Submit Department Metric Score";
+    decimal[] scoreList = new decimal[] { 1M, 2M, 3M, 4M, 5M, 6M, 7M, 8M, 9M, 10M };
+}
+
+
+<div class="sectionTitle">
+    <h4>Submit Department Metric Score</h4>
+    @* <div id="submissionStatusBar" class="fixed-bottom mt-2 mb-0 px-4 p-2 d-flex align-items-center justify-content-center">
+        <p class="px-4 mb-0"><strong>Progress:</strong> <span id="formProgress">0</span> of @Model.SubmissionInput.Count</p>
+    </div> *@
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-page="/Index">Home</a></li>
+            <li class="breadcrumb-item"><a asp-page="/Submissions/DepartmentMetricScores/Index">Submission List</a></li>
+            <li class="breadcrumb-item active">Submit</li>
+        </ol>
+    </nav>
+</div>
+
+
+<div class="container">
+    <div class="bg-light p-4">
+        @if(Model.IsSubmissionValid)  @* Date is due or early. *@
+        {
+            @if(!Model.IsSubmissionsExist)  @* New Submission (No submission exist.) *@
+            {
+                @if (Model.DepartmentList.Count > 0)
+                {
+                    <form method="post">
+                        @* 
+                            foreach departments:
+                                foreach department key metrics:
+                                    render form input
+                        *@
+                        @for(int i=0 ; i<Model.DepartmentList.Count; i++)
+                        {
+                            <div class="card mt-2 px-4 py-2">
+                                <div class="row pb-2"> <!-- Department -->
+                                    <label class="col-3 col-sm-3 col-md-3 col-lg-2" 
+                                        asp-for="SubmissionInput[i].DepartmentId">
+                                            Department:</label>
+                                    <input type="hidden" 
+                                        asp-for="SubmissionInput[i].DepartmentId" />
+                                </div>
+                                <div class="row pb-2"> <!-- keys -->
+                                    @if(Model.DepartmentKeyMetrics.Count > 0)
+                                    {
+                                        @* @for(int k=0; k<Model.DepartmentKeyMetrics.Count; k++) *@
+                                        foreach(var keyMetric in Model.DepartmentKeyMetrics)
+                                        {
+                                            {
+                                                <li>@keyMetric.KeyMetric.MetricTitle</li>
+                                            }
+                                        } 
+                                    }
+                                    else
+                                    {
+                                        <div>
+                                            <p>No Metric Keys assigned yet</p>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </form>
+                }
+            }
+        }
+    </div>
+</div>

@@ -6,7 +6,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Security.Claims;
 
-namespace Metrics.Web.Pages.Submissions.Departments.Scores;
+namespace Metrics.Web.Pages.Submissions.DepartmentScores;
+
 
 [Authorize(Policy = "CanSubmitBaseScorePolicy")]
 public class IndexModel : PageModel
@@ -85,43 +86,47 @@ public class IndexModel : PageModel
         KpiSubmissionPeriods = [];
 
         var currentUser = await GetCurrentUser();
-        for (int i = 0; i < KpiPeriodList.Count; i++)
+        if (currentUser != null)
         {
-            //department count
-            var departmentCount = await _departmentService.FindCountAsync();
-            // submission count by user
-            var submissionCount = await _kpiSubmissionService
-                .FindCountByUserIdByKpiPeriodIdAsync(currentUser.Id, KpiPeriodList[i].Id);
-
-            departmentCount -= 1; // Reduce for own department
-
-            // ---------- COMPLETE ----------------------------------------
-            if (departmentCount == submissionCount)
+            for (int i = 0; i < KpiPeriodList.Count; i++)
             {
-                KpiSubmissionPeriods.Add(new KpiSubmissionPeriodModel
+                //department count
+                var departmentCount = await _departmentService.FindCountAsync();
+                // submission count by user
+                var submissionCount = await _kpiSubmissionService
+                    .FindCountByUserIdByKpiPeriodIdAsync(currentUser.Id, KpiPeriodList[i].Id);
+
+                departmentCount -= 1; // Reduce for own department
+
+                // ---------- COMPLETE ----------------------------------------
+                if (departmentCount == submissionCount)
                 {
-                    PeriodName = KpiPeriodList[i].PeriodName,
-                    SubmissionStartDate = KpiPeriodList[i].SubmissionStartDate,
-                    SubmissionEndDate = KpiPeriodList[i].SubmissionEndDate,
-                    IsSubmitted = true
-                });
-            }
-            // ---------- INCOMPLETE -----------------------------------
-            // ----- departmentCound > submissionCount -----
-            // ----- departmentCound < submissionCount -----
-            else
-            {
-                KpiSubmissionPeriods.Add(new KpiSubmissionPeriodModel
+                    KpiSubmissionPeriods.Add(new KpiSubmissionPeriodModel
+                    {
+                        PeriodName = KpiPeriodList[i].PeriodName,
+                        SubmissionStartDate = KpiPeriodList[i].SubmissionStartDate,
+                        SubmissionEndDate = KpiPeriodList[i].SubmissionEndDate,
+                        IsSubmitted = true
+                    });
+                }
+                // ---------- INCOMPLETE -----------------------------------
+                // ----- departmentCound > submissionCount -----
+                // ----- departmentCound < submissionCount -----
+                else
                 {
-                    PeriodName = KpiPeriodList[i].PeriodName,
-                    SubmissionStartDate = KpiPeriodList[i].SubmissionStartDate,
-                    SubmissionEndDate = KpiPeriodList[i].SubmissionEndDate,
-                    IsSubmitted = false,
-                    IsValid = DateTimeOffset.Now.UtcDateTime > KpiPeriodList[i].SubmissionStartDate
-                        && DateTimeOffset.Now.UtcDateTime < KpiPeriodList[i].SubmissionEndDate
-                });
+                    KpiSubmissionPeriods.Add(new KpiSubmissionPeriodModel
+                    {
+                        PeriodName = KpiPeriodList[i].PeriodName,
+                        SubmissionStartDate = KpiPeriodList[i].SubmissionStartDate,
+                        SubmissionEndDate = KpiPeriodList[i].SubmissionEndDate,
+                        IsSubmitted = false,
+                        IsValid = DateTimeOffset.Now.UtcDateTime > KpiPeriodList[i].SubmissionStartDate
+                            && DateTimeOffset.Now.UtcDateTime < KpiPeriodList[i].SubmissionEndDate
+                    });
+                }
             }
         }
+
 
         return Page();
     }
@@ -150,7 +155,7 @@ public class IndexModel : PageModel
     }
 
 
-    private async Task<ApplicationUser> GetCurrentUser()
+    private async Task<ApplicationUser?> GetCurrentUser()
     {
         // Less likely to cause user not found, so throw just in case
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)

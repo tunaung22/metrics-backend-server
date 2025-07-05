@@ -5,6 +5,7 @@ using Metrics.Shared.Configurations;
 using Metrics.Shared.Utils;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.Options;
 
 namespace Metrics.Infrastructure.Data;
@@ -28,6 +29,7 @@ public class MetricsDbContext : IdentityDbContext<ApplicationUser, ApplicationRo
     public DbSet<KpiSubmissionPeriod> KpiSubmissionPeriods { get; set; }
     public DbSet<KpiSubmission> KpiSubmissions { get; set; }
     public DbSet<KeyMetric> KeyMetrics { get; set; }
+    public DbSet<KeyKpiSubmissionConstraint> KeyKpiSubmissionConstraints { get; set; }
     public DbSet<DepartmentKeyMetric> DepartmentKeyMetrics { get; set; }
     public DbSet<KeyKpiSubmission> KeyKpiSubmissions { get; set; }
     public DbSet<KeyKpiSubmissionItem> KeyKpiSubmissionItems { get; set; }
@@ -136,6 +138,7 @@ public class MetricsDbContext : IdentityDbContext<ApplicationUser, ApplicationRo
         builder
             .ApplyConfiguration(new KeyMetricConfig()) // ---------------- Key Metric
             .ApplyConfiguration(new DepartmentKeyMetricConfig()) // ------ Key KPI
+            .ApplyConfiguration(new KeyKpiSubmissionConstraintConfig()) // --- Key KPI Submission Constraint 
             .ApplyConfiguration(new KeyKpiSubmissionConfig()) // --------- Key KPI
             .ApplyConfiguration(new KeyKpiSubmissionItemConfig()); // ---- Key KPI
 

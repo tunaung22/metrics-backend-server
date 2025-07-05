@@ -1,16 +1,16 @@
-﻿@page
-@model Metrics.Web.Pages.Submissions.Departments.Scores.IndexModel
+﻿@page "/Submissions/Department-Metric-Scores/"
+@model Metrics.Web.Pages.Submissions.DepartmentMetricScores.IndexModel
 @{
-    ViewData["Title"] = "Department Performance Score Submissions";
 }
 
 
 <div class="sectionTitle">
-    <h4>Department Score Submission</h4>
+    <h3>Department Metric Score Submissions</h3>
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a asp-page="/Index">Home</a></li>
-            <li class="breadcrumb-item active">Submissions</li>
+            <li class="breadcrumb-item"><a asp-page="/Submissions/Index">Submissions</a></li>
+            <li class="breadcrumb-item active">Submit</li>
         </ol>
     </nav>
 </div>
@@ -31,9 +31,9 @@
                 </tr>
             </thead>
             <tbody>
-                @if(Model.KpiSubmissionPeriods.Any())
+                @if(Model.SubmissionPeriods.Any())
                 {
-                    @foreach(var period in Model.KpiSubmissionPeriods)
+                    @foreach(var period in Model.SubmissionPeriods)
                     {
                         <tr>
                             <td class="text-center">

@@ -1,12 +1,12 @@
 ﻿@page "/Manage/Submissions/Department-Key-Metrics"
 @model Metrics.Web.Pages.Manage.Submissions.DepartmentKeyMetrics.IndexModel
 @{
-    ViewData["Title"] = "Key Metrics for Key KPI";
+    ViewData["Title"] = "Department Key Metrics for Key KPI";
 }
 
 <div class="sectionTitle">
     <div class="d-flex align-items-center my-2">
-        <h4 class="flex-grow-1">Key Metrics for Key KPI</h4>
+        <h4 class="flex-grow-1">Department Key Metrics for Key KPI</h4>
         <span class="justify-content-end gap-2">
             @* <a class="btn btn-success" 
                 asp-page="Create"
@@ -18,7 +18,7 @@
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a asp-page="/Dashboard/Index">Dashboard</a></li>
             @* <li class="breadcrumb-item"><a asp-page="/Manage/Submissions/Index">Submissions</a></li> *@
-            <li class="breadcrumb-item active">Key Metrics</li>
+            <li class="breadcrumb-item active">Department Key Metrics</li>
         </ol>
     </nav>
 </div>
@@ -31,6 +31,10 @@
         @* =============== Filter Bar =============================================== *@
         <div id="filter-bar" class="d-flex align-items-center px-4 pt-4">
             <span class="d-flex flex-grow-1">
+                <ol>
+                    <li>Assign Department with Key Metrics for each Period</li>
+                    <li>Assign Evaluator Department with Department Key Metrics</li>
+                </ol>
                 @* <text class="me-2">Departments: </text> <strong>@Model.TotalDepartments</strong> *@
             </span>
             <div class="col-sm-4">
@@ -46,7 +50,7 @@
                         <th>Period Name</th>
                         <th>Start Date</th>
                         <th>End Date</th>
-                        <th>Status</th>
+                        @* <th>Status</th> *@
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -71,22 +75,30 @@
                                 <td class="text-center">@p.SubmissionEndDate.ToLocalTime().ToString("MMM dd, yyyy")</td>
                                 @* <td class="text-center">000</td> *@
                                 @{
-                                    var pillColor = "success";
+                                    @* var pillColor = "success"; *@
                                 }
-                                <td class="text-center">
+                                @* <td class="text-center">
                                     <span class="badge rounded-2 rounded-pill text-bg-@pillColor">
                                         New
                                     </span>
-                                </td>
+                                </td> *@
                                 <td class="text-center">
-                                    <a asp-page="View" 
+                                    <a asp-page="Assign" 
                                         asp-route-periodName="@p.PeriodName"
                                         class="btn btn-sm btn-outline-primary my-2 my-lg-0 me-2">
-                                        <strong><i class="bi bi-clipboard2-data"> </i>Assign</strong></a>
+                                        <strong><i class="bi bi-clipboard2-data"> </i>Assign Department with Keys</strong></a>
+                                    <a asp-page="SubmissionAssignment" 
+                                        asp-route-periodName="@p.PeriodName"
+                                        class="btn btn-sm btn-outline-primary my-2 my-lg-0 me-2">
+                                        <strong><i class="bi bi-clipboard2-data"> </i>Set Evaluator to Department Keys</strong></a>
+                                    @* <a asp-page="View" 
+                                        asp-route-periodName="@p.PeriodName"
+                                        class="btn btn-sm btn-outline-primary my-2 my-lg-0 me-2">
+                                        <strong><i class="bi bi-clipboard2-data"> </i>View</strong></a>
                                     <a asp-page="Copy" 
                                         asp-route-periodName="@p.PeriodName"
                                         class="btn btn-sm btn-outline-primary my-2 my-lg-0 me-2">
-                                        <strong><i class="bi bi-clipboard2-data"> </i>Copy</strong></a>
+                                        <strong><i class="bi bi-clipboard2-data"> </i>Copy</strong></a> *@
                                 </td>
                             </tr>
                         }

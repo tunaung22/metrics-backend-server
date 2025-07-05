@@ -40,26 +40,10 @@
     ],
     // FORMATTERS
     // ---------------------------------------------------
-    "black-formatter.args": [
-      "--line-length",
-      "79"
-    ],
-    "isort.args": [],
     "[csharp]": {
-      "editor.maxTokenizationLineLength": 2500,
+      "editor.maxTokenizationLineLength": 4500,
       "editor.inlineSuggest.suppressSuggestions": false,
       "editor.defaultFormatter": "ms-dotnettools.csharp"
-    },
-    "[python]": {
-      "editor.guides.indentation": true,
-      "editor.tabSize": 4,
-      "editor.renderWhitespace": "trailing",
-      // "editor.wordBasedSuggestions": false,
-      "editor.defaultFormatter": "ms-python.black-formatter",
-      "editor.foldingImportsByDefault": false,
-      "editor.codeActionsOnSave": {
-        "source.organizeImports": "explicit"
-      }
     },
     "[yaml]": {
       "editor.insertSpaces": true,
@@ -67,40 +51,6 @@
       "editor.autoIndent": "advanced",
       "diffEditor.ignoreTrimWhitespace": false,
       "editor.defaultColorDecorators": "never"
-    },
-    // "isort.args": ["--profile", "black", "--settings-file", ".isort.cfg"],
-    // PYTHON
-    // ---------------------------------------------------
-    // "python.terminal.activateEnvironment": false,
-    // "isort.args": [
-    //   "--trailing-comma",
-    //   "--force-grid-wrap",
-    //   "0",
-    //   "--use-parentheses",
-    //   "--force-single-line-imports",
-    //   "--line-width",
-    //   "88",
-    //   "--multi-line",
-    //   "3",
-    //   "--float-to-top",
-    //   "--profile",
-    //   "autopep8"
-    // ],
-    // "python.analysis.extraPaths": [],
-    // LINTING
-    // "flake8.args": [
-    // 	"--config=./src/.flake8"
-    // ],
-    // "python.analysis.autoImportCompletions": false,
-    "[django-html]": {
-      "editor.tabSize": 4,
-      // "editor.quickSuggestions": {
-      //   "other": true,
-      //   "comments": true,
-      //   "strings": true
-      // },
-      "editor.defaultFormatter": "esbenp.prettier-vscode",
-      "editor.formatOnSave": false
     },
     "[javascriptreact]": {
       "editor.tabSize": 2,
@@ -123,17 +73,11 @@
     // EMMET
     // ---------------------------------------------------
     "emmet.includeLanguages": {
-      "django-html": "html"
+      "django-html": "html",
+      "aspnetcorerazor": "html"
     },
     // FILES ASSOCIATIONS
     // ---------------------------------------------------
-    "files.associations": {
-      "**/*.html": "html",
-      "**/templates/**/*.html": "django-html",
-      "**/templates/*.html": "django-html",
-      "**/templates/*.md": "markdown",
-      "**/requirements{/**,*}.{txt,in}": "pip-requirements"
-    },
     "[xml]": {
       "editor.defaultFormatter": "redhat.vscode-xml"
     }

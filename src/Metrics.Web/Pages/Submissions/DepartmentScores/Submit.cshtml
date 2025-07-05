@@ -1,4 +1,4 @@
-﻿@page "{periodName}"
+﻿@page "/Submissions/Department-Scores/{periodName}"
 @model Metrics.Web.Pages.Submissions.Departments.Scores.SubmitModel
 @{
     ViewData["Title"] = "Submit Department Score";
@@ -14,7 +14,7 @@
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a asp-page="/Index">Home</a></li>
-            <li class="breadcrumb-item"><a asp-page="/Submissions/Departments/Scores/Index">Submission List</a></li>
+            <li class="breadcrumb-item"><a asp-page="/Submissions/DepartmentScores/Index">Submission List</a></li>
             <li class="breadcrumb-item active">Submit</li>
         </ol>
     </nav>

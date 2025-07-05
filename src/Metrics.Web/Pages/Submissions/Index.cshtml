@@ -1,6 +1,87 @@
 ﻿@page
 @model Metrics.Web.Pages.Submissions.IndexModel
+
+@using Microsoft.AspNetCore.Authorization
+@inject IAuthorizationService AuthorizationService
+
 @{
+    var canSubmitBaseScore = await AuthorizationService.AuthorizeAsync(User, "CanSubmitBaseScorePolicy");
+    var canSubmitKeyKpiScore = await AuthorizationService.AuthorizeAsync(User, "CanSubmitKeyScorePolicy");
+    var canSubmitCaseFeedbackScore = await AuthorizationService.AuthorizeAsync(User, "CanSubmitCaseFeedbackPolicy");
+
+    var isBaseScoreSubmitter = canSubmitBaseScore.Succeeded;
+    var isKeyScoreSubmitter = canSubmitKeyKpiScore.Succeeded;
+    var isCaseFeedbackScoreSubmitter = canSubmitCaseFeedbackScore.Succeeded;
 }
 
-<h3>KPI Summary (admin)</h3>
+<div class="sectionTitle">
+    <div class="d-flex align-items-center">
+        <h4 class="flex-grow-1">Submissions
+        </h4>
+        <span class="justify-content-end gap-2"></span>
+    </div>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            @* <li class="breadcrumb-item"><a asp-page="/Index">Home</a></li> *@
+            @* <li class="breadcrumb-item active">/ Home</li> *@
+        </ol>
+    </nav>
+</div>
+
+
+<div class="container">
+
+    @if(isBaseScoreSubmitter) {
+        <div class="col-xs-12 col-md-6">
+            <div class="card my-4">
+                <div class="card-header">
+                    <strong>Department - Score</strong>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Submit department performance scores</p>
+                    <span class="d-flex justify-content-end">
+                        <a asp-page="./DepartmentScores/Index" class="btn btn-primary">Submissions</a>
+                    </span>
+                </div>
+            </div>
+        </div>
+    }
+
+    @if(isKeyScoreSubmitter) {
+        <div class="col-xs-12 col-md-6">
+            <div class="card my-4">
+                <div class="card-header">
+                    <strong>Department - Metric Score</strong>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Submit department performance metric scores with Keys</p>
+                    <span class="d-flex justify-content-end">
+                        <a asp-page="./DepartmentMetricScores/Index" class="btn btn-primary">Submissions</a>
+                    </span>
+                </div>
+            </div>
+        </div>
+    }
+
+    @if(isCaseFeedbackScoreSubmitter) {
+        <div class="col-xs-12 col-md-6">
+            <div class="card my-4">
+                <div class="card-header">
+                    <strong>Department - Case Feedback Score</strong>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Submit department case feedback scores</p>
+                    <span class="d-flex justify-content-end">
+                        <a asp-page="./DepartmentMetricScores/Index" class="btn btn-primary">Submissions</a>
+                    </span>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+
+@section Styles {
+    <style>
+    </style>
+}
