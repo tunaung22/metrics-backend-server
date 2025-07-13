@@ -16,7 +16,7 @@ public class KeyKpiSubmissionItemConfig : IEntityTypeConfiguration<KeyKpiSubmiss
             .HasIndex(e => new
             {
                 e.KeyKpiSubmissionId,
-                e.KeyKpiMetricsId
+                e.DepartmentKeyMetricId
             }).IsUnique();
 
         // ===== Columns =====
@@ -47,7 +47,7 @@ public class KeyKpiSubmissionItemConfig : IEntityTypeConfiguration<KeyKpiSubmiss
             .IsRequired();
         builder.HasOne(e => e.TargetMetric)
             .WithMany(e => e.KeyKpiSubmissionItems)
-            .HasForeignKey(e => e.KeyKpiMetricsId)
+            .HasForeignKey(e => e.DepartmentKeyMetricId)
             .OnDelete(DeleteBehavior.Restrict)
             .IsRequired();
 
