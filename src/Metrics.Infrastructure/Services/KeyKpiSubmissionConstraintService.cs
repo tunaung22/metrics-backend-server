@@ -120,6 +120,38 @@ public class KeyKpiSubmissionConstraintService : IKeyKpiSubmissionConstraintServ
     //         throw new Exception("An unexpected error occurred. Please try again later.");
     //     }
     // }
+    public async Task<IEnumerable<KeyKpiSubmissionConstraint>> FindAllByPeriodByDepartmentAsync(
+        long periodId,
+        long departmentId)
+    {
+        // find all submission constraints
+        // by department (submitter's)
+        // by period
+        try
+        {
+            var result = await _context.KeyKpiSubmissionConstraints
+                .Where(cx =>
+                    cx.DepartmentId == departmentId
+                    && cx.DepartmentKeyMetric.KpiSubmissionPeriod.Id == periodId)
+                .OrderBy(cx => cx.Department.DepartmentName)
+                .Include(cx => cx.Department)
+                .Include(cx => cx.DepartmentKeyMetric)
+                    .ThenInclude(cx => cx.TargetDepartment)
+                .Include(cx => cx.DepartmentKeyMetric)
+                    .ThenInclude(cx => cx.KpiSubmissionPeriod)
+                .Include(cx => cx.DepartmentKeyMetric)
+                    .ThenInclude(cx => cx.KeyMetric)
+                .ToListAsync();
+
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while querying Department Key Metric Submission Constraints by department.");
+            throw new Exception("An unexpected error occurred. Please try again later.");
+        }
+    }
+
 
     public async Task<IEnumerable<KeyKpiSubmissionConstraint>> FindAllByDepartmentAsync(
     Guid departmentCode)
@@ -128,8 +160,36 @@ public class KeyKpiSubmissionConstraintService : IKeyKpiSubmissionConstraintServ
         {
             // var result = await _keyKpiSubmissionConstraintRepository
             //     .FindAllByPeriodAndDepartmentAsync(CurrentPeriodName, CurrentDepartmentCode);
-            var result = await _keyKpiSubmissionConstraintRepository
-                .FindAllByDepartmentAsync(departmentCode);
+            // var result = await _keyKpiSubmissionConstraintRepository
+            //     .FindAllByDepartmentAsync(departmentCode);
+
+            // No Repository
+            // var result = await _context.KeyKpiSubmissionConstraints
+            //     .Where(k => k.Department.DepartmentCode == departmentCode)
+            //     .OrderBy(k => k.Department.DepartmentName)
+            //     .Include(k => k.Department)
+            //     .Include(k => k.DepartmentKeyMetric)
+            //         .ThenInclude(k => k.KpiSubmissionPeriod)
+            //     // .Include(k => k.DepartmentKeyMetric.KpiSubmissionPeriod)
+            //     .Include(k => k.DepartmentKeyMetric)
+            //         .ThenInclude(k => k.KeyMetric)
+            //     // .Include(k => k.DepartmentKeyMetric.KeyMetric)
+            //     .ToListAsync();
+
+            var departmentId = await _context.Departments
+                .Where(d => d.DepartmentCode == departmentCode)
+                .Select(d => d.Id)
+                .FirstOrDefaultAsync();
+
+            var result = await _context.KeyKpiSubmissionConstraints
+                .Where(k => k.DepartmentId == departmentId)
+                .OrderBy(k => k.Department.DepartmentName)
+                .Include(k => k.Department)
+                .Include(k => k.DepartmentKeyMetric)
+                    .ThenInclude(k => k.KpiSubmissionPeriod)
+                .Include(k => k.DepartmentKeyMetric)
+                    .ThenInclude(k => k.KeyMetric)
+                .ToListAsync();
 
             return result;
         }

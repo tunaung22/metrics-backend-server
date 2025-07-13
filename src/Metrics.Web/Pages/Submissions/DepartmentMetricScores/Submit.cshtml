@@ -7,7 +7,7 @@
 
 
 <div class="sectionTitle">
-    <h4>Submit Department Metric Score</h4>
+    <h4>Submit Department Metric Score (Keyed) for <strong>@Model.TargetKpiPeriodName</strong></h4>
     @* <div id="submissionStatusBar" class="fixed-bottom mt-2 mb-0 px-4 p-2 d-flex align-items-center justify-content-center">
         <p class="px-4 mb-0"><strong>Progress:</strong> <span id="formProgress">0</span> of @Model.SubmissionInput.Count</p>
     </div> *@
@@ -18,56 +18,463 @@
             <li class="breadcrumb-item active">Submit</li>
         </ol>
     </nav>
-</div>
+</diusing Microsoft.EntityFrameworkCore.Metadata.Internal;
+#line default
 
 
-<div class="container">
-    <div class="bg-light p-4">
+<div class="container-fluid">
+    <div class="p-4">
+
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
         @if(Model.IsSubmissionValid)  @* Date is due or early. *@
         {
-            @if(!Model.IsSubmissionsExist)  @* New Submission (No submission exist.) *@
+
+            @if (!Model.IsSubmissionsExist)  @* New Submission (No submission exist.) *@
             {
-                @if (Model.DepartmentList.Count > 0)
+                @if (Model.KeyKpiSubmissionConstraints.Count > 0)
                 {
-                    <form method="post">
-                        @* 
-                            foreach departments:
-                                foreach department key metrics:
-                                    render form input
-                        *@
-                        @for(int i=0 ; i<Model.DepartmentList.Count; i++)
-                        {
-                            <div class="card mt-2 px-4 py-2">
-                                <div class="row pb-2"> <!-- Department -->
-                                    <label class="col-3 col-sm-3 col-md-3 col-lg-2" 
-                                        asp-for="SubmissionInput[i].DepartmentId">
-                                            Department:</label>
-                                    <input type="hidden" 
-                                        asp-for="SubmissionInput[i].DepartmentId" />
-                                </div>
-                                <div class="row pb-2"> <!-- keys -->
-                                    @if(Model.DepartmentKeyMetrics.Count > 0)
-                                    {
-                                        @* @for(int k=0; k<Model.DepartmentKeyMetrics.Count; k++) *@
-                                        foreach(var keyMetric in Model.DepartmentKeyMetrics)
-                                        {
-                                            {
-                                                <li>@keyMetric.KeyMetric.MetricTitle</li>
-                                            }
-                                        } 
+                    @* ===== Departments are based on KeyKpiSubmissionConstraints ===== *@
+                    @* ===== No KeyKpiSubmissionConstraints means No Departments ===== *@
+                    @if (Model.DepartmentList.Count > 0)
+                    {
+                        <form method="post">
+                            @* ======== Submitter's Info ========= *@
+                            <div class="d-flex align-items-center mb-2 bg-light p-4">
+                                <h5 class="d-flex align-items-center gap-2 mb-0">
+                                    <div class="">Submitter: 
+                                        <span class="text-success">@Model.Submitter.FullName</span></div>
+                                    <div>Department: 
+                                        <span class="text-success">@Model.Submitter.Department.DepartmentName</span></div>
+                                </h5>
+                                <div class="form-group col-md d-flex justify-content-end align-items-center gap-2">
+                                        <button type="button" class="btn btn-warning me-2" 
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#cancelDialogstaticBackdrop">
+                                            <i class="bi bi-x-circle"> </i>Cancel</button>
+                                        @* <button type="submit" class="btn btn-primary me-2">
+                                            <i class="bi bi-check-circle"> </i>Submit
+                                        </button> *@
+                                        <button type="button" class="btn btn-primary me-2" 
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#submitDialogBackdrop">
+                                            <i class="bi bi-check-circle"> </i>Submit</button>
+                                    </div>
+                            </div>
+
+                            @* 
+                                foreach departments:
+                                    foreach department key metrics:
+                                        render form input
+                            *@
+
+                            @* <div>
+                                <ul>
+                                    @foreach(var c in Model.KeyKpiSubmissionConstraints) {
+                                        <li>
+                                        ID: @c.Id | Submitter department:  @c.DepartmentId | DKM: @c.DepartmentKeyMetric.TargetDepartment.DepartmentName | Key: @c.DepartmentKeyMetric.KeyMetric.MetricTitle
+                                        </li>
                                     }
-                                    else
-                                    {
-                                        <div>
-                                            <p>No Metric Keys assigned yet</p>
+                                </ul>
+                            </div> *@
+
+                            <div class="bg-light p-4">
+                            @if (Model.DepartmentList != null) {
+                                var a = Model.DepartmentList.Count;
+                                @for(int i=0 ; i<Model.DepartmentList.Count; i++)
+                                {
+                                    <div class="card mt-4 px-4 py-2">
+                                        @* ---------- Target Department ---------- *@
+                                        <div class="d-flex justify-content-between align-items-center pb-4">
+                                            <div>
+                                                <label class="mb-0">
+                                                <strong>@(i+1)</strong>/@Model.DepartmentList.Count Department:
+                                            </label>
+                                                <label class="mb-0 text-primary"
+                                                    asp-for="SubmissionInputs[i].TargetDepartmentId">
+                                                    <strong>@Model.DepartmentList[i].DepartmentName</strong></label>
+                                            </div>
+                                            @* <label class="mb-0 me-4">Department: <strong>@(i+1)</strong>/@Model.DepartmentList.Count</label> *@
+                                            <input type="text" 
+                                                asp-for="SubmissionInputs[i].TargetDepartmentId" />
                                         </div>
-                                    }
+                                        @* ---------- Keys ---------- *@
+                                        <div class="row pb-2">
+                                            @if(Model.DepartmentKeyMetrics.Count > 0)
+                                            {
+                                                @* @for(int k=0; k<Model.DepartmentKeyMetrics.Count; k++) *@
+                                                var avaiableKeys = Model.DepartmentKeyMetrics.Where(dkm => dkm.DepartmentId == Model.DepartmentList[i].Id).ToList();
+                                                if (avaiableKeys.Count() > 0) {
+                                                    for (int k=0; k<avaiableKeys.Count; k++) {
+                                                        @* ---------- Key Title ---------- *@
+                                                        <div class="row pb-2">
+                                                            <div class="col-sm-9 col-md-12 col-lg-12">
+                                                                <span class="d-flex">
+                                                                    <input type="text" 
+                                                                        asp-for="SubmissionInputs[i].SubmissionInputItems[k].DepartmentKeyMetricsId" />
+                                                                    <strong class="flex-grow-1 justify-content-start">@(k+1). @avaiableKeys[k].KeyMetric.MetricTitle</strong>
+                                                                    <span class="justify-content-end">
+                                                                        <label class="me-4">Metric: <strong>@(k+1)</strong>/@avaiableKeys.Count</label>
+                                                                    </span>
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                        @* ---------- Score Value (radio inputs) ---------- *@
+                                                        <div class="row pb-2">
+                                                            <label class="col-3 col-sm-3 col-md-3 col-lg-2 form-label" asp-for="SubmissionInputs[i].SubmissionInputItems[k].ScoreValue">KPI Score: </label>
+                                                            <div class="radio__scoreValue form-check form-check-inline col d-flex flex-wrap gap-2">
+                                                                <span></span>
+                                                                @for(int x = 0; x < scoreList.Length; x++) {
+                                                                    <label for="radio_[@i][@x][@k]" 
+                                                                            class="radioLabel__scoreValue 
+                                                                                    form-check-label
+                                                                                    rounded-3 
+                                                                                    ps-2 pe-4">
+                                                                                    
+                                                                            <input asp-for="SubmissionInputs[i].SubmissionInputItems[k].ScoreValue" 
+                                                                                    id="radio_[@i][@x][@k]"
+                                                                                    class="radioInput__scoreValue"
+                                                                                    type="radio" 
+                                                                                    value="@scoreList[x]" />
+                                                                
+                                                                        <strong>@scoreList[x]</strong>
+                                                                    </label>
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                        @* ---------- Comments ---------- *@
+                                                        <div class="row pb-2">
+                                                            <label asp-for="SubmissionInputs[i].SubmissionInputItems[k].Comments" 
+                                                                    class="col-3 col-sm-3 col-md-3 col-lg-2 form-label">Comments: </label>
+                                                            <div class="col-9 col-sm-9 col-md-9 col-lg-10">
+                                                                <textarea asp-for="SubmissionInputs[i].SubmissionInputItems[k].Comments" class="form-control" rows="2"></textarea>
+                                                            </div>
+                                                        </div>
+                                                    }
+
+
+                                                    @* foreach(var keyMetric in avaiableKeys)
+                                                    {
+                                                        keyIndex ++;
+                                                        keyNumber += 1;
+                                                        var keyId = $"index-{keyNumber}_titleId-{keyMetric.Id.ToString()}"; // unique id for radio elements
+
+                                                        <div class="row pb-2">
+                                                            <div class="col-9 col-sm-9 col-md-9 col-lg-10">
+                                                                <span class="d-flex">
+                                                                    <strong class="flex-grow-1 justify-content-start">@keyNumber. @keyMetric.KeyMetric.MetricTitle</strong>
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                        <div class="row pb-2">
+                                                            <div class="radio__scoreValue form-check form-check-inline col d-flex flex-wrap gap-2">
+                                                                <span>@keyId</span>
+                                                                @for(int x = 0; x < scoreList.Length; x++) {
+                                                                    <label for="radio_[@i][@x][@keyNumber]" 
+                                                                            class="radioLabel__scoreValue 
+                                                                                    form-check-label
+                                                                                    rounded-3 
+                                                                                    ps-2 pe-4">
+                                                                                    
+                                                                            <input class="radioInput__scoreValue"
+                                                                                type="radio" 
+                                                                                asp-for="SubmissionInputs[i].SubmissionInputItems[keyIndex].ScoreValue" 
+                                                                                value="@scoreList[x]" 
+                                                                                id="radio_[@i][@x][@keyNumber]" />
+                                                                
+                                                                        <strong>@scoreList[x]</strong>
+                                                                    </label>
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                        <div class="row pb-2">
+                                                            <textarea name="" id="" placeholder="Add comments"></textarea>
+                                                        </div>
+                                                    } *@
+                                                } else {
+                                                    <div class="row pb-2">
+                                                            <div class="col-sm-9 col-md-12 col-lg-12">
+                                                                <span class="d-flex flex-grow-1 justify-content-start">
+                                                                    Not Assignment
+                                                                </span>
+                                                            </div>
+                                                    </div>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <div>
+                                                    <p>No Metric Keys assigned yet</p>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                            }
+                            </div>
+
+
+                            @* =========== MODAL =========== *@
+                            @* ---------- SUBMIT DIALOG ---------- *@
+                            <div class="modal fade" id="submitDialogBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="submitDialogStaticBackdropLabel" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h1 class="modal-title fs-5" id="submitDialogStaticBackdropLabel">Confirmation</h1>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            Are you sure you want to submit the form?
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" 
+                                                    class="btn btn-secondary"
+                                                    data-bs-dismiss="modal">
+                                                <i class="bi bi-x-circle"> </i>No</button>
+                                            <button type="submit"
+                                                    class="btn btn-primary me-2">
+                                                <i class="bi bi-check-circle"> </i>Submit</button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                        }
-                    </form>
+                            @* ---------- CANCEL DIALOG ---------- *@
+                            <div class="modal fade" id="cancelDialogstaticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="cancelDialogStaticBackdropLabel" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h1 class="modal-title fs-5" id="cancelDialogStaticBackdropLabel">Cancel</h1>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            Are you sure you want to cancel the submission?
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" 
+                                                    class="btn btn-secondary"
+                                                    data-bs-dismiss="modal">
+                                                <i class="bi bi-x-circle"> </i>No</button>
+
+                                                <button asp-page-handler="Cancel" type="submit" 
+                                                        class="btn btn-primary ms-2" formnovalidate>
+                                                    <i class="bi bi-check-circle"> </i>Yes</button>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    }
+                    else
+                    {
+                        <h5 class="my-4 text-danger">No Departments! Contact Administrators.</h5>
+                    }
+                }
+                else // else for Model.KeyKpiSubmissionConstraints.Count > 0
+                {
+                    @* <h5 class="my-4 text-danger">No Submissions - No metrics have set for Departments, contact Administrators.</h5> *@
                 }
             }
+            else
+            {
+                <h5 class="my-4 text-success">You already submitted for the period <strong>@Model.TargetKpiPeriodName</strong>.</h5>
+                <div class="my-4">
+                    <span>
+                        Check <strong><a class="" asp-page="/Submissions/DepartmentMetricScores/Index">Submissions</a></strong>.
+                    </span>
+                </div>
+
+                @* -----display already submitted data----- *@ 
+                @* <h4>Your submitted data are as follow...</h4> *@
+
+                 <div class="mt-4">
+                    <div class="table-responsive">
+                        <table id="dataTable" class="table table-bordered table-striped" style="width: 100%;">
+                            <thead>
+                                <tr>
+                                    <th id="colDepartment">Department</th>
+                                    <th id="colMetric">Metrics</th>
+                                    <th id="colScore">Score Given</th>
+                                    <th id="colComments">Comments</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model.FinishedSubmissions.Any())
+                                {
+                                    @foreach (var s in Model.FinishedSubmissions)
+                                    {
+                                        @foreach(var i in s.SubmissionInputItems)
+                                        {
+                                            <tr>
+                                                @* <td class="text-center">@s.SubmissionDate.ToString("MMM dd, yyyy")</td> *@
+                                                <td class="text-center"><strong>@s.TargetDepartmentName</strong></td>
+                                                <td>
+                                                    @{
+                                                        var metricTitle = i.DepartmentKeyMetrics.KeyMetric.MetricTitle;
+                                                    }
+                                                    @if(metricTitle != null && metricTitle.Any()) {
+                                                        if(metricTitle.Length > 150) {
+                                                            @(metricTitle.Substring(0, 150) + "...")
+                                                            <button data-details="@metricTitle" data-label="Comments"
+                                                                    class="moreButton_comments btn btn-link p-0 pb-2">More</button>
+                                                        }
+                                                        else {
+                                                            @metricTitle
+                                                        }
+                                                    }
+                                                    else {
+                                                        @:None
+                                                    }
+                                                </td>
+                                                <td class="text-center">@i.ScoreValue</td>
+                                                <td>
+                                                    @if(i.Comments != null && i.Comments.Any()) {
+                                                        if(i.Comments.Length > 150) {
+                                                            @(i.Comments.Substring(0, 150) + "...")
+                                                            <button data-details="@i.Comments" data-label="Comments"
+                                                                    class="moreButton_comments btn btn-link p-0 pb-2">More</button>
+                                                        }
+                                                        else {
+                                                            @i.Comments
+                                                        }
+                                                    }
+                                                    else {
+                                                        @:None
+                                                    }
+                                                </td>
+                                            </tr>
+                                        }
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            }
         }
+        @* else
+        {
+            @if (!ModelState.IsValid && !Model.IsSubmissionsExist)
+            {
+
+                <div class="form bg-light p-4">
+                    <div class="alert alert-danger">
+                        <h5>There were some errors in the form.</h5>
+                        <ul>
+                            <li>@ModelState.Values.SelectMany(v => v.Errors).First().ErrorMessage</li>
+                        </ul>
+                    </div>
+                </div>
+            }
+        } *@
     </div>
 </div>
+
+
+<!--Modal Dialog -->
+<div id="dialog_textDetail" class="modal" tabindex="-1" aria-labelledby="dialogTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="dialogTitle"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p id="dialogContent"></p>
+            </div>
+             <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section Styles {
+    <style>
+        .radioLabel__scoreValue, .radioInput__scoreValue {
+            cursor: pointer;
+        }
+
+        .radioLabel__scoreValue {
+            padding: 0.5rem;  /* Clickable area padding */
+            transition: background-color 0.2s;  
+            border: .1em solid #fff;
+        }
+        .radioLabel__scoreValue:hover {
+            border: .1em solid #007bff;
+        }
+
+        /* Align radio and text */
+        .radioLabel__scoreValue .radioInput__scoreValue-check-input {
+            margin-top: 0;
+        }
+
+        .radioLabel__scoreValue:has(.radioInput__scoreValue:checked) {
+            border: .1em solid #007bff;
+        }
+    </style>
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        $(function() {
+            // ------------------- Data Table ----------------------------------
+            new DataTable('#dataTable', {
+                paging: false,
+                info: false,
+                searching: false,
+                columnDefs: [
+                    { orderable: false, targets: [ "#colComments"] },
+                    { width: "15%", targets: ["#colDepartment"] },
+                    { width: "40%", targets: ["#colMetric"] },
+                    { width: "8%", targets: ["#colScore"] },
+                ],
+                initComplete: function() {
+                    $('thead th').addClass('text-light text-center align-middle');
+                    $('thead th').addClass('bg-brand-color');
+                }
+            });
+            
+            // ------------------- Show Dialog ---------------------------------
+            $('.moreButton_comments').click(function() {
+                var fullText = $(this).data('details');
+                var label = $(this).data('label');
+                $("#dialogTitle").text(label);
+
+                if (fullText !== undefined) {
+                    $("#dialogContent").text(fullText);
+                    $("#dialog_textDetail").modal("show");
+                } else {
+                    console.error('data is undefined');
+                }
+            });
+
+            // ------------------- goToTop button implementation ---------------
+            // Get the button
+            var mybutton = document.getElementById("goToTop");
+
+            if(mybutton != null)
+            {
+                // When the user scrolls down 20px from the top of the document, show the button
+                window.onscroll = function() {
+                    if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
+                        mybutton.style.display = "block";
+                    } else {
+                        mybutton.style.display = "none";
+                    }
+                };
+
+                // When the user clicks on the button, scroll to the top of the document
+                mybutton.onclick = function() {
+                    document.body.scrollTop = 0; // For Safari
+                    document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE, and Opera
+                };
+            }
+
+        });
+        //-----------------------------------------------------------------------
+    </script>
+}

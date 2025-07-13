@@ -5,6 +5,7 @@
 @inject IAuthorizationService AuthorizationService
 
 @{
+    ViewData["Title"] = "Submissions";
     var canSubmitBaseScore = await AuthorizationService.AuthorizeAsync(User, "CanSubmitBaseScorePolicy");
     var canSubmitKeyKpiScore = await AuthorizationService.AuthorizeAsync(User, "CanSubmitKeyScorePolicy");
     var canSubmitCaseFeedbackScore = await AuthorizationService.AuthorizeAsync(User, "CanSubmitCaseFeedbackPolicy");
@@ -30,58 +31,107 @@
 
 
 <div class="container">
-
-    @if(isBaseScoreSubmitter) {
-        <div class="col-xs-12 col-md-6">
-            <div class="card my-4">
-                <div class="card-header">
-                    <strong>Department - Score</strong>
-                </div>
-                <div class="card-body">
-                    <p class="card-text">Submit department performance scores</p>
-                    <span class="d-flex justify-content-end">
-                        <a asp-page="./DepartmentScores/Index" class="btn btn-primary">Submissions</a>
-                    </span>
-                </div>
-            </div>
-        </div>
-    }
-
-    @if(isKeyScoreSubmitter) {
-        <div class="col-xs-12 col-md-6">
-            <div class="card my-4">
-                <div class="card-header">
-                    <strong>Department - Metric Score</strong>
-                </div>
-                <div class="card-body">
-                    <p class="card-text">Submit department performance metric scores with Keys</p>
-                    <span class="d-flex justify-content-end">
-                        <a asp-page="./DepartmentMetricScores/Index" class="btn btn-primary">Submissions</a>
-                    </span>
+    <div class="row align-items-stretch">
+        @if(isBaseScoreSubmitter) {
+            <div class="d-flex col-xs-12 col-md-4">
+                <div class="card w-100 department-score">
+                    <div class="card-header">
+                        <strong>Department Score</strong>
+                    </div>
+                    <div class="card-body d-flex flex-column">
+                        <p class="card-text">Submit department performance scores</p>
+                        <div class="mt-auto text-end">
+                            <a asp-page="./DepartmentScores/Index" 
+                                class="btn btn-secondary">Submissions</a>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-    }
+        }
 
-    @if(isCaseFeedbackScoreSubmitter) {
-        <div class="col-xs-12 col-md-6">
-            <div class="card my-4">
-                <div class="card-header">
-                    <strong>Department - Case Feedback Score</strong>
-                </div>
-                <div class="card-body">
-                    <p class="card-text">Submit department case feedback scores</p>
-                    <span class="d-flex justify-content-end">
-                        <a asp-page="./DepartmentMetricScores/Index" class="btn btn-primary">Submissions</a>
-                    </span>
+        @if(isKeyScoreSubmitter) {
+            <div class="d-flex col-xs-12 col-md-4">
+                <div class="card w-100 department-metric-score">
+                    <div class="card-header">
+                        <strong>Department Metric Score (KEY)</strong>
+                    </div>
+                    <div class="card-body d-flex flex-column">
+                        <p class="card-text">Submit department performance metric scores based on key metrics</p>
+                        <div class="mt-auto text-end">
+                            <a asp-page="./DepartmentMetricScores/Index" 
+                                class="btn btn-secondary">Submissions</a>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-    }
+        }
+
+        @if(isCaseFeedbackScoreSubmitter) {
+            <div class="d-flex col-xs-12 col-md-4">
+                <div class="card w-100 department-case-feedback-score">
+                    <div class="card-header">
+                        <strong>Department Case Feedback Score</strong>
+                    </div>
+                    <div class="card-body d-flex flex-column">
+                        <p class="card-text">Submit department case feedback scores</p>
+                        <div class="mt-auto text-end">
+                            <a asp-page="./DepartmentMetricScores/Index" 
+                                class="btn btn-secondary">Submissions</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
 </div>
 
 
 @section Styles {
     <style>
+        .department-score .card-header {
+            @* color: rgb(3, 91, 73); *@
+            color: rgb(22, 125, 132);
+        }
+        .department-score .card-body {
+        }
+        .department-score .card-body .btn {
+            background: rgb(22, 125, 132);
+            border: 0;
+        }
+        .department-score .card-body .btn:hover {
+            background: rgb(3, 91, 73);
+            border: 0;
+        }
+        
+        .department-metric-score .card-header {
+            @* color: rgb(91, 3, 48); *@
+            color: rgb(163, 33, 115);
+        }
+        .department-metric-score .card-body {
+        }
+        .department-metric-score .card-body .btn {
+            background: rgb(163, 33, 115);
+            border: 0;
+        }
+        .department-metric-score .card-body .btn:hover {
+            background: rgb(91, 3, 48);
+            border: 0;
+        }
+        
+        
+        .department-case-feedback-score .card-header {
+            @* color: rgb(3, 16, 91); *@
+            color: rgb(33, 63, 163);
+        }
+        .department-case-feedback-score .card-body {
+        }
+        .department-case-feedback-score .card-body .btn {
+            background: rgb(33, 63, 163);
+            border: 0;
+        }
+        .department-case-feedback-score .card-body .btn:hover {
+            background: rgb(3, 16, 91);
+            border: 0;
+        }
     </style>
 }

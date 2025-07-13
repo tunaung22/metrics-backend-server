@@ -129,20 +129,22 @@ public class KpiSubmissionPeriodService : IKpiSubmissionPeriodService
         }
     }
 
-    public async Task<KpiSubmissionPeriod> FindByKpiPeriodNameAsync(string periodName)
+    public async Task<KpiSubmissionPeriod?> FindByKpiPeriodNameAsync(string periodName)
     {
         try
         {
             if (string.IsNullOrEmpty(periodName) || string.IsNullOrWhiteSpace(periodName))
                 throw new ArgumentNullException("Parameter periodName is required.");
 
-            var kpiPeriod = await _kpiSubmissionPeriodRepository.FindByPeriodNameAsync(periodName);
-            if (kpiPeriod == null)
-                throw new MetricsNotFoundException($"KPI Period with period name {periodName} not found.");
+            // var kpiPeriod = await _kpiSubmissionPeriodRepository.FindByPeriodNameAsync(periodName);
+            var kpiPeriod = await _context.KpiSubmissionPeriods
+                .Where(e => e.PeriodName.Trim().ToLower() == periodName.Trim().ToLower())
+                .OrderBy(e => e.PeriodName)
+                // .Include(e => e.KpiSubmissions)
+                .FirstOrDefaultAsync();
 
             return kpiPeriod;
         }
-        catch (MetricsNotFoundException) { throw; }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Unexpected error while querying KPI Period by period name.");

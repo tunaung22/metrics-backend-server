@@ -355,13 +355,27 @@ public class AssignModel : PageModel
                         .ToList();
                     if (newItems.Count > 0)
                     {
-                        var periodEntity = await _kpiSubmissionPeriodService.FindByKpiPeriodNameAsync(periodName);
-                        var departmentEntity = await _departmentService.FindByDepartmentCodeAsync(department);
+                        // ---------- KPI Period -----------------------------------------------
+                        if (string.IsNullOrEmpty(periodName))
+                        {
+                            ModelState.AddModelError(string.Empty, "Submission Period is required!");
+                            return Page();
+                        }
+                        var kpiPeriod = await _kpiSubmissionPeriodService
+                            .FindByKpiPeriodNameAsync(periodName);
+                        if (kpiPeriod == null)
+                        {
+                            ModelState.AddModelError(string.Empty, $"Invalid submission period: {periodName}.");
+                            return Page();
+                        }
+
+                        var departmentEntity = await _departmentService
+                            .FindByDepartmentCodeAsync(department);
                         foreach (var k in newItems)
                         {
                             var entity = new DepartmentKeyMetric
                             {
-                                KpiSubmissionPeriodId = periodEntity.Id,
+                                KpiSubmissionPeriodId = kpiPeriod.Id,
                                 DepartmentId = departmentEntity.Id,
                                 KeyMetricId = k.Id,
                             };
@@ -404,6 +418,4 @@ public class AssignModel : PageModel
         public Guid MetricCode { get; set; }
         public string MetricTitle { get; set; } = null!;
     }
-
-
 }

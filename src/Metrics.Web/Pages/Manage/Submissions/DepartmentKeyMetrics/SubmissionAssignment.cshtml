@@ -88,7 +88,7 @@
                             @* <p>Assigned:<strong> @activeKeys</strong></p> *@
                         </span>
                         <div class="table-container row border rounded-2">
-                            <table id="departmentKeyMetricTable" class="table table-bordered" style="width:100%">
+                            <table id="departmentKeyMetricTable" class="table table-bordered table-hover" style="width:100%">
                                 <thead>
                                     <tr>
                                         <th>No.</th>
@@ -124,7 +124,7 @@
                                                 toAssign = true;
                                             }
 
-                                            <tr>
+                                            <tr id="tableRow">
                                                 <td class="text-center @(toAssign ? "" : "row-metric-checked")">@lineNumber</td>
                                                 <td class="@(toAssign ? "" : "row-metric-checked")">
                                                     @Html.Raw(k.Department.DepartmentName)
@@ -277,8 +277,10 @@
                 });
             });
             userSelection.departmentKeyMetrics = departmentKeyMetrics;
-        } 
+        }
 
+
+        @* ======================================== *@
         function toggleCheckbox(e) {
             @* department key metric id *@
             @* =====set styling for selected cells===== *@
@@ -315,8 +317,6 @@
                     checkBoxCell.classList.remove("row-metric-checked");
                 }
             }
-            @* ======================================== *@
-
 
             @* ===== sample js object =========
                 {
@@ -349,8 +349,6 @@
                     });
                     console.log("ADDED");
                 }
-            console.log("userSelection: ", userSelection);
-
             }
         }
 

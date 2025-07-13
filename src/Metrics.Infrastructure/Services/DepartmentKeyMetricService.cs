@@ -217,15 +217,23 @@ public class DepartmentKeyMetricService : IDepartmentKeyMetricService
     }
 
     public async Task<IEnumerable<DepartmentKeyMetric>> FindAllByPeriodAndDepartmentAsync(
-        string CurrentPeriodName,
-        Guid CurrentDepartmentCode)
+        string currentPeriodName,
+        Guid currentDepartmentCode)
     {
         try
         {
-            var result = await _departmentKeyMetricRepository
-                .FindAllByPeriodAndDepartmentAsync(CurrentPeriodName, CurrentDepartmentCode);
+            // var result = await _departmentKeyMetricRepository
+            //     .FindAllByPeriodAndDepartmentAsync(CurrentPeriodName, CurrentDepartmentCode);
+            var result = await _context.DepartmentKeyMetrics
+                .Where(k => k.KpiSubmissionPeriod.PeriodName == currentPeriodName
+                    && k.TargetDepartment.DepartmentCode == currentDepartmentCode)
+                .OrderBy(k => k.TargetDepartment.DepartmentName)
+                .Include(k => k.KpiSubmissionPeriod)
+                .Include(k => k.KeyMetric)
+                .Include(k => k.TargetDepartment)
+                .ToListAsync();
 
-            return result;
+            return result ?? [];
         }
         catch (Exception ex)
         {

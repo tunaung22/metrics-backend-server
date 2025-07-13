@@ -41,6 +41,8 @@ public class KeyKpiSubmissionConstraintRepository : IKeyKpiSubmissionConstraintR
         return await _context.KeyKpiSubmissionConstraints
             .Include(k => k.Department)
             .Include(k => k.DepartmentKeyMetric)
+            .Include(k => k.DepartmentKeyMetric.KpiSubmissionPeriod)
+            .Include(k => k.DepartmentKeyMetric.KeyMetric)
             .OrderBy(k => k.Department.DepartmentName)
             .Where(k => k.Department.DepartmentCode == departmentCode)
             .ToListAsync();

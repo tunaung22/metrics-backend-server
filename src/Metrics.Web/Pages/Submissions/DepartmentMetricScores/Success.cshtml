@@ -1,0 +1,23 @@
+﻿@page "/Submissions/Department-Metric-Scores/{periodName}/Success"
+@model Metrics.Web.Pages.Submissions.DepartmentMetricScores.SuccessModel
+@{
+    ViewData["Title"] = "Success! Department Metric Score Submission";
+}
+
+<div class="container">
+    <h3>Success!</h3>
+    <div class="my-4 text-success">
+        <span>
+            <h5 class="m-0">Thank you, your score has been submitted successfully. <strong>@Model.TargetKpiPeriodName</strong></h5>
+        </span>
+    </div>
+
+    <div>
+        <p>
+            Please check <a class="" asp-page="/Submissions/DepartmentsMetricScores/Index"><strong>Submissions</strong></a>.
+        </p>
+        <p>
+            Go back to <a class="" asp-page="/Index"><strong>Home</strong></a>
+        </p>
+    </div>
+</div>

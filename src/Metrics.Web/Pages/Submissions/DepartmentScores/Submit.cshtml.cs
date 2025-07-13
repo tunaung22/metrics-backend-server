@@ -327,8 +327,9 @@ public class SubmitModel : PageModel
         // 2. part of previous submissions found, but can submit for other departments that were added later time after first submission.
         // 3. no previous submissions found, need to submit.
         var existingSubmissions = await GetExistingSubmissions(DepartmentList);
-        if (existingSubmissions != null)
+        if (existingSubmissions.Count > 0)
         {
+            // **Note: no. of submissions == no. of departments
             // all submission already exist/fullfilled
             if (DepartmentList.Count == existingSubmissions.Count)
             {
@@ -373,8 +374,10 @@ public class SubmitModel : PageModel
         {
             var appliedRecords = await _kpiSubmissionService.CreateRangeAsync(submissionList);
             TempData["TargetKpiPeriodName"] = TargetKpiPeriodName;
-
-            return RedirectToPage("Success");
+            var successUrl = Url.Page("/Submissions/DepartmentScores/Success", new { periodName = periodName });
+            if (string.IsNullOrEmpty(successUrl))
+                return RedirectToPage("/Submissions/DepartmentScores/Index");
+            return LocalRedirect(successUrl);
 
         }
         catch (DuplicateContentException)

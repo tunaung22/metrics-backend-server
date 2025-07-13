@@ -12,7 +12,7 @@
 
 <div class="sectionTitle">
     <div class="d-flex align-items-center my-2">
-        <h4 class="flex-grow-1">Key Metrics for @Model.CurrentPeriodName</h4>
+        <h4 class="flex-grow-1">Issue Department Key Metrics for @Model.CurrentPeriodName</h4>
         <span class="justify-content-end gap-2"></span>
     </div>
 
@@ -31,10 +31,15 @@
 
     <div class="p-4 rounded-2">
         <div class="row mb-3">
-            <div class="d-flex justify-content-end">
-                <button type="button" class="btn btn-primary" id="saveButton" onclick="updateKeyMetric()">
-                    <i class="bi bi-check-circle"></i> Save
-                </button>
+            <div class="col d-flex">
+                <span class="d-flex flex-grow-1 align-items-center">
+                    @* <p class="mb-0">Chooose a department (on the left) then select issuing keys (on the right)</p> *@
+                </span>
+                <span class="d-flex justify-content-end">
+                    <button type="button" class="btn btn-primary" id="saveButton" onclick="updateKeyMetric()">
+                        <i class="bi bi-check-circle"></i> Save
+                    </button>
+                </span>
             </div>
         </div>
         <div class="row mb-3">

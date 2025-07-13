@@ -10,6 +10,9 @@ public interface IKeyKpiSubmissionConstraintService
     Task<bool> UnDeleteAsync(Guid lookupId);
     Task<IEnumerable<KeyKpiSubmissionConstraint>> FindAllByDepartmentAsync(
         Guid departmentCode);
+    Task<IEnumerable<KeyKpiSubmissionConstraint>> FindAllByPeriodByDepartmentAsync(
+        long periodId,
+        long departmentId);
     // Task<IEnumerable<KeyKpiSubmissionConstraint>> FindAllByPeriodAndDepartmentAsync(
     //     string CurrentPeriodName,
     //     Guid CurrentDepartmentCode);

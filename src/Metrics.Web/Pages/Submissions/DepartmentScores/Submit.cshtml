@@ -7,7 +7,7 @@
 
 
 <div class="sectionTitle">
-    <h4>Submit Department Score</h4>
+    <h4>Submit Department Score for <strong>@Model.TargetKpiPeriodName</strong></h4>
     @* <div id="submissionStatusBar" class="fixed-bottom mt-2 mb-0 px-4 p-2 d-flex align-items-center justify-content-center">
         <p class="px-4 mb-0"><strong>Progress:</strong> <span id="formProgress">0</span> of @Model.SubmissionInput.Count</p>
     </div> *@
@@ -217,7 +217,7 @@
                 <h5 class="my-4 text-success">You already submitted for the period <strong>@Model.TargetKpiPeriodName</strong>.</h5>
                 <div class="my-4">
                     <span>
-                        Check <strong><a class="" asp-page="/Submissions/Departments/Scores/Index">Submissions</a></strong>.
+                        Check <strong><a class="" asp-page="/Submissions/DepartmentScores/Index">Submissions</a></strong>.
                     </span>
                 </div>
 
@@ -373,7 +373,7 @@
                     { width: "10%", targets: ["#colScore"] },
                 ],
                 initComplete: function() {
-                    $('thead th').addClass('text-light text-center ');
+                    $('thead th').addClass('text-light text-center align-middle');
                     $('thead th').addClass('bg-brand-color');
                 }
             });
