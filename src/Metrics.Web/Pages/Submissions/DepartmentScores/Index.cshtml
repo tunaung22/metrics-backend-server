@@ -1,7 +1,7 @@
-﻿@page
-@model Metrics.Web.Pages.Submissions.Departments.Scores.IndexModel
+﻿@page "/Submissions/Department-Scores"
+@model Metrics.Web.Pages.Submissions.DepartmentScores.IndexModel
 @{
-    ViewData["Title"] = "Department Performance Score Submissions";
+    ViewData["Title"] = "Department Score Submissions";
 }
 
 
@@ -10,7 +10,8 @@
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a asp-page="/Index">Home</a></li>
-            <li class="breadcrumb-item active">Submissions</li>
+            <li class="breadcrumb-item"><a asp-page="/Submissions/Index">Submissions</a></li>
+            <li class="breadcrumb-item active">Submit</li>
         </ol>
     </nav>
 </div>

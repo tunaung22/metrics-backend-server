@@ -1,11 +1,8 @@
 using Metrics.Application.Domains;
 using Metrics.Application.Interfaces.IServices;
-using Metrics.Web.Models;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace Metrics.Web.Pages.Manage.Submissions.DepartmentKeyMetrics;
 

@@ -21,6 +21,8 @@ using Metrics.Web.Security.PolicyHandlers;
 using System.Reflection;
 using System.Diagnostics;
 using Metrics.Web.Models;
+using System.Text.Json.Serialization;
+using System.Runtime.InteropServices;
 
 
 // ========== Load .env ===========================================
@@ -87,6 +89,8 @@ builder.Services.ConfigureHttpJsonOptions(o =>
     // o.SerializerOptions.AllowTrailingCommas = true;
     o.SerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
     o.SerializerOptions.PropertyNameCaseInsensitive = true;
+    o.SerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
+    o.SerializerOptions.WriteIndented = true;
 });
 
 
@@ -233,8 +237,10 @@ builder.Services.AddScoped<IDepartmentRepository, DepartmentRepository>()
     .AddScoped<IUserRepository, UserRepository>()
     .AddScoped<IUserTitleRepository, UserTitleRepository>()
     .AddScoped<IKpiSubmissionRepository, KpiSubmissionRepository>()
+    .AddScoped<IKeyKpiSubmissionRepository, KeyKpiSubmissionRepository>()
     .AddScoped<IKeyMetricRepository, KeyMetricRepository>()
-    .AddScoped<IDepartmentKeyMetricRepository, DepartmentKeyMetricRepository>();
+    .AddScoped<IDepartmentKeyMetricRepository, DepartmentKeyMetricRepository>()
+    .AddScoped<IKeyKpiSubmissionConstraintRepository, KeyKpiSubmissionConstraintRepository>();
 // ===== Service ============
 builder.Services
     .AddScoped<ISeedingService, SeedingService>()
@@ -245,8 +251,11 @@ builder.Services
     .AddScoped<IUserAccountService, UserAccountService>()
     .AddScoped<IUserRoleService, UserRoleService>()
     .AddScoped<IKpiSubmissionService, KpiSubmissionService>()
+    .AddScoped<IKeyKpiSubmissionService, KeyKpiSubmissionService>()
     .AddScoped<IKeyMetricService, KeyMetricService>()
-    .AddScoped<IDepartmentKeyMetricService, DepartmentKeyMetricService>();
+    .AddScoped<IDepartmentKeyMetricService, DepartmentKeyMetricService>()
+    .AddScoped<IKeyKpiSubmissionConstraintService, KeyKpiSubmissionConstraintService>();
+
 
 // ========== Exception Handling ==============================
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();

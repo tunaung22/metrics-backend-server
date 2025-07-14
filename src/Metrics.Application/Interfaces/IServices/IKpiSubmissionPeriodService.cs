@@ -9,7 +9,7 @@ public interface IKpiSubmissionPeriodService
     Task<KpiSubmissionPeriod> UpdateAsync(string periodName, KpiSubmissionPeriod entity);
     Task<bool> DeleteAsync(string periodName);
     Task<KpiSubmissionPeriod> FindByIdAsync(long id);
-    Task<KpiSubmissionPeriod> FindByKpiPeriodNameAsync(string periodName);
+    Task<KpiSubmissionPeriod?> FindByKpiPeriodNameAsync(string periodName);
     Task<long> FindIdByKpiPeriodNameAsync(string periodName);
     Task<IEnumerable<KpiSubmissionPeriod>> FindAllAsync();
     Task<IEnumerable<KpiSubmissionPeriod>> FindAllAsync(int pageNumber = 1, int pageSize = 20);

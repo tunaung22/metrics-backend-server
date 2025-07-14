@@ -1,0 +1,16 @@
+﻿START TRANSACTION;
+ALTER TABLE metrics.key_kpi_submission_items DROP CONSTRAINT fk_key_kpi_submission_items_department_key_metrics_key_kpi_met;
+
+ALTER TABLE metrics.key_kpi_submission_items RENAME COLUMN key_kpi_metrics_id TO department_key_metric_id;
+
+ALTER INDEX metrics.ix_key_kpi_submission_items_key_kpi_submission_id_key_kpi_metr RENAME TO ix_key_kpi_submission_items_key_kpi_submission_id_department_k;
+
+ALTER INDEX metrics.ix_key_kpi_submission_items_key_kpi_metrics_id RENAME TO ix_key_kpi_submission_items_department_key_metric_id;
+
+ALTER TABLE metrics.key_kpi_submission_items ADD CONSTRAINT fk_key_kpi_submission_items_department_key_metrics_department_ FOREIGN KEY (department_key_metric_id) REFERENCES metrics.department_key_metrics (id) ON DELETE RESTRICT;
+
+INSERT INTO metrics.__ef_migrations_history (migration_id, product_version)
+VALUES ('20250709170130_003_FixKpiSubmissionItemsFK', '9.0.2');
+
+COMMIT;
+

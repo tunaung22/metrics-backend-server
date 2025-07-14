@@ -2,7 +2,7 @@ using Metrics.Application.Interfaces;
 
 namespace Metrics.Application.Domains;
 
-public class DepartmentKeyMetric : IAuditColumn
+public class DepartmentKeyMetric : IAuditColumn, ISoftDelete
 {
     public long Id { get; set; }
     public Guid DepartmentKeyMetricCode { get; set; }

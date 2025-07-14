@@ -65,8 +65,8 @@ public class SubmitModel : PageModel
     {
         // public long Id { get; set; }
         public DateTimeOffset SubmissionTime { get; set; }
-        [Required(ErrorMessage = "KPI Score is required.")]
-        [Range(1, 10, ErrorMessage = "KPI Score is required and choose between 1 to 10.")]
+        [Required(ErrorMessage = "Score is required.")]
+        [Range(1, 10, ErrorMessage = "Score is required and choose between 1 to 10.")]
         public decimal KpiScore { get; set; }
         public string? PositiveAspects { get; set; }
         public string? NegativeAspects { get; set; }
@@ -165,7 +165,13 @@ public class SubmitModel : PageModel
 
         // ---------- Employee ID ----------------------------------------
         // EmployeeId = await GetEmployeeId();
-        Submitter = await GetCurrentUser();
+        var submitter = await GetCurrentUser();
+        if (submitter == null)
+        {
+            ModelState.AddModelError(string.Empty, "Invalid current user.");
+            return Page();
+        }
+        Submitter = submitter;
         CurrentUserTitleName = Submitter.UserTitle?.TitleName ?? string.Empty;
 
         // ----- Load Kpi Period List for Dropdown -----
@@ -231,7 +237,7 @@ public class SubmitModel : PageModel
         // 2. part of previous submissions found, but can submit for other departments that were added later time after first submission.
         // 3. no previous submissions found, need to submit.
         var existingSubmissions = await GetExistingSubmissions(DepartmentList);
-        if (existingSubmissions != null)
+        if (existingSubmissions.Count > 0)
         {
             // all submission already exist/fullfilled
             if (DepartmentList.Count <= existingSubmissions.Count) // submissions always likely have more than department (as department can get deleted) 
@@ -303,7 +309,13 @@ public class SubmitModel : PageModel
 
 
         // EmployeeId = await GetEmployeeId();
-        Submitter = await GetCurrentUser();
+        var submitter = await GetCurrentUser();
+        if (submitter == null)
+        {
+            ModelState.AddModelError(string.Empty, "Invalid current user.");
+            return Page();
+        }
+        Submitter = submitter;
         CurrentUserTitleName = Submitter.UserTitle?.TitleName ?? string.Empty;
 
         // Assign: DepartmentList
@@ -315,8 +327,9 @@ public class SubmitModel : PageModel
         // 2. part of previous submissions found, but can submit for other departments that were added later time after first submission.
         // 3. no previous submissions found, need to submit.
         var existingSubmissions = await GetExistingSubmissions(DepartmentList);
-        if (existingSubmissions != null)
+        if (existingSubmissions.Count > 0)
         {
+            // **Note: no. of submissions == no. of departments
             // all submission already exist/fullfilled
             if (DepartmentList.Count == existingSubmissions.Count)
             {
@@ -361,8 +374,10 @@ public class SubmitModel : PageModel
         {
             var appliedRecords = await _kpiSubmissionService.CreateRangeAsync(submissionList);
             TempData["TargetKpiPeriodName"] = TargetKpiPeriodName;
-
-            return RedirectToPage("Success");
+            var successUrl = Url.Page("/Submissions/DepartmentScores/Success", new { periodName = periodName });
+            if (string.IsNullOrEmpty(successUrl))
+                return RedirectToPage("/Submissions/DepartmentScores/Index");
+            return LocalRedirect(successUrl);
 
         }
         catch (DuplicateContentException)
@@ -459,7 +474,7 @@ public class SubmitModel : PageModel
     //     return await _userService.FindByIdAsync(userId);
     // }
 
-    private async Task<ApplicationUser> GetCurrentUser()
+    private async Task<ApplicationUser?> GetCurrentUser()
     {
         // Less likely to cause user not found, so throw just in case
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)

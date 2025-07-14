@@ -60,7 +60,7 @@ public class DepartmentKeyMetricService : IDepartmentKeyMetricService
         {
             var targetKeyKpi = await _departmentKeyMetricRepository.FindByCodeAsync(code);
             if (targetKeyKpi == null)
-                throw new NotFoundException("Department not found.");
+                throw new NotFoundException("Department Key Metric not found.");
 
             targetKeyKpi.IsDeleted = true;
             await _context.SaveChangesAsync();
@@ -82,7 +82,7 @@ public class DepartmentKeyMetricService : IDepartmentKeyMetricService
                 .FindByCodeAsync(DepartmentKeyMetricCode);
 
             if (targetKeyKpi == null)
-                throw new NotFoundException("Department not found.");
+                throw new NotFoundException("Department Key Metric not found.");
 
             targetKeyKpi.IsDeleted = false;
             await _context.SaveChangesAsync();
@@ -217,15 +217,23 @@ public class DepartmentKeyMetricService : IDepartmentKeyMetricService
     }
 
     public async Task<IEnumerable<DepartmentKeyMetric>> FindAllByPeriodAndDepartmentAsync(
-        string CurrentPeriodName,
-        Guid CurrentDepartmentCode)
+        string currentPeriodName,
+        Guid currentDepartmentCode)
     {
         try
         {
-            var result = await _departmentKeyMetricRepository
-                .FindAllByPeriodAndDepartmentAsync(CurrentPeriodName, CurrentDepartmentCode);
+            // var result = await _departmentKeyMetricRepository
+            //     .FindAllByPeriodAndDepartmentAsync(CurrentPeriodName, CurrentDepartmentCode);
+            var result = await _context.DepartmentKeyMetrics
+                .Where(k => k.KpiSubmissionPeriod.PeriodName == currentPeriodName
+                    && k.TargetDepartment.DepartmentCode == currentDepartmentCode)
+                .OrderBy(k => k.TargetDepartment.DepartmentName)
+                .Include(k => k.KpiSubmissionPeriod)
+                .Include(k => k.KeyMetric)
+                .Include(k => k.TargetDepartment)
+                .ToListAsync();
 
-            return result;
+            return result ?? [];
         }
         catch (Exception ex)
         {

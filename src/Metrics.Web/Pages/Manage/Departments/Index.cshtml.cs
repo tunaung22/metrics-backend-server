@@ -105,7 +105,10 @@ public class IndexModel : PageModel
             {
                 DepartmentCode = e.DepartmentCode,
                 DepartmentName = e.DepartmentName,
-                NumberOfUsers = e.ApplicationUsers.Count
+                NumberOfUsers = e.ApplicationUsers
+                    .Where(u => u.UserName != "sysadmin")
+                    .ToList()
+                    .Count
             }).ToList();
         }
 

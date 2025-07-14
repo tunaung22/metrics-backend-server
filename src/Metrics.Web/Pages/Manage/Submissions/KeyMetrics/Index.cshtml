@@ -46,7 +46,7 @@
                         <label><strong>@Model.TotalItems</strong></label>
                     </div>
                     <div class="form-check">
-                        <form method="get">
+                        @* <form method="get">
                                 <input asp-for="DisplayAll"
                                         type="checkbox" 
                                         value="" 
@@ -56,7 +56,7 @@
                                 <label class="form-check-label" for="checkDefault">
                                     Show All
                                 </label>
-                        </form>
+                        </form> *@
                     </div>
                 </div>
                 <div class="justify-content-end">
@@ -93,7 +93,10 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @{ var rowNo = 0; }
+                        @{
+                            var endRow = Model.CurrentPage * Model.PageSize;
+                            var rowNo = (endRow - Model.PageSize);
+                        }
                         @if (Model.KeyMetrics.Any())
                         {
                             @foreach(var p in Model.KeyMetrics)

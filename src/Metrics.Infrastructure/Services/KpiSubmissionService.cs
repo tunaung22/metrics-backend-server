@@ -1,13 +1,10 @@
-using Metrics.Application.DTOs.KpiSubmissionDtos;
 using Metrics.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Npgsql;
 using Metrics.Application.Interfaces.IServices;
 using Metrics.Application.Interfaces.IRepositories;
 using Metrics.Application.Exceptions;
 using Metrics.Application.Domains;
-using System.Net.Security;
 
 namespace Metrics.Infrastructure.Services;
 
@@ -311,7 +308,7 @@ public class KpiSubmissionService : IKpiSubmissionService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Unexpected error while querying department.");
+            _logger.LogError(ex, "Unexpected error while querying score submission by submitter by period by department list.");
             throw new Exception("An unexpected error occurred. Please try again later.");
         }
     }

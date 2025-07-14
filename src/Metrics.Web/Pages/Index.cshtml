@@ -8,11 +8,9 @@
     ViewData["Title"] = "Home";
     var claims = User.Claims.ToList();
     var canSubmitBaseScore = await AuthorizationService.AuthorizeAsync(User, "CanSubmitBaseScorePolicy");
-    var canSubmitKeyKpiScore = true;
-    var canSubmitCaseFeedbackScore = true;
-    var isScoreSubmitter = (canSubmitBaseScore!= null 
-        && canSubmitKeyKpiScore 
-        && canSubmitCaseFeedbackScore);
+    @* var canSubmitKeyKpiScore = true;
+    var canSubmitCaseFeedbackScore = true; *@
+    var isScoreSubmitter = canSubmitBaseScore.Succeeded;
 }
 
 <div class="sectionTitle">

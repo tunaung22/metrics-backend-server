@@ -12,7 +12,7 @@ public class KeyKpiSubmissionItem : IAuditColumn
 
     // Foreign Keys
     public long KeyKpiSubmissionId { get; set; }
-    public long KeyKpiMetricsId { get; set; }
+    public long DepartmentKeyMetricId { get; set; }
 
     // Reference Navigational Properties
     public KeyKpiSubmission ParentSubmission { get; set; } = null!;

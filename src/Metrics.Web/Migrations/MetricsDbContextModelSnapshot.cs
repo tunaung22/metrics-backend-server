@@ -30,6 +30,9 @@ namespace Metrics.Web.Migrations
             modelBuilder.HasSequence("departments_id_seq")
                 .IncrementsBy(10);
 
+            modelBuilder.HasSequence("key_kpi_submission_constraints_id_seq")
+                .IncrementsBy(10);
+
             modelBuilder.HasSequence("key_kpi_submission_items_id_seq")
                 .IncrementsBy(10);
 
@@ -389,6 +392,54 @@ namespace Metrics.Web.Migrations
                     b.ToTable("key_kpi_submissions", "metrics");
                 });
 
+            modelBuilder.Entity("Metrics.Application.Domains.KeyKpiSubmissionConstraint", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseHiLo(b.Property<long>("Id"), "key_kpi_submission_constraints_id_seq");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<long>("DepartmentId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("department_id");
+
+                    b.Property<long>("DepartmentKeyMetricId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("department_key_metric_id");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("is_deleted");
+
+                    b.Property<Guid>("LookupId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("lookup_id");
+
+                    b.Property<DateTimeOffset>("ModifiedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("modified_at");
+
+                    b.HasKey("Id")
+                        .HasName("pk_key_kpi_submission_constraints");
+
+                    b.HasIndex("DepartmentKeyMetricId")
+                        .HasDatabaseName("ix_key_kpi_submission_constraints_department_key_metric_id");
+
+                    b.HasIndex("DepartmentId", "DepartmentKeyMetricId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_key_kpi_submission_constraints_department_id_department_key");
+
+                    b.ToTable("key_kpi_submission_constraints", "metrics");
+                });
+
             modelBuilder.Entity("Metrics.Application.Domains.KeyKpiSubmissionItem", b =>
                 {
                     b.Property<long>("Id")
@@ -406,9 +457,9 @@ namespace Metrics.Web.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
 
-                    b.Property<long>("KeyKpiMetricsId")
+                    b.Property<long>("DepartmentKeyMetricId")
                         .HasColumnType("bigint")
-                        .HasColumnName("key_kpi_metrics_id");
+                        .HasColumnName("department_key_metric_id");
 
                     b.Property<long>("KeyKpiSubmissionId")
                         .HasColumnType("bigint")
@@ -429,15 +480,15 @@ namespace Metrics.Web.Migrations
                     b.HasKey("Id")
                         .HasName("pk_key_kpi_submission_items");
 
-                    b.HasIndex("KeyKpiMetricsId")
-                        .HasDatabaseName("ix_key_kpi_submission_items_key_kpi_metrics_id");
+                    b.HasIndex("DepartmentKeyMetricId")
+                        .HasDatabaseName("ix_key_kpi_submission_items_department_key_metric_id");
 
                     b.HasIndex("KeyMetricId")
                         .HasDatabaseName("ix_key_kpi_submission_items_key_metric_id");
 
-                    b.HasIndex("KeyKpiSubmissionId", "KeyKpiMetricsId")
+                    b.HasIndex("KeyKpiSubmissionId", "DepartmentKeyMetricId")
                         .IsUnique()
-                        .HasDatabaseName("ix_key_kpi_submission_items_key_kpi_submission_id_key_kpi_metr");
+                        .HasDatabaseName("ix_key_kpi_submission_items_key_kpi_submission_id_department_k");
 
                     b.ToTable("key_kpi_submission_items", "metrics", t =>
                         {
@@ -884,14 +935,35 @@ namespace Metrics.Web.Migrations
                     b.Navigation("TargetPeriod");
                 });
 
+            modelBuilder.Entity("Metrics.Application.Domains.KeyKpiSubmissionConstraint", b =>
+                {
+                    b.HasOne("Metrics.Application.Domains.Department", "Department")
+                        .WithMany()
+                        .HasForeignKey("DepartmentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_key_kpi_submission_constraints_departments_department_id");
+
+                    b.HasOne("Metrics.Application.Domains.DepartmentKeyMetric", "DepartmentKeyMetric")
+                        .WithMany()
+                        .HasForeignKey("DepartmentKeyMetricId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_key_kpi_submission_constraints_department_key_metrics_depar");
+
+                    b.Navigation("Department");
+
+                    b.Navigation("DepartmentKeyMetric");
+                });
+
             modelBuilder.Entity("Metrics.Application.Domains.KeyKpiSubmissionItem", b =>
                 {
                     b.HasOne("Metrics.Application.Domains.DepartmentKeyMetric", "TargetMetric")
                         .WithMany("KeyKpiSubmissionItems")
-                        .HasForeignKey("KeyKpiMetricsId")
+                        .HasForeignKey("DepartmentKeyMetricId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
-                        .HasConstraintName("fk_key_kpi_submission_items_department_key_metrics_key_kpi_met");
+                        .HasConstraintName("fk_key_kpi_submission_items_department_key_metrics_department_");
 
                     b.HasOne("Metrics.Application.Domains.KeyKpiSubmission", "ParentSubmission")
                         .WithMany("KeyKpiSubmissionItems")

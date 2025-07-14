@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace Metrics.Web.Pages.Submissions.Departments.Scores;
+namespace Metrics.Web.Pages.Submissions.DepartmentScores;
 
 public class SuccessModel : PageModel
 {

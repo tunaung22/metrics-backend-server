@@ -19,10 +19,10 @@ public class DepartmentKeyMetricRepository : IDepartmentKeyMetricRepository
         _context.DepartmentKeyMetrics.Add(entity);
     }
 
-    public void Delete(DepartmentKeyMetric entity)
-    {
-        _context.DepartmentKeyMetrics.Remove(entity);
-    }
+    // public void Delete(DepartmentKeyMetric entity)
+    // {
+    //     _context.DepartmentKeyMetrics.Remove(entity);
+    // }
 
     public IQueryable<DepartmentKeyMetric> FindAllAsQueryable()
     {

@@ -79,7 +79,7 @@ public class IndexModel : PageModel
     }
 
 
-    private async Task<ApplicationUser> GetCurrentUser()
+    private async Task<ApplicationUser?> GetCurrentUser()
     {
         // Less likely to cause user not found, so throw just in case
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)

@@ -68,7 +68,7 @@ public class KeyMetricService : IKeyMetricService
             IEnumerable<KeyMetric> createdEntities = [];
 
             var existingKeys = await FindAllAsync();
-            if (existingKeys != null)
+            if (existingKeys != null && existingKeys.Count() > 0)
             {
                 // get duplicated ids
                 // var duplicatedTitles = existingKeys

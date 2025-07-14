@@ -1,4 +1,5 @@
-﻿using Metrics.Application.DTOs.DepartmentDtos;
+﻿using Metrics.Application.DTOs;
+using Metrics.Application.DTOs.DepartmentDtos;
 using Metrics.Application.Exceptions;
 using Metrics.Application.Interfaces.IServices;
 using Metrics.Application.Mappers.DtoMappers;
@@ -23,7 +24,12 @@ public class DepartmentController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
-        var result = await _departmentService.FindAllAsync();
+        var departments = await _departmentService.FindAllAsync();
+        var result = departments.Select(d => new DepartmentGetDto
+        {
+            DepartmentCode = d.DepartmentCode,
+            DepartmentName = d.DepartmentName
+        }).ToList();
 
         return Ok(result);
     }
@@ -33,9 +39,14 @@ public class DepartmentController : ControllerBase
     public async Task<IActionResult> GetAsync(string departmentCode)
     {
         //var result = await _departmentService.FindByIdAsync(id);
-        var result = await _departmentService.FindByDepartmentCodeAsync(departmentCode);
-        if (result != null)
+        var department = await _departmentService.FindByDepartmentCodeAsync(departmentCode);
+        if (department != null)
         {
+            var result = new DepartmentGetDto
+            {
+                DepartmentCode = department.DepartmentCode,
+                DepartmentName = department.DepartmentName
+            };
             return Ok(result);
         }
 

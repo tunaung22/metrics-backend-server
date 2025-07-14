@@ -75,9 +75,16 @@ public class IndexModel : PageModel
         // CurrentPage = currentPage == 0 ? 1 : currentPage;
         TotalItems = await _keyMetricService.FindCountAsync();
         PageSize = _config.GetValue<int>("Pagination:PageSize");
-        KeyMetrics = await LoadKeyMetrics(
-            currentPage > 0 ? currentPage : CurrentPage,
-            pageSize > 0 ? pageSize : PageSize);
+        if (DisplayAll)
+        {
+            KeyMetrics = await LoadAllKeyMetrics();
+        }
+        else
+        {
+            KeyMetrics = await LoadKeyMetrics(
+                currentPage > 0 ? currentPage : CurrentPage,
+                pageSize > 0 ? pageSize : PageSize);
+        }
 
         return Page();
     }
@@ -101,7 +108,10 @@ public class IndexModel : PageModel
                             .Select(r => new KeyMetric
                             {
                                 MetricTitle = r.Title.Trim()
-                            }).ToList();
+                            })
+                            .GroupBy(k => k.MetricTitle, StringComparer.OrdinalIgnoreCase)
+                            .Select(g => g.First())
+                            .ToList();
                         var createdEntities = await _keyMetricService.CreateRangeAsync(entitiesToAdd);
                     }
 
@@ -167,7 +177,23 @@ public class IndexModel : PageModel
         var periods = await _keyMetricService.FindAllAsync(
             pageNumber: currentPage,
             pageSize: pageSize);
-        if (periods.Any())
+        if (periods.Count() > 0)
+        {
+            return periods.Select(k => new KeyMetricViewModel()
+            {
+                MetricCode = k.MetricCode.ToString(),
+                MetricTitle = k.MetricTitle,
+                Description = k.Description
+
+            }).ToList();
+        }
+
+        return [];
+    }
+    private async Task<List<KeyMetricViewModel>> LoadAllKeyMetrics()
+    {
+        var periods = await _keyMetricService.FindAllAsync();
+        if (periods.Count() > 0)
         {
             return periods.Select(k => new KeyMetricViewModel()
             {
