@@ -202,9 +202,12 @@ public class SubmitModel : PageModel
         // from Submission Constraints, get key metrics issued by departments
         // ဘယ် department က ဘယ် department ရဲ့ key metrics တွေကို အမှတ်ပေးရမလဲ ဆိုတာကိုဆွဲထုတ်
         var keyKpiSubmissionConstraints = await _keyKpiSubmissionConstraintService
-            .FindAllByPeriodByDepartmentAsync(TargetKpiPeriod.Id, SubmitterDepartment.Id);
+            .FindAllByPeriodBySubmitterDepartmentAsync(
+                TargetKpiPeriod.Id,
+                SubmitterDepartment.Id
+            );
 
-        if (keyKpiSubmissionConstraints.Count() > 0)
+        if (keyKpiSubmissionConstraints.Any())
         {
             // EXTRACT DATA for navigational properties
             // MAP KeyKpiSubmissionConstraint to KeyKpiSubmissionConstraintViewModel
@@ -245,14 +248,15 @@ public class SubmitModel : PageModel
                 // ---------- DEPARTMENT -----------------------------------
                 // ----- Get DISTINCT Departments from Constraints.DepartmentKeyMetrics -----
                 // အမှတ်ပေးရမည့် departments များ (Issuer Departments)
-                DepartmentList = KeyKpiSubmissionConstraints.Select(d => d.DepartmentKeyMetric.TargetDepartment)
+                DepartmentList = KeyKpiSubmissionConstraints
+                    .Select(d => d.DepartmentKeyMetric.TargetDepartment)
+                    .DistinctBy(department => department.Id)
                     .Select(department => new DepartmentViewModel
                     {
                         Id = department.Id,
                         DepartmentCode = department.DepartmentCode,
                         DepartmentName = department.DepartmentName
                     })
-                    .DistinctBy(department => department.Id)
                     .ToList();
                 // DepartmentList = KeyKpiSubmissionConstraints
                 //     .Select(c => new DepartmentViewModel
@@ -323,6 +327,7 @@ public class SubmitModel : PageModel
                                     Id = i.TargetMetric.Id,
                                     DepartmentKeyMetricCode = i.TargetMetric.DepartmentKeyMetricCode,
                                     DepartmentId = i.TargetMetric.DepartmentId,
+                                    TargetDepartment = i.TargetMetric.TargetDepartment,
                                     KeyMetricId = i.TargetMetric.KeyMetricId,
                                     KeyMetric = i.TargetMetric.KeyMetric
                                 },

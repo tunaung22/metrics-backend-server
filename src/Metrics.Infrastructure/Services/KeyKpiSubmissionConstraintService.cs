@@ -120,7 +120,7 @@ public class KeyKpiSubmissionConstraintService : IKeyKpiSubmissionConstraintServ
     //         throw new Exception("An unexpected error occurred. Please try again later.");
     //     }
     // }
-    public async Task<IEnumerable<KeyKpiSubmissionConstraint>> FindAllByPeriodByDepartmentAsync(
+    public async Task<IEnumerable<KeyKpiSubmissionConstraint>> FindAllByPeriodBySubmitterDepartmentAsync(
         long periodId,
         long departmentId)
     {
@@ -143,7 +143,7 @@ public class KeyKpiSubmissionConstraintService : IKeyKpiSubmissionConstraintServ
                     .ThenInclude(cx => cx.KeyMetric)
                 .ToListAsync();
 
-            return result;
+            return result ?? Enumerable.Empty<KeyKpiSubmissionConstraint>();
         }
         catch (Exception ex)
         {

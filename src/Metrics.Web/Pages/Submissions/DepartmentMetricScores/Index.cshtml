@@ -46,7 +46,43 @@
                                     @period.SubmissionStartDate.ToLocalTime().ToString("dd MMM, yyyy") - @period.SubmissionEndDate.ToLocalTime().ToString("dd MMM, yyyy")</label>
                             </td>
                             <td class="" style="padding-left: 4em;">
-                                @if(period.IsSubmitted) { 
+                                @* 
+                                    **user can view perivous submission ONLY WITHIN VALID PERIOD
+                                    valid
+                                        submitted
+                                            - done
+                                        not-submitted
+                                            - pending
+                                    not-valid (disable actions)
+                                        submitted
+                                            - done
+                                        not-submitted
+                                            - due
+                                *@
+                                @if(period.IsValid) {
+                                    @if(period.IsSubmitted) { 
+                                        <i class="bi bi-check2-circle text-success"> </i><label>Done</label> 
+                                    }
+                                    else
+                                    {
+                                        <i class="bi bi-exclamation-circle text-danger"> </i><label>Pending</label> 
+                                    }
+                                }
+                                else
+                                {
+                                    @if(period.IsSubmitted) { 
+                                        <i class="bi bi-check2-circle text-success"> </i><label>Done</label> 
+                                    }
+                                    else
+                                    {
+                                        <i class="bi bi-exclamation-circle text-danger"> </i><label>Dued</label> 
+                                    }
+                                }
+
+
+
+
+                                @* @if(period.IsSubmitted) { 
                                     <i class="bi bi-check2-circle text-success"> </i><label>Done</label> 
                                 }
                                 else {
@@ -56,7 +92,7 @@
                                     else {
                                         <i class="bi bi-exclamation-diamond text-secondary"> </i><label class="text-secondary">Invalid</label> 
                                     }
-                                }
+                                } *@
                             </td>
                             <td class="text-center"> 
                                 @if(period.IsSubmitted) { 

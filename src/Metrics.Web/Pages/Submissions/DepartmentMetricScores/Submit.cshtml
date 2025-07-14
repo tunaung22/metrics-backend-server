@@ -277,7 +277,9 @@
             }
             else
             {
-                <h5 class="my-4 text-success">You already submitted for the period <strong>@Model.TargetKpiPeriodName</strong>.</h5>
+                @* var submissionDate = @Model.FinishedSubmissions.Select(s=>s.SubmissionDate); *@
+
+                <h5 class="my-4 text-success">You have submitted submission for the period <strong>@Model.TargetKpiPeriodName</strong>.</h5>
                 <div class="my-4">
                     <span>
                         Check <strong><a class="" asp-page="/Submissions/DepartmentMetricScores/Index">Submissions</a></strong>.
@@ -294,6 +296,7 @@
                                 <tr>
                                     <th id="colDepartment">Department</th>
                                     <th id="colMetric">Metrics</th>
+                                    <th id="colIssueDepartment">Issued by</th>
                                     <th id="colScore">Score Given</th>
                                     <th id="colComments">Comments</th>
                                 </tr>
@@ -326,6 +329,7 @@
                                                         @:None
                                                     }
                                                 </td>
+                                                <td class="text-center">@i.DepartmentKeyMetrics.TargetDepartment.DepartmentName</td>
                                                 <td class="text-center">@i.ScoreValue</td>
                                                 <td>
                                                     @if(i.Comments != null && i.Comments.Any()) {
@@ -428,7 +432,7 @@
                 searching: false,
                 columnDefs: [
                     { orderable: false, targets: [ "#colComments"] },
-                    { width: "15%", targets: ["#colDepartment"] },
+                    { width: "15%", targets: ["#colDepartment", "#colIssueDepartment"] },
                     { width: "40%", targets: ["#colMetric"] },
                     { width: "8%", targets: ["#colScore"] },
                 ],
