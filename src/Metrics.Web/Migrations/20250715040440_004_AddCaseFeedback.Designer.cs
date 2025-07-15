@@ -3,6 +3,7 @@ using System;
 using Metrics.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Metrics.Web.Migrations
 {
     [DbContext(typeof(MetricsDbContext))]
-    partial class MetricsDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250715040440_004_AddCaseFeedback")]
+    partial class _004_AddCaseFeedback
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -414,7 +417,7 @@ namespace Metrics.Web.Migrations
 
                     b.HasIndex("KpiSubmissionPeriodId", "DepartmentId", "KeyMetricId")
                         .IsUnique()
-                        .HasDatabaseName("ix_department_key_metrics_period_id_dpt_id_metric_id");
+                        .HasDatabaseName("ix_department_key_metrics_kpi_submission_period_id_department_");
 
                     b.ToTable("department_key_metrics", "metrics");
                 });
@@ -484,7 +487,7 @@ namespace Metrics.Web.Migrations
 
                     b.HasIndex("ScoreSubmissionPeriodId", "DepartmentId", "ApplicationUserId")
                         .IsUnique()
-                        .HasDatabaseName("ix_key_kpi_submissions_period_id_dpt_id_user_id");
+                        .HasDatabaseName("ix_key_kpi_submissions_score_submission_period_id_department_i");
 
                     b.ToTable("key_kpi_submissions", "metrics");
                 });
@@ -532,7 +535,7 @@ namespace Metrics.Web.Migrations
 
                     b.HasIndex("DepartmentId", "DepartmentKeyMetricId")
                         .IsUnique()
-                        .HasDatabaseName("ix_key_kpi_submission_constraints_dpt_id_dkm_id");
+                        .HasDatabaseName("ix_key_kpi_submission_constraints_department_id_department_key");
 
                     b.ToTable("key_kpi_submission_constraints", "metrics");
                 });
@@ -585,7 +588,7 @@ namespace Metrics.Web.Migrations
 
                     b.HasIndex("KeyKpiSubmissionId", "DepartmentKeyMetricId")
                         .IsUnique()
-                        .HasDatabaseName("ix_key_kpi_submission_items_kks_id_dkm_id");
+                        .HasDatabaseName("ix_key_kpi_submission_items_key_kpi_submission_id_department_k");
 
                     b.ToTable("key_kpi_submission_items", "metrics", t =>
                         {
@@ -711,7 +714,7 @@ namespace Metrics.Web.Migrations
 
                     b.HasIndex("KpiSubmissionPeriodId", "DepartmentId", "ApplicationUserId")
                         .IsUnique()
-                        .HasDatabaseName("ix_kpi_submissions_period_id_dpt_id_user_id");
+                        .HasDatabaseName("ix_kpi_submissions_kpi_submission_period_id_department_id_appl");
 
                     b.ToTable("kpi_submissions", "metrics", t =>
                         {
@@ -777,15 +780,6 @@ namespace Metrics.Web.Migrations
                         .HasColumnType("text")
                         .HasColumnName("description");
 
-                    b.Property<Guid>("GroupCode")
-                        .HasColumnType("uuid")
-                        .HasColumnName("title_code");
-
-                    b.Property<string>("GroupName")
-                        .IsRequired()
-                        .HasColumnType("citext")
-                        .HasColumnName("title_name");
-
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean")
                         .HasColumnName("is_deleted");
@@ -794,16 +788,25 @@ namespace Metrics.Web.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("modified_at");
 
+                    b.Property<Guid>("TitleCode")
+                        .HasColumnType("uuid")
+                        .HasColumnName("title_code");
+
+                    b.Property<string>("TitleName")
+                        .IsRequired()
+                        .HasColumnType("citext")
+                        .HasColumnName("title_name");
+
                     b.HasKey("Id")
                         .HasName("pk_user_titles");
 
-                    b.HasIndex("GroupCode")
+                    b.HasIndex("TitleCode")
                         .IsUnique()
-                        .HasDatabaseName("ix_user_titles_group_code");
+                        .HasDatabaseName("ix_user_titles_title_code");
 
-                    b.HasIndex("GroupName")
+                    b.HasIndex("TitleName")
                         .IsUnique()
-                        .HasDatabaseName("ix_user_titles_group_name");
+                        .HasDatabaseName("ix_user_titles_title_name");
 
                     b.ToTable("user_titles", "metrics");
                 });

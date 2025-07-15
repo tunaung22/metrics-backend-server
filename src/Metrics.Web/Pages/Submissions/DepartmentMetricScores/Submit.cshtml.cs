@@ -303,7 +303,7 @@ public class SubmitModel : PageModel
                     // How to get DKMs from existingSubmissions?
                     var existingDKMs = existingSubmissions
                         .SelectMany(s => s.KeyKpiSubmissionItems)
-                        .Select(s => s.TargetMetric);
+                        .Select(s => s.DepartmentKeyMetric);
 
                     // How to check existingSubmissions have the same DKMs as submissionConstraints?
                     // - existingSubmissions have: submissionItems > DKMs
@@ -324,12 +324,12 @@ public class SubmitModel : PageModel
                             {
                                 DepartmentKeyMetrics = new DepartmentKeyMetricViewModel
                                 {
-                                    Id = i.TargetMetric.Id,
-                                    DepartmentKeyMetricCode = i.TargetMetric.DepartmentKeyMetricCode,
-                                    DepartmentId = i.TargetMetric.DepartmentId,
-                                    TargetDepartment = i.TargetMetric.TargetDepartment,
-                                    KeyMetricId = i.TargetMetric.KeyMetricId,
-                                    KeyMetric = i.TargetMetric.KeyMetric
+                                    Id = i.DepartmentKeyMetric.Id,
+                                    DepartmentKeyMetricCode = i.DepartmentKeyMetric.DepartmentKeyMetricCode,
+                                    DepartmentId = i.DepartmentKeyMetric.DepartmentId,
+                                    TargetDepartment = i.DepartmentKeyMetric.TargetDepartment,
+                                    KeyMetricId = i.DepartmentKeyMetric.KeyMetricId,
+                                    KeyMetric = i.DepartmentKeyMetric.KeyMetric
                                 },
                                 ScoreValue = i.ScoreValue,
                                 Comments = i.Comments

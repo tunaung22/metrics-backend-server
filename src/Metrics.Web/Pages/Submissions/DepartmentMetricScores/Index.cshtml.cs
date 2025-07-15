@@ -118,7 +118,7 @@ public class IndexModel : PageModel
                     {
                         var existingDkms = existingSubmissions
                             .SelectMany(s => s.KeyKpiSubmissionItems)
-                            .Select(s => s.TargetMetric);
+                            .Select(s => s.DepartmentKeyMetric);
 
                         // finished or in-progress
                         if (dkms.Count() == existingDkms.Count())

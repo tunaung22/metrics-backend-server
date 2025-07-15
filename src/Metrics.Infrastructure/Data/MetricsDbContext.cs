@@ -33,6 +33,7 @@ public class MetricsDbContext : IdentityDbContext<ApplicationUser, ApplicationRo
     public DbSet<DepartmentKeyMetric> DepartmentKeyMetrics { get; set; }
     public DbSet<KeyKpiSubmission> KeyKpiSubmissions { get; set; }
     public DbSet<KeyKpiSubmissionItem> KeyKpiSubmissionItems { get; set; }
+    public DbSet<CaseFeedbackSubmission> CaseFeedbackSubmissions { get; set; }
 
 
     public override int SaveChanges()
@@ -141,6 +142,9 @@ public class MetricsDbContext : IdentityDbContext<ApplicationUser, ApplicationRo
             .ApplyConfiguration(new KeyKpiSubmissionConstraintConfig()) // --- Key KPI Submission Constraint 
             .ApplyConfiguration(new KeyKpiSubmissionConfig()) // --------- Key KPI
             .ApplyConfiguration(new KeyKpiSubmissionItemConfig()); // ---- Key KPI
+
+        builder
+            .ApplyConfiguration(new CaseFeedbackSubmissionConfig()); // -------- Case Feedback
 
         // ----------- Seeding -----------
         // builder.Entity<...>().HasData(...);

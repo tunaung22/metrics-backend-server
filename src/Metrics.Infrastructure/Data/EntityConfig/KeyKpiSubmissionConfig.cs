@@ -20,6 +20,7 @@ public class KeyKpiSubmissionConfig : IEntityTypeConfiguration<KeyKpiSubmission>
                 e.DepartmentId,
                 e.ApplicationUserId
             })
+            .HasDatabaseName("ix_key_kpi_submissions_period_id_dpt_id_user_id")
             .IsUnique();
 
         // ===== Columns =====
@@ -61,5 +62,24 @@ public class KeyKpiSubmissionConfig : IEntityTypeConfiguration<KeyKpiSubmission>
             .HasForeignKey(e => e.ApplicationUserId)
             .OnDelete(DeleteBehavior.Restrict)
             .IsRequired();
+
+
+        // builder.HasMany(e => e.KeyKpiSubmissionItems)
+        //     .WithOne(e => e.ParentSubmission)
+        //     .HasForeignKey(e => e.KeyKpiSubmissionId);
+
+        // The property 'KeyKpiSubmission.KeyMetricId' was created in shadow state because there are no eligible CLR members with a matching name.
+        // EF Core detects a potential relationship path but can't find the explicit property in the class
+        // KeyKpiSubmission → KeyKpiSubmissionItem → DepartmentKeyMetric → KeyMetric
+        // Ignore Shadow Property
+        // builder.Ignore("KeyMetricId");
+
+        // The property 'KeyKpiSubmission.DepartmentKeyMetricId' was created in shadow state because there are no eligible CLR members with a matching name.
+        // Ignore Shadow Property
+        // builder.Ignore("DepartmentKeyMetricId");
+
+
+        // builder.Ignore("DepartmentKeyMetricId");
+        // builder.Ignore("KeyMetricId");
     }
 }

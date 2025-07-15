@@ -13,11 +13,14 @@ public class KeyKpiSubmissionConstraintConfig : IEntityTypeConfiguration<KeyKpiS
 
         // ===== Index =====
         builder.HasKey(e => e.Id);
-        builder.HasIndex(e => new
-        {
-            e.DepartmentId,
-            e.DepartmentKeyMetricId
-        }).IsUnique();
+        builder
+            .HasIndex(e => new
+            {
+                e.DepartmentId,
+                e.DepartmentKeyMetricId
+            })
+            .HasDatabaseName("ix_key_kpi_submission_constraints_dpt_id_dkm_id")
+            .IsUnique();
 
         // ===== Columns =====
         builder.Property(e => e.Id)
@@ -42,12 +45,12 @@ public class KeyKpiSubmissionConstraintConfig : IEntityTypeConfiguration<KeyKpiS
 
         // ===== Relationships =====
         builder.HasOne(e => e.Department)
-            .WithMany()
+            .WithMany(e => e.KeyKpiSubmissionConstraints)
             .HasForeignKey(e => e.DepartmentId)
             .OnDelete(DeleteBehavior.Restrict)
             .IsRequired();
         builder.HasOne(e => e.DepartmentKeyMetric)
-            .WithMany()
+            .WithMany(e => e.KeyKpiSubmissionConstraints)
             .HasForeignKey(e => e.DepartmentKeyMetricId)
             .OnDelete(DeleteBehavior.Restrict)
             .IsRequired();

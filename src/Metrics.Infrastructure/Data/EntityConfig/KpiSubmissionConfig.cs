@@ -19,6 +19,7 @@ class KpiSubmissionConfig : IEntityTypeConfiguration<KpiSubmission>
                 e.DepartmentId,
                 e.ApplicationUserId
             })
+            .HasDatabaseName("ix_kpi_submissions_period_id_dpt_id_user_id")
             .IsUnique();
 
         // ===== Columns =====
