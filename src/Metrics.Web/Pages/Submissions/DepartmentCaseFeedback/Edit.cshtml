@@ -1,0 +1,307 @@
+﻿@page "/Submissions/Department-Case-Feedback/{periodName}/Edit/{lookupId}"
+@model Metrics.Web.Pages.Submissions.DepartmentCaseFeedback.EditModel
+@{
+    ViewData["Title"] = "Edit Department Case Feedback";
+    decimal[] scoreOptions = new[] { -1M, -2M, -3M, -4M, -5M };
+}
+
+
+<div class="sectionTitle">
+    <h4>Edit Department Case Feedback Form <strong>(@Model.SelectedPeriodName)</strong></h4>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-page="/Index">Home</a></li>
+            <li class="breadcrumb-item"><a asp-page="/Submissions/Index">Submissions</a></li>
+            <li class="breadcrumb-item"><a asp-page="/Submissions/DepartmentCaseFeedback/Index">Department Case Feedbacks</a></li>
+            <li class="breadcrumb-item"><a asp-page="/Submissions/DepartmentCaseFeedback/List" 
+                                            asp-route-periodName="@Model.SelectedPeriodName">Submissions List</a></li>
+            <li class="breadcrumb-item active">New</li>
+        </ol>
+    </nav>
+</div>
+
+
+<div class="container">
+    <div class="my-4 pb-4">
+        <div class="filter-toolbar mb-4 d-flex justify-content-between">
+            <span class="d-flex align-items-center gap-2">
+            </span>
+            <div>
+            </div>
+        </div>
+
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+        <section class="form">
+            <form method="post">
+            @* asp-route-returnUrl="@Model.ReturnUrl"> *@
+                <input type="hidden" asp-for="SelectedPeriodName" />
+                <input type="hidden" asp-for="TargetSubmissionLookupId" />
+                @* <input type="hidden" asp-for="ReturnUrl" /> *@
+                <input type="hidden" asp-for="FormInput.SubmitterId" />
+
+                <div class="action-toolbar mb-4 d-flex align-items-center justify-content-between">
+                    @* ---LEFT--- *@
+                    <div class="d-flex align-items-center">
+                        <div class="pe-4">
+                            <label class="form-label mb-0">Submitter:</label>
+                            <strong>@Model.Submitter.FullName (@Model.CurrentUserGroupName)</strong>
+                        </div>
+                        <div class="pe-4">
+                            <label class="form-label mb-0">Department:</label>
+                            <strong>@Model.Submitter.Department.DepartmentName</strong>
+                        </div>
+                        <div class="pe-4">
+                            <label class="form-label mb-0">Phone:</label>
+                            <strong>
+                                @(
+                                    !string.IsNullOrWhiteSpace(Model.Submitter.PhoneNumber) 
+                                        ? Model.Submitter.PhoneNumber 
+                                        : "-" 
+                                )
+                            </strong>
+                        </div>
+                    </div>
+                    @* ---RIGHT--- *@
+                    <div class="d-flex align-items-center gap-2">
+                        <button asp-page-handler="Cancel" 
+                                type="submit" tabindex="11"
+                                class="btn btn-warning ms-2" formnovalidate>
+                                    <i class="bi bi-x-circle"></i> Cancel</button>
+                        <button asp-page-handler="Save" 
+                                type="submit" tabindex="10"
+                                class="btn btn-primary">
+                                    <i class="bi bi-check-circle"></i> Save</button>
+                    </div>
+                </div>
+
+                <div class="submissionInfo card mb-3 px-3 py-4">
+                    <div class="row mb-3">
+                        <span><strong>Case Department</strong></span>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-xs-12 col-md-6 col-lg-4  mb-3">
+                            <label class="form-label">Incident at</label>
+                            <div class="input-group"
+                                id="incidentAt__datetimePicker" 
+                                data-td-target-input="nearest"
+                                data-td-target-toggle="nearest">
+                                <input asp-for="FormInput.IncidentAt"
+                                        value="@Model.FormInput.IncidentAt.ToString("dd / MMMM / yyyy hh:mm tt")"
+                                        type="text" 
+                                        class="form-control"
+                                        data-td-target="#incidentAt__datetimePicker"
+                                        tabindex="3" readonly />
+                                <span
+                                    class="input-group-text"
+                                    data-td-target="#incidentAt__datetimePicker"
+                                    data-td-toggle="datetimepicker"
+                                    >
+                                    <span class="bi bi-calendar"></span>
+                                </span>
+                            </div>
+                            <div><span asp-validation-for="FormInput.IncidentAt" class="text-danger"></span></div>
+                        </div>
+                        <div class="col-xs-12 col-md-6 col-lg-4  mb-3">
+                            <label class="form-label">Department</label>
+                            <select asp-for="FormInput.CaseDepartmentId" 
+                                    asp-items="Model.DepartmentListItems"
+                                    class="form-select" 
+                                    aria-label="Select Department">
+                                <option value="" selected>Select Department</option>
+                            </select>
+                            <div><span asp-validation-for="FormInput.CaseDepartmentId" class="text-danger"></span></div>
+                        </div>
+                        <div class="col-xs-12 col-md-6 col-lg-4  mb-3">
+                            <label class="form-label">Ward</label>
+                            <input asp-for="FormInput.WardName" type="text" class="form-control" />
+                            <div><span asp-validation-for="FormInput.WardName" class="text-danger"></span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="caseDetail card mb-3 px-3 py-4">
+                    <div class="mb-3">
+                        <span><strong>Case Details:</strong></span>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-xs-12 col-md-6 col-lg-4">
+                            <label class="form-label">CPI Number</label>
+                            <input asp-for="FormInput.CPINumber" type="text" class="form-control" />
+                            <div><span asp-validation-for="FormInput.CPINumber" class="text-danger"></span></div>
+
+                        </div>
+                        <div class="col-xs-12 col-md-6 col-lg-4">
+                            <label class="form-label">Patient Name</label>
+                            <input asp-for="FormInput.PatientName" type="text" class="form-control" />
+                            <div><span asp-validation-for="FormInput.PatientName" class="text-danger"></span></div>
+                        </div>
+                        
+                        <div class="col-xs-12 col-md-6 col-lg-4">
+                            <label class="form-label">Room Number</label>
+                            <input asp-for="FormInput.RoomNumber" type="text" class="form-control" />
+                            <div><span asp-validation-for="FormInput.RoomNumber" class="text-danger"></span></div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-12 col-md-6">
+                            <label class="form-label">Incident Details</label>
+                            <textarea asp-for="FormInput.Description" class="form-control" rows="4"></textarea>
+                        </div>
+                        <div class="col-xs-12 col-md-6">
+                            <label class="form-label">Suggestions</label>
+                            <textarea asp-for="FormInput.Comments" class="form-control" rows="4"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="score card mb-3 px-3 py-4">
+                    <div class="mb-3">
+                        <span><strong>Rate:</strong></span>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <div class="radio__scoreValue ps-0 form-check form-check-inline d-flex flex-wrap gap-2">
+                                @foreach(var score in scoreOptions)
+                                {
+                                    <label for="score_@score" 
+                                            class="radioLabel__score 
+                                                    form-check-label
+                                                    rounded-3 
+                                                    ps-2 pe-4">
+                                        <input class="radioInput__score"
+                                                type="radio" 
+                                                asp-for="FormInput.ScoreValue" 
+                                                value="@score" 
+                                                checked="@(Model.FormInput.ScoreValue == score)"
+                                                id="score_@score" />
+                                        <strong>@score</strong>
+                                    </label>
+                                }
+                                @* @for(int x = 0; x < scoreOptions.Length; x++)
+                                {
+                                    var radioId = $"radio_{x}_{@scoreOptions[x]}";
+                                    var score = scoreOptions[x];
+
+                                    <label for="@radioId" 
+                                            class="radioLabel__score 
+                                                    form-check-label
+                                                    rounded-3 
+                                                    ps-2 pe-4">
+                                        <input class="radioInput__score"
+                                                type="radio" 
+                                                asp-for="FormInput.ScoreValue" 
+                                                value="@score" 
+                                                checked="@(Model.FormInput.ScoreValue == score)" />
+                                                id="@radioId" />
+                                        <strong>@scoreOptions[x]</strong>
+                                    </label>
+                                } *@
+                            </div>
+                            <div>
+                                <span asp-validation-for="FormInput.ScoreValue" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+        </section>
+
+    </div>
+</div>
+
+
+@section Styles {
+    <link rel="stylesheet" href="~/lib/tempus-dominus-6.10.4/dist/css/tempus-dominus.css" />
+    <style>
+        .radio__scoreValue {
+        }
+
+        .radioLabel__score {
+            margin-right: 1.2em;
+        }
+
+        .radioInput__score {
+            transform: scale(1.5);
+            margin-right: .4em;
+        }
+
+        .radioLabel__score, .radioInput__score {
+            cursor: pointer;
+            font-size: 1.2em;
+            @* transform: scale(1.1); *@
+        }
+
+        .radioLabel__score {
+            padding: 0.5rem;  /* Clickable area padding */
+            transition: background-color 0.2s;  
+            @* border: .1em solid #3c9aff; *@
+            border: .1em solid #fff; 
+
+        }
+        .radioLabel__score:hover {
+            border: .1em solid #007bff;
+            @* background: #0072b4; *@
+        }
+
+        /* Align radio and text */
+        .radioLabel__score .radioInput__score-check-input {
+            margin-top: 0;
+        }
+
+        .radioLabel__score:has(.radioInput__score:checked) {
+            border: .2em solid #007bff;
+            @* background: #0072b4; *@
+        }
+
+        #incidentAt__datetimePicker input {
+            text-transform: uppercase;
+        }
+
+    </style>
+}
+
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script src="~/lib/popperjs-2.11.8/dist/umd/popper.min.js"></script>
+
+    <script type="module">
+        import { TempusDominus } from "/lib/tempus-dominus-6.10.4/dist/js/tempus-dominus.esm.min.js";
+        var el = document.getElementById('incidentAt__datetimePicker');
+        document.addEventListener("DOMContentLoaded", function() {
+            new TempusDominus(el, {
+                restrictions: {
+                    maxDate: new Date(), // Disable future dates
+                },
+                localization: {
+                    format: 'dd / MMMM / yyyy hh:mm t', // Correct option for v6+
+                    hourCycle: 'h12' // Explicit 12-hour cycle
+                },
+                display: { 
+                    sideBySide: true,
+                    theme: 'light', // or 'dark'
+                    icons: {
+                        time: 'bi bi-clock-fill',         // Clock icon
+                        date: 'bi bi-calendar2-week-fill',       // Calendar icon
+                        up: 'bi bi-chevron-up',       // Up arrow
+                        down: 'bi bi-chevron-down',   // Down arrow
+                        previous: 'bi bi-chevron-left',  // Previous
+                        next: 'bi bi-chevron-right',     // Next
+                        today: 'bi bi-calendar-check',   // Today
+                        clear: 'bi bi-trash',            // Clear
+                        close: 'bi bi-x-lg'               // Close
+                    } 
+                }     
+            });
+        });
+    </script>
+    
+    <script>
+    </script>
+}

@@ -1,6 +1,38 @@
 ﻿@page
-@model Metrics.Web.Pages.Reports.Submissions.Departments.KeyKpi.IndexModel
+@model Metrics.Web.Pages.Reports.Submissions.DepartmentKeyKpi.IndexModel
+@using Metrics.Web.Models.PartialViewModels
 @{
+    ViewData["Title"] = "Department Key KPI Reports (Key KPI)";
 }
 
-<h3>Key KPI Submissions Report Index</h3>
+
+<div class="sectionTitle">
+    <div class="d-flex align-items-center my-2">
+        <h4 class="flex-grow-1">Department Key KPI Reports (Key KPI)</h4>
+        <span class="justify-content-end gap-2"></span>
+    </div>
+
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-page="/Dashboard/Index">Dashboard</a></li>
+            <li class="breadcrumb-item"><a asp-page="/Reports/Submissions/Index">Reports</a></li>
+            <li class="breadcrumb-item active">Department Key KPI</li>
+        </ol>
+    </nav>
+</div>
+
+
+<div class="container">
+    <div class="bg-light p-4 rounded-2">
+        <partial name="./List/_PeriodList" model="@(new PeriodListPartialModel {
+            @* IncludeScripts = true, *@
+            TableId = "reportTable",
+            LinkBasePage = "/Reports/Submissions/DepartmentCaseFeedback",
+            Periods = Model.KpiPeriodList,
+            Buttons = new List<PeriodListButton> {
+                new PeriodListButton { Page = "Summary", Text = "Summary" },
+                new PeriodListButton { Page = "Detail", Text = "Details" }
+            }
+        })" />
+    </div>  
+</div>

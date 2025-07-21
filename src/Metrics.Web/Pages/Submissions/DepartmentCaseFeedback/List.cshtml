@@ -1,0 +1,159 @@
+﻿@page "/Submissions/Department-Case-Feedback/{periodName}/List"
+@model Metrics.Web.Pages.Submissions.DepartmentCaseFeedback.ListModel
+@{
+    ViewData["Title"] = "Case Feedback";
+}
+
+
+<div class="sectionTitle">
+    <div class="d-flex align-items-center">
+        <span class="d-flex align-items-center flex-grow-1">
+            <h4>Department Case Feedbacks</h4>
+            <span class="mx-4">
+                Period: <strong>@Model.SelectedPeriod.PeriodName</strong>
+                <small>(@Model.SelectedPeriod.SubmissionStartDate.ToString("MMM dd, yyyy") - @Model.SelectedPeriod.SubmissionEndDate.ToString("MMM dd, yyyy"))</small>
+            </span>
+        </span>
+        <span class="justify-content-end gap-2">
+        </span>
+    </div>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-page="/Index">Home</a></li>
+            <li class="breadcrumb-item"><a asp-page="/Submissions/Index">Submissions</a></li>
+            <li class="breadcrumb-item"><a asp-page="/Submissions/DepartmentCaseFeedback/Index">Department Case Feedback</a></li>
+            <li class="breadcrumb-item active">Submissions List</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="container">
+    <div class="my-4 pb-4">
+
+        <div class="filter-toolbar mb-4 d-flex justify-content-between">
+            <span class="d-flex align-items-center gap-2">
+            </span>
+            <div>
+                @{
+                    var submissionValid = Model.SelectedPeriod.SubmissionStartDate <= DateTime.Now && 
+                                          Model.SelectedPeriod.SubmissionEndDate >= DateTime.Now;
+                }
+                @if(submissionValid)
+                {
+                    <a asp-page="/Submissions/DepartmentCaseFeedback/New"
+                        asp-route-periodName="@Model.SelectedPeriod.PeriodName"
+                        class="btn btn-primary">
+                        <i class="bi bi-plus-circle-fill"></i> New
+                    </a>
+                } else {
+                    <button class="btn btn-secondary" aria-disabled="true" disabled>
+                        <i class="bi bi-plus-circle-fill"></i> New
+                    </button>
+                }
+            </div>
+        </div>
+
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+        <table id="dataTable" class="table table-bordered table-striped" style="width: 100%;">
+            <thead>
+                <tr>
+                    <th>No.</th>
+                    <th>Submitted At</th>
+                    <th>Case Department</th>
+                    <th>Score</th>
+                    <th>Incident Date/Time</th>
+                    <th>Ward</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if(Model.ExistingCaseFeedbackSubmissions.Any())
+                {
+                    var lineNumber = 0;
+                    @foreach(var submission in Model.ExistingCaseFeedbackSubmissions)
+                    {
+                        lineNumber += 1;
+                        <tr class="text-center">
+                            <td>
+                                <strong>@lineNumber</strong>
+                            </td>
+                            <td>
+                                <strong>@submission.SubmittedAt.ToString("dd MMM, yyyy hh:mm tt")</strong>
+                            </td>
+                            <td class="text-danger">
+                                @submission.CaseDepartment.DepartmentName
+                            </td>
+                            <td class="text-danger">
+                                <strong>@submission.NegativeScoreValue</strong>
+                            </td>
+                            <td>
+                                <strong>@submission.IncidentAt.ToLocalTime().ToString("dd MMM, yyyy hh:mm tt")</strong>
+                            </td>
+                            <td>
+                                @submission.WardName
+                            </td>
+
+                            <td class="">
+                                @* <a asp-page="View"
+                                    asp-route-lookupId="@submission.LookupId"
+                                    asp-route-returnUrl="@HttpContext.Request.Path"
+                                    class="btn__actionButtons btn btn-sm btn-outline-primary my-2 my-lg-0 me-2">
+                                    <i class="bi bi-pencil-square"></i> View
+                                </a> *@
+
+
+                                @* ----------ONLY ALLOW EDIT WITHIN TODAY---------- *@
+                                @if(submission.SubmittedAt.ToLocalTime().Date == DateTime.Now.Date)
+                                {
+                                    <a asp-page="Edit"
+                                        asp-route-lookupId="@submission.LookupId"
+                                        asp-route-periodName="@Model.SelectedPeriodName"
+                                        class="btn__actionButtons 
+                                                btn btn-sm btn-outline-success
+                                                my-2 my-lg-0 me-2">
+                                        <i class="bi bi-pencil-square"></i> Edit
+                                    </a>
+                                } else {
+                                    <button class="btn__actionButtons 
+                                            btn btn-sm btn-outline-secondary
+                                            my-2 my-lg-0 me-2" aria-disabled="true" disabled>
+                                        <i class="bi bi-pencil-square"></i> Edit
+                                    </button>
+                                }
+                             
+                                    @* asp-route-returnUrl="@HttpContext.Request.Path" *@
+                                @* <a asp-page="Delete"
+                                    asp-route-lookupId="@submission.LookupId"
+                                    asp-route-returnUrl="@HttpContext.Request.Path"
+                                    class="btn__actionButtons btn btn-sm btn-outline-danger my-2 my-lg-0 me-2">
+                                    <i class="bi bi-pencil-square"></i> Delete
+                                </a> *@
+                            </td>
+                        </tr>
+                    }
+                }
+                @* else
+                {
+                    <span class="text-success">No submissions yet.</span>
+                } *@
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        new DataTable('#dataTable', {
+            paging: false,
+            info: false,
+            searching: false,
+            language: { emptyTable: "No submissions yet."},
+            initComplete: function() {
+                $('thead th').addClass('text-light text-center ');
+                $('thead th').addClass('bg-brand-color');
+            }
+        });
+    </script>
+}

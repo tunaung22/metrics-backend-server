@@ -15,5 +15,5 @@ public partial class KpiSubmissionPeriod : IAuditColumn
     public List<KpiSubmission> KpiSubmissions { get; set; } = [];
     public List<KeyKpiSubmission> KeyKpiSubmissions { get; set; } = [];
     public List<DepartmentKeyMetric> DepartmentKeyMetrics { get; set; } = [];
-
+    public List<CaseFeedbackSubmission> CaseFeedbackSubmissions { get; set; } = [];
 }

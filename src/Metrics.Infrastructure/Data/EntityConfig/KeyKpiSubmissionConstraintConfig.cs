@@ -13,6 +13,7 @@ public class KeyKpiSubmissionConstraintConfig : IEntityTypeConfiguration<KeyKpiS
 
         // ===== Index =====
         builder.HasKey(e => e.Id);
+        builder.HasIndex(e => e.LookupId).IsUnique();
         builder
             .HasIndex(e => new
             {

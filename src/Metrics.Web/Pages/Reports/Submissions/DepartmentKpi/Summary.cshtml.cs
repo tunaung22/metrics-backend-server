@@ -404,7 +404,7 @@ public class SummaryModel : PageModel
                 return File(
                     memoryStream,
                     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                    $"Report-All-{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.xlsx" // Added .xlsx extension
+                    $"Report_DepartmentKPI_All_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.xlsx" // Added .xlsx extension
                 );
             }
             else if (Group?.ToLower() != "all" && UserGroupScoreSubmissionsReports.Any())
@@ -416,7 +416,7 @@ public class SummaryModel : PageModel
                 return File(
                     memoryStream,
                     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                    $"{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.xlsx" // Added .xlsx extension
+                    $"Report_DepartmentKPI_{Group}_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.xlsx" // Added .xlsx extension
                 );
             }
         }

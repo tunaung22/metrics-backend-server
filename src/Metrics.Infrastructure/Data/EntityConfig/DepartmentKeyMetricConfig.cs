@@ -13,6 +13,7 @@ public class DepartmentKeyMetricConfig : IEntityTypeConfiguration<DepartmentKeyM
 
         // ===== Index =====
         builder.HasKey(e => e.Id);
+        builder.HasIndex(e => e.DepartmentKeyMetricCode).IsUnique();
         builder
             .HasIndex(e => new
             {

@@ -11,18 +11,6 @@ namespace Metrics.Web.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.RenameIndex(
-                name: "ix_user_titles_title_name",
-                schema: "metrics",
-                table: "user_titles",
-                newName: "ix_user_titles_group_name");
-
-            migrationBuilder.RenameIndex(
-                name: "ix_user_titles_title_code",
-                schema: "metrics",
-                table: "user_titles",
-                newName: "ix_user_titles_group_code");
-
-            migrationBuilder.RenameIndex(
                 name: "ix_kpi_submissions_kpi_submission_period_id_department_id_appl",
                 schema: "metrics",
                 table: "kpi_submissions",
@@ -56,18 +44,6 @@ namespace Metrics.Web.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.RenameIndex(
-                name: "ix_user_titles_group_name",
-                schema: "metrics",
-                table: "user_titles",
-                newName: "ix_user_titles_title_name");
-
-            migrationBuilder.RenameIndex(
-                name: "ix_user_titles_group_code",
-                schema: "metrics",
-                table: "user_titles",
-                newName: "ix_user_titles_title_code");
-
             migrationBuilder.RenameIndex(
                 name: "ix_kpi_submissions_period_id_dpt_id_user_id",
                 schema: "metrics",

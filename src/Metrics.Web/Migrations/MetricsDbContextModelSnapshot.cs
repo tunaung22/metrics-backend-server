@@ -266,6 +266,14 @@ namespace Metrics.Web.Migrations
                         .HasDefaultValue(false)
                         .HasColumnName("is_deleted");
 
+                    b.Property<long>("KpiSubmissionPeriodId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("kpi_submission_period_id");
+
+                    b.Property<Guid>("LookupId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("lookup_id");
+
                     b.Property<DateTimeOffset>("ModifiedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("modified_at");
@@ -312,6 +320,13 @@ namespace Metrics.Web.Migrations
 
                     b.HasIndex("CaseDepartmentId")
                         .HasDatabaseName("ix_case_feedback_submissions_case_department_id");
+
+                    b.HasIndex("KpiSubmissionPeriodId")
+                        .HasDatabaseName("ix_case_feedback_submissions_kpi_submission_period_id");
+
+                    b.HasIndex("LookupId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_case_feedback_submissions_lookup_id");
 
                     b.HasIndex("SubmitterId")
                         .HasDatabaseName("ix_case_feedback_submissions_submitter_id");
@@ -408,6 +423,10 @@ namespace Metrics.Web.Migrations
 
                     b.HasIndex("DepartmentId")
                         .HasDatabaseName("ix_department_key_metrics_department_id");
+
+                    b.HasIndex("DepartmentKeyMetricCode")
+                        .IsUnique()
+                        .HasDatabaseName("ix_department_key_metrics_department_key_metric_code");
 
                     b.HasIndex("KeyMetricId")
                         .HasDatabaseName("ix_department_key_metrics_key_metric_id");
@@ -529,6 +548,10 @@ namespace Metrics.Web.Migrations
 
                     b.HasIndex("DepartmentKeyMetricId")
                         .HasDatabaseName("ix_key_kpi_submission_constraints_department_key_metric_id");
+
+                    b.HasIndex("LookupId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_key_kpi_submission_constraints_lookup_id");
 
                     b.HasIndex("DepartmentId", "DepartmentKeyMetricId")
                         .IsUnique()
@@ -760,7 +783,7 @@ namespace Metrics.Web.Migrations
                     b.ToTable("kpi_submission_periods", "metrics");
                 });
 
-            modelBuilder.Entity("Metrics.Application.Domains.UserGroup", b =>
+            modelBuilder.Entity("Metrics.Application.Domains.UserTitle", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -777,15 +800,6 @@ namespace Metrics.Web.Migrations
                         .HasColumnType("text")
                         .HasColumnName("description");
 
-                    b.Property<Guid>("GroupCode")
-                        .HasColumnType("uuid")
-                        .HasColumnName("title_code");
-
-                    b.Property<string>("GroupName")
-                        .IsRequired()
-                        .HasColumnType("citext")
-                        .HasColumnName("title_name");
-
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean")
                         .HasColumnName("is_deleted");
@@ -794,16 +808,25 @@ namespace Metrics.Web.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("modified_at");
 
+                    b.Property<Guid>("TitleCode")
+                        .HasColumnType("uuid")
+                        .HasColumnName("title_code");
+
+                    b.Property<string>("TitleName")
+                        .IsRequired()
+                        .HasColumnType("citext")
+                        .HasColumnName("title_name");
+
                     b.HasKey("Id")
                         .HasName("pk_user_titles");
 
-                    b.HasIndex("GroupCode")
+                    b.HasIndex("TitleCode")
                         .IsUnique()
-                        .HasDatabaseName("ix_user_titles_group_code");
+                        .HasDatabaseName("ix_user_titles_title_code");
 
-                    b.HasIndex("GroupName")
+                    b.HasIndex("TitleName")
                         .IsUnique()
-                        .HasDatabaseName("ix_user_titles_group_name");
+                        .HasDatabaseName("ix_user_titles_title_name");
 
                     b.ToTable("user_titles", "metrics");
                 });
@@ -950,7 +973,7 @@ namespace Metrics.Web.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_application_users_departments_department_id");
 
-                    b.HasOne("Metrics.Application.Domains.UserGroup", "UserTitle")
+                    b.HasOne("Metrics.Application.Domains.UserTitle", "UserTitle")
                         .WithMany("ApplicationUsers")
                         .HasForeignKey("UserTitleId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -971,6 +994,13 @@ namespace Metrics.Web.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_case_feedback_submissions_departments_case_department_id");
 
+                    b.HasOne("Metrics.Application.Domains.KpiSubmissionPeriod", "TargetPeriod")
+                        .WithMany("CaseFeedbackSubmissions")
+                        .HasForeignKey("KpiSubmissionPeriodId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_case_feedback_submissions_kpi_submission_periods_kpi_submis");
+
                     b.HasOne("Metrics.Application.Domains.ApplicationUser", "SubmittedBy")
                         .WithMany("CaseFeedbackSubmissions")
                         .HasForeignKey("SubmitterId")
@@ -981,6 +1011,8 @@ namespace Metrics.Web.Migrations
                     b.Navigation("CaseDepartment");
 
                     b.Navigation("SubmittedBy");
+
+                    b.Navigation("TargetPeriod");
                 });
 
             modelBuilder.Entity("Metrics.Application.Domains.DepartmentKeyMetric", b =>
@@ -1056,14 +1088,14 @@ namespace Metrics.Web.Migrations
             modelBuilder.Entity("Metrics.Application.Domains.KeyKpiSubmissionConstraint", b =>
                 {
                     b.HasOne("Metrics.Application.Domains.Department", "Department")
-                        .WithMany()
+                        .WithMany("KeyKpiSubmissionConstraints")
                         .HasForeignKey("DepartmentId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_key_kpi_submission_constraints_departments_department_id");
 
                     b.HasOne("Metrics.Application.Domains.DepartmentKeyMetric", "DepartmentKeyMetric")
-                        .WithMany()
+                        .WithMany("KeyKpiSubmissionConstraints")
                         .HasForeignKey("DepartmentKeyMetricId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
@@ -1206,11 +1238,15 @@ namespace Metrics.Web.Migrations
 
                     b.Navigation("DepartmentScores");
 
+                    b.Navigation("KeyKpiSubmissionConstraints");
+
                     b.Navigation("KeyKpiSubmissions");
                 });
 
             modelBuilder.Entity("Metrics.Application.Domains.DepartmentKeyMetric", b =>
                 {
+                    b.Navigation("KeyKpiSubmissionConstraints");
+
                     b.Navigation("KeyKpiSubmissionItems");
 
                     b.Navigation("KeyKpiSubmissions");
@@ -1232,6 +1268,8 @@ namespace Metrics.Web.Migrations
 
             modelBuilder.Entity("Metrics.Application.Domains.KpiSubmissionPeriod", b =>
                 {
+                    b.Navigation("CaseFeedbackSubmissions");
+
                     b.Navigation("DepartmentKeyMetrics");
 
                     b.Navigation("KeyKpiSubmissions");
@@ -1239,7 +1277,7 @@ namespace Metrics.Web.Migrations
                     b.Navigation("KpiSubmissions");
                 });
 
-            modelBuilder.Entity("Metrics.Application.Domains.UserGroup", b =>
+            modelBuilder.Entity("Metrics.Application.Domains.UserTitle", b =>
                 {
                     b.Navigation("ApplicationUsers");
                 });

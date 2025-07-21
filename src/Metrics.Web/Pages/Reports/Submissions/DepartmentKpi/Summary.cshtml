@@ -33,16 +33,22 @@
     <div class="bg-light p-4 rounded-2">
         <div class="filter-toolbar mb-4 d-flex justify-content-between">
             <span class="d-flex gap-4">
-                <h3>@Model.SelectedPeriod.PeriodName</h3>
                 <form id="form__groupSelection" method="get" class="">
-                        <select 
-                            asp-for="Group"
-                            asp-items="Model.UserGroupListItems"
-                            onchange="this.form.submit()"
-                            class="form-select"
-                            aria-label="Select User Group">
-                                <option value="All">All</option>
-                        </select>
+                    <span class="d-flex align-items-center">
+                        <div class="col me-4">
+                            <label for="Group" class="form-label">User Group</label>
+                        </div>
+                        <div class="col-auto">
+                            <select 
+                                asp-for="Group"
+                                asp-items="Model.UserGroupListItems"
+                                onchange="this.form.submit()"
+                                class="form-select"
+                                aria-label="Select User Group">
+                                    <option value="All">All</option>
+                            </select>
+                        </div>
+                    </span>
                 </form>
             </span>
             <div class="exportData">

@@ -5,6 +5,9 @@ namespace Metrics.Application.Domains;
 public class CaseFeedbackSubmission : IAuditColumn, ISoftDelete
 {
     public long Id { get; set; }
+    public Guid LookupId { get; set; }
+    public long KpiSubmissionPeriodId { get; set; }
+    public KpiSubmissionPeriod TargetPeriod { get; set; } = null!;
     public DateTimeOffset SubmittedAt { get; set; }
     public DateOnly SubmissionDate { get; set; } // Generated Field
     public decimal NegativeScoreValue { get; set; }
@@ -28,7 +31,7 @@ public class CaseFeedbackSubmission : IAuditColumn, ISoftDelete
     public string? Comments { get; set; } = string.Empty; // Additional Notes
 
     public bool IsDeleted { get; set; }
-    public DateTimeOffset CreatedAt { get; set; }
+    public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
     public DateTimeOffset ModifiedAt { get; set; }
 
     // Collection Navigational Properties

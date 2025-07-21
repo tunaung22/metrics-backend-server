@@ -1,8 +1,4 @@
 ﻿START TRANSACTION;
-ALTER INDEX metrics.ix_user_titles_group_name RENAME TO ix_user_titles_title_name;
-
-ALTER INDEX metrics.ix_user_titles_group_code RENAME TO ix_user_titles_title_code;
-
 ALTER INDEX metrics.ix_kpi_submissions_period_id_dpt_id_user_id RENAME TO ix_kpi_submissions_kpi_submission_period_id_department_id_appl;
 
 ALTER INDEX metrics.ix_key_kpi_submissions_period_id_dpt_id_user_id RENAME TO ix_key_kpi_submissions_score_submission_period_id_department_i;
@@ -14,7 +10,7 @@ ALTER INDEX metrics.ix_key_kpi_submission_constraints_dpt_id_dkm_id RENAME TO ix
 ALTER INDEX metrics.ix_department_key_metrics_period_id_dpt_id_metric_id RENAME TO ix_department_key_metrics_kpi_submission_period_id_department_;
 
 DELETE FROM metrics.__ef_migrations_history
-WHERE migration_id = '20250715071036_005_UpdateIndexNames';
+WHERE migration_id = '20250717162016_005_UpdateIndexNames';
 
 COMMIT;
 

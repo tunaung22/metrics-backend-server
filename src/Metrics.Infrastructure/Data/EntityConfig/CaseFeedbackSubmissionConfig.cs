@@ -1,6 +1,7 @@
 using Metrics.Application.Domains;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Npgsql.EntityFrameworkCore.PostgreSQL.ValueGeneration;
 
 namespace Metrics.Infrastructure.Data.EntityConfig;
 
@@ -12,12 +13,18 @@ public class CaseFeedbackSubmissionConfig : IEntityTypeConfiguration<CaseFeedbac
 
         // ===== Index =====
         builder.HasKey(e => e.Id);
+        builder.HasIndex(e => e.LookupId).IsUnique();
 
         // ===== Columns =====
         builder.Property(e => e.Id)
             .HasColumnName("id")
             .HasColumnType("bigint")
             .UseHiLo("case_feedback_submissions_id_seq");
+        builder.Property(e => e.LookupId)
+            .HasColumnName("lookup_id")
+            .HasColumnType("uuid")
+            .HasValueGenerator<NpgsqlSequentialGuidValueGenerator>()
+            .IsRequired();
         builder.Property(e => e.SubmittedAt)
             .HasColumnName("submitted_at")
             .HasColumnType("timestamp with time zone")
@@ -77,6 +84,11 @@ public class CaseFeedbackSubmissionConfig : IEntityTypeConfiguration<CaseFeedbac
 
 
         // ===== Relationships =====
+        builder.HasOne(e => e.TargetPeriod)
+            .WithMany(e => e.CaseFeedbackSubmissions)
+            .HasForeignKey(e => e.KpiSubmissionPeriodId)
+            .OnDelete(DeleteBehavior.Restrict)
+            .IsRequired();
         builder.HasOne(e => e.SubmittedBy)
             .WithMany(e => e.CaseFeedbackSubmissions)
             .HasForeignKey(e => e.SubmitterId)

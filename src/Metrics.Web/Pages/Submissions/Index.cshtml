@@ -23,8 +23,8 @@
     </div>
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
-            @* <li class="breadcrumb-item"><a asp-page="/Index">Home</a></li> *@
-            @* <li class="breadcrumb-item active">/ Home</li> *@
+            <li class="breadcrumb-item"><a asp-page="/Index">Home</a></li>
+            <li class="breadcrumb-item active">Submissions</li>
         </ol>
     </nav>
 </div>
@@ -42,7 +42,8 @@
                         <p class="card-text">Submit department performance scores</p>
                         <div class="mt-auto text-end">
                             <a asp-page="./DepartmentScores/Index" 
-                                class="btn btn-secondary">Submissions</a>
+                                class="btn btn-secondary">
+                                    <i class="bi bi-ui-checks"></i> Submissions</a>
                         </div>
                     </div>
                 </div>
@@ -56,10 +57,11 @@
                         <strong>Department Metric Score (KEY)</strong>
                     </div>
                     <div class="card-body d-flex flex-column">
-                        <p class="card-text">Submit department performance metric scores based on key metrics</p>
+                        <p class="card-text">Submit department performance metric scores by metrics</p>
                         <div class="mt-auto text-end">
                             <a asp-page="./DepartmentMetricScores/Index" 
-                                class="btn btn-secondary">Submissions</a>
+                                class="btn btn-secondary">
+                                    <i class="bi bi-ui-checks"></i> Submissions</a>
                         </div>
                     </div>
                 </div>
@@ -68,15 +70,16 @@
 
         @if(isCaseFeedbackScoreSubmitter) {
             <div class="d-flex col-xs-12 col-md-4">
-                <div class="card w-100 department-case-feedback-score">
+                <div class="card w-100 department-case-feedback">
                     <div class="card-header">
-                        <strong>Department Case Feedback Score</strong>
+                        <strong>Department Case Feedback</strong>
                     </div>
                     <div class="card-body d-flex flex-column">
-                        <p class="card-text">Submit department case feedback scores</p>
+                        <p class="card-text">Submit department case feedback</p>
                         <div class="mt-auto text-end">
-                            <a asp-page="./DepartmentMetricScores/Index" 
-                                class="btn btn-secondary">Submissions</a>
+                            <a asp-page="./DepartmentCaseFeedback/Index" 
+                                class="btn btn-secondary">
+                                    <i class="bi bi-ui-checks"></i> Submissions</a>
                         </div>
                     </div>
                 </div>
@@ -89,48 +92,38 @@
 @section Styles {
     <style>
         .department-score .card-header {
-            @* color: rgb(3, 91, 73); *@
-            color: rgb(22, 125, 132);
-        }
-        .department-score .card-body {
+            color: var(--metric-green-color);
         }
         .department-score .card-body .btn {
-            background: rgb(22, 125, 132);
+            background: var(--metric-green-color);
             border: 0;
         }
         .department-score .card-body .btn:hover {
-            background: rgb(3, 91, 73);
+            background: var(--metric-deepgreen-color);
             border: 0;
         }
         
         .department-metric-score .card-header {
-            @* color: rgb(91, 3, 48); *@
-            color: rgb(163, 33, 115);
-        }
-        .department-metric-score .card-body {
+            color: var(--metric-red-color);
         }
         .department-metric-score .card-body .btn {
-            background: rgb(163, 33, 115);
+            background: var(--metric-red-color);
             border: 0;
         }
         .department-metric-score .card-body .btn:hover {
-            background: rgb(91, 3, 48);
+            background: var(--metric-deepred-color);
             border: 0;
         }
         
-        
-        .department-case-feedback-score .card-header {
-            @* color: rgb(3, 16, 91); *@
-            color: rgb(33, 63, 163);
+        .department-case-feedback .card-header {
+            color: var(--metric-blue-color);
         }
-        .department-case-feedback-score .card-body {
-        }
-        .department-case-feedback-score .card-body .btn {
-            background: rgb(33, 63, 163);
+        .department-case-feedback .card-body .btn {
+            background: var(--metric-blue-color);
             border: 0;
         }
-        .department-case-feedback-score .card-body .btn:hover {
-            background: rgb(3, 16, 91);
+        .department-case-feedback .card-body .btn:hover {
+            background: var(--metric-deepblue-color);
             border: 0;
         }
     </style>
