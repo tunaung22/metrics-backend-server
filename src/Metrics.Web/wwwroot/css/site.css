@@ -6,6 +6,13 @@
   /* --primary-hover-color: #0269f0 !important; */
   --outline-primary-color: #3465a4;
   --light-color: #f0f0f0;
+
+  --metric-green-color: rgb(22, 125, 132);
+  --metric-deepgreen-color: rgb(3, 91, 73);
+  --metric-red-color: rgb(163, 33, 115);
+  --metric-deepred-color: rgb(91, 3, 48);
+  --metric-blue-color: rgb(33, 63, 163);
+  --metric-deepblue-color: rgb(3, 16, 91);
 }
 
 /*
@@ -49,19 +56,14 @@ footer {
   background: var(--brand-color) !important;
 }
 
-#main-content {
-  /* 100% of the viewport height */
-  /* min-height: 90vh;  */
-}
-
-.btn:focus,
+/* .btn:focus,
 .btn:active:focus,
 .btn-link.nav-link:focus,
 .form-control:focus,
-.form-check-input:focus {
-  /* box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb; */
-  /* box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25em var(--brand-color); */
-}
+.form-check-input:focus { */
+/* box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb; */
+/* box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25em var(--brand-color); */
+/* } */
 
 a {
   color: var(--brand-color);
@@ -156,6 +158,23 @@ ul#metrics__main-navbar .nav-item .nav-link:hover {
 }
 
 /* ========== Custom ======================================================== */
+
+/* -----DATATABLES custom setting----- */
+.dt-column-title {
+  /* add more to padding right for table title */
+  padding-right: 0.5em;
+}
+
+/* -----ALIGN----- */
+.valign-middle {
+  vertical-align: middle;
+}
+
+/* -----BUTTON----- */
+.btn__actionButtons {
+  width: 6em;
+}
+/* -----BUTTON (go to top)----- */
 button#goToTop {
   display: none;
   position: fixed;
@@ -169,15 +188,12 @@ button#goToTop {
   z-index: 10;
 }
 
+/* -----RADIO Element----- */
 .radio__kpiscore {
   user-select: none;
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
-}
-
-.btn__actionButtons {
-  width: 6em;
 }
 
 .no-select {
@@ -187,6 +203,7 @@ button#goToTop {
   -ms-user-select: none; /* For Internet Explorer/Edge */
 }
 
+/* -----CARD----- */
 .card .list-group-item > a {
   color: var(--brand-color);
   /* color: #003e84; */

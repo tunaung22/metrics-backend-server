@@ -13,12 +13,16 @@ public class DepartmentKeyMetricConfig : IEntityTypeConfiguration<DepartmentKeyM
 
         // ===== Index =====
         builder.HasKey(e => e.Id);
-        builder.HasIndex(e => new
-        {
-            e.KpiSubmissionPeriodId,
-            e.DepartmentId,
-            e.KeyMetricId
-        }).IsUnique();
+        builder.HasIndex(e => e.DepartmentKeyMetricCode).IsUnique();
+        builder
+            .HasIndex(e => new
+            {
+                e.KpiSubmissionPeriodId,
+                e.DepartmentId,
+                e.KeyMetricId
+            })
+            .HasDatabaseName("ix_department_key_metrics_period_id_dpt_id_metric_id")
+            .IsUnique();
 
         // ===== Columns =====
         builder.Property(e => e.Id)
@@ -43,7 +47,7 @@ public class DepartmentKeyMetricConfig : IEntityTypeConfiguration<DepartmentKeyM
 
         // ===== Relationships =====
         builder.HasOne(e => e.KpiSubmissionPeriod)
-            .WithMany()
+            .WithMany(e => e.DepartmentKeyMetrics)
             .HasForeignKey(e => e.KpiSubmissionPeriodId)
             .OnDelete(DeleteBehavior.Restrict)
             .IsRequired();

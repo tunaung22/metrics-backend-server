@@ -254,7 +254,8 @@ builder.Services
     .AddScoped<IKeyKpiSubmissionService, KeyKpiSubmissionService>()
     .AddScoped<IKeyMetricService, KeyMetricService>()
     .AddScoped<IDepartmentKeyMetricService, DepartmentKeyMetricService>()
-    .AddScoped<IKeyKpiSubmissionConstraintService, KeyKpiSubmissionConstraintService>();
+    .AddScoped<IKeyKpiSubmissionConstraintService, KeyKpiSubmissionConstraintService>()
+    .AddScoped<ICaseFeedbackSubmissionService, CaseFeedbackSubmissionService>();
 
 
 // ========== Exception Handling ==============================

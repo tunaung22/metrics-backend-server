@@ -1,0 +1,16 @@
+﻿START TRANSACTION;
+ALTER INDEX metrics.ix_kpi_submissions_kpi_submission_period_id_department_id_appl RENAME TO ix_kpi_submissions_period_id_dpt_id_user_id;
+
+ALTER INDEX metrics.ix_key_kpi_submissions_score_submission_period_id_department_i RENAME TO ix_key_kpi_submissions_period_id_dpt_id_user_id;
+
+ALTER INDEX metrics.ix_key_kpi_submission_items_key_kpi_submission_id_department_k RENAME TO ix_key_kpi_submission_items_kks_id_dkm_id;
+
+ALTER INDEX metrics.ix_key_kpi_submission_constraints_department_id_department_key RENAME TO ix_key_kpi_submission_constraints_dpt_id_dkm_id;
+
+ALTER INDEX metrics.ix_department_key_metrics_kpi_submission_period_id_department_ RENAME TO ix_department_key_metrics_period_id_dpt_id_metric_id;
+
+INSERT INTO metrics.__ef_migrations_history (migration_id, product_version)
+VALUES ('20250717162016_005_UpdateIndexNames', '9.0.2');
+
+COMMIT;
+

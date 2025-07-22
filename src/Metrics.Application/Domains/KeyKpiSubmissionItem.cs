@@ -16,5 +16,6 @@ public class KeyKpiSubmissionItem : IAuditColumn
 
     // Reference Navigational Properties
     public KeyKpiSubmission ParentSubmission { get; set; } = null!;
-    public DepartmentKeyMetric TargetMetric { get; set; } = null!;
+    public DepartmentKeyMetric DepartmentKeyMetric { get; set; } = null!;
+
 }

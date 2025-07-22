@@ -17,14 +17,15 @@ public class KeyKpiSubmissionItemConfig : IEntityTypeConfiguration<KeyKpiSubmiss
             {
                 e.KeyKpiSubmissionId,
                 e.DepartmentKeyMetricId
-            }).IsUnique();
+            })
+            .HasDatabaseName("ix_key_kpi_submission_items_kks_id_dkm_id")
+            .IsUnique();
 
         // ===== Columns =====
         builder.Property(e => e.Id)
             .HasColumnName("id")
             .HasColumnType("bigint")
             .UseHiLo("key_kpi_submission_items_id_seq");
-        // .UseHiLo();
         builder.Property(e => e.ScoreValue)
             .HasColumnName("score_value")
             .HasColumnType("decimal(4,2)")
@@ -45,7 +46,7 @@ public class KeyKpiSubmissionItemConfig : IEntityTypeConfiguration<KeyKpiSubmiss
             .HasForeignKey(e => e.KeyKpiSubmissionId)
             .OnDelete(DeleteBehavior.Restrict)
             .IsRequired();
-        builder.HasOne(e => e.TargetMetric)
+        builder.HasOne(e => e.DepartmentKeyMetric)
             .WithMany(e => e.KeyKpiSubmissionItems)
             .HasForeignKey(e => e.DepartmentKeyMetricId)
             .OnDelete(DeleteBehavior.Restrict)
@@ -57,5 +58,12 @@ public class KeyKpiSubmissionItemConfig : IEntityTypeConfiguration<KeyKpiSubmiss
             "ck_kpi_submissions_kpi_score_gt_0",
             "score_value >= 0"
         ));
+
+
+        // **The property 'KeyKpiSubmission.KeyMetricId' was created in shadow state because there are no eligible CLR members with a matching name.
+        // EF Core detects a potential relationship path but can't find the explicit property in the class
+        // KeyKpiSubmissionItem → DepartmentKeyMetric → KeyMetric
+
+        // builder.Ignore("KeyMetricId");
     }
 }

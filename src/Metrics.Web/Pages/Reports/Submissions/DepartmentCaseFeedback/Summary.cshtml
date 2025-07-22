@@ -1,0 +1,222 @@
+﻿@page "/Reports/Submissions/Department-Case-Feedback/{periodName}"
+@model Metrics.Web.Pages.Reports.Submissions.DepartmentCaseFeedback.SummaryModel
+@{
+    ViewData["Title"] = "Score Submission Report";
+}
+
+
+<div class="sectionTitle">
+    <div class="d-flex align-items-center my-2">
+        <span class="d-flex align-items-center flex-grow-1">
+            <h4>Department Case Feedback Report</h4>
+            <span class="mx-4">
+                Period: <strong>@Model.SelectedPeriod.PeriodName</strong>
+                <small>(@Model.SelectedPeriod.SubmissionStartDate.ToString("MMM dd, yyyy") - @Model.SelectedPeriod.SubmissionEndDate.ToString("MMM dd, yyyy"))</small>
+            </span>
+        </span>
+        <span class="justify-content-end gap-2">
+        </span>
+    </div>
+
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-page="/Dashboard/Index">Dashboard</a></li>
+            <li class="breadcrumb-item"><a asp-page="/Reports/Submissions/Index">Reports</a></li>
+            <li class="breadcrumb-item"><a asp-page="/Reports/Submissions/DepartmentCaseFeedback/Index">Department Case Feedback</a></li>
+            <li class="breadcrumb-item active">Summary</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="container-fluid">
+    <div class="bg-light p-4 rounded-2">
+
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger text-danger" role="alert"></div>
+
+        <div class="filter-toolbar mb-4 d-flex justify-content-between">
+            <span class="d-flex gap-4">
+                <form id="form__groupSelection" method="get">
+                    <span class="d-flex align-items-center">
+                        <div class="col me-4">
+                            <label for="Group" class="form-label">User Group</label>
+                        </div>
+                        <div class="col-auto">
+                            <select 
+                                asp-for="Group"
+                                asp-items="Model.UserGroupListItems"
+                                onchange="this.form.submit()"
+                                class="form-select"
+                                aria-label="Select User Group">
+                                    <option value="All">All</option>
+                            </select>
+                        </div>
+                    </span>
+                </form>
+            </span>
+            <div class="exportData">
+                @{string groupName = "";}
+                @{
+                    if(Model.AllUserGroupSubmissionsReports.Any())
+                    {
+                        groupName = "all";
+                    }
+                    if(Model.SingleUserGroupSubmissionsReports.Any())
+                    {
+                        groupName = Model.Group ?? string.Empty;
+                    }
+                }
+                <form method="post" asp-page-handler="ExportExcel">
+                    <input type="hidden" asp-for="Group" />
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-file-earmark-spreadsheet"></i> Export</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table id="reportTable" class="table table-bordered table-striped">
+                <thead>
+                    @if(Model.SingleUserGroupSubmissionsReports.Any() 
+                        || Model.AllUserGroupSubmissionsReports.Any())
+                    {
+                        if(string.IsNullOrEmpty(Model.Group) 
+                            || Model.Group.Trim().ToLower() == "all")
+                        {
+                            @* -----ALL----- *@
+                            <tr>
+                                @* <th class="px-4" rowspan="2">Period</th> *@
+                                <th class="colCaseDepartment px-4" rowspan="2">Case Departments</th>
+                                @foreach(var g in Model.UserGroups)
+                                {
+                                    <th class="px-4 no-sort" colspan="2">@g.GroupName</th>
+                                }
+                                <th class="px-4" rowspan="2">Total Submissions</th>
+                                <th class="px-4" rowspan="2">Total Score</th>
+                                <th class="px-4" rowspan="2">KPI Score</th>
+                            </tr>
+                            <tr>
+                                @foreach(var g in Model.UserGroups)
+                                {
+                                    <th class="px-4">Submissions</th>
+                                    <th class="px-4">Score</th>
+                                }
+                            </tr>
+                        }
+                        else
+                        {
+                            @* -----SINGLE----- *@
+                            <tr>
+                                @* <th class="px-4">Period</th> *@
+                                <th class="px-4">Departments</th>
+                                <th class="px-4">Submissions</th>
+                                <th class="px-4">Score</th>
+                                <th class="px-4">KPI Score</th>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <th>No Data</th>
+                        </tr>
+                    }
+                </thead>
+                <tbody>
+                    @* ---------- ALL USER GROUP ---------- *@
+                    @if(string.IsNullOrEmpty(Model.Group)
+                        || Model.Group.Trim().Equals("all", StringComparison.CurrentCultureIgnoreCase))
+                    {
+                        @if(Model.AllUserGroupSubmissionsReports.Any() && Model.AllUserGroupSubmissionsReports.Count > 0)
+                        {
+                            foreach(var r in Model.AllUserGroupSubmissionsReports)
+                            {
+                                <tr>
+                                    <td>@r.CaseDepartmentName</td>
+                                    @foreach(var g in r.UserGroupSubmissions)
+                                    {
+                                        <td class="pe-4 @(g.GroupName + "_groupTotalSubmissions")">@g.TotalSubmissions.ToString("0")</td>
+                                        <td class="pe-4 _groupTotalScore @(g.GroupName + "_groupTotalScore")">@g.TotalScore.ToString("0.00")</td>
+                                    }
+                                    <td class="pe-4">@r.TotalSubmissions.ToString("0")</td>
+                                    <td class="px-4">@r.TotalScore.ToString("0.00")</td>
+                                    <td class="px-4">
+                                        <strong>
+                                            @r.KpiScore.ToString("0.00")
+                                        </strong>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    }
+                    else
+                    {
+                        @* ---------- SINGLE USER GROUP ---------- *@
+                        foreach(var r in Model.SingleUserGroupSubmissionsReports)
+                        {
+                            <tr>
+                                <td>@r.CaseDepartmentName</td>
+                                @* <td>@r.UserGroupName</td> *@
+                                <td class="pe-4">@r.TotalSubmissions.ToString("0")</td>
+                                <td class="pe-4">@r.TotalScore.ToString("0.00")</td>
+                                <td class="px-4"><strong>@r.KpiScore.ToString("0.00")</strong></td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!--Modal Dialog -->
+<div id="dialog_textDetail" class="modal" tabindex="-1" aria-labelledby="dialogTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="dialogTitle"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p id="dialogContent"></p>
+            </div>
+             <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+    </style>
+}
+
+@section Scripts {
+    <script>
+        $(function() {
+            // ------------------- DATATABLE -----------------------------------
+            new DataTable('#reportTable', {
+                paging: false,
+                info: false,
+                searching: false,
+                autoWidth: true,
+                columnDefs: [
+                    @* { width: "16%", targets: ["colCaseDepartment"] }, *@
+                    @* { width: "6%", targets: ["colScore"] },
+                    { width: "14%", targets: ["colIncidentAt"] },
+                    { width: "10%", targets: ["colWard"] },
+                    { width: "12%", targets: ["colCPINo", "colPatientName"] },
+                    { width: "10%", targets: ["colRoomNo"] },
+                    { width: "10%", targets: ["colActions"] }, *@
+
+                    @* { orderable: false, targets: [0] } *@
+                ],
+                initComplete: function() {
+                    $('#reportTable thead th').addClass('text-light text-center ');
+                    $('#reportTable thead th').addClass('valign-middle bg-brand-color');
+                    @* $('#reportTable tbody td').addClass('valign-middle'); *@
+                }
+            });
+        });
+    </script>
+}

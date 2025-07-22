@@ -1,0 +1,32 @@
+﻿@page "/Submissions/Department-Case-Feedback"
+@model Metrics.Web.Pages.Submissions.DepartmentCaseFeedback.IndexModel
+@using Metrics.Web.Models.PartialViewModels;
+@{
+    ViewData["Title"] = "Department Case Feedbacks";
+}
+
+<div class="sectionTitle">
+    <h3>Department Case Feedbacks</h3>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-page="/Index">Home</a></li>
+            <li class="breadcrumb-item"><a asp-page="/Submissions/Index">Submissions</a></li>
+            <li class="breadcrumb-item active">Department Case Feedbacks</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="container">
+    <div class="bg-light p-4 rounded-2">
+        <partial name="./List/_PeriodList" model="@(new PeriodListPartialModel {
+            @* IncludeScripts = true, *@
+            TableId = "reportTable",
+            LinkBasePage = "/Submissions/DepartmentCaseFeedback",
+            Periods = Model.KpiPeriodList,
+            Buttons = new List<PeriodListButton> {
+                new PeriodListButton { Page = "List", Text = "List" },
+                @* new PeriodListButton { Page = "Detail", Text = "Details" } *@
+            }
+        })" />
+    </div>  
+</div>

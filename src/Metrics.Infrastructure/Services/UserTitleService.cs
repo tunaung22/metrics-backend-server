@@ -68,7 +68,7 @@ public class UserTitleService : IUserTitleService
 
             // return query
             // .Where(t => t.TitleName != "Admin");
-            return query;
+            return query ?? [];
         }
         catch (Exception ex)
         {

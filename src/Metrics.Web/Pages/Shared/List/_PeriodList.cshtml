@@ -1,0 +1,65 @@
+﻿@model PeriodListPartialModel
+@using Metrics.Web.Models.PartialViewModels;
+
+<table id="@Model.TableId" class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Period Name</th>
+            <th>Start Date</th>
+            <th>End Date</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model.Periods.Any())
+        {
+            @foreach(var p in Model.Periods)
+            {
+                <tr class="text-center">
+                    <td>
+                        <strong>@p.PeriodName</strong>
+                    </td>
+                    <td>@p.SubmissionStartDate.ToLocalTime().ToString("MMM dd, yyyy")</td>
+                    <td>@p.SubmissionEndDate.ToLocalTime().ToString("MMM dd, yyyy")</td>
+                    <td>
+                        @foreach (var button in Model.Buttons)
+                        {
+                            <a asp-page="@Model.LinkBasePage/@button.Page" 
+                                asp-route-periodName="@p.PeriodName"
+                                class="btn btn-sm btn-outline-primary my-2 my-lg-0 me-2">
+                                <strong><i class="@button.IconClass"> </i>@button.Text</strong></a>
+                        }
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+
+
+@if (Model.IncludeScripts)
+{
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            // Verify jQuery is available
+            if (window.jQuery) {
+                $(function() {
+                    new DataTable('#@Model.TableId', {
+                        paging: false,
+                        info: false,
+                        searching: false,
+                        autoWidth: true,
+                        columnDefs: [
+                            { width: "20%", targets: [0] },
+                            { orderable: false, targets: [0] }
+                        ],
+                        initComplete: function() {
+                            $('thead th').addClass('text-light text-center ');
+                            $('thead th').addClass('bg-brand-color');
+                        }
+                    });
+                });
+            }
+        });
+    </script>
+}
