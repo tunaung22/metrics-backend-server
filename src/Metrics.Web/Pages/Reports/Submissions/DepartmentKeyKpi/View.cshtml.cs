@@ -1,7 +1,6 @@
 using Metrics.Application.DTOs.KpiSubmissionDtos;
 using Metrics.Application.Interfaces.IServices;
 using Metrics.Web.Models;
-using Metrics.Web.Models.Enums;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
