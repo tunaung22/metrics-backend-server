@@ -80,7 +80,7 @@
     // ---------------------------------------------------
     "[xml]": {
       "editor.defaultFormatter": "redhat.vscode-xml"
-    }
+    },
     // EXCLUDE FILES (hide from explorer)
     // ---------------------------------------------------
     // "files.exclude": {
@@ -93,5 +93,14 @@
     //   "**/CVS": true,
     //   "**/.DS_Store": true
     // }
+    "todo-tree.highlights.customHighlight": {
+      "TODO": {
+        "icon": "info",
+        "gutterIcon": true,
+        "type": "tag",
+        "foreground": "#e7e7e7",
+        "background": "#653f3f",
+      }
+    }
   }
 }
