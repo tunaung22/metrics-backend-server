@@ -1,14 +1,14 @@
-﻿@page "/Reports/Submissions/Department-Key-Kpi/{periodName}"
-@model Metrics.Web.Pages.Reports.Submissions.DepartmentKeyKpi.ViewModel
+﻿@page "/Reports/Submissions/DepartmentKeyKpi/{periodName}"
+@model Metrics.Web.Pages.Reports.Submissions.DepartmentKeyKpi.DetailModel
 @{
-    ViewData["Title"] = "Department Key KPI Report";
+    ViewData["Title"] = "Score Submission Report Details";
 }
 
 
 <div class="sectionTitle">
     <div class="d-flex align-items-center my-2">
         <span class="d-flex align-items-center flex-grow-1">
-            <h4>Department Key KPI Report</h4>
+            <h4>Department Case Feedback Details</h4>
             <span class="mx-4">
                 Period: <strong>@Model.SelectedPeriod.PeriodName</strong>
                 <small>(@Model.SelectedPeriod.SubmissionStartDate.ToString("MMM dd, yyyy") - @Model.SelectedPeriod.SubmissionEndDate.ToString("MMM dd, yyyy"))</small>
@@ -22,145 +22,86 @@
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a asp-page="/Dashboard/Index">Dashboard</a></li>
             <li class="breadcrumb-item"><a asp-page="/Reports/Submissions/Index">Reports</a></li>
-            <li class="breadcrumb-item"><a asp-page="/Reports/Submissions/DepartmentKeyKpi/Index">Department Key KPI</a></li>
-            <li class="breadcrumb-item active">View</li>
+            <li class="breadcrumb-item"><a asp-page="/Reports/Submissions/DepartmentCaseFeedback/Index">Department Case Feedback</a></li>
+            <li class="breadcrumb-item active">Summary</li>
         </ol>
     </nav>
 </div>
 
 <div class="container-fluid">
     <div class="bg-light p-4 rounded-2">
-        @* <div>
-            <li>@Model.Group</li>
-            <li>@Model.ViewMode</li>
-        </div> *@
+
         <div class="filter-toolbar mb-4 d-flex justify-content-between">
             <span class="d-flex align-items-center gap-2">
-                <form id="form__groupSelection" method="get" class="">
-                    <span class="d-flex align-items-center">
-                        <div class="col me-4">
-                            <label for="Group" class="form-label">User Group</label>
-                        </div>
-                        <div class="col-auto">
-                            <select 
-                                asp-for="Group"
-                                asp-items="Model.UserGroupListItems"
-                                onchange="this.form.submit()"
-                                class="form-select"
-                                aria-label="Select User Group">
-                            </select>
-                        </div>
-                        <div class="col me-4">
-                            <label for="ViewMode" class="form-label">User Group</label>
-                        </div>
-                        <div class="col-auto">
-                            <select 
-                                asp-for="ViewMode"
-                                asp-items="Model.ReportViewModeListItems"
-                                onchange="this.form.submit()"
-                                class="form-select"
-                                aria-label="Select View Mode">
-                                    @* <option value=""></option> *@
-                            </select>
-                        </div>
-                    </span>
-                </form>
             </span>
             <div class="exportData">
-                <form method="post" asp-page-handler="ExportExcel">
-                    @* <input type="hidden" asp-for="Submitter" /> *@
+                @* <form method="post" asp-page-handler="ExportExcel">
+                    <input type="hidden" asp-for="Submitter" />
                     <button type="submit" 
                             class="btn btn-success 
-                                @(Model.KeyKpiSubmissions.Count > 0 
+                                @(Model.CaseFeedbackSubmissions.Count > 0 
                                 ? "" : "disabled")">
                         <i class="bi bi-file-earmark-spreadsheet"></i> Export</button>
-                </form>
+                </form> *@
             </div>
         </div>
 
         <div asp-validation-summary="ModelOnly" class="alert alert-danger text-danger" role="alert"></div>
 
-
         <div class="table-responsive">
-            
-            @* ===== ALL + SUMMARY ===== *@
-            @if(Model.AllUserGroupReportSummaryList.Any())
-            {
-                @* <h4>ALL + SUMMARY</h4> *@
-                @* <div>view:    department | key | submissions | scores | KPI Score</div>
-                <div>excel:   period | department | key | submissions by [group] | scores by [group] | total submissions | total score | final kpi</div> *@
-                
-                <table id="reportTable" class="table table-bordered table-striped">
-                    <thead>
-                        <tr> @* -----Table Header: First Row *@
-                            <th class="colSubmitterName" rowspan="2">Department</th>
-                            @foreach(var group in Model.UserGroupList)
-                            {
-                                <th class="colSubmitterDepartment" colspan="2">@group.GroupName</th>
-                            }
-                            <th class="colCaseDepartment" rowspan="2">Total Submisions</th>
-                            <th class="colScore" rowspan="2">Total Score</th>
-                            <th class="colIncidentAt" rowspan="2">KPI Score</th>
-                        </tr>
-                        <tr> @* -----Table Header: Second Row *@
-                            <th>Total Submissions</th>
-                            <th>Total Scores</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach(var s in Model.AllUserGroupReportSummaryList) {
-                            <tr>
-                                <td>@s.DepartmentName</td>
-                                
-                                @foreach(var groupSubmission in s.UserGroupSubmissionInfo)
-                                {
-                                    <td>@groupSubmission.TotalSubmissions</td>
-                                    <td>@groupSubmission.TotalScore</td>
-                                }
-
-                                <td>@s.TotalSubmissions</td>
-                                <td>@s.TotalScore</td>
-                                <td>@s.KpiScore</td>
+            <table id="reportTable" class="table table-bordered table-striped" style="width: 100%;">
+                <thead>
+                    <tr>
+                        <th class="colSubmitterName">Submitted By</th>
+                        <th class="colSubmitterDepartment">Department</th>
+                        <th class="colCaseDepartment">Case Department</th>
+                        <th class="colScore">Score</th>
+                        <th class="colIncidentAt">Incident Time</th>
+                        <th class="colWard">Ward Name</th>
+                        <th class="colCPINo">CPI Number</th>
+                        <th class="colPatientName">PatientName</th>
+                        <th class="colRoomNo">Room Number</th>
+                        <th class="colActions">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @* @if (Model.CaseFeedbackSubmissions.Any())
+                    {
+                        @foreach(var s in Model.CaseFeedbackSubmissions)
+                        {
+                            <tr class="text-center">
+                                <td>@s.SubmittedBy.FullName</td>
+                                <td>@s.SubmittedBy.Department.DepartmentName</td>
+                                <td>@s.CaseDepartment.DepartmentName</td>
+                                <td>@s.NegativeScoreValue</td>
+                                <td>@s.IncidentAt.ToString("dd MMM, yyyy hh:mm tt")</td>
+                                <td>@s.WardName</td>
+                                <td>@s.CPINumber</td>
+                                <td>@s.PatientName</td>
+                                <td>@s.RoomNumber</td>
+                                <td>
+                                    <button 
+                                            data-label="Details"
+                                            data-lookupId="@s.LookupId.ToString()"
+                                            data-submitter-name="@s.SubmittedBy.FullName"
+                                            data-submitter-department-name="@s.SubmittedBy.Department.DepartmentName"
+                                            data-submitter-phone="@s.SubmittedBy.PhoneNumber"
+                                            data-case-department="@s.CaseDepartment.DepartmentName"
+                                            data-score="@s.NegativeScoreValue"
+                                            data-incident-at="@s.IncidentAt.ToString("dd MMM, yyyy hh:mm tt")"
+                                            data-ward-name="@s.WardName"
+                                            data-cpi-number="@s.CPINumber"
+                                            data-patient-name="@s.PatientName"
+                                            data-room-number="@s.RoomNumber"
+                                            data-description="@s.Description" 
+                                            data-comments="@s.Comments" 
+                                            class="moreButton_Details btn btn-link p-0 pb-2">Details</button>
+                                </td>
                             </tr>
                         }
-                    </tbody>
-                </table>
-            }
-
-            @* ===== ALL + DETAIL ===== *@
-            @if(Model.AllUserGroupReportDetailList.Any())
-            {
-                <h4>ALL + DETAIL</h4>
-                <div>view:    department | scores | submitter | comments</div>
-                <div>excel:   period | department | key | score | submitter | group</div>
-
-                <table id="reportTable" class="table table-bordered table-striped">
-                    <thead>
-                        <tr>
-                            <th>Submitted By</th>
-                            <th>Group</th>
-                            <th>Department</th>
-                            <th>Key Metric</th>
-                            <th>Issued By</th>
-                            <th>Score</th>
-                            <th>Comments</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach(var item in Model.AllUserGroupReportDetailList) {
-                            <tr>
-                                <td>@item.SubmittedBy.FullName</td>
-                                <td>@item.SubmittedBy.UserGroup.GroupName</td>
-                                <td>@item.DepartmentName</td>
-                                <td>@item.DepartmentKeyMetric.KeyMetric.MetricTitle</td>
-                                <td>@item.DepartmentKeyMetric.KeyIssuer.DepartmentName</td>
-                                <td>@item.ScoreValue</td>
-                                <td>@item.Comments</td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            }
+                    } *@
+                </tbody>
+            </table>
         </div>
     </div>
 </div>

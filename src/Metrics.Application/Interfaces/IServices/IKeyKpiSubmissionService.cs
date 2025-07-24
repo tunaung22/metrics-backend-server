@@ -8,6 +8,8 @@ public interface IKeyKpiSubmissionService
 
     Task<bool> SubmitScoreAsync(List<KeyKpiSubmissionCreateDto> createDtos);
 
+    Task<List<KeyKpiSubmission>> FindByKpiPeriodAsync(long id);
+
     Task<List<KeyKpiSubmission>> FindBySubmitterByPeriodByDepartmentListAsync(
         ApplicationUser candidate,
         long kpiPeriodId,

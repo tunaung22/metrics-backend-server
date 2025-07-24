@@ -61,36 +61,16 @@ public class UserTitleService : IUserTitleService
 
     public async Task<IEnumerable<UserTitle>> FindAllAsync()
     {
-        try
-        {
-            var query = await _userTitleRepository
-                .FindAllAsync();
+        var query = await _userTitleRepository
+            .FindAllAsync();
 
-            // return query
-            // .Where(t => t.TitleName != "Admin");
-            return query ?? [];
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Unexpected error while querying departments.");
-            throw new Exception("An unexpected error occurred. Please try again later.");
-        }
+        // return query
+        // .Where(t => t.TitleName != "Admin");
+        return query ?? [];
     }
 
-    public async Task<UserTitle> FindByIdAsync(long id)
+    public async Task<UserTitle?> FindByIdAsync(long id)
     {
-        try
-        {
-            var userTitle = await _userTitleRepository.FindByIdAsync(id);
-            if (userTitle == null)
-                throw new NotFoundException($"User Title with id {id} not found.");
-
-            return userTitle;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Unexpected error while querying UserTitle by id.");
-            throw new Exception("An unexpected error occurred. Please try again later.");
-        }
+        return await _userTitleRepository.FindByIdAsync(id);
     }
 }

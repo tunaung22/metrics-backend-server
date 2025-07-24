@@ -8,7 +8,7 @@ public interface IUserTitleService
     Task<UserTitle> CreateAsync(UserTitle entity);
     // Task<UserTitle> UpdateAsync(string UserTitleCode, UserTitle entity);
     // Task<bool> DeleteAsync(string titleCode);
-    Task<UserTitle> FindByIdAsync(long id);
+    Task<UserTitle?> FindByIdAsync(long id);
     // Task<UserTitle> FindByUserTitleCodeAsync(string titleCode);
     // Task<UserTitle?> FindByUserTitleNameAsync(string titleName);
     Task<IEnumerable<UserTitle>> FindAllAsync();

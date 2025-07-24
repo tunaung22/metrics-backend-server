@@ -240,7 +240,10 @@ builder.Services.AddScoped<IDepartmentRepository, DepartmentRepository>()
     .AddScoped<IKeyKpiSubmissionRepository, KeyKpiSubmissionRepository>()
     .AddScoped<IKeyMetricRepository, KeyMetricRepository>()
     .AddScoped<IDepartmentKeyMetricRepository, DepartmentKeyMetricRepository>()
-    .AddScoped<IKeyKpiSubmissionConstraintRepository, KeyKpiSubmissionConstraintRepository>();
+    .AddScoped<IKeyKpiSubmissionConstraintRepository, KeyKpiSubmissionConstraintRepository>()
+    .AddScoped<ICaseFeedbackSubmissionRepository, CaseFeedbackSubmissionRepository>();
+
+
 // ===== Service ============
 builder.Services
     .AddScoped<ISeedingService, SeedingService>()

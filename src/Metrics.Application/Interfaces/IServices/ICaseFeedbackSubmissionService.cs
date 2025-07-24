@@ -17,5 +17,4 @@ public interface ICaseFeedbackSubmissionService
 
     Task<List<CaseFeedbackSubmission>> FindAllAsync();
 
-    IQueryable<CaseFeedbackSubmission> FindAllAsQueryable();
 }

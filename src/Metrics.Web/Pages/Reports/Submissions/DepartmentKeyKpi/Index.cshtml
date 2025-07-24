@@ -1,4 +1,4 @@
-﻿@page
+﻿@page "/Reports/Submissions/Department-Key-Kpi"
 @model Metrics.Web.Pages.Reports.Submissions.DepartmentKeyKpi.IndexModel
 @using Metrics.Web.Models.PartialViewModels
 @{
@@ -27,11 +27,12 @@
         <partial name="./List/_PeriodList" model="@(new PeriodListPartialModel {
             @* IncludeScripts = true, *@
             TableId = "reportTable",
-            LinkBasePage = "/Reports/Submissions/DepartmentCaseFeedback",
+            LinkBasePage = "/Reports/Submissions/DepartmentKeyKpi",
             Periods = Model.KpiPeriodList,
             Buttons = new List<PeriodListButton> {
                 new PeriodListButton { Page = "Summary", Text = "Summary" },
-                new PeriodListButton { Page = "Detail", Text = "Details" }
+                new PeriodListButton { Page = "Detail", Text = "Details" },
+                new PeriodListButton { Page = "View", Text = "View" }
             }
         })" />
     </div>  
