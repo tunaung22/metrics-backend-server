@@ -51,10 +51,14 @@
                             <td class="text-center">@p.SubmissionStartDate.ToLocalTime().ToString("MMM dd, yyyy")</td>
                             <td class="text-center">@p.SubmissionEndDate.ToLocalTime().ToString("MMM dd, yyyy")</td>
                             <td class="text-center">
-                                <a asp-page="Summary" 
+                                @* <a asp-page="Summary" 
                                     asp-route-periodName="@p.PeriodName"
                                     class="btn btn-sm btn-outline-primary my-2 my-lg-0 me-2">
-                                    <strong><i class="bi bi-clipboard2-data"> </i>Summary</strong></a>
+                                    <strong><i class="bi bi-clipboard2-data"> </i>Summary</strong></a> *@
+                                <a asp-page="View" 
+                                    asp-route-periodName="@p.PeriodName"
+                                    class="btn btn-sm btn-outline-primary my-2 my-lg-0 me-2">
+                                    <strong><i class="bi bi-clipboard2-data"> </i>View</strong></a>
                                 <a asp-page="Detail" 
                                     asp-route-periodName="@p.PeriodName"
                                     class="btn btn-sm btn-outline-primary my-2 my-lg-0 me-2">

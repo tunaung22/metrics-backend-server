@@ -1,0 +1,77 @@
+﻿@page
+@model Metrics.Web.Pages.Manage.IndexModel
+@{
+    ViewData["Title"] = "Manage";
+}
+
+
+<div class="sectionTitle">
+    <h4>Manage</h4>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-page="/Index">Home</a></li>
+            <li class="breadcrumb-item active">Manage</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="container">
+    <div class="row align-items-stretch">
+        <div class="col-xs-12 col-md-6 col-xl-4">
+            <div class="card w-100 my-4">
+                <div class="card-header">
+                    <strong>Company</strong>
+                </div>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item p-2">
+                        <a asp-page="/Manage/Departments/Index">
+                            <i class="bi bi-building-fill"></i> Departments</a></li>
+                    <li class="list-group-item p-2">
+                        <a asp-page="/Manage/Users/Index">
+                            <i class="bi bi-person-fill"></i> Users</a></li>
+                    <li class="list-group-item p-2">
+                        <a asp-page="/Manage/Users/Groups/Index">
+                            <i class="bi bi-people-fill"></i> Groups</a></li>
+                    <li class="list-group-item p-2">
+                        <a asp-page="/Manage/Users/Roles/Index">
+                            <i class="bi bi-person-fill-lock"></i> Authorities</a></li>
+                    @* <li class="list-group-item p-2 disabled" aria-disabled="true"><a href=""></a></li>
+                    <li class="list-group-item p-2 disabled" aria-disabled="true"><a href=""></a></li> *@
+
+
+                </ul>
+            </div>
+        </div>
+        <div class="col-xs-12 col-md-6 col-xl-4">
+            <div class="card w-100 my-4">
+                <div class="card-header">
+                    <strong>Score Submissions</strong>
+                </div>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item p-2">
+                        <a class="" asp-page="/Manage/Submissions/Periods/Index">
+                            <i class="bi bi-calendar2-week-fill"></i> Submissions Periods</a></li>
+                    <li class="list-group-item p-2">
+                        <a class="" asp-page="/Manage/Submissions/KeyMetrics/Index">
+                            <i class="bi bi-ui-checks"></i> Key Metrics</a></li>
+                    <li class="list-group-item p-2">
+                        <a class="" asp-page="/Manage/Submissions/DepartmentKeyMetrics/Index">
+                            <i class="bi bi-ui-checks"></i> Department Key Metrics</a></li>
+                    @* <li class="list-group-item p-2">
+                        <a class="" asp-page="/Manage/Submissions/Departments/Scores/Index">
+                            <i class="bi bi-clipboard2-check"></i> Score Submissions Status</a></li> *@
+                    <li class="list-group-item p-2 disabled" aria-disabled="true"><a href=""></a></li>
+                    @* <li class="list-group-item p-2 disabled" aria-disabled="true"><a href=""></a></li> *@
+
+                </ul>
+            </div>
+        </div>
+       
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        
+    </style>
+}

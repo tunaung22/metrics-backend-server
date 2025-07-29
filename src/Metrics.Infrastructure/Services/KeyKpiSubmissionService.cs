@@ -21,6 +21,39 @@ public class KeyKpiSubmissionService : IKeyKpiSubmissionService
         _context = context;
     }
 
+    public async Task<List<KeyKpiSubmission>> FindByKpiPeriodAsync(long id)
+    {
+        try
+        {
+            var query = _context.KeyKpiSubmissions
+                .Where(e => e.ScoreSubmissionPeriodId == id)
+                .OrderBy(e => e.SubmittedAt)
+                .Include(e => e.TargetPeriod)
+                .Include(e => e.TargetDepartment)
+                .Include(e => e.SubmittedBy)
+                    .ThenInclude(u => u.UserTitle)
+                .Include(e => e.KeyKpiSubmissionItems)
+                    .ThenInclude(i => i.DepartmentKeyMetric)
+                        .ThenInclude(dkm => dkm.KeyMetric)
+                .Include(e => e.KeyKpiSubmissionItems)
+                    .ThenInclude(i => i.DepartmentKeyMetric)
+                        .ThenInclude(dkm => dkm.TargetDepartment);
+
+            var foundSubmissions = await query.ToListAsync();
+            if (foundSubmissions.Count > 0)
+            {
+                return foundSubmissions;
+            }
+
+            return [];
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while querying key metric submissions by period");
+            throw new Exception("An unexpected error occurred. Please try again later.");
+        }
+    }
+
     public async Task<List<KeyKpiSubmission>> FindBySubmitterByPeriodByDepartmentListAsync(
         ApplicationUser candidate,
         long kpiPeriodId,
