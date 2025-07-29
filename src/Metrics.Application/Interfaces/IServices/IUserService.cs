@@ -11,6 +11,7 @@ public interface IUserService
     Task<IdentityResult> RegisterUserAsync(UserAccountCreateDto createDto);
     Task<ApplicationUser> UpdateAsync(string userId, UserUpdateDto updateDto);
     Task<ApplicationUser> UpdateProfileAsync(string userId, UserProfileUpdateDto updateDto);
+    Task<IdentityResult> UpdatePasswordAsync(ApplicationUser user, string oldPassword, string newPassword);
     Task<ApplicationUser> FindByUsernameAsync(string username);
     Task<ApplicationUser?> FindByIdAsync(string userId);
     // TODOs

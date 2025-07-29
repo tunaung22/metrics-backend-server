@@ -18,6 +18,16 @@ public class UserRepository : IUserRepository
         _userManager = userManager;
     }
 
+    public void SetPasswordChangeRequirementStatus(ApplicationUser user, bool requireChange)
+    {
+        if (user == null)
+        {
+            throw new ArgumentNullException(nameof(user));
+        }
+        user.IsPasswordChangeRequired = requireChange;
+        _context.Entry(user).State = EntityState.Modified;
+    }
+
     public async Task<ApplicationUser?> FindByUserCodeAsync(string userCode)
     {
         var user = await _userManager.Users
@@ -40,6 +50,7 @@ public class UserRepository : IUserRepository
             .OrderBy(e => e.UserName)
             .AsQueryable();
     }
+
 
 }
 

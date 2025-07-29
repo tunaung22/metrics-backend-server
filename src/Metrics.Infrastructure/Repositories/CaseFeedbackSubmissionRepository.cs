@@ -81,7 +81,8 @@ public class CaseFeedbackSubmissionRepository : ICaseFeedbackSubmissionRepositor
         string userId)
     {
         var submissions = await _context.CaseFeedbackSubmissions
-            .Where(e => e.KpiSubmissionPeriodId == periodId)
+            .Where(e => e.KpiSubmissionPeriodId == periodId
+                && e.SubmitterId == userId)
             .OrderBy(e => e.SubmissionDate)
                 .ThenBy(e => e.CaseDepartment.DepartmentName)
             .Include(e => e.CaseDepartment)

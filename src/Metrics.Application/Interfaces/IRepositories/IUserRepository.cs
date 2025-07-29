@@ -6,6 +6,7 @@ public interface IUserRepository
 {
     // void Create(ApplicationUser entity);
     // void Update(ApplicationUser enitiy);
+    void SetPasswordChangeRequirementStatus(ApplicationUser user, bool requireChange);
     // void Delete(ApplicationUser enitiy);
     Task<ApplicationUser?> FindByUserCodeAsync(string userCode);
     // Task<ApplicationUser> FindByIdAsync(long id);

@@ -207,10 +207,9 @@ builder.Services.AddSingleton<IAuthorizationHandler, AllowLockedUserHandler>();
 // ========== CONTROLLER, RAZOR PAGES ====================
 builder.Services.AddRazorPages(options =>
 {
-    // options.Conventions.AddPageRoute("/Kpi/Index", "/manage/kpi");
-    // options.Conventions.AddPageRoute("/Departments/Index", "/manage/departments");
-    options.Conventions.AuthorizeFolder("/Manage", "CanAccessAdminFeaturePolicy");
-    options.Conventions.AuthorizeFolder("/Reports", "CanAccessAdminFeaturePolicy");
+    options.Conventions
+        .AuthorizeFolder("/Manage", "CanAccessAdminFeaturePolicy")
+        .AuthorizeFolder("/Reports", "CanAccessAdminFeaturePolicy");
 });
 // builder.Services.AddControllersWithViews();
 builder.Services.AddControllers();
@@ -455,6 +454,32 @@ app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+
+app.Use(async (context, next) =>
+{
+    var path = context.Request.Path;
+    if (!path.StartsWithSegments("/Account/Manage/Password/Change") && ///ForceChangePassword
+        !path.StartsWithSegments("/Account/Login") &&
+        !path.StartsWithSegments("/Error"))
+    {
+        var signInManager = context.RequestServices.GetRequiredService<SignInManager<ApplicationUser>>();
+        var userManager = context.RequestServices.GetRequiredService<UserManager<ApplicationUser>>();
+
+        if (signInManager.IsSignedIn(context.User))
+        {
+            var user = await userManager.GetUserAsync(context.User);
+            if (user != null && user.IsPasswordChangeRequired)
+            {
+                context.Response.Redirect("/Account/Manage/Password/Change"); ///Account/ForceChangePassword
+                return;
+            }
+        }
+    }
+
+    await next();
+});
+
 
 app.UseSession();
 

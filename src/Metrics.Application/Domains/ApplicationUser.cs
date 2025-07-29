@@ -10,6 +10,7 @@ public class ApplicationUser : IdentityUser, IAuditColumn
     public string ContactAddress { get; set; } = string.Empty;
     public string ProfilePictureUrl { get; set; } = string.Empty;
     public int PermissionLevel { get; set; }
+    public bool IsPasswordChangeRequired { get; set; } = false;
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
     public DateTimeOffset ModifiedAt { get; set; }
 

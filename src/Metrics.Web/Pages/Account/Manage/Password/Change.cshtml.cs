@@ -1,4 +1,6 @@
 using Metrics.Application.Domains;
+using Metrics.Application.Interfaces.IServices;
+using Metrics.Infrastructure.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -9,14 +11,17 @@ namespace Metrics.Web.Pages.Account.Manage.Password;
 public class ChangeModel : PageModel
 {
     private readonly ILogger<ChangeModel> _logger;
+    private readonly IUserService _userService;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly SignInManager<ApplicationUser> _signInManager;
     public ChangeModel(
         ILogger<ChangeModel> logger,
+        IUserService userService,
         UserManager<ApplicationUser> userManager,
         SignInManager<ApplicationUser> signInManager)
     {
         _logger = logger;
+        _userService = userService;
         _userManager = userManager;
         _signInManager = signInManager;
     }
@@ -98,7 +103,8 @@ public class ChangeModel : PageModel
             return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
         }
 
-        var changePasswordResult = await _userManager.ChangePasswordAsync(user, Input.OldPassword, Input.NewPassword);
+        var changePasswordResult = await _userService.UpdatePasswordAsync(user, Input.OldPassword, Input.NewPassword);
+        //await _userManager.ChangePasswordAsync(user, Input.OldPassword, Input.NewPassword);
         if (!changePasswordResult.Succeeded)
         {
             foreach (var error in changePasswordResult.Errors)

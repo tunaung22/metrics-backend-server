@@ -86,7 +86,9 @@ public class UserService : IUserService
                 PhoneNumber = createDto.PhoneNumber ?? string.Empty,
                 ContactAddress = createDto.Address ?? string.Empty,
                 DepartmentId = createDto.DepartmentId,
-                UserTitleId = createDto.UserTitleId
+                UserTitleId = createDto.UserTitleId,
+                // PASSWORD MUST CHANGE
+                IsPasswordChangeRequired = true
             };
             // await _userStore.SetUserNameAsync(userInstance, dto.UserName, CancellationToken.None);
             // await _emailStore.SetEmailAsync(userInstance, dto.Email, CancellationToken.None);
@@ -314,6 +316,42 @@ public class UserService : IUserService
             _logger.LogError(ex, "Unexpected error while updating user.");
             throw new Exception("An unexpected error occurred. Please try again later.");
         }
+    }
+
+    public async Task<IdentityResult> UpdatePasswordAsync(ApplicationUser user, string oldPassword, string newPassword)
+    {
+        await using var transaction = await _context.Database.BeginTransactionAsync();
+
+        try
+        {
+            // 1. Update the custom flag (but don't SaveChanges yet)
+            _userRepository.SetPasswordChangeRequirementStatus(user, false);
+
+            // 2. Change password (this will call SaveChanges internally, but within our transaction)
+            var changeResult = await _userManager.ChangePasswordAsync(user, oldPassword, newPassword);
+            if (!changeResult.Succeeded)
+            {
+                await transaction.RollbackAsync();
+                return changeResult;
+            }
+
+            // 3. Explicitly save the flag change (if needed; some providers may require this)
+            await _context.SaveChangesAsync();
+
+            await transaction.CommitAsync();
+            return IdentityResult.Success;
+        }
+        catch (DbUpdateException ex)
+        {
+            _logger.LogError(ex, "Database error during update.");
+            throw;
+        }
+        catch (Exception ex)
+        {
+            await transaction.RollbackAsync();
+            return IdentityResult.Failed(new IdentityError { Description = ex.Message });
+        }
+
     }
 
 

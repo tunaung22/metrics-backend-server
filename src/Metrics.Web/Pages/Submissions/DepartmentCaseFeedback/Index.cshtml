@@ -22,10 +22,16 @@
             @* IncludeScripts = true, *@
             TableId = "reportTable",
             LinkBasePage = "/Submissions/DepartmentCaseFeedback",
-            Periods = Model.KpiPeriodList,
+            @* Periods = Model.KpiPeriodList, *@
+            Periods = Model.KpiPeriodList.Select(p => new Models.KpiPeriodViewModel
+            {
+                Id = p.Id,
+                PeriodName = p.PeriodName,
+                SubmissionStartDate = p.SubmissionStartDate,
+                SubmissionEndDate = p.SubmissionEndDate
+            }),
             Buttons = new List<PeriodListButton> {
                 new PeriodListButton { Page = "List", Text = "List" },
-                @* new PeriodListButton { Page = "Detail", Text = "Details" } *@
             }
         })" />
     </div>  
