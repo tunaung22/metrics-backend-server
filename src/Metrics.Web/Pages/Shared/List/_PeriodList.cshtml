@@ -22,24 +22,12 @@
                     <td>@p.SubmissionStartDate.ToLocalTime().ToString("MMM dd, yyyy")</td>
                     <td>@p.SubmissionEndDate.ToLocalTime().ToString("MMM dd, yyyy")</td>
                     <td>
-                        @if(DateTimeOffset.Now.UtcDateTime > p.SubmissionStartDate
-                                && DateTimeOffset.Now.UtcDateTime < p.SubmissionEndDate)
+                        @foreach (var button in Model.Buttons)
                         {
-                            // valid
-                            @foreach (var button in Model.Buttons)
-                            {
-                                <a asp-page="@Model.LinkBasePage/@button.Page" 
-                                    asp-route-periodName="@p.PeriodName"
-                                    class="btn btn-sm btn-outline-primary my-2 my-lg-0 me-2">
-                                    <strong><i class="@button.IconClass"> </i>@button.Text</strong></a>
-                            }
-                        }
-                        else {
-                            @foreach (var button in Model.Buttons)
-                            {
-                                <a class="btn btn-sm btn-outline-primary my-2 my-lg-0 me-2 disabled">
-                                    <strong><i class="@button.IconClass"> </i>@button.Text</strong></a>
-                            }
+                            <a asp-page="@Model.LinkBasePage/@button.Page" 
+                                asp-route-periodName="@p.PeriodName"
+                                class="btn btn-sm btn-outline-primary my-2 my-lg-0 me-2">
+                                <strong><i class="@button.IconClass"> </i>@button.Text</strong></a>
                         }
                     </td>
                 </tr>

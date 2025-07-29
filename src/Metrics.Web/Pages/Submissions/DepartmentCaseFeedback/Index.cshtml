@@ -18,21 +18,73 @@
 
 <div class="container">
     <div class="bg-light p-4 rounded-2">
-        <partial name="./List/_PeriodList" model="@(new PeriodListPartialModel {
-            @* IncludeScripts = true, *@
-            TableId = "reportTable",
-            LinkBasePage = "/Submissions/DepartmentCaseFeedback",
-            @* Periods = Model.KpiPeriodList, *@
-            Periods = Model.KpiPeriodList.Select(p => new Models.KpiPeriodViewModel
-            {
-                Id = p.Id,
-                PeriodName = p.PeriodName,
-                SubmissionStartDate = p.SubmissionStartDate,
-                SubmissionEndDate = p.SubmissionEndDate
-            }),
-            Buttons = new List<PeriodListButton> {
-                new PeriodListButton { Page = "List", Text = "List" },
-            }
-        })" />
+        <table id="dataTable" class="table table-bordered table-striped" style="width: 100%;">
+            <thead>
+                <tr>
+                    <th>Period</th>
+                    <th>Duration</th>
+                    @* <th>Status</th> *@
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if(Model.KpiPeriodList.Any())
+                {
+                    @foreach(var period in Model.KpiPeriodList)
+                    {
+                        <tr>
+                            <td class="text-center">
+                                <strong>@period.PeriodName</strong>
+                            </td>
+                            <td class="" style="padding-left: 6em;">
+                                <label>
+                                    <i class="bi bi-calendar4-week text-primary"> </i> 
+                                    @period.SubmissionStartDate.ToLocalTime().ToString("dd MMM, yyyy") - @period.SubmissionEndDate.ToLocalTime().ToString("dd MMM, yyyy")</label>
+                            </td>
+
+                            @* <td class="" style="padding-left: 4em;">
+                                @if(period.IsValid) {
+                                    <i class="bi bi-exclamation-circle text-danger"> </i><label>Pending</label> 
+                                }
+                                else {
+                                    <i class="bi bi-exclamation-diamond text-secondary"> </i><label class="text-secondary">Invalid</label> 
+                                }
+                            </td> *@
+
+                            <td class="text-center"> 
+                                @if(period.IsValid)
+                                { 
+                                    <a asp-page="List" 
+                                        asp-route-periodName="@period.PeriodName"
+                                        class="link-offset-2"><strong>List</strong></a>
+                                }
+                                else 
+                                {
+                                    <a aria-disabled="true" class="link-offset-2 text-secondary">List</a>
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+
+
     </div>  
 </div>
+
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        new DataTable('#dataTable', {
+            paging: false,
+            info: false,
+            searching: false,
+            initComplete: function() {
+                $('thead th').addClass('text-light text-center ');
+                $('thead th').addClass('bg-brand-color');
+            }
+        });
+    </script>
+}
