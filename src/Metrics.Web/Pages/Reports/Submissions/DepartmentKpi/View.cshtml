@@ -1,0 +1,453 @@
+﻿@page "/Reports/Submissions/Department-Kpi/{periodName}/view"
+@model Metrics.Web.Pages.Reports.Submissions.DepartmentKpi.ViewModel
+@{
+    ViewData["Title"] = "Department KPI Report";
+}
+
+
+<div class="sectionTitle">
+    <div class="d-flex align-items-center">
+        <span class="d-flex align-items-center flex-grow-1">
+            <h4>Score Submission Report (KPI)</h4>
+            <span class="mx-4">
+                Period: <strong>@Model.SelectedPeriod.PeriodName</strong>
+                <small>(@Model.SelectedPeriod.SubmissionStartDate.ToString("MMM dd, yyyy") - @Model.SelectedPeriod.SubmissionEndDate.ToString("MMM dd, yyyy"))</small>
+            </span>
+        </span>
+    </span>
+    </div>
+
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-page="/Dashboard/Index">Dashboard</a></li>
+            <li class="breadcrumb-item"><a asp-page="/Reports/Submissions/Index">Reports</a></li>
+            <li class="breadcrumb-item"><a asp-page="/Reports/Submissions/DepartmentKpi/Index">Department KPI Period</a></li>
+            <li class="breadcrumb-item active">@Model.SelectedPeriod.PeriodName</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="container-fluid">
+    <div class="bg-light p-4 rounded-2">
+        <div class="filter-toolbar mb-4 d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center gap-2">
+                <form id="form__groupSelection" method="get" class="">
+                    <span class="d-flex align-items-center">
+                        <div class="col-auto me-2">
+                            <label for="ViewMode" class="form-label m-0">
+                                <i class="bi bi-collection-fill"></i> View Mode</label>
+                        </div>
+                        <div class="col-auto me-4">
+                            <select 
+                                asp-for="ViewMode"
+                                asp-items="Model.ViewModeListItems"
+                                onchange="this.form.submit()"
+                                class="form-select"
+                                aria-label="Select View Mode">
+                            </select>
+                        </div>
+
+                        <div class="col-auto me-2">
+                            <label for="Group" class="form-label m-0">
+                                <i class="bi bi-people-fill"></i> User Group</label>
+                        </div>
+                        <div class="col-auto me-4">
+                            <select 
+                                asp-for="Group"
+                                asp-items="Model.UserGroupListItems"
+                                onchange="this.form.submit()"
+                                class="form-select"
+                                aria-label="Select User Group">
+                            </select>
+                        </div>
+                    </span>
+                </form>
+                @* <button>Button</button> *@
+            </div>
+
+            <div class="exportData">
+                <form method="post" asp-page-handler="ExportExcel">
+                            <input type="hidden" asp-for="ViewMode">
+                            <input type="hidden" asp-for="Group">
+                    @* 
+                        **use single handler: ExportExcel
+                        for all four models?
+                    *@
+                    @if(Model.AllUserGroupReportSummaryList.Any()
+                        || Model.AllUserGroupReportDetailList.Any()
+                        || Model.SingleUserGroupReportSummaryList.Any()
+                        || Model.SingleUserGroupReportDetailList.Any())
+                    {
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-file-earmark-spreadsheet"></i> Export</button>
+                    }
+                    else
+                    {
+                        <button type="submit" 
+                            class="btn btn-success disabled">
+                        <i class="bi bi-file-earmark-spreadsheet"></i> Export</button>
+                    }
+                </form>
+            </div>
+        </div>
+
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger text-danger" role="alert"></div>
+
+        <div class="table-responsive">
+            
+
+                @if(!string.IsNullOrEmpty(Model.ViewMode) && !string.IsNullOrEmpty(Model.Group) ) {
+                    
+                    @* ==========SUMMARY VIEW======================================== *@
+                    if (Model.ViewMode.Equals("summary", StringComparison.OrdinalIgnoreCase))
+                    {
+                        @* =====ALL GROUP + SUMMARY============================= *@
+                        @* department, [group]+subm+scr, ..., totalSubm, totalScr, kpi *@
+                        if(Model.AllUserGroupReportSummaryList.Any())
+                        {
+                            // to get consistent User Group List
+                            var userGroupSubmissions = Model.AllUserGroupReportSummaryList
+                                .SelectMany(s => s.UserGroupSubmissions ?? [])
+                                .DistinctBy(s=>s.GroupName)
+                                .ToList() ?? [];
+                            <table id="allUserGroupSummaryTable" class="table table-bordered table-striped">
+                            <thead> <!-- department, group+submission+score, totalSubmission, totalScore, KPI-->
+                                <tr>
+                                    <th rowspan="2">Departments</th>
+
+                                    @foreach(var group in userGroupSubmissions) {
+                                        <th colspan="2">Group: @group.GroupName</th>
+                                    }
+
+                                    <th rowspan="2">Total Submissions</th>
+                                    <th rowspan="2">Total Scores</th>
+                                    <th rowspan="2">KPI Score</th>
+                                </tr>
+                                <tr>
+                                    @foreach(var group in userGroupSubmissions) {
+                                        <th>Submissions</th>
+                                        <th>Scores</th>
+                                    }
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach(var submission in Model.AllUserGroupReportSummaryList)
+                                {
+                                    <tr>
+                                        <td>@submission.DepartmentName</td>
+                                        
+                                        
+                                        @foreach(var groupSubmission in submission.UserGroupSubmissions)
+                                        {
+                                            <td>@groupSubmission.TotalSubmissions.ToString("0")</td>
+                                            <td>@groupSubmission.TotalScore.ToString("0.00")</td>
+                                        }
+
+                                        <td>@submission.TotalSubmissions.ToString("0")</td>
+                                        <td>@submission.TotalScore.ToString("0.00")</td>
+                                        <td>
+                                            <strong>
+                                                @submission.KpiScore.ToString("0.00")
+                                            </strong>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                            </table>
+                        }
+                        @* =====SINGLE GROUP + SUMMARY========================== *@
+                        @* department, totalSubm, totalScr, kpi *@
+                        else if(Model.SingleUserGroupReportSummaryList.Any())
+                        {
+                            <table id="singleUserGroupSummaryTable" class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Departments</th>
+                                    <th>Submissions</th>
+                                    <th>Scores</th>
+                                    <th>KPI Score</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach(var submission in Model.SingleUserGroupReportSummaryList)
+                                {
+                                    <tr>
+                                        <td>@submission.DepartmentName</td>
+                                        <td>@submission.TotalSubmissions.ToString("0")</td>
+                                        <td>@submission.TotalScore.ToString("0.00")</td>
+                                        <td>@submission.KpiScore.ToString("0.00")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                            </table>
+                        }
+                        else
+                        {
+                            <p class="alert alert-danger text-danger text-center">No Data</p>
+                        }
+                    }
+
+                    @* ==========DETAIL VIEW==================================== *@
+                    else if (Model.ViewMode.Equals("detail", StringComparison.OrdinalIgnoreCase))
+                    {
+                        @* ===== ALL GROUP + DETAIL ===== *@
+                        @* submitter, [department score], ..., score, totalScr *@
+                        @if(Model.AllUserGroupReportDetailList.Any())
+                        {
+                            <table id="allUserGroupDetailTable" class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Candidate</th>
+                                    <th>Group</th>
+                                    @foreach(var department in Model.DepartmentList)
+                                    {
+                                        <th>@department.DepartmentName</th>
+                                    }
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach(var entry in Model.AllUserGroupReportDetailList) 
+                                {
+                                    <tr>
+                                        <td>@entry.SubmittedBy.FullName</td>
+                                        <td>@entry.SubmittedBy.UserGroup.GroupName.ToUpper()</td>
+                                        @foreach(var d in Model.DepartmentList)
+                                        {
+                                            // if Department == DepartmentScores.Department
+                                            // **likely contains only 1 if exist
+                                            var item = entry.DepartmentScores
+                                                .Where(dc => dc.DepartmentName!= null && dc.DepartmentName.Equals(d.DepartmentName, StringComparison.OrdinalIgnoreCase))
+                                                .FirstOrDefault();
+                                            if (item != null)
+                                            {
+                                                if (item.ScoreValue > 0) {
+                                                    <td>@item.ScoreValue</td>
+                                                } else {
+                                                    <td class="text-secondary">@(0M.ToString("0.00"))</td>
+                                                }
+                                            }
+                                            else {
+                                                <td class="text-secondary">@(0M.ToString("0.00"))</td>
+                                            }
+                                        }
+                                    </tr>
+                                }
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th></th> <!-- For the Candidate column -->
+                                    <th></th>
+                                    @foreach(var department in Model.DepartmentList)
+                                    {
+                                        <th></th> <!-- Empty cells that will be filled by footerCallback -->
+                                    }
+                                </tr>
+                            </tfoot>
+                            </table>
+                        }
+                        @* ===== SINGLE GROUP + DETAIL ===== *@
+                        @* ???submitter, [department score], ..., score, totalScr *@
+                        else if(Model.SingleUserGroupReportDetailList.Any())
+                        {
+                            <table id="singleUserGroupDetailTable" class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Candidate</th>
+                                    <th>Group</th>
+                                    @foreach(var department in Model.DepartmentList)
+                                    {
+                                        <th>@department.DepartmentName</th>
+                                    }
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach(var entry in Model.SingleUserGroupReportDetailList) 
+                                {
+                                    <tr>
+                                        <td>@entry.SubmittedBy.FullName</td>
+                                        <td>@entry.SubmittedBy.UserGroup.GroupName</td>
+                                        @foreach(var d in Model.DepartmentList)
+                                        {
+                                            // if Department == DepartmentScores.Department
+                                            // **likely contains only 1 if exist
+                                            var item = entry.DepartmentScores
+                                                .Where(dc => dc.DepartmentName!= null && dc.DepartmentName.Equals(d.DepartmentName, StringComparison.OrdinalIgnoreCase))
+                                                .FirstOrDefault();
+                                            if (item != null)
+                                            {
+                                                <td>@item.ScoreValue</td>
+                                            }
+                                            else {
+                                                <td>@(0M.ToString("0.00"))</td>
+                                            }
+                                        }
+                                    </tr>
+                                }
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th></th> <!-- For the Candidate column -->
+                                    <th></th>
+                                    @* <th></th> *@
+                                    @foreach(var department in Model.DepartmentList)
+                                    {
+                                        <th></th> <!-- Empty cells that will be filled by footerCallback -->
+                                    }
+                                </tr>
+                            </tfoot>
+                            </table>
+                        }
+                        else
+                        {
+                            <p class="alert alert-danger text-danger text-center">No Data</p>
+                        }
+                    }
+                    else
+                    {
+                        <p>No such View Mode</p>
+                    }
+                }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(function() {
+            if($("#allUserGroupSummaryTable").length) {
+                new DataTable('#allUserGroupSummaryTable', {
+                    paging: true,
+                    info: true,
+                    searching: false,
+                    autoWidth: true,
+                    @* fixedHeader: true, *@
+                    fixedHeader: {
+                        header: true,
+                        footer: true
+                    },
+                    columnDefs: [
+                        { width: '16%', targets: 0 },
+                        { sortable: false, targets: ['.no-sort'] },
+                        @* { orderable: false, targets: noSortTargets } // Disable sorting for specified columns *@
+                    ],
+                    initComplete: function() {
+                        $('#allUserGroupSummaryTable thead th').addClass('text-light text-center align-middle');
+                        $('#allUserGroupSummaryTable thead th').addClass('bg-brand-color');
+                    }
+                });
+            }
+            else if($("#singleUserGroupSummaryTable").length) {
+                new DataTable('#singleUserGroupSummaryTable', {
+                    paging: true,
+                    info: true,
+                    searching: false,
+                    autoWidth: true,
+                    @* fixedHeader: true, *@
+                    fixedHeader: {
+                        header: true,
+                        footer: true
+                    },
+                    columnDefs: [
+                        { width: '16%', targets: 0 },
+                        { sortable: false, targets: ['.no-sort'] },
+                        @* { orderable: false, targets: noSortTargets } // Disable sorting for specified columns *@
+                    ],
+                    initComplete: function() {
+                        $('#singleUserGroupSummaryTable thead th').addClass('text-light text-center align-middle');
+                        $('#singleUserGroupSummaryTable thead th').addClass('bg-brand-color');
+                    }
+                });
+            }
+            else if($("#allUserGroupDetailTable").length) {
+                new DataTable('#allUserGroupDetailTable', {
+                    paging: true,
+                    info: true,
+                    searching: false,
+                    autoWidth: true,
+                    @* fixedHeader: true, *@
+                    fixedHeader: {
+                        header: true,
+                        footer: true
+                    },
+                    columnDefs: [
+                        { width: '16%', targets: 0 },
+                        { sortable: false, targets: ['.no-sort'] },
+                        @* { orderable: false, targets: noSortTargets } // Disable sorting for specified columns *@
+                    ],
+                    initComplete: function() {
+                        $('#allUserGroupDetailTable thead th').addClass('text-light text-center align-middle');
+                        $('#allUserGroupDetailTable thead th').addClass('bg-brand-color');
+                    },
+                    footerCallback: function (row, data, start, end, display) {
+                        let api = this.api();
+                
+                        @foreach(var department in Model.DepartmentList)
+                        {
+                            var index = Model.DepartmentList.IndexOf(department) + 2; // +1 because Candidate is column 0
+                            <text>
+                            // Calculate total for @department.DepartmentName (column @index)
+                            var total_@(index) = api
+                                .column(@index)
+                                .data()
+                                .reduce(function (a, b) {
+                                    return parseFloat(a) + parseFloat(b);
+                                }, 0);
+                            
+                            // Update footer
+                            @* $(api.column(@index).footer()).html(
+                                'Total: ' + total_@(index).toFixed(2)
+                            ); *@
+                            $(api.column(@index).footer()).html(total_@(index).toFixed(2));
+                            </text>
+                        }
+                    }
+                });
+            }
+            else if($("#singleUserGroupDetailTable").length) {
+                new DataTable('#singleUserGroupDetailTable', {
+                    paging: true,
+                    info: true,
+                    searching: false,
+                    autoWidth: true,
+                    @* fixedHeader: true, *@
+                    fixedHeader: {
+                        header: true,
+                        footer: true
+                    },
+                    columnDefs: [
+                        { width: '16%', targets: 0 },
+                        { sortable: false, targets: ['.no-sort'] },
+                        @* { orderable: false, targets: noSortTargets } // Disable sorting for specified columns *@
+                    ],
+                    initComplete: function() {
+                        $('#singleUserGroupDetailTable thead th').addClass('text-light text-center align-middle');
+                        $('#singleUserGroupDetailTable thead th').addClass('bg-brand-color');
+                    },
+                    footerCallback: function (row, data, start, end, display) {
+                        let api = this.api();
+                
+                        @foreach(var department in Model.DepartmentList)
+                        {
+                            var index = Model.DepartmentList.IndexOf(department) + 2; // +1 because Candidate is column 0
+                            <text>
+                            // Calculate total for @department.DepartmentName (column @index)
+                            var total_@(index) = api
+                                .column(@index)
+                                .data()
+                                .reduce(function (a, b) {
+                                    return parseFloat(a) + parseFloat(b);
+                                }, 0);
+                            
+                            // Update footer
+                            @* $(api.column(@index).footer()).html(
+                                'Total: ' + total_@(index).toFixed(2)
+                            ); *@
+                            $(api.column(@index).footer()).html(total_@(index).toFixed(2));
+                            </text>
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+}

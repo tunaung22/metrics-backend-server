@@ -1,6 +1,8 @@
 :root {
-  --brand-color: #3465a4;
-  --brand-color-hover: #0269f0;
+  /* --brand-color: #3465a4;
+  --brand-color-hover: #0269f0; */
+  --brand-color: var(--metric-blue-color);
+  --brand-color-hover: var(--metric-deepblue-color);
   --brand-color-dark: #417cc9;
   --primary-color: var(--brand-color) !important;
   /* --primary-hover-color: #0269f0 !important; */
@@ -71,7 +73,8 @@ a {
 }
 
 a:hover {
-  color: var(--brand-color-hover);
+  /* color: var(--brand-color-hover); */
+  /* color: var(--metric-blue-color); */
   /* color: #006eff; */
   /* text-decoration: underline; */
 }
@@ -84,7 +87,8 @@ a:hover {
   color: #ffffff;
 }
 .btn-primary:hover {
-  background: var(--brand-color);
+  /* background: var(--brand-color); */
+  background: var(--brand-color-hover);
   border-color: var(--brand-color);
 }
 .btn-primary:focus,
@@ -129,6 +133,7 @@ a:hover {
 }
 .nav-item .nav-link:hover {
   color: var(--brand-color-hover);
+  /* color: var(--metric-blue-color); */
 }
 
 a.link-primary {
@@ -138,6 +143,9 @@ a.link-primary:hover {
   color: var(--brand-color-hover) !important;
 }
 
+#metrics__main-navbar .nav-item {
+  font-weight: 600 !important;
+}
 /* ul#metrics__main-navbar .nav-item .nav-link {
   color: var(--brand-color);
 }
@@ -158,7 +166,10 @@ ul#metrics__main-navbar .nav-item .nav-link:hover {
 }
 
 /* ========== Custom ======================================================== */
-
+.text-branding {
+  font-weight: 900;
+  color: var(--brand-color);
+}
 /* -----DATATABLES custom setting----- */
 .dt-column-title {
   /* add more to padding right for table title */
@@ -222,6 +233,51 @@ button#goToTop {
 div .sectionTitle {
   background: #fff;
   margin: 0em 3em;
+}
+
+a.activeLink {
+  color: var(--metric-deepblue-color) !important;
+}
+a.activeLink:hover {
+  color: var(--metric-blue-color) !important;
+}
+
+/* ------PAGINATION----- */
+/* .pagination .page-item .page-link {
+  color: #0d6efd;
+  background-color: #fff;
+  border: 1px solid #dee2e6;
+}
+.pagination .page-item.active .page-link {
+  z-index: 3;
+  color: #fff;
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+} */
+/* background: var(--primary-color) !important; */
+/* background: red !important;
+  color: blueviolet !important; */
+.pagination .page-item a.page-link {
+  /* color: var(--metric-blue-color); */
+  /* background: var(--primary-color) !important; */
+}
+.pagination .page-item a.page-link:active {
+  /* background: var(--primary-color); */
+}
+
+.pagination .page-item .page-link {
+  color: var(--metric-blue-color);
+}
+.pagination .page-item.active .page-link {
+  color: #ffffff; /* active text color */
+  background-color: var(--metric-blue-color); /* active background color */
+  border-color: var(--metric-blue-color); /* active border color */
+}
+.pagination .page-link:hover,
+.pagination .page-link:focus {
+  color: #ffffff;
+  background-color: var(--metric-deepblue-color);
+  border-color: var(--metric-deepblue-color);
 }
 
 /* ========== Dark theme styles ==============================================*/

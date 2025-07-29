@@ -3,6 +3,9 @@
 @{
     var canAccessAdminFeatures = await AuthorizationService.AuthorizeAsync(User, "CanAccessAdminFeaturePolicy");
     var canSubmitBaseScore = await AuthorizationService.AuthorizeAsync(User, "CanSubmitBaseScorePolicy");
+    @* var pathAndQuery = Context.Request.Path + Context.Request.QueryString; *@
+    @* var currentUrl = $"{Context.Request.Scheme}://{Context.Request.Host}{pathAndQuery}"; *@
+    var currentUrl = Context.Request.Path;
 }
 
 <!DOCTYPE html>
@@ -38,11 +41,11 @@
                         metrics-main-navbar" 
                 aria-label="Main navigation">
             <div class="container-fluid">
-                <span class="d-flex align-items-center no-select pe-2">
+                <span class="d-flex align-items-center no-select pe-2 text-branding">
                     <img src="~/images/logo.svg" alt="Logo" 
                             width="38" height="38" 
                             class="border border-3 border-white rounded d-inline-block align-text-top me-2" >
-                    <strong class="metrics-branding">Metrics</strong>
+                    Metrics
                 </span>
                 <button class="navbar-toggler" 
                         type="button" 
@@ -58,7 +61,10 @@
                     <ul id="metrics__main-navbar" class="navbar-nav flex-grow-1">
                         @* ========================== Public Area ========================== *@
                         <li class="nav-item">
-                            <strong><a class="nav-link" asp-area="" asp-page="/Index">Home</a></strong>
+                            <a asp-page="/Index"
+                                asp-area=""
+                                class="nav-link @(currentUrl=="/" ? "activeLink" : "")"> 
+                                    <i class="bi bi-house-fill"></i> Home</a>
                         </li>
                         @* ========================== Admin Area ========================== *@
                         @if(canAccessAdminFeatures.Succeeded)
@@ -66,10 +72,22 @@
                         @* @if (User.HasClaim("Permission", "CanSubmitScore")) *@
                         {
                             <li class="nav-item">
-                                <strong><a class="nav-link " asp-area="" asp-page="/Dashboard/Index">Dashboard</a></strong>
+                                <a asp-page="/Dashboard/Index"
+                                    asp-area=""
+                                    class="nav-link @(currentUrl.StartsWithSegments("/dashboard") ? "activeLink" : "")">
+                                        <i class="bi bi-speedometer"></i> Dashboard</a>
                             </li>
                             <li class="nav-item">
-                                <strong><a class="nav-link " asp-area="" asp-page="/Reports/Submissions/Index">Reports</a></strong>
+                                <a asp-page="/Manage/Index"
+                                    asp-area=""
+                                    class="nav-link @(currentUrl.StartsWithSegments("/manage") ? "activeLink" : "")">
+                                        <i class="bi bi-sliders"></i> Manage</a>
+                            </li>
+                            <li class="nav-item">
+                                <a asp-page="/Reports/Submissions/Index"
+                                    asp-area=""
+                                    class="nav-link @(currentUrl.StartsWithSegments("/reports") ? "activeLink" : "")">
+                                        <i class="bi bi-bar-chart-fill"></i> Reports</a>
                             </li>
                         }
 
@@ -78,13 +96,18 @@
                         @* @if((await AuthorizationService.AuthorizeAsync(User, "CanSubmitBaseScorePolicy")).Succeeded) *@
                         {
                             <li class="nav-item">
-                                <strong><a class="nav-link" asp-area="" asp-page="/Submissions/Index">Submissions</a></strong>
+                                <a asp-page="/Submissions/Index"
+                                    asp-area="" 
+                                    class="nav-link @(currentUrl.StartsWithSegments("/submissions/") ? "activeLink" : "")">
+                                        <i class="bi bi-ui-checks"></i> Submissions</a>
                             </li>
                         }
 
                         @* ========================== Public Area ========================== *@
                         <li class="nav-item">
-                            <strong><a class="nav-link" asp-area="" asp-page="/About/Index">About</a></strong>
+                                <a asp-area="" asp-page="/About/Index"
+                                    class="nav-link @(currentUrl.StartsWithSegments("/about/") ? "activeLink" : "")">
+                                        <i class="bi bi-info-circle-fill"></i> About</a>
                         </li>
                     </ul>
                     @* <span id="theme-toggle" aria-label="Toggle dark mode" class="px-4">
@@ -101,7 +124,7 @@
             @RenderBody()
         </main>
     </div>
-
+    
     <partial name="_Footer" />
 
 

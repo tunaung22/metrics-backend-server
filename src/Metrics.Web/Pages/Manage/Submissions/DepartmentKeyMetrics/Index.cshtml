@@ -47,11 +47,15 @@
             <table id="kpiPeriodTable" class="table table-bordered table-striped">
                 <thead>
                     <tr>
-                        <th>Period Name</th>
-                        <th>Start Date</th>
-                        <th>End Date</th>
+                        <th rowspan="2">Period Name</th>
+                        <th rowspan="2">Start Date</th>
+                        <th rowspan="2">End Date</th>
                         @* <th>Status</th> *@
-                        <th>Actions</th>
+                        <th colspan="2">Actions</th>
+                    </tr>
+                    <tr>
+                        <th>Assign Department and Keys</th>
+                        <th>Assign Submitter Deparmtent</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -86,11 +90,7 @@
                                     <a asp-page="Assign" 
                                         asp-route-periodName="@p.PeriodName"
                                         class="btn btn-sm btn-outline-primary my-2 my-lg-0 me-2">
-                                        <strong><i class="bi bi-clipboard2-data"> </i>Assign Department with Keys</strong></a>
-                                    <a asp-page="SubmissionAssignment" 
-                                        asp-route-periodName="@p.PeriodName"
-                                        class="btn btn-sm btn-outline-primary my-2 my-lg-0 me-2">
-                                        <strong><i class="bi bi-clipboard2-data"> </i>Set Evaluator to Department Keys</strong></a>
+                                        <strong><i class="bi bi-clipboard2-data"> </i>Assign</strong></a>
                                     @* <a asp-page="View" 
                                         asp-route-periodName="@p.PeriodName"
                                         class="btn btn-sm btn-outline-primary my-2 my-lg-0 me-2">
@@ -99,6 +99,12 @@
                                         asp-route-periodName="@p.PeriodName"
                                         class="btn btn-sm btn-outline-primary my-2 my-lg-0 me-2">
                                         <strong><i class="bi bi-clipboard2-data"> </i>Copy</strong></a> *@
+                                </td>
+                                <td class="text-center">
+                                    <a asp-page="SubmissionAssignment" 
+                                        asp-route-periodName="@p.PeriodName"
+                                        class="btn btn-sm btn-outline-primary my-2 my-lg-0 me-2">
+                                        <strong><i class="bi bi-clipboard2-data"> </i>Assign</strong></a>
                                 </td>
                             </tr>
                         }
@@ -154,7 +160,7 @@
                 searching: false,
                 autoWidth: true,
                 initComplete: function() {
-                    $('thead th').addClass('text-light text-center ');
+                    $('thead th').addClass('text-light text-center align-middle');
                     $('thead th').addClass('bg-brand-color');
                 }
             });
