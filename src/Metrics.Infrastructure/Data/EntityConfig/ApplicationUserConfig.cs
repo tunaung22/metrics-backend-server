@@ -43,6 +43,10 @@ public class ApplicationUserConfig : IEntityTypeConfiguration<ApplicationUser>
         builder.Property(e => e.PermissionLevel)
             .HasColumnName("permission_level")
             .HasColumnType("int");
+        builder.Property(e => e.IsPasswordChangeRequired)
+            .HasColumnName("is_password_change_required")
+            .HasColumnType("boolean")
+            .HasDefaultValue(true);
         builder.Property(e => e.CreatedAt)
             .HasColumnName("created_at")
             .HasColumnType("timestamp with time zone");

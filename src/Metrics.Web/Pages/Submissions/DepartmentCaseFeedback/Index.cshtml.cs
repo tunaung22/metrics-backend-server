@@ -19,7 +19,16 @@ public class IndexModel : PageModel
     }
 
     // ========== MODELS =======================================================
-    public List<KpiPeriodViewModel> KpiPeriodList { get; set; } = [];
+    public class KpiSubmissionPeriodModel // Overview info of submission for the Period
+    {
+        public long Id { get; set; }
+        public string PeriodName { get; set; } = string.Empty;
+        public DateTimeOffset SubmissionStartDate { get; set; }
+        public DateTimeOffset SubmissionEndDate { get; set; }
+        public bool IsValid { get; set; } = false;
+    }
+    public List<KpiSubmissionPeriodModel> KpiPeriodList { get; set; } = [];
+    // public List<KpiPeriodViewModel> KpiPeriodList { get; set; } = [];
 
     // ========== HANDLERS =====================================================
     public async Task<IActionResult> OnGetAsync()
@@ -28,12 +37,14 @@ public class IndexModel : PageModel
         if (periods.Any())
         {
             KpiPeriodList = periods
-                .Select(p => new KpiPeriodViewModel()
+                .Select(p => new KpiSubmissionPeriodModel()
                 {
                     Id = p.Id,
                     PeriodName = p.PeriodName,
                     SubmissionStartDate = p.SubmissionStartDate,
-                    SubmissionEndDate = p.SubmissionEndDate
+                    SubmissionEndDate = p.SubmissionEndDate,
+                    IsValid = DateTimeOffset.Now.UtcDateTime > p.SubmissionStartDate
+                            && DateTimeOffset.Now.UtcDateTime < p.SubmissionEndDate
                 })
                 .ToList();
         }

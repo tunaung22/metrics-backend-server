@@ -94,7 +94,9 @@ public class ListModel : PageModel
         if (currentUser != null)
         {
             // get all existing submissions
-            var existingSubmissions = await _caseFeedbackService.FindByKpiPeriodAsync(SelectedPeriod.Id);
+            var existingSubmissions = await _caseFeedbackService
+                .FindByKpiPeriodAndSubmitterAsync(SelectedPeriod.Id, currentUser.Id);
+            // .FindByKpiPeriodAsync(SelectedPeriod.Id);
             if (existingSubmissions.Count > 0)
             {
                 // ExistingCaseFeedbackSubmissions = existingSubmissions
