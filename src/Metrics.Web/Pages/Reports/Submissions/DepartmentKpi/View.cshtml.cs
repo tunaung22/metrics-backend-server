@@ -65,6 +65,7 @@ public class ViewModel : PageModel
     public class DepartmentScoreViewModel
     {
         public string? DepartmentName { get; set; }
+        public string? Comment { get; set; }
         public decimal ScoreValue { get; set; }
     }
 
@@ -546,7 +547,7 @@ public class ViewModel : PageModel
 
                 // PREPARE FOR EXCEL FILE
                 var colPeriod = "Period";
-                var colCaseDepartment = "Department";
+                var colDepartment = "Department";
                 var colTotalSubmissions = "Total Submissions";
                 var colTotalScore = "Total Score";
                 var colKpiScore = "KPI Score";
@@ -558,7 +559,7 @@ public class ViewModel : PageModel
                     var data = new Dictionary<string, object>()
                     {
                         [colPeriod] = submission.PeriodName ?? "[undefined period]",
-                        [colCaseDepartment] = submission.DepartmentName ?? "[undefined department]",
+                        [colDepartment] = submission.DepartmentName ?? "[undefined department]",
                     };
 
                     foreach (var item in submission.UserGroupSubmissions)
@@ -578,7 +579,7 @@ public class ViewModel : PageModel
                 var dynamicCols = new List<DynamicExcelColumn>
                     {
                         new(colPeriod) { Width = 10 },
-                        new(colCaseDepartment) { Width = 30 },
+                        new(colDepartment) { Width = 30 },
                         new(colTotalSubmissions) { Width = 16 },
                         new(colTotalScore) { Width = 12 },
                         new(colKpiScore) { Width = 12 }
@@ -714,6 +715,7 @@ public class ViewModel : PageModel
                     foreach (var ds in submission.DepartmentScores)
                     {
                         data[$"{ds.DepartmentName}"] = Convert.ToDecimal(ds.ScoreValue.ToString("0.00"));
+                        data[$"Comment on {ds.DepartmentName}"] = ds.Comment ?? string.Empty;
                     }
 
                     return data;
@@ -745,7 +747,7 @@ public class ViewModel : PageModel
                 return File(
                     memoryStream,
                     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                    $"Report_DepartmentKPI_Detail_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.xlsx" // Added .xlsx extension
+                    $"Report_DepartmentKPI_AllGroup_Detail_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.xlsx" // Added .xlsx extension
                 );
             }
             // DETAIL
@@ -764,7 +766,7 @@ public class ViewModel : PageModel
                 var colPeriod = "Period";
                 var colCandidate = "Candidate";
                 var colGroupName = "Group";
-                var colDepartmentNameList = new List<string>();
+                // var colDepartmentNameList = new List<string>();
 
                 var excelData = new List<Dictionary<string, object>>();
                 excelData = SingleUserGroupReportDetailList.Select(submission =>
@@ -778,11 +780,16 @@ public class ViewModel : PageModel
 
                     foreach (var ds in submission.DepartmentScores)
                     {
-                        data[$"{ds.DepartmentName}"] = Convert.ToDecimal(ds.ScoreValue.ToString("0.00"));
+                        if (ds.DepartmentName != null)
+                        {
+                            data[$"{ds.DepartmentName}"] = Convert.ToDecimal(ds.ScoreValue.ToString("0.00"));
+                            data[$"Comment on {ds.DepartmentName}"] = ds.Comment ?? string.Empty;
+                        }
                     }
 
                     return data;
                 }).ToList();
+
 
                 // Dynamic Columns
                 var dynamicCols = new List<DynamicExcelColumn>
@@ -790,7 +797,6 @@ public class ViewModel : PageModel
                     new(colPeriod) { Width = 10 },
                     new(colCandidate) { Width = 25 }
                 };
-
                 // Add Missing Keys for Dynamic Columns
                 // **pass dynamicCols and update it (as dynamicCols is reference type)
                 AddMissingDynamicColumns(excelData, dynamicCols);
@@ -800,10 +806,10 @@ public class ViewModel : PageModel
                 MiniExcel.SaveAs(
                     stream: memoryStream,
                     value: excelData,
-                configuration: new OpenXmlConfiguration
-                {
-                    DynamicColumns = dynamicCols.ToArray(),
-                }
+                    configuration: new OpenXmlConfiguration
+                    {
+                        DynamicColumns = dynamicCols.ToArray(),
+                    }
                 );
                 memoryStream.Position = 0; // Reset stream position
 
@@ -1290,7 +1296,7 @@ public class ViewModel : PageModel
         List<DepartmentViewModel> departmentList)
     {
         return userList
-            // .Where(user => user.UserGroup.GroupName.Equals(selectedGroupName, StringComparison.OrdinalIgnoreCase))
+            .Where(user => user.UserGroup.GroupName.Equals(selectedGroupName, StringComparison.OrdinalIgnoreCase))
             .Select(user =>
             {
                 // submission by [user] of [group]
@@ -1316,6 +1322,7 @@ public class ViewModel : PageModel
                         return new DepartmentScoreViewModel
                         {
                             DepartmentName = dpt.DepartmentName,
+                            Comment = submissions?.Comments ?? string.Empty,
                             ScoreValue = submissions?.ScoreValue ?? 0.00M
                         };
                     })

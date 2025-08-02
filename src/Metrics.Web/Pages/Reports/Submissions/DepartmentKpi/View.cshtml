@@ -98,7 +98,7 @@
 
                 @if(!string.IsNullOrEmpty(Model.ViewMode) && !string.IsNullOrEmpty(Model.Group) ) {
                     
-                    @* ==========SUMMARY VIEW======================================== *@
+@* ==================SUMMARY VIEW======================================================================== *@
                     if (Model.ViewMode.Equals("summary", StringComparison.OrdinalIgnoreCase))
                     {
                         @* =====ALL GROUP + SUMMARY============================= *@
@@ -187,119 +187,124 @@
                         }
                     }
 
-                    @* ==========DETAIL VIEW==================================== *@
+@* ==================DETAIL VIEW======================================================================== *@
                     else if (Model.ViewMode.Equals("detail", StringComparison.OrdinalIgnoreCase))
                     {
+
                         @* ===== ALL GROUP + DETAIL ===== *@
                         @* submitter, [department score], ..., score, totalScr *@
-                        @if(Model.AllUserGroupReportDetailList.Any())
+                        if (Model.Group.Equals("all", StringComparison.OrdinalIgnoreCase))
                         {
-                            <table id="allUserGroupDetailTable" class="table table-bordered table-striped">
-                            <thead>
-                                <tr>
-                                    <th>Candidate</th>
-                                    <th>Group</th>
-                                    @foreach(var department in Model.DepartmentList)
-                                    {
-                                        <th>@department.DepartmentName</th>
-                                    }
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach(var entry in Model.AllUserGroupReportDetailList) 
-                                {
+                            @if(Model.AllUserGroupReportDetailList.Any())
+                            {
+                                <table id="allUserGroupDetailTable" class="table table-bordered table-striped">
+                                <thead>
                                     <tr>
-                                        <td>@entry.SubmittedBy.FullName</td>
-                                        <td>@entry.SubmittedBy.UserGroup.GroupName.ToUpper()</td>
-                                        @foreach(var d in Model.DepartmentList)
+                                        <th>Candidate</th>
+                                        <th>Group</th>
+                                        @foreach(var department in Model.DepartmentList)
                                         {
-                                            // if Department == DepartmentScores.Department
-                                            // **likely contains only 1 if exist
-                                            var item = entry.DepartmentScores
-                                                .Where(dc => dc.DepartmentName!= null && dc.DepartmentName.Equals(d.DepartmentName, StringComparison.OrdinalIgnoreCase))
-                                                .FirstOrDefault();
-                                            if (item != null)
+                                            <th>@department.DepartmentName</th>
+                                        }
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach(var entry in Model.AllUserGroupReportDetailList) 
+                                    {
+                                        <tr>
+                                            <td>@entry.SubmittedBy.FullName</td>
+                                            <td>@entry.SubmittedBy.UserGroup.GroupName.ToUpper()</td>
+                                            @foreach(var d in Model.DepartmentList)
                                             {
-                                                if (item.ScoreValue > 0) {
-                                                    <td>@item.ScoreValue</td>
-                                                } else {
+                                                // if Department == DepartmentScores.Department
+                                                // **likely contains only 1 if exist
+                                                var item = entry.DepartmentScores
+                                                    .Where(dc => dc.DepartmentName!= null && dc.DepartmentName.Equals(d.DepartmentName, StringComparison.OrdinalIgnoreCase))
+                                                    .FirstOrDefault();
+                                                if (item != null)
+                                                {
+                                                    if (item.ScoreValue > 0) {
+                                                        <td>@item.ScoreValue</td>
+                                                    } else {
+                                                        <td class="text-secondary">@(0M.ToString("0.00"))</td>
+                                                    }
+                                                }
+                                                else {
                                                     <td class="text-secondary">@(0M.ToString("0.00"))</td>
                                                 }
                                             }
-                                            else {
-                                                <td class="text-secondary">@(0M.ToString("0.00"))</td>
-                                            }
-                                        }
-                                    </tr>
-                                }
-                            </tbody>
-                            <tfoot>
-                                <tr>
-                                    <th></th> <!-- For the Candidate column -->
-                                    <th></th>
-                                    @foreach(var department in Model.DepartmentList)
-                                    {
-                                        <th></th> <!-- Empty cells that will be filled by footerCallback -->
+                                        </tr>
                                     }
-                                </tr>
-                            </tfoot>
-                            </table>
-                        }
-                        @* ===== SINGLE GROUP + DETAIL ===== *@
-                        @* ???submitter, [department score], ..., score, totalScr *@
-                        else if(Model.SingleUserGroupReportDetailList.Any())
-                        {
-                            <table id="singleUserGroupDetailTable" class="table table-bordered table-striped">
-                            <thead>
-                                <tr>
-                                    <th>Candidate</th>
-                                    <th>Group</th>
-                                    @foreach(var department in Model.DepartmentList)
-                                    {
-                                        <th>@department.DepartmentName</th>
-                                    }
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach(var entry in Model.SingleUserGroupReportDetailList) 
-                                {
+                                </tbody>
+                                <tfoot>
                                     <tr>
-                                        <td>@entry.SubmittedBy.FullName</td>
-                                        <td>@entry.SubmittedBy.UserGroup.GroupName</td>
-                                        @foreach(var d in Model.DepartmentList)
+                                        <th></th> <!-- For the Candidate column -->
+                                        <th></th>
+                                        @foreach(var department in Model.DepartmentList)
                                         {
-                                            // if Department == DepartmentScores.Department
-                                            // **likely contains only 1 if exist
-                                            var item = entry.DepartmentScores
-                                                .Where(dc => dc.DepartmentName!= null && dc.DepartmentName.Equals(d.DepartmentName, StringComparison.OrdinalIgnoreCase))
-                                                .FirstOrDefault();
-                                            if (item != null)
-                                            {
-                                                <td>@item.ScoreValue</td>
-                                            }
-                                            else {
-                                                <td>@(0M.ToString("0.00"))</td>
-                                            }
+                                            <th></th> <!-- Empty cells that will be filled by footerCallback -->
                                         }
                                     </tr>
-                                }
-                            </tbody>
-                            <tfoot>
-                                <tr>
-                                    <th></th> <!-- For the Candidate column -->
-                                    <th></th>
-                                    @* <th></th> *@
-                                    @foreach(var department in Model.DepartmentList)
-                                    {
-                                        <th></th> <!-- Empty cells that will be filled by footerCallback -->
-                                    }
-                                </tr>
-                            </tfoot>
-                            </table>
+                                </tfoot>
+                                </table>
+                            }
                         }
-                        else
-                        {
-                            <p class="alert alert-danger text-danger text-center">No Data</p>
+                        else {
+                            @* ===== SINGLE GROUP + DETAIL ===== *@
+                            @* ???submitter, [department score], ..., score, totalScr *@
+                            if(Model.SingleUserGroupReportDetailList.Any())
+                            {
+                                <table id="singleUserGroupDetailTable" class="table table-bordered table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Candidate</th>
+                                        @* <th>Group</th> *@
+                                        @foreach(var department in Model.DepartmentList)
+                                        {
+                                            <th>@department.DepartmentName</th>
+                                        }
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach(var entry in Model.SingleUserGroupReportDetailList) 
+                                    {
+                                        <tr>
+                                            <td>@entry.SubmittedBy.FullName</td>
+                                            @* <td>@(entry.GroupName != null ? entry.GroupName.ToUpper() : "N/A")</td> *@
+                                            @foreach(var d in Model.DepartmentList)
+                                            {
+                                                // if Department == DepartmentScores.Department
+                                                // **likely contains only 1 if exist
+                                                var item = entry.DepartmentScores
+                                                    .Where(dc => dc.DepartmentName!= null && dc.DepartmentName.Equals(d.DepartmentName, StringComparison.OrdinalIgnoreCase))
+                                                    .FirstOrDefault();
+                                                if (item != null)
+                                                {
+                                                    <td>@item.ScoreValue</td>
+                                                }
+                                                else {
+                                                    <td>@(0M.ToString("0.00"))</td>
+                                                }
+                                            }
+                                        </tr>
+                                    }
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <th></th> <!-- For the Candidate column -->
+                                        @* <th></th> *@
+                                        @foreach(var department in Model.DepartmentList)
+                                        {
+                                            <th></th> <!-- Empty cells that will be filled by footerCallback -->
+                                        }
+                                    </tr>
+                                </tfoot>
+                                </table>
+                            }
+                            else
+                            {
+                                <p class="alert alert-danger text-danger text-center">No Data</p>
+                            }
                         }
                     }
                     else
@@ -428,7 +433,7 @@
                 
                         @foreach(var department in Model.DepartmentList)
                         {
-                            var index = Model.DepartmentList.IndexOf(department) + 2; // +1 because Candidate is column 0
+                            var index = Model.DepartmentList.IndexOf(department) + 1; // +1 because Candidate is column 0
                             <text>
                             // Calculate total for @department.DepartmentName (column @index)
                             var total_@(index) = api
