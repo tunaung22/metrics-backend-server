@@ -423,19 +423,30 @@ public class UserService : IUserService
         }
     }
 
-    public async Task<IEnumerable<ApplicationUser>> FindAllActiveAsync()
+    public async Task<IEnumerable<ApplicationUser>> FindAllActiveAsync(string roleName = "Staff")
     {
         try
         {
-            var users = await _userRepository.FindAllAsQueryable()
+            var usersQuery = _userRepository.FindAllAsQueryable()
                 .Include(u => u.Department)
                 .Include(u => u.UserTitle)
                 // .Where(u => )
                 .Where(u =>
                     u.UserName != "sysadmin" &&
                     u.LockoutEnabled == true &&
-                    (u.LockoutEnd == null || u.LockoutEnd <= DateTimeOffset.UtcNow))
-                .ToListAsync();
+                    (u.LockoutEnd == null || u.LockoutEnd <= DateTimeOffset.UtcNow));
+
+            var allRoles = await _roleManager.Roles.ToListAsync();
+            var matchingRole = allRoles.FirstOrDefault(r =>
+                string.Equals(r.Name, roleName, StringComparison.OrdinalIgnoreCase));
+
+            if (matchingRole != null && !string.IsNullOrEmpty(matchingRole.Name))
+            {
+                var roleUsers = await _userManager.GetUsersInRoleAsync(matchingRole.Name);
+                usersQuery = usersQuery.Where(u => roleUsers.Contains(u));
+            }
+
+            var users = await usersQuery.ToListAsync();
 
             return users;
         }

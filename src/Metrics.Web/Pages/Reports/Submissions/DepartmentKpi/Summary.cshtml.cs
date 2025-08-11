@@ -117,7 +117,7 @@ public class SummaryModel : PageModel
         if (userGroups.Any())
             UserGroups = userGroups.ToList();
         // ---------- Load Users ------------------------------------
-        var users = await _userService.FindAllActiveAsync();
+        var users = await _userService.FindAllActiveAsync(roleName: "Staff");
         // ---------- Load User Group Items for Select elemeent -----
         UserGroupListItems = await LoadUserGroupListItems();
 
@@ -262,7 +262,7 @@ public class SummaryModel : PageModel
         if (userGroups.Any())
             UserGroups = userGroups.ToList();
         // ---------- Load Users ------------------------------------
-        var users = await _userService.FindAllActiveAsync();
+        var users = await _userService.FindAllActiveAsync(roleName: "Staff");
         // ---------- Load User Group Items for Select elemeent -----
         UserGroupListItems = await LoadUserGroupListItems();
 

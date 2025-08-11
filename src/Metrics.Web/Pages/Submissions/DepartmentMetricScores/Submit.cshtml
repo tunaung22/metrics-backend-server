@@ -14,6 +14,7 @@
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a asp-page="/Index">Home</a></li>
+            <li class="breadcrumb-item"><a asp-page="/Submissions/DepartmentMetricScores/Index">Submissions</a></li>
             <li class="breadcrumb-item"><a asp-page="/Submissions/DepartmentMetricScores/Index">Submission List</a></li>
             <li class="breadcrumb-item active">Submit</li>
         </ol>
@@ -40,7 +41,7 @@
                     {
                         <form method="post">
                             @* ======== Submitter's Info ========= *@
-                            <div class="d-flex align-items-center mb-2 bg-light p-4">
+                            <div class="d-flex align-items-center mb-2 bg-light p-4 rounded-2">
                                 <h5 class="d-flex align-items-center gap-2 mb-0">
                                     <div class="">Submitter: 
                                         <span class="text-success">@Model.Submitter.FullName</span></div>
@@ -48,18 +49,15 @@
                                         <span class="text-success">@Model.Submitter.Department.DepartmentName</span></div>
                                 </h5>
                                 <div class="form-group col-md d-flex justify-content-end align-items-center gap-2">
-                                        <button type="button" class="btn btn-warning me-2" 
-                                                data-bs-toggle="modal" 
-                                                data-bs-target="#cancelDialogstaticBackdrop">
-                                            <i class="bi bi-x-circle"> </i>Cancel</button>
-                                        @* <button type="submit" class="btn btn-primary me-2">
-                                            <i class="bi bi-check-circle"> </i>Submit
-                                        </button> *@
-                                        <button type="button" class="btn btn-primary me-2" 
-                                                data-bs-toggle="modal" 
-                                                data-bs-target="#submitDialogBackdrop">
-                                            <i class="bi bi-check-circle"> </i>Submit</button>
-                                    </div>
+                                    <button type="button" class="btn btn-warning me-2" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#cancelDialogstaticBackdrop">
+                                        <i class="bi bi-x-circle"> </i>Cancel</button>
+                                    <button type="button" class="btn btn-primary me-2" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#submitDialogBackdrop">
+                                        <i class="bi bi-check-circle"> </i>Submit</button>
+                                </div>
                             </div>
 
                             @* 
@@ -78,81 +76,87 @@
                                 </ul>
                             </div> *@
 
-                            <div class="bg-light p-4">
+                            <div class="">
                             @if (Model.DepartmentList != null) {
                                 var a = Model.DepartmentList.Count;
                                 @for(int i=0 ; i<Model.DepartmentList.Count; i++)
                                 {
-                                    <div class="card mt-4 px-4 py-2">
+                                    <div class="card mt-4">
                                         @* ---------- Target Department ---------- *@
-                                        <div class="d-flex justify-content-between align-items-center pb-4">
-                                            <div>
-                                                <label class="mb-0">
-                                                <strong>@(i+1)</strong>/@Model.DepartmentList.Count Department:
-                                            </label>
-                                                <label class="mb-0 text-primary"
-                                                    asp-for="SubmissionInputs[i].TargetDepartmentId">
-                                                    <strong>@Model.DepartmentList[i].DepartmentName</strong></label>
+                                        @* <div class="card-header fs-4 px-4">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <label class="mb-0">
+                                                        <strong>@(i+1)</strong>/@Model.DepartmentList.Count Department:</label>
+                                                    <label class="mb-0 text-primary"
+                                                        asp-for="SubmissionInputs[i].TargetDepartmentId">
+                                                        <strong>@Model.DepartmentList[i].DepartmentName</strong></label>
+                                                </div>
                                             </div>
-                                            @* <label class="mb-0 me-4">Department: <strong>@(i+1)</strong>/@Model.DepartmentList.Count</label> *@
-                                            <input type="text" 
-                                                asp-for="SubmissionInputs[i].TargetDepartmentId" />
-                                        </div>
+                                        </div> *@
+
                                         @* ---------- Keys ---------- *@
-                                        <div class="row pb-2">
+                                        <div class="row p-4">
                                             @if(Model.DepartmentKeyMetrics.Count > 0)
                                             {
                                                 @* @for(int k=0; k<Model.DepartmentKeyMetrics.Count; k++) *@
                                                 var avaiableKeys = Model.DepartmentKeyMetrics.Where(dkm => dkm.DepartmentId == Model.DepartmentList[i].Id).ToList();
                                                 if (avaiableKeys.Count() > 0) {
-                                                    for (int k=0; k<avaiableKeys.Count; k++) {
-                                                        @* ---------- Key Title ---------- *@
-                                                        <div class="row pb-2">
-                                                            <div class="col-sm-9 col-md-12 col-lg-12">
-                                                                <span class="d-flex">
-                                                                    <input type="text" 
-                                                                        asp-for="SubmissionInputs[i].SubmissionInputItems[k].DepartmentKeyMetricsId" />
-                                                                    <strong class="flex-grow-1 justify-content-start">@(k+1). @avaiableKeys[k].KeyMetric.MetricTitle</strong>
-                                                                    <span class="justify-content-end">
-                                                                        <label class="me-4">Metric: <strong>@(k+1)</strong>/@avaiableKeys.Count</label>
+                                                    <ul class="list-group list-group-flush">
+                                                    @for (int k=0; k<avaiableKeys.Count; k++) 
+                                                    {
+                                                        <li class="list-group-item">
+                                                            @* ---------- Key Title ---------- *@
+                                                            <div class="row pb-2">
+                                                                <div class="col-sm-9 col-md-12 col-lg-12">
+                                                                    <span class="d-flex">
+                                                                        <label class="mb-0">
+                                                                            <strong>@(i+1)</strong>/@Model.DepartmentList.Count Department:</label>
+                                                                        <label class="mb-0 text-primary"
+                                                                            asp-for="SubmissionInputs[i].TargetDepartmentId">
+                                                                            <strong>@Model.DepartmentList[i].DepartmentName</strong></label>
+                                                                        @* <strong class="flex-grow-1 justify-content-start">@(k+1). @avaiableKeys[k].KeyMetric.MetricTitle</strong> *@
+                                                                        <strong class="flex-grow-1 justify-content-start">@avaiableKeys[k].KeyMetric.MetricTitle</strong>
+                                                                        <span class="justify-content-end">
+                                                                            <label class="me-4">Metric: <strong>@(k+1)</strong>/@avaiableKeys.Count</label>
+                                                                        </span>
                                                                     </span>
-                                                                </span>
+                                                                </div>
                                                             </div>
-                                                        </div>
-                                                        @* ---------- Score Value (radio inputs) ---------- *@
-                                                        <div class="row pb-2">
-                                                            <label class="col-3 col-sm-3 col-md-3 col-lg-2 form-label" asp-for="SubmissionInputs[i].SubmissionInputItems[k].ScoreValue">KPI Score: </label>
-                                                            <div class="radio__scoreValue form-check form-check-inline col d-flex flex-wrap gap-2">
-                                                                <span></span>
-                                                                @for(int x = 0; x < scoreList.Length; x++) {
-                                                                    <label for="radio_[@i][@x][@k]" 
-                                                                            class="radioLabel__scoreValue 
-                                                                                    form-check-label
-                                                                                    rounded-3 
-                                                                                    ps-2 pe-4">
-                                                                                    
-                                                                            <input asp-for="SubmissionInputs[i].SubmissionInputItems[k].ScoreValue" 
-                                                                                    id="radio_[@i][@x][@k]"
-                                                                                    class="radioInput__scoreValue"
-                                                                                    type="radio" 
-                                                                                    value="@scoreList[x]" />
-                                                                
-                                                                        <strong>@scoreList[x]</strong>
-                                                                    </label>
-                                                                }
+                                                            @* ---------- Score Value (radio inputs) ---------- *@
+                                                            <div class="row pb-2">
+                                                                <label class="col-3 col-sm-3 col-md-3 col-lg-2 form-label" asp-for="SubmissionInputs[i].SubmissionInputItems[k].ScoreValue">KPI Score: </label>
+                                                                <div class="radio__scoreValue form-check form-check-inline col d-flex flex-wrap gap-2">
+                                                                    <span></span>
+                                                                    @for(int x = 0; x < scoreList.Length; x++) {
+                                                                        <label for="radio_[@i][@x][@k]" 
+                                                                                class="radioLabel__scoreValue 
+                                                                                        form-check-label
+                                                                                        rounded-3 
+                                                                                        ps-2 pe-4">
+                                                                                        
+                                                                                <input asp-for="SubmissionInputs[i].SubmissionInputItems[k].ScoreValue" 
+                                                                                        id="radio_[@i][@x][@k]"
+                                                                                        class="radioInput__scoreValue"
+                                                                                        type="radio" 
+                                                                                        value="@scoreList[x]" />
+                                                                    
+                                                                            <strong>@scoreList[x]</strong>
+                                                                        </label>
+                                                                    }
+                                                                </div>
                                                             </div>
-                                                        </div>
-                                                        @* ---------- Comments ---------- *@
-                                                        <div class="row pb-2">
-                                                            <label asp-for="SubmissionInputs[i].SubmissionInputItems[k].Comments" 
-                                                                    class="col-3 col-sm-3 col-md-3 col-lg-2 form-label">Comments: </label>
-                                                            <div class="col-9 col-sm-9 col-md-9 col-lg-10">
-                                                                <textarea asp-for="SubmissionInputs[i].SubmissionInputItems[k].Comments" class="form-control" rows="2"></textarea>
+                                                            @* ---------- Comments ---------- *@
+                                                            <div class="row pb-4">
+                                                                <label asp-for="SubmissionInputs[i].SubmissionInputItems[k].Comments" 
+                                                                        class="col-3 col-sm-3 col-md-3 col-lg-2 form-label">Comments: </label>
+                                                                <div class="col-9 col-sm-9 col-md-9 col-lg-10">
+                                                                    <textarea asp-for="SubmissionInputs[i].SubmissionInputItems[k].Comments" class="form-control" rows="2"></textarea>
+                                                                </div>
                                                             </div>
-                                                        </div>
+                                                        </li>
                                                     }
-
-
+                                                    </ul>
                                                     @* foreach(var keyMetric in avaiableKeys)
                                                     {
                                                         keyIndex ++;
@@ -208,7 +212,7 @@
                                                 </div>
                                             }
                                         </div>
-                                    </div>
+                                    </div> @* END card *@
                                 }
                             }
                             </div>

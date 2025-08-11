@@ -352,8 +352,9 @@
         $(function() {
             new DataTable('#keyMetricTable', {
                 paging: false,
+                pageLength: 50,
                 info: false,
-                searching: false,
+                searching: true,
                 autoWidth: true,
                 columnDefs: [
                     { width: "5%", targets: [0] },
