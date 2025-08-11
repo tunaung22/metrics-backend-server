@@ -292,7 +292,7 @@ public class ViewModel : PageModel
         // VIEWMODE: DETAIL
         else if (MODE_DETAIL)
         {
-            UserList = await LoadUserList();
+            UserList = await LoadUserList("Staff");
             if (UserList.Count == 0)
             {
                 ModelState.AddModelError(string.Empty, "No users found.");
@@ -678,7 +678,7 @@ public class ViewModel : PageModel
         }
         else if (MODE_DETAIL)
         {
-            UserList = await LoadUserList();
+            UserList = await LoadUserList("Staff");
             if (UserList.Count == 0)
             {
                 ModelState.AddModelError(string.Empty, "No users found.");
@@ -697,6 +697,7 @@ public class ViewModel : PageModel
                 // PREPARE FOR EXCEL FILE
                 var colPeriod = "Period";
                 var colCandidate = "Candidate";
+                var colDepartment = "Department";
                 var colGroupName = "Group";
                 var colDepartmentNameList = new List<string>();
                 // Row: [Total] [Total] [Total]
@@ -709,6 +710,7 @@ public class ViewModel : PageModel
                     {
                         [colPeriod] = submission.PeriodName ?? "[undefined period]",
                         [colCandidate] = submission.SubmittedBy.FullName ?? "[undefined candidate]",
+                        [colDepartment] = submission.SubmittedBy.Department.DepartmentName ?? "[undefined department]",
                         [colGroupName] = submission.SubmittedBy.UserGroup.GroupName.ToUpper()
                     };
 
@@ -765,6 +767,7 @@ public class ViewModel : PageModel
                 // PREPARE FOR EXCEL FILE
                 var colPeriod = "Period";
                 var colCandidate = "Candidate";
+                var colDepartment = "Department";
                 var colGroupName = "Group";
                 // var colDepartmentNameList = new List<string>();
 
@@ -775,6 +778,7 @@ public class ViewModel : PageModel
                     {
                         [colPeriod] = submission.PeriodName ?? "undefined period",
                         [colCandidate] = submission.SubmittedBy.FullName ?? "[undefined candidate]",
+                        [colDepartment] = submission.SubmittedBy.Department.DepartmentName ?? "[undefined department]",
                         [colGroupName] = submission.SubmittedBy.UserGroup.GroupName.ToUpper() ?? "[undefined group]"
                     };
 
@@ -1037,34 +1041,35 @@ public class ViewModel : PageModel
         return null;
     }
 
-    private async Task<List<UserViewModel>> LoadUserList()
+    private async Task<List<UserViewModel>> LoadUserList(string roleName)
     {
-        var users = await _userService.FindAllActiveAsync();
+        var users = await _userService.FindAllActiveAsync(roleName);
 
 
         if (users.Any())
         {
-            return users.Select(user => new UserViewModel
-            {
-                Id = user.Id,
-                UserName = user.UserName ?? "unknown username",
-                FullName = user.FullName,
-                PhoneNumber = user.PhoneNumber,
-                ContactAddress = user.ContactAddress,
-                Department = new DepartmentViewModel
+            return users
+                .Select(user => new UserViewModel
                 {
-                    Id = user.Department.Id,
-                    DepartmentCode = user.Department.DepartmentCode,
-                    DepartmentName = user.Department.DepartmentName
-                },
-                UserGroup = new UserGroupViewModel
-                {
-                    Id = user.UserTitle.Id,
-                    GroupCode = user.UserTitle.TitleCode,
-                    GroupName = user.UserTitle.TitleName,
-                    Description = user.UserTitle.Description
-                }
-            }).ToList();
+                    Id = user.Id,
+                    UserName = user.UserName ?? "unknown username",
+                    FullName = user.FullName,
+                    PhoneNumber = user.PhoneNumber,
+                    ContactAddress = user.ContactAddress,
+                    Department = new DepartmentViewModel
+                    {
+                        Id = user.Department.Id,
+                        DepartmentCode = user.Department.DepartmentCode,
+                        DepartmentName = user.Department.DepartmentName
+                    },
+                    UserGroup = new UserGroupViewModel
+                    {
+                        Id = user.UserTitle.Id,
+                        GroupCode = user.UserTitle.TitleCode,
+                        GroupName = user.UserTitle.TitleName,
+                        Description = user.UserTitle.Description
+                    }
+                }).ToList();
         }
 
         return [];
@@ -1235,18 +1240,18 @@ public class ViewModel : PageModel
     /// <summary>
     /// 
     /// </summary>
-    /// <param name="submissions"></param>
+    /// <param name="submissionsByPeriod"></param>
     /// <param name="userList"></param>
     /// <param name="departmentList"></param>
     /// <returns></returns>
     private List<AllUserGroupReportDetailViewModel> LoadAllUserGroupDetailList(
-        List<KpiSubmission> submissions,
+        List<KpiSubmission> submissionsByPeriod,
         List<UserViewModel> userList,
         List<DepartmentViewModel> departmentList)
     {
         return userList.Select(user =>
         {
-            var userSubmissions = submissions
+            var userSubmissions = submissionsByPeriod
                 .Where(s => s.ApplicationUserId == user.Id)
                 // **note: sort by DepartmentName is required
                 .OrderBy(s => s.TargetDepartment.DepartmentName)
@@ -1266,6 +1271,7 @@ public class ViewModel : PageModel
                     return new DepartmentScoreViewModel
                     {
                         DepartmentName = dpt.DepartmentName,
+                        Comment = submission?.Comments ?? string.Empty,
                         ScoreValue = submission?.ScoreValue ?? 0.00M
                     };
                 })

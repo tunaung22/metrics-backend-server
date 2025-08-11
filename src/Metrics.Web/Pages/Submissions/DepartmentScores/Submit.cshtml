@@ -14,6 +14,7 @@
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a asp-page="/Index">Home</a></li>
+            <li class="breadcrumb-item"><a asp-page="/Submissions/Index">Department Score</a></li>
             <li class="breadcrumb-item"><a asp-page="/Submissions/DepartmentScores/Index">Submission List</a></li>
             <li class="breadcrumb-item active">Submit</li>
         </ol>
@@ -365,6 +366,7 @@
             // ------------------- Data Table ----------------------------------
             new DataTable('#dataTable', {
                 paging: false,
+                pageLength: 50,
                 info: false,
                 searching: false,
                 columnDefs: [

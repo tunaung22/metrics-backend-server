@@ -201,6 +201,7 @@
                                 <thead>
                                     <tr>
                                         <th>Candidate</th>
+                                        <th>Department</th>
                                         <th>Group</th>
                                         @foreach(var department in Model.DepartmentList)
                                         {
@@ -213,6 +214,7 @@
                                     {
                                         <tr>
                                             <td>@entry.SubmittedBy.FullName</td>
+                                            <td>@entry.SubmittedBy.Department.DepartmentName</td>
                                             <td>@entry.SubmittedBy.UserGroup.GroupName.ToUpper()</td>
                                             @foreach(var d in Model.DepartmentList)
                                             {
@@ -240,6 +242,7 @@
                                     <tr>
                                         <th></th> <!-- For the Candidate column -->
                                         <th></th>
+                                        <th></th>
                                         @foreach(var department in Model.DepartmentList)
                                         {
                                             <th></th> <!-- Empty cells that will be filled by footerCallback -->
@@ -258,6 +261,7 @@
                                 <thead>
                                     <tr>
                                         <th>Candidate</th>
+                                        <th>Department</th>
                                         @* <th>Group</th> *@
                                         @foreach(var department in Model.DepartmentList)
                                         {
@@ -270,6 +274,7 @@
                                     {
                                         <tr>
                                             <td>@entry.SubmittedBy.FullName</td>
+                                            <td>@entry.SubmittedBy.Department.DepartmentName</td>
                                             @* <td>@(entry.GroupName != null ? entry.GroupName.ToUpper() : "N/A")</td> *@
                                             @foreach(var d in Model.DepartmentList)
                                             {
@@ -292,7 +297,7 @@
                                 <tfoot>
                                     <tr>
                                         <th></th> <!-- For the Candidate column -->
-                                        @* <th></th> *@
+                                        <th></th>
                                         @foreach(var department in Model.DepartmentList)
                                         {
                                             <th></th> <!-- Empty cells that will be filled by footerCallback -->
@@ -322,6 +327,7 @@
             if($("#allUserGroupSummaryTable").length) {
                 new DataTable('#allUserGroupSummaryTable', {
                     paging: true,
+                    pageLength: 50,
                     info: true,
                     searching: false,
                     autoWidth: true,
@@ -344,6 +350,7 @@
             else if($("#singleUserGroupSummaryTable").length) {
                 new DataTable('#singleUserGroupSummaryTable', {
                     paging: true,
+                    pageLength: 50,
                     info: true,
                     searching: false,
                     autoWidth: true,
@@ -366,6 +373,7 @@
             else if($("#allUserGroupDetailTable").length) {
                 new DataTable('#allUserGroupDetailTable', {
                     paging: true,
+                    pageLength: 50,
                     info: true,
                     searching: false,
                     autoWidth: true,
@@ -382,13 +390,14 @@
                     initComplete: function() {
                         $('#allUserGroupDetailTable thead th').addClass('text-light text-center align-middle');
                         $('#allUserGroupDetailTable thead th').addClass('bg-brand-color');
+                        $('#allUserGroupDetailTable tfoot th').addClass('bg-brand-color text-light');
                     },
                     footerCallback: function (row, data, start, end, display) {
                         let api = this.api();
                 
                         @foreach(var department in Model.DepartmentList)
                         {
-                            var index = Model.DepartmentList.IndexOf(department) + 2; // +1 because Candidate is column 0
+                            var index = Model.DepartmentList.IndexOf(department) + 3; // +1 because Candidate is column 0
                             <text>
                             // Calculate total for @department.DepartmentName (column @index)
                             var total_@(index) = api
@@ -411,6 +420,7 @@
             else if($("#singleUserGroupDetailTable").length) {
                 new DataTable('#singleUserGroupDetailTable', {
                     paging: true,
+                    pageLength: 50,
                     info: true,
                     searching: false,
                     autoWidth: true,
@@ -427,13 +437,14 @@
                     initComplete: function() {
                         $('#singleUserGroupDetailTable thead th').addClass('text-light text-center align-middle');
                         $('#singleUserGroupDetailTable thead th').addClass('bg-brand-color');
+                        $('#singleUserGroupDetailTable tfoot th').addClass('bg-brand-color text-light');
                     },
                     footerCallback: function (row, data, start, end, display) {
                         let api = this.api();
                 
                         @foreach(var department in Model.DepartmentList)
                         {
-                            var index = Model.DepartmentList.IndexOf(department) + 1; // +1 because Candidate is column 0
+                            var index = Model.DepartmentList.IndexOf(department) + 2; // +1 because Candidate is column 0
                             <text>
                             // Calculate total for @department.DepartmentName (column @index)
                             var total_@(index) = api

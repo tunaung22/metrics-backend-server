@@ -22,7 +22,7 @@ public interface IUserService
     // Task<IdentityResult> UnlockUserByIdAsync(string userId);
     // toggle lock user
     // Task<IdentityResult> ToggleLockUserByIdAsync(string userId);
-    Task<IEnumerable<ApplicationUser>> FindAllActiveAsync();
+    Task<IEnumerable<ApplicationUser>> FindAllActiveAsync(string roleName);
     Task<IEnumerable<ApplicationUser>> FindAllAsync();
 
 
