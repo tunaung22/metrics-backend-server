@@ -14,13 +14,13 @@ public class EditModel : PageModel
     private readonly IUserService _userService;
     private readonly IDepartmentService _departmentService;
     private readonly IKpiSubmissionPeriodService _kpiPeriodService;
-    private readonly ICaseFeedbackSubmissionService _caseFeedbackSubmissionService;
+    private readonly ICaseFeedbackService _caseFeedbackSubmissionService;
 
     public EditModel(
         IUserService userService,
         IDepartmentService departmentService,
         IKpiSubmissionPeriodService kpiPeriodService,
-        ICaseFeedbackSubmissionService caseFeedbackSubmissionService)
+        ICaseFeedbackService caseFeedbackSubmissionService)
     {
         _userService = userService;
         _departmentService = departmentService;
@@ -35,9 +35,9 @@ public class EditModel : PageModel
         public DateTimeOffset SubmittedAt { get; set; }
         public string SubmitterId { get; set; } = null!; // Foreign Keys
 
-        [Required(ErrorMessage = "Score is required")]
-        [Range(-5, -1, ErrorMessage = "Score must be between -1 to -5")]
-        public decimal ScoreValue { get; set; } // **note: Negative value
+        // [Required(ErrorMessage = "Score is required")]
+        // [Range(-5, -1, ErrorMessage = "Score must be between -1 to -5")]
+        // public decimal ScoreValue { get; set; } // **note: Negative value
 
         [Required(ErrorMessage = "Department is required")]
         public long CaseDepartmentId { get; set; } // Foreign Keys
@@ -56,7 +56,7 @@ public class EditModel : PageModel
         [Required(ErrorMessage = "Room Number is required")]
         public string RoomNumber { get; set; } = null!;
         public string? Description { get; set; } = string.Empty; // Case Details
-        public string? Comments { get; set; } = string.Empty; // Additional Notes
+        // public string? Comments { get; set; } = string.Empty; // Additional Notes
     }
 
     [BindProperty]
@@ -154,7 +154,7 @@ public class EditModel : PageModel
             SubmissionPeriodId = submission.KpiSubmissionPeriodId,
             SubmittedAt = submission.SubmittedAt,
             SubmitterId = submission.SubmitterId,
-            ScoreValue = submission.NegativeScoreValue,
+            // ScoreValue = submission.NegativeScoreValue,
             CaseDepartmentId = submission.CaseDepartmentId,
             IncidentAt = submission.IncidentAt,
             WardName = submission.WardName,
@@ -162,7 +162,7 @@ public class EditModel : PageModel
             PatientName = submission.PatientName,
             RoomNumber = submission.RoomNumber,
             Description = submission.Description ?? string.Empty,
-            Comments = submission.Comments ?? string.Empty
+            // Comments = submission.Comments ?? string.Empty
         };
 
         return Page();
@@ -213,24 +213,19 @@ public class EditModel : PageModel
         // ----------SUBMIT THE FORM--------------------------------------------
         try
         {
-            var entity = new CaseFeedbackSubmission
-            {
-                KpiSubmissionPeriodId = SelectedPeriod.Id,
-                SubmittedAt = DateTimeOffset.UtcNow,
-                NegativeScoreValue = FormInput.ScoreValue,
-                SubmitterId = FormInput.SubmitterId,
-                // **SubmitterDepartment, PhoneNumber are from Submitter 
-                // Case Info
-                CaseDepartmentId = FormInput.CaseDepartmentId,
-                WardName = FormInput.WardName,
-                CPINumber = FormInput.CPINumber,
-                PatientName = FormInput.PatientName,
-                RoomNumber = FormInput.RoomNumber,
-                IncidentAt = FormInput.IncidentAt.UtcDateTime,
-                // Case Info > Details
-                Description = FormInput.Description,
-                Comments = FormInput.Comments
-            };
+            var entity = CaseFeedback.Create(
+                kpiSubmissionPeriodId: SelectedPeriod.Id,
+                submittedAt: DateTimeOffset.UtcNow,
+                submitterId: FormInput.SubmitterId,
+                caseDepartmentId: FormInput.CaseDepartmentId,
+                wardName: FormInput.WardName,
+                cPINumber: FormInput.CPINumber,
+                patientName: FormInput.PatientName,
+                roomNumber: FormInput.RoomNumber,
+                incidentAt: FormInput.IncidentAt.UtcDateTime,
+                description: FormInput.Description,
+                isDeleted: false
+            );
 
             await _caseFeedbackSubmissionService.UpdateAsync(TargetSubmissionLookupId, entity);
 

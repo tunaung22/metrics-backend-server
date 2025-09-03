@@ -36,12 +36,16 @@ public class UserTitleConfig : IEntityTypeConfiguration<UserTitle>
         builder.Property(e => e.Description)
             .HasColumnName("description")
             .HasColumnType("text");
+        builder.Property(e => e.IsDeleted)
+            .HasColumnName("is_deleted")
+            .HasColumnType("boolean")
+            .HasDefaultValue(false);
         builder.Property(e => e.CreatedAt)
             .HasColumnName("created_at")
             .HasColumnType("timestamp with time zone");
         builder.Property(e => e.ModifiedAt)
-                .HasColumnName("modified_at")
-                .HasColumnType("timestamp with time zone");
+            .HasColumnName("modified_at")
+            .HasColumnType("timestamp with time zone");
 
         // ===== Foreign Keys ======
     }

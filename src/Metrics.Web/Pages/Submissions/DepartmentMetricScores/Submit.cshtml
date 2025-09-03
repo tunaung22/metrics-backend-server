@@ -19,14 +19,13 @@
             <li class="breadcrumb-item active">Submit</li>
         </ol>
     </nav>
-</diusing Microsoft.EntityFrameworkCore.Metadata.Internal;
-#line default
+</div>
 
 
 <div class="container-fluid">
     <div class="p-4">
 
-        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger text-danger"></div>
 
         @if(Model.IsSubmissionValid)  @* Date is due or early. *@
         {

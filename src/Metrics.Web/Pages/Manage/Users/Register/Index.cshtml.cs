@@ -1,5 +1,5 @@
 using Metrics.Application.Domains;
-using Metrics.Application.DTOs.UserAccountDtos;
+using Metrics.Application.DTOs.User;
 using Metrics.Application.Exceptions;
 using Metrics.Application.Interfaces.IServices;
 using Microsoft.AspNetCore.Authorization;
@@ -153,7 +153,7 @@ public class IndexModel : PageModel
         // save user
         try
         {
-            var createDto = new UserAccountCreateDto
+            var createDto = new UserCreateDto
             {
                 // account
                 UserName = FormInput.UserName.ToLower(),

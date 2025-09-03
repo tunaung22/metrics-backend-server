@@ -25,5 +25,6 @@ public class ApplicationUser : IdentityUser, IAuditColumn
     // ----- Collection Navigational Properties
     public List<KpiSubmission> KpiSubmissions { get; set; } = [];
     public List<KeyKpiSubmission> KeyKpiSubmissions { get; set; } = [];
-    public List<CaseFeedbackSubmission> CaseFeedbackSubmissions { get; set; } = [];
+    public List<CaseFeedback> CaseFeedbacks { get; set; } = [];
+    public List<CaseFeedbackScoreSubmission> CaseFeedbackScoreSubmissions { get; set; } = [];
 }

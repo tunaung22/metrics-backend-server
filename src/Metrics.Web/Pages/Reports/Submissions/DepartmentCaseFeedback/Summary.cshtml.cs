@@ -1,4 +1,5 @@
 using Metrics.Application.Domains;
+using Metrics.Application.DTOs.CaseFeedbackScoreSubmission;
 using Metrics.Application.Interfaces.IServices;
 using Metrics.Web.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -17,20 +18,20 @@ public class SummaryModel : PageModel
     private readonly IUserService _userService;
     private readonly IUserTitleService _userTitleService;
     private readonly IDepartmentService _departmentService;
-    private readonly ICaseFeedbackSubmissionService _caseFeedbackService;
+    private readonly ICaseFeedbackScoreSubmissionService _caseFeedbackScoreSubmissionService;
 
     public SummaryModel(
         IKpiSubmissionPeriodService kpiPeriodService,
         IUserService userService,
         IUserTitleService userTitleService,
         IDepartmentService departmentService,
-        ICaseFeedbackSubmissionService caseFeedbackService)
+        ICaseFeedbackScoreSubmissionService caseFeedbackScoreSubmissionService)
     {
         _kpiPeriodService = kpiPeriodService;
         _userService = userService;
         _userTitleService = userTitleService;
         _departmentService = departmentService;
-        _caseFeedbackService = caseFeedbackService;
+        _caseFeedbackScoreSubmissionService = caseFeedbackScoreSubmissionService;
     }
 
     // ========== MODELS =======================================================
@@ -188,44 +189,48 @@ public class SummaryModel : PageModel
         }).ToList();
 
         // ---------- Load Submissions by Period -------------------------------
-        var caseFeedbackSubmissions = await _caseFeedbackService
+        var caseFeedbackSubmissions = await _caseFeedbackScoreSubmissionService
             .FindByKpiPeriodAsync(SelectedPeriod.Id);
 
-        // Fore each department, get total score filterd by user group
-        foreach (var department in DepartmentList)
+        if (caseFeedbackSubmissions.IsSuccess && caseFeedbackSubmissions.Data != null)
         {
-            // Case Department == department
-            var submissionsByDepartment = caseFeedbackSubmissions
-                .Where(s => s.CaseDepartmentId == department.Id)
-                .ToList();
-
-            // ----------BY ALL GROUP-------------------------------------------
-            if (string.IsNullOrEmpty(Group)
-                || Group.Trim().Equals("all", StringComparison.CurrentCultureIgnoreCase))
+            // Fore each department, get total score filterd by user group
+            foreach (var department in DepartmentList)
             {
-                var submission = LoadAllUserGroupSubmissions(
-                    submissionsByDepartment,
-                    department);
+                // Case Department == department
+                var submissionsByDepartment = caseFeedbackSubmissions.Data
+                    .Where(s => s.CaseFeedback.CaseDepartmentId == department.Id)
+                    .ToList();
 
-                AllUserGroupSubmissionsReports.Add(submission);
-            }
-            // ----------BY EACH GROUP----------------------------------------
-            else
-            {
-                if (UserGroups.Where(g => g.GroupName
-                    .Contains(Group, StringComparison.CurrentCultureIgnoreCase)).Count() == 0)
+                // ----------BY ALL GROUP-------------------------------------------
+                if (string.IsNullOrEmpty(Group)
+                    || Group.Trim().Equals("all", StringComparison.CurrentCultureIgnoreCase))
                 {
-                    ModelState.AddModelError(string.Empty, $"Group {Group} not found.");
-                    return Page();
+                    var submission = LoadAllUserGroupSubmissions(
+                        submissionsByDepartment,
+                        department);
+
+                    AllUserGroupSubmissionsReports.Add(submission);
                 }
+                // ----------BY EACH GROUP----------------------------------------
+                else
+                {
+                    if (UserGroups.Where(g => g.GroupName
+                        .Contains(Group, StringComparison.CurrentCultureIgnoreCase)).Count() == 0)
+                    {
+                        ModelState.AddModelError(string.Empty, $"Group {Group} not found.");
+                        return Page();
+                    }
 
-                var submissions = LoadSingleUserGroupSubmissions(
-                    submissionsByDepartment,
-                    department,
-                    Group);
+                    var submissions = LoadSingleUserGroupSubmissions(
+                        submissionsByDepartment,
+                        department,
+                        Group);
 
-                SingleUserGroupSubmissionsReports.Add(submissions);
+                    SingleUserGroupSubmissionsReports.Add(submissions);
+                }
             }
+
         }
 
         return Page();
@@ -296,46 +301,51 @@ public class SummaryModel : PageModel
         }).ToList();
 
         // ---------- Load Submissions by Period -------------------------------
-        var caseFeedbackSubmissions = await _caseFeedbackService
+        var caseFeedbackSubmissions = await _caseFeedbackScoreSubmissionService
             .FindByKpiPeriodAsync(SelectedPeriod.Id);
 
-        // Fore each department, get total score filterd by user group
-        foreach (var department in DepartmentList)
+        if (caseFeedbackSubmissions.IsSuccess && caseFeedbackSubmissions.Data != null)
         {
-            // Case Department == department
-            var submissionsByDepartment = caseFeedbackSubmissions
-                .Where(s => s.CaseDepartmentId == department.Id)
-                .ToList();
-
-            // ----------BY ALL GROUP-------------------------------------------
-            if (string.IsNullOrEmpty(Group)
-                || Group.Trim().Equals("all", StringComparison.CurrentCultureIgnoreCase))
+            // Fore each department, get total score filterd by user group
+            foreach (var department in DepartmentList)
             {
+                // Case Department == department
+                var submissionsByDepartment = caseFeedbackSubmissions.Data
+                    .Where(s => s.CaseFeedback.CaseDepartmentId == department.Id)
+                    .ToList();
 
-                var submission = LoadAllUserGroupSubmissions(
-                                    submissionsByDepartment,
-                                    department);
-
-                AllUserGroupSubmissionsReports.Add(submission);
-            }
-            // ----------BY EACH GROUP------------------------------------------
-            else
-            {
-                if (UserGroups.Where(g => g.GroupName
-                    .Contains(Group, StringComparison.CurrentCultureIgnoreCase)).Count() == 0)
+                // ----------BY ALL GROUP-------------------------------------------
+                if (string.IsNullOrEmpty(Group)
+                    || Group.Trim().Equals("all", StringComparison.CurrentCultureIgnoreCase))
                 {
-                    ModelState.AddModelError(string.Empty, $"Group {Group} not found.");
-                    return Page();
+
+                    var submission = LoadAllUserGroupSubmissions(
+                                        submissionsByDepartment,
+                                        department);
+
+                    AllUserGroupSubmissionsReports.Add(submission);
                 }
+                // ----------BY EACH GROUP------------------------------------------
+                else
+                {
+                    if (UserGroups.Where(g => g.GroupName
+                        .Contains(Group, StringComparison.CurrentCultureIgnoreCase)).Count() == 0)
+                    {
+                        ModelState.AddModelError(string.Empty, $"Group {Group} not found.");
+                        return Page();
+                    }
 
-                var submissions = LoadSingleUserGroupSubmissions(
-                    submissionsByDepartment,
-                    department,
-                    Group);
+                    var submissions = LoadSingleUserGroupSubmissions(
+                        submissionsByDepartment,
+                        department,
+                        Group);
 
-                SingleUserGroupSubmissionsReports.Add(submissions);
-            }
-        } // end of foreach department
+                    SingleUserGroupSubmissionsReports.Add(submissions);
+                }
+            } // end of foreach department
+
+        }
+
 
         // Export Excel
         // ---------- Prepare for Excel Export ---------------------------------
@@ -471,7 +481,7 @@ public class SummaryModel : PageModel
     }
 
     private AllUserGroupSubmissionExcelViewModel LoadAllUserGroupSubmissions(
-        List<CaseFeedbackSubmission> submissionsByDepartment,
+        List<CaseFeedbackScoreSubmissionDto> submissionsByDepartment,
         DepartmentViewModel department)
     {
         List<UserGroupSubmission> userGroupSubmissions = [];
@@ -483,7 +493,7 @@ public class SummaryModel : PageModel
             // the code will still work correctly without errors.
             var submissionsByGroup = submissionsByDepartment
                 .Where(s =>
-                    s.SubmittedBy.UserTitle.Id == group.Id)
+                    s.SubmittedBy.UserGroup.Id == group.Id)
                 .ToList();
 
             userGroupSubmissions.Add(new UserGroupSubmission
@@ -513,7 +523,7 @@ public class SummaryModel : PageModel
     }
 
     private SingleUserGroupSubmissionExcelViewModel LoadSingleUserGroupSubmissions(
-        List<CaseFeedbackSubmission> submissionsByDepartment,
+        List<CaseFeedbackScoreSubmissionDto> submissionsByDepartment,
         DepartmentViewModel department,
         string groupName)
     {
@@ -521,7 +531,7 @@ public class SummaryModel : PageModel
         // If filteredByDepartment is an empty list, 
         // the code will still work correctly without errors.
         var submissions = submissionsByDepartment
-            .Where(s => s.SubmittedBy.UserTitle.TitleName == Group)
+            .Where(s => s.SubmittedBy.UserGroup.GroupName.Equals(Group, StringComparison.InvariantCultureIgnoreCase))
             .ToList();
 
         var totalSubmission = submissions.Count;

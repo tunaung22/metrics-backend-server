@@ -37,7 +37,8 @@ class DepartmentConfig : IEntityTypeConfiguration<Department>
             .IsRequired();
         builder.Property(e => e.IsDeleted)
             .HasColumnName("is_deleted")
-            .HasColumnType("boolean");
+            .HasColumnType("boolean")
+            .HasDefaultValue(false);
         builder.Property(e => e.CreatedAt)
             .HasColumnName("created_at")
             .HasColumnType("timestamp with time zone");

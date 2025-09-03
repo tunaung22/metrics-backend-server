@@ -29,16 +29,15 @@
     @RenderSection("Styles", required: false)
 </head>
 <body class="d-flex flex-column min-vh-100">
-    <header>
-        <nav class="navbar fixed-top bg-body-tertiary
-                        navbar-collapse-xs
-                        navbar-collapse-sm
-                        navbar-expand-md 
-                        navbar-expand-lg 
-                        border-bottom 
-                        box-shadow 
-                        mb-3
-                        metrics-main-navbar" 
+    <header class="app-header sticky-top">
+        <nav id="appNavbar" class="app-navbar 
+                    navbar 
+                    navbar-collapse-xs
+                    navbar-collapse-sm
+                    navbar-expand-md 
+                    navbar-expand-lg 
+                    border-bottom 
+                    metrics-main-navbar" 
                 aria-label="Main navigation">
             <div class="container-fluid">
                 <span class="d-flex align-items-center no-select pe-2 text-branding">
@@ -99,7 +98,13 @@
                                 <a asp-page="/Submissions/Index"
                                     asp-area="" 
                                     class="nav-link @(currentUrl.StartsWithSegments("/submissions/") ? "activeLink" : "")">
-                                        <i class="bi bi-ui-checks"></i> Submissions</a>
+                                        <i class="bi bi-ui-checks"></i> Score Submissions</a>
+                            </li>
+                            <li class="nav-item">
+                                <a asp-page="/Submissions/DepartmentCaseFeedback/Index"
+                                    asp-area="" 
+                                    class="nav-link @(currentUrl.StartsWithSegments("/submissions/department-case-feedback") ? "activeLink" : "")">
+                                        <i class="bi bi-ui-checks"></i> Case Feedback</a>
                             </li>
                         }
 
@@ -119,7 +124,7 @@
             </div>
         </nav>
     </header>
-    <div id="main-content" class="container-fluid" style="padding-top: 4em;">
+    <div id="main-content" class="">
         <main role="main" class="pb-3">
             @RenderBody()
         </main>

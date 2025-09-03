@@ -1,4 +1,4 @@
-using Metrics.Application.DTOs.UserAccountDtos;
+using Metrics.Application.DTOs.User;
 using Metrics.Application.Domains;
 
 namespace Metrics.Application.Mappers.DtoMappers;
@@ -6,7 +6,7 @@ namespace Metrics.Application.Mappers.DtoMappers;
 public static class UserAccountDtoMapper
 {
     // UserAccountCreateDto <-> EmployeeCreateDto
-    public static ApplicationUser ToEntity(this UserAccountCreateDto createDto)
+    public static ApplicationUser ToEntity(this UserCreateDto createDto)
     {
         return new ApplicationUser
         {

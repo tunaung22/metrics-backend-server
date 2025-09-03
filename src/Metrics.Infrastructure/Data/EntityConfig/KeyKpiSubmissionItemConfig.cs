@@ -33,6 +33,10 @@ public class KeyKpiSubmissionItemConfig : IEntityTypeConfiguration<KeyKpiSubmiss
         builder.Property(e => e.Comments)
             .HasColumnName("comments")
             .HasColumnType("text");
+        builder.Property(e => e.IsDeleted)
+            .HasColumnName("is_deleted")
+            .HasColumnType("boolean")
+            .HasDefaultValue(false);
         builder.Property(e => e.CreatedAt)
             .HasColumnName("created_at")
             .HasColumnType("timestamp with time zone");

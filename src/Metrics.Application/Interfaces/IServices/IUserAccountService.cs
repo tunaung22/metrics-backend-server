@@ -1,4 +1,4 @@
-using Metrics.Application.DTOs.UserAccountDtos;
+using Metrics.Application.DTOs.User;
 using Microsoft.AspNetCore.Identity;
 
 namespace Metrics.Application.Interfaces.IServices;
@@ -6,5 +6,5 @@ namespace Metrics.Application.Interfaces.IServices;
 public interface IUserAccountService
 {
 
-    Task<IdentityResult> RegisterUserAsync(UserAccountCreateDto dto);
+    Task<IdentityResult> RegisterUserAsync(UserCreateDto dto);
 }

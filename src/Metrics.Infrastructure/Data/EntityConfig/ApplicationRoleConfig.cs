@@ -19,7 +19,7 @@ public class ApplicationRoleConfig : IEntityTypeConfiguration<ApplicationRole>
             .HasColumnName("created_at")
             .HasColumnType("timestamp with time zone");
         builder.Property(e => e.ModifiedAt)
-                .HasColumnName("modified_at")
-                .HasColumnType("timestamp with time zone");
+            .HasColumnName("modified_at")
+            .HasColumnType("timestamp with time zone");
     }
 }

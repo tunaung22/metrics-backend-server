@@ -61,7 +61,7 @@
                     <th>No.</th>
                     <th>Submitted At</th>
                     <th>Case Department</th>
-                    <th>Score</th>
+                    @* <th>Score</th> *@
                     <th>Incident Date/Time</th>
                     <th>Ward</th>
                     <th>Actions</th>
@@ -84,9 +84,9 @@
                             <td class="text-danger">
                                 @submission.CaseDepartment.DepartmentName
                             </td>
-                            <td class="text-danger">
+                            @* <td class="text-danger">
                                 <strong>@submission.NegativeScoreValue</strong>
-                            </td>
+                            </td> *@
                             <td>
                                 <strong>@submission.IncidentAt.ToLocalTime().ToString("dd MMM, yyyy hh:mm tt")</strong>
                             </td>

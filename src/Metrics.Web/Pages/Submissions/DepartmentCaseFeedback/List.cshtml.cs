@@ -12,12 +12,12 @@ public class ListModel : PageModel
 {
     private readonly IUserService _userService;
     private readonly IKpiSubmissionPeriodService _kpiPeriodService;
-    private readonly ICaseFeedbackSubmissionService _caseFeedbackService;
+    private readonly ICaseFeedbackService _caseFeedbackService;
 
     public ListModel(
         IUserService userService,
         IKpiSubmissionPeriodService kpiPeriodService,
-        ICaseFeedbackSubmissionService caseFeedbackService)
+        ICaseFeedbackService caseFeedbackService)
     {
         _userService = userService;
         _kpiPeriodService = kpiPeriodService;
@@ -31,7 +31,7 @@ public class ListModel : PageModel
         public long Id { get; set; }
         public Guid LookupId { get; set; }
         public DateTimeOffset SubmittedAt { get; set; }
-        public decimal NegativeScoreValue { get; set; }
+        // public decimal NegativeScoreValue { get; set; }
         public string SubmitterId { get; set; } = null!;
         public UserViewModel SubmittedBy { get; set; } = null!;
         // Case Info
@@ -44,7 +44,7 @@ public class ListModel : PageModel
         public DateTimeOffset IncidentAt { get; set; }
         // Case Info > Details
         public string? Description { get; set; } = string.Empty;
-        public string? Comments { get; set; } = string.Empty;
+        // public string? Comments { get; set; } = string.Empty;
     }
     public List<CaseFeedbackSubmissionViewModel> ExistingCaseFeedbackSubmissions { get; set; } = [];
 
@@ -136,7 +136,7 @@ public class ListModel : PageModel
                             DepartmentCode = s.CaseDepartment.DepartmentCode,
                             DepartmentName = s.CaseDepartment.DepartmentName
                         },
-                        NegativeScoreValue = s.NegativeScoreValue,
+                        // NegativeScoreValue = s.NegativeScoreValue,
 
                         IncidentAt = s.IncidentAt.ToLocalTime(),
                         WardName = s.WardName,
@@ -144,7 +144,7 @@ public class ListModel : PageModel
                         PatientName = s.PatientName,
                         RoomNumber = s.RoomNumber,
                         Description = s.Description ?? string.Empty,
-                        Comments = s.Comments ?? string.Empty
+                        // Comments = s.Comments ?? string.Empty
                     }).ToList();
             }
         }

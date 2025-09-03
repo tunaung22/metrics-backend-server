@@ -89,7 +89,7 @@ public class SubmitModel : PageModel
     public List<SubmissionInputModel> SubmissionInputs { get; set; } = [];
 
     // -------------------------------------------------------------------------
-    public KpiSubmissionPeriodViewModel TargetKpiPeriod { get; set; } = null!;
+    public KpiPeriodViewModel TargetKpiPeriod { get; set; } = null!;
 
     public List<DepartmentViewModel> DepartmentList { get; set; } = [];
 
@@ -167,7 +167,7 @@ public class SubmitModel : PageModel
             return Page();
         }
 
-        TargetKpiPeriod = new KpiSubmissionPeriodViewModel
+        TargetKpiPeriod = new KpiPeriodViewModel
         {
             Id = kpiPeriod.Id,
             PeriodName = kpiPeriod.PeriodName,
@@ -444,7 +444,7 @@ public class SubmitModel : PageModel
             return Page();
         }
 
-        TargetKpiPeriod = new KpiSubmissionPeriodViewModel
+        TargetKpiPeriod = new KpiPeriodViewModel
         {
             Id = kpiPeriod.Id,
             PeriodName = kpiPeriod.PeriodName,
@@ -534,7 +534,7 @@ public class SubmitModel : PageModel
     }
 
     // =============== METHODS =================================================
-    private bool CheckSubmissionValidity(KpiSubmissionPeriodViewModel period)
+    private bool CheckSubmissionValidity(KpiPeriodViewModel period)
     {
         var currentDateTime = DateTimeOffset.UtcNow;
 

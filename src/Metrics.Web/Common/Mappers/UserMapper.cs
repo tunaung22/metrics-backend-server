@@ -1,0 +1,37 @@
+using Metrics.Application.DTOs;
+using Metrics.Application.DTOs.User;
+using Metrics.Web.Models;
+using System.ComponentModel.DataAnnotations;
+
+namespace Metrics.Web.Common.Mappers;
+
+public static class UserMapper
+{
+    public static UserDto MapToDto(this UserViewModel model)
+    {
+        return new UserDto(
+            Id: model.Id,
+            UserName: model.UserName,
+            FullName: model.FullName,
+            PhoneNumber: model.PhoneNumber ?? string.Empty,
+            ContactAddress: model.ContactAddress ?? string.Empty,
+            Department: model.Department.MapToDto(),
+            UserGroup: model.UserGroup.MapToDto()
+        );
+    }
+
+    public static UserViewModel MapToViewModel(this UserDto dto)
+    {
+        return new UserViewModel
+        {
+            Id = dto.Id,
+            UserName = dto.UserName,
+            FullName = dto.FullName,
+            PhoneNumber = dto.PhoneNumber,
+            ContactAddress = dto.ContactAddress,
+            Department = dto.Department.MapToViewModel(),
+            UserGroup = dto.UserGroup.MapToViewModel()
+        };
+    }
+
+}

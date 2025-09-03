@@ -1,6 +1,9 @@
+using Metrics.Application.Common.Mappers;
 using Metrics.Application.Domains;
 using Metrics.Application.Interfaces.IServices;
+using Metrics.Web.Common.Mappers;
 using Metrics.Web.Models;
+using Metrics.Web.Models.ExcelExportModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using MiniExcelLibs;
@@ -14,96 +17,96 @@ public class DetailModel : PageModel
     private readonly IKpiSubmissionPeriodService _kpiPeriodService;
     private readonly IUserService _userService;
     private readonly IDepartmentService _departmentService;
-    private readonly ICaseFeedbackSubmissionService _caseFeedbackService;
+    private readonly ICaseFeedbackScoreSubmissionService _caseFeedbackScoreSubmissionService;
 
     public DetailModel(
         IKpiSubmissionPeriodService kpiPeriodService,
         IUserService userService,
         IDepartmentService departmentService,
-        ICaseFeedbackSubmissionService caseFeedbackService)
+        ICaseFeedbackScoreSubmissionService caseFeedbackScoreSubmissionService)
     {
         _kpiPeriodService = kpiPeriodService;
         _userService = userService;
         _departmentService = departmentService;
-        _caseFeedbackService = caseFeedbackService;
+        _caseFeedbackScoreSubmissionService = caseFeedbackScoreSubmissionService;
     }
 
     // ========== MODELS =======================================================
 
-    public class CaseFeedbackSubmissionViewModel
-    {
-        public long Id { get; set; }
-        public Guid LookupId { get; set; }
-        public string PeriodName { get; set; } = null!;
-        public KpiSubmissionPeriodViewModel TargetPeriod { get; set; } = null!;
-        public DateTimeOffset SubmittedAt { get; set; }
-        // public string SubmitterId { get; set; } = null!;
-        // name, department
-        public UserViewModel SubmittedBy { get; set; } = null!;
+    // public class CaseFeedbackScoreSubmissionViewModel
+    // {
+    //     public long Id { get; set; }
+    //     public Guid LookupId { get; set; }
+    //     public string PeriodName { get; set; } = null!;
+    //     public KpiPeriodViewModel TargetPeriod { get; set; } = null!;
+    //     public DateTimeOffset SubmittedAt { get; set; }
+    //     // public string SubmitterId { get; set; } = null!;
+    //     // name, department
+    //     public UserViewModel SubmittedBy { get; set; } = null!;
 
-        // case department
-        // public long CaseDepartmentId { get; set; }
-        public DepartmentViewModel CaseDepartment { get; set; } = null!;
-        public decimal NegativeScoreValue { get; set; }
+    //     // case department
+    //     // public long CaseDepartmentId { get; set; }
+    //     public DepartmentViewModel CaseDepartment { get; set; } = null!;
+    //     public decimal NegativeScoreValue { get; set; }
 
-        // Case Info
-        public DateTimeOffset IncidentAt { get; set; }
-        public string WardName { get; set; } = null!;
-        public string CPINumber { get; set; } = null!;
-        public string PatientName { get; set; } = null!;
-        public string RoomNumber { get; set; } = null!;
-        // Case Info > Details
-        public string? Description { get; set; } = string.Empty;
-        public string? Comments { get; set; } = string.Empty;
-    }
-    public List<CaseFeedbackSubmissionViewModel> CaseFeedbackSubmissions { get; set; } = [];
+    //     // Case Info
+    //     public DateTimeOffset IncidentAt { get; set; }
+    //     public string WardName { get; set; } = null!;
+    //     public string CPINumber { get; set; } = null!;
+    //     public string PatientName { get; set; } = null!;
+    //     public string RoomNumber { get; set; } = null!;
+    //     // Case Info > Details
+    //     public string? Description { get; set; } = string.Empty;
+    //     public string? Comments { get; set; } = string.Empty;
+    // }
+    public List<CaseFeedbackScoreSubmissionViewModel> CaseFeedbackSubmissions { get; set; } = [];
 
-    public class CaseFeedbackExcelExportViewModel
-    {
-        [ExcelColumnWidth(14)]
-        [ExcelColumn(Name = "Period Name")]
-        public string? PeriodName { get; set; }
+    // public class CaseFeedbackExcelViewModel
+    // {
+    //     [ExcelColumnWidth(14)]
+    //     [ExcelColumn(Name = "Period Name")]
+    //     public string? PeriodName { get; set; }
 
-        [ExcelColumnWidth(20)]
-        [ExcelColumn(Name = "Submitted By")]
-        public string? SubmittedBy { get; set; }
+    //     [ExcelColumnWidth(20)]
+    //     [ExcelColumn(Name = "Submitted By")]
+    //     public string? SubmittedBy { get; set; }
 
-        [ExcelColumnWidth(20)]
-        [ExcelColumn(Name = "Case Department")]
-        public string CaseDepartment { get; set; } = null!;
+    //     [ExcelColumnWidth(20)]
+    //     [ExcelColumn(Name = "Case Department")]
+    //     public string CaseDepartment { get; set; } = null!;
 
-        [ExcelColumnWidth(20)]
-        [ExcelColumn(Name = "Incident Time")]
-        public DateTime IncidentTime { get; set; }
+    //     [ExcelColumnWidth(20)]
+    //     [ExcelColumn(Name = "Incident Time")]
+    //     public DateTime IncidentTime { get; set; }
 
-        [ExcelColumnWidth(14)]
-        [ExcelColumn(Name = "Given Score")]
-        public decimal Score { get; set; }
+    //     [ExcelColumnWidth(14)]
+    //     [ExcelColumn(Name = "Given Score")]
+    //     public decimal Score { get; set; }
 
-        [ExcelColumnWidth(20)]
-        [ExcelColumn(Name = "Ward Name")]
-        public string WardName { get; set; } = null!;
+    //     [ExcelColumnWidth(20)]
+    //     [ExcelColumn(Name = "Ward Name")]
+    //     public string WardName { get; set; } = null!;
 
-        [ExcelColumnWidth(20)]
-        [ExcelColumn(Name = "CPI Number")]
-        public string CPINumber { get; set; } = null!;
+    //     [ExcelColumnWidth(20)]
+    //     [ExcelColumn(Name = "CPI Number")]
+    //     public string CPINumber { get; set; } = null!;
 
-        [ExcelColumnWidth(20)]
-        [ExcelColumn(Name = "Patient Name")]
-        public string PatientName { get; set; } = null!;
+    //     [ExcelColumnWidth(20)]
+    //     [ExcelColumn(Name = "Patient Name")]
+    //     public string PatientName { get; set; } = null!;
 
-        [ExcelColumnWidth(15)]
-        [ExcelColumn(Name = "Room Number")]
-        public string RoomNumber { get; set; } = null!;
+    //     [ExcelColumnWidth(15)]
+    //     [ExcelColumn(Name = "Room Number")]
+    //     public string RoomNumber { get; set; } = null!;
 
-        [ExcelColumnWidth(30)]
-        [ExcelColumn(Name = "Case Details")]
-        public string? Description { get; set; } = string.Empty;
+    //     [ExcelColumnWidth(30)]
+    //     [ExcelColumn(Name = "Case Details")]
+    //     public string? Description { get; set; } = string.Empty;
 
-        [ExcelColumnWidth(30)]
-        [ExcelColumn(Name = "Suggestions")]
-        public string? Comments { get; set; } = string.Empty;
-    }
+    //     [ExcelColumnWidth(30)]
+    //     [ExcelColumn(Name = "Suggestions")]
+    //     public string? Comments { get; set; } = string.Empty;
+    // }
 
     public KpiPeriodViewModel SelectedPeriod { get; set; } = null!;
     public string SelectedPeriodName { get; set; } = null!;
@@ -143,36 +146,40 @@ public class DetailModel : PageModel
 
         try
         {
-            if (!string.IsNullOrEmpty(submitter))
-            {
-                // -----Filter by Submitter (id)----------
-                // BY USER
-                Submitter = submitter.Trim();
-                var foundSubmitter = await _userService.FindByIdAsync(submitter.Trim());
-                if (foundSubmitter == null)
-                {
-                    ModelState.AddModelError(string.Empty, $"Submitter with ID {Submitter} not found.");
-                    return Page();
-                }
+            // if (!string.IsNullOrEmpty(submitter))
+            // {
+            //     // -----Filter by Submitter (id)----------
+            //     // BY USER
+            //     Submitter = submitter.Trim();
+            //     var foundSubmitter = await _userService.FindByIdAsync(submitter.Trim());
+            //     if (foundSubmitter == null)
+            //     {
+            //         ModelState.AddModelError(string.Empty, $"Submitter with ID {Submitter} not found.");
+            //         return Page();
+            //     }
 
-                var caseFeedbackSubmissions = await _caseFeedbackService
-                    .FindByKpiPeriodAndSubmitterAsync(
-                        SelectedPeriod.Id,
-                        foundSubmitter.Id);
-                // FindByKpiPeriodAndCandidateIdAndKpiPeriodIdAsync(string candidateId, long kpiPeriodId);
-                if (caseFeedbackSubmissions.Count > 0)
-                {
-                    CaseFeedbackSubmissions = ToViewModels(caseFeedbackSubmissions);
-                }
-            }
-            else
+            //     var submissions = await _caseFeedbackScoreSubmissionService
+            //         .FindByKpiPeriodAndSubmitterAsync(
+            //             SelectedPeriod.Id,
+            //             foundSubmitter.Id);
+            //     // FindByKpiPeriodAndCandidateIdAndKpiPeriodIdAsync(string candidateId, long kpiPeriodId);
+            //     if (submissions.IsSuccess && submissions.Data != null)
+            //     {
+            //         CaseFeedbackSubmissions = submissions.Data
+            //             .Select(s => s.MapToViewModel())
+            //             .ToList();
+            //     }
+            // }
+            // else
             {
                 // -----ALL USERS----------
-                var caseFeedbackSubmissions = await _caseFeedbackService
+                var submissions = await _caseFeedbackScoreSubmissionService
                     .FindByKpiPeriodAsync(SelectedPeriod.Id);
-                if (caseFeedbackSubmissions.Count > 0)
+                if (submissions.IsSuccess && submissions.Data != null)
                 {
-                    CaseFeedbackSubmissions = ToViewModels(caseFeedbackSubmissions);
+                    CaseFeedbackSubmissions = submissions.Data
+                        .Select(s => s.MapToViewModel())
+                        .ToList();
                 }
             }
         }
@@ -210,31 +217,21 @@ public class DetailModel : PageModel
         }
 
         // Fetch Data and map to Model
-        var data = new List<CaseFeedbackExcelExportViewModel>();
+        var data = new List<CaseFeedbackExcelViewModel>();
 
-        var submissions = await _caseFeedbackService.FindByKpiPeriodAsync(SelectedPeriod.Id);
-        if (submissions.Count > 0)
+        var submissions = await _caseFeedbackScoreSubmissionService.FindByKpiPeriodAsync(SelectedPeriod.Id);
+
+        if (!submissions.IsSuccess || submissions.Data == null)
         {
-            data = submissions.Select(s => new CaseFeedbackExcelExportViewModel
-            {
-                PeriodName = s.TargetPeriod.PeriodName,
-                SubmittedBy = s.SubmittedBy.FullName,
-
-                CaseDepartment = s.CaseDepartment.DepartmentName,
-                IncidentTime = s.IncidentAt.LocalDateTime,
-                Score = s.NegativeScoreValue,
-                WardName = s.WardName,
-                CPINumber = s.CPINumber,
-                PatientName = s.PatientName,
-                RoomNumber = s.RoomNumber,
-                Description = s.Description ?? string.Empty,
-                Comments = s.Comments ?? string.Empty,
-            }).ToList();
+            ModelState.AddModelError("", $"Failed to load submissions.");
+            return Page();
         }
 
         // Export Excel file
         try
         {
+            data = submissions.Data.Select(s => s.MapToExcelViewModel()).ToList();
+
             var memoryStream = new MemoryStream();
             MiniExcel.SaveAs(
                 stream: memoryStream,
@@ -269,56 +266,56 @@ public class DetailModel : PageModel
     }
 
     // ========== Methods ==================================================
-    private static List<CaseFeedbackSubmissionViewModel> ToViewModels(
-        List<CaseFeedbackSubmission> entities)
-    {
-        return entities.Select(s => new CaseFeedbackSubmissionViewModel
-        {
-            Id = s.Id,
-            LookupId = s.LookupId,
-            SubmittedAt = s.IncidentAt.ToLocalTime(),
+    // private static List<CaseFeedbackScoreSubmissionViewModel> ToViewModels(
+    //     List<CaseFeedbackScoreSubmission> entities)
+    // {
+    //     return entities.Select(s => new CaseFeedbackScoreSubmissionViewModel
+    //     {
+    //         Id = s.Id,
+    //         LookupId = s.LookupId,
+    //         SubmittedAt = s.Feedback.IncidentAt.ToLocalTime(),
 
-            // SubmitterId = s.SubmitterId,
-            SubmittedBy = new UserViewModel
-            {
-                Id = s.SubmittedBy.Id,
-                UserName = s.SubmittedBy.UserName ?? string.Empty,
-                FullName = s.SubmittedBy.FullName,
-                PhoneNumber = s.SubmittedBy.PhoneNumber,
-                ContactAddress = s.SubmittedBy.ContactAddress,
-                Department = new DepartmentViewModel
-                {
-                    Id = s.SubmittedBy.Department.Id,
-                    DepartmentCode = s.SubmittedBy.Department.DepartmentCode,
-                    DepartmentName = s.SubmittedBy.Department.DepartmentName
-                },
-                UserGroup = new UserGroupViewModel
-                {
-                    Id = s.SubmittedBy.UserTitle.Id,
-                    GroupCode = s.SubmittedBy.UserTitle.TitleCode,
-                    GroupName = s.SubmittedBy.UserTitle.TitleName,
-                    Description = s.SubmittedBy.UserTitle.Description
-                }
-            },
-            // CaseDepartmentId = s.CaseDepartmentId,
-            CaseDepartment = new DepartmentViewModel
-            {
-                Id = s.CaseDepartment.Id,
-                DepartmentCode = s.CaseDepartment.DepartmentCode,
-                DepartmentName = s.CaseDepartment.DepartmentName
-            },
-            NegativeScoreValue = s.NegativeScoreValue,
+    //         // SubmitterId = s.SubmitterId,
+    //         SubmittedBy = new UserViewModel
+    //         {
+    //             Id = s.SubmittedBy.Id,
+    //             UserName = s.SubmittedBy.UserName ?? string.Empty,
+    //             FullName = s.SubmittedBy.FullName,
+    //             PhoneNumber = s.SubmittedBy.PhoneNumber,
+    //             ContactAddress = s.SubmittedBy.ContactAddress,
+    //             Department = new DepartmentViewModel
+    //             {
+    //                 Id = s.SubmittedBy.Department.Id,
+    //                 DepartmentCode = s.SubmittedBy.Department.DepartmentCode,
+    //                 DepartmentName = s.SubmittedBy.Department.DepartmentName
+    //             },
+    //             UserGroup = new UserGroupViewModel
+    //             {
+    //                 Id = s.SubmittedBy.UserTitle.Id,
+    //                 GroupCode = s.SubmittedBy.UserTitle.TitleCode,
+    //                 GroupName = s.SubmittedBy.UserTitle.TitleName,
+    //                 Description = s.SubmittedBy.UserTitle.Description
+    //             }
+    //         },
+    //         // CaseDepartmentId = s.CaseDepartmentId,
+    //         CaseDepartment = new DepartmentViewModel
+    //         {
+    //             Id = s.Feedback.CaseDepartment.Id,
+    //             DepartmentCode = s.Feedback.CaseDepartment.DepartmentCode,
+    //             DepartmentName = s.Feedback.CaseDepartment.DepartmentName
+    //         },
+    //         NegativeScoreValue = s.NegativeScoreValue,
 
-            IncidentAt = s.IncidentAt.ToLocalTime(),
-            WardName = s.WardName,
-            CPINumber = s.CPINumber,
-            PatientName = s.PatientName,
-            RoomNumber = s.RoomNumber,
-            Description = s.Description ?? string.Empty,
-            Comments = s.Comments ?? string.Empty
-        })
-            .ToList();
+    //         IncidentAt = s.Feedback.IncidentAt.ToLocalTime(),
+    //         WardName = s.Feedback.WardName,
+    //         CPINumber = s.Feedback.CPINumber,
+    //         PatientName = s.Feedback.PatientName,
+    //         RoomNumber = s.Feedback.RoomNumber,
+    //         Description = s.Feedback.Description ?? string.Empty,
+    //         Comments = s.Comments ?? string.Empty
+    //     })
+    //         .ToList();
 
-    }
+    // }
 }
 

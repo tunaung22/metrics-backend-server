@@ -1,4 +1,4 @@
-using Metrics.Application.DTOs.UserAccountDtos;
+using Metrics.Application.DTOs.User;
 using Metrics.Application.Domains;
 using Metrics.Application.Interfaces.IRepositories;
 using Metrics.Application.Interfaces.IServices;
@@ -28,7 +28,7 @@ public class UserAccountService : IUserAccountService
         _employeeRepository = employeeRepository;
     }
 
-    public async Task<IdentityResult> RegisterUserAsync(UserAccountCreateDto dto)
+    public async Task<IdentityResult> RegisterUserAsync(UserCreateDto dto)
     {
         // using var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
         using var transaction = await _context.Database.BeginTransactionAsync();

@@ -1,9 +1,11 @@
+using Metrics.Application.Common.Mappers;
 using Metrics.Application.Domains;
 using Metrics.Application.DTOs.AccountDtos;
-using Metrics.Application.DTOs.UserAccountDtos;
+using Metrics.Application.DTOs.User;
 using Metrics.Application.Exceptions;
 using Metrics.Application.Interfaces.IRepositories;
 using Metrics.Application.Interfaces.IServices;
+using Metrics.Application.Results;
 using Metrics.Infrastructure.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -38,7 +40,7 @@ public class UserService : IUserService
         _userRepository = userRepository;
     }
 
-    public async Task<IdentityResult> RegisterUserAsync(UserAccountCreateDto createDto)
+    public async Task<IdentityResult> RegisterUserAsync(UserCreateDto createDto)
     {
         // using var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
         using var transaction = await _context.Database.BeginTransactionAsync();
@@ -354,6 +356,31 @@ public class UserService : IUserService
 
     }
 
+    public async Task<ResultT<UserDto>> FindByIdAsync_2(string userId)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(userId))
+                throw new Exception("User ID is required.");
+
+            var user = await _userManager.Users
+                .Include(u => u.Department)
+                .Include(u => u.UserTitle)
+                .FirstOrDefaultAsync(u => u.Id == userId);
+
+            if (user != null)
+            {
+                var userDto = user.MapToDto();
+                return ResultT<UserDto>.Success(userDto);
+            }
+            return ResultT<UserDto>.Fail("User not found", ErrorType.NotFound);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while querying user.");
+            return ResultT<UserDto>.Fail("", ErrorType.UnexpectedError);
+        }
+    }
 
     public async Task<ApplicationUser?> FindByIdAsync(string userId)
     {
@@ -475,6 +502,8 @@ public class UserService : IUserService
             throw new Exception("An unexpected error occurred. Please try again later.");
         }
     }
+
+
 
 
 

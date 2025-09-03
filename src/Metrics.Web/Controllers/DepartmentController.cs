@@ -1,5 +1,5 @@
 ﻿using Metrics.Application.DTOs;
-using Metrics.Application.DTOs.DepartmentDtos;
+using Metrics.Application.DTOs.Department;
 using Metrics.Application.Exceptions;
 using Metrics.Application.Interfaces.IServices;
 using Metrics.Application.Mappers.DtoMappers;

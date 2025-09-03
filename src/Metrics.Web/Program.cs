@@ -8,10 +8,6 @@ using Metrics.Shared.Utils;
 using Metrics.Shared.Configurations;
 using Metrics.Infrastructure.Data;
 using Metrics.Application.Domains;
-using Metrics.Application.Interfaces.IRepositories;
-using Metrics.Infrastructure.Repositories;
-using Metrics.Application.Interfaces.IServices;
-using Metrics.Infrastructure.Services;
 using Metrics.Web.Middleware;
 using Metrics.Application.Exceptions;
 using Metrics.Infrastructure.Data.Seedings;
@@ -22,7 +18,7 @@ using System.Reflection;
 using System.Diagnostics;
 using Metrics.Web.Models;
 using System.Text.Json.Serialization;
-using System.Runtime.InteropServices;
+using Metrics.Infrastructure;
 
 
 // ========== Load .env ===========================================
@@ -223,46 +219,14 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
-
 builder.Services.AddOpenApi();
-
-// ========== Register services and repositories ==========
-// ===== Unit of Work (not using) =======
-builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-
-// ===== Repository =========
-builder.Services.AddScoped<IDepartmentRepository, DepartmentRepository>()
-    .AddScoped<IKpiSubmissionPeriodRepository, KpiSubmissionPeriodRepository>()
-    .AddScoped<IUserRepository, UserRepository>()
-    .AddScoped<IUserTitleRepository, UserTitleRepository>()
-    .AddScoped<IKpiSubmissionRepository, KpiSubmissionRepository>()
-    .AddScoped<IKeyKpiSubmissionRepository, KeyKpiSubmissionRepository>()
-    .AddScoped<IKeyMetricRepository, KeyMetricRepository>()
-    .AddScoped<IDepartmentKeyMetricRepository, DepartmentKeyMetricRepository>()
-    .AddScoped<IKeyKpiSubmissionConstraintRepository, KeyKpiSubmissionConstraintRepository>()
-    .AddScoped<ICaseFeedbackSubmissionRepository, CaseFeedbackSubmissionRepository>();
-
-
-// ===== Service ============
-builder.Services
-    .AddScoped<ISeedingService, SeedingService>()
-    .AddScoped<IDepartmentService, DepartmentService>()
-    .AddScoped<IKpiSubmissionPeriodService, KpiSubmissionPeriodService>()
-    .AddScoped<IUserService, UserService>()
-    .AddScoped<IUserTitleService, UserTitleService>()
-    .AddScoped<IUserAccountService, UserAccountService>()
-    .AddScoped<IUserRoleService, UserRoleService>()
-    .AddScoped<IKpiSubmissionService, KpiSubmissionService>()
-    .AddScoped<IKeyKpiSubmissionService, KeyKpiSubmissionService>()
-    .AddScoped<IKeyMetricService, KeyMetricService>()
-    .AddScoped<IDepartmentKeyMetricService, DepartmentKeyMetricService>()
-    .AddScoped<IKeyKpiSubmissionConstraintService, KeyKpiSubmissionConstraintService>()
-    .AddScoped<ICaseFeedbackSubmissionService, CaseFeedbackSubmissionService>();
 
 
 // ========== Exception Handling ==============================
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
+// ========== Register services and repositories ==============
+builder.Services.AddInfrastructure();
 
 // ========== APPLICATION ==========
 var app = builder.Build();

@@ -23,7 +23,7 @@
             <li class="breadcrumb-item"><a asp-page="/Dashboard/Index">Dashboard</a></li>
             <li class="breadcrumb-item"><a asp-page="/Reports/Submissions/Index">Reports</a></li>
             <li class="breadcrumb-item"><a asp-page="/Reports/Submissions/DepartmentCaseFeedback/Index">Department Case Feedback</a></li>
-            <li class="breadcrumb-item active">Summary</li>
+            <li class="breadcrumb-item active">Details</li>
         </ol>
     </nav>
 </div>
@@ -53,49 +53,63 @@
                 <thead>
                     <tr>
                         <th class="colSubmitterName">Submitted By</th>
-                        <th class="colSubmitterDepartment">Department</th>
-                        <th class="colCaseDepartment">Case Department</th>
+                        @* <th class="colSubmitterDepartment">Department</th> *@
                         <th class="colScore">Score</th>
+                        <th class="colComment">Comments</th>
+
+                        <th class="colCaseDepartment">Case Department</th>
                         <th class="colIncidentAt">Incident Time</th>
-                        <th class="colWard">Ward Name</th>
+                        @* <th class="colWard">Ward Name</th>
                         <th class="colCPINo">CPI Number</th>
                         <th class="colPatientName">PatientName</th>
                         <th class="colRoomNo">Room Number</th>
-                        <th class="colActions">Actions</th>
+                        *@
+                        <th class="colActions">Actions</th> 
                     </tr>
                 </thead>
                 <tbody>
                     @if (Model.CaseFeedbackSubmissions.Any())
                     {
-                        @foreach(var s in Model.CaseFeedbackSubmissions)
+                        @foreach(var submission in Model.CaseFeedbackSubmissions)
                         {
-                            <tr class="text-center">
-                                <td>@s.SubmittedBy.FullName</td>
-                                <td>@s.SubmittedBy.Department.DepartmentName</td>
-                                <td>@s.CaseDepartment.DepartmentName</td>
-                                <td>@s.NegativeScoreValue</td>
-                                <td>@s.IncidentAt.ToString("dd MMM, yyyy hh:mm tt")</td>
-                                <td>@s.WardName</td>
-                                <td>@s.CPINumber</td>
-                                <td>@s.PatientName</td>
-                                <td>@s.RoomNumber</td>
-                                <td>
+                            <tr class="">
+                                <td class="">@submission.SubmittedBy.FullName (@submission.SubmittedBy.Department.DepartmentName)</td>
+                                <td class="text-center"><strong>@submission.NegativeScoreValue</strong></td>
+                                <td class="">
+                                    @if(@submission.Comments?.Length > 80) {
+                                        @(@submission.Comments.Substring(0, 80) + "...")
+                                        <button data-details="@@submission.Comments" data-label="Positive Aspects"
+                                            class="moreButton_positiveAspects btn btn-link p-0 pb-2">More</button>
+                                    } else {
+                                        @submission.Comments
+                                    }
+                                </td>
+
+                                <td class="">@submission.CaseFeedback.CaseDepartment.DepartmentName</td>
+                                <td class="text-center">@submission.CaseFeedback.IncidentAt.ToString("dd MMM, yyyy hh:mm tt")</td>
+                                @* <td>@submission.CaseFeedback.WardName</td>
+                                <td>@submission.CaseFeedback.CPINumber</td>
+                                <td>@submission.CaseFeedback.PatientName</td>
+                                <td>@submission.CaseFeedback.RoomNumber</td> *@
+                                <td class="text-center">
                                     <button 
-                                            data-label="Details"
-                                            data-lookupId="@s.LookupId.ToString()"
-                                            data-submitter-name="@s.SubmittedBy.FullName"
-                                            data-submitter-department-name="@s.SubmittedBy.Department.DepartmentName"
-                                            data-submitter-phone="@s.SubmittedBy.PhoneNumber"
-                                            data-case-department="@s.CaseDepartment.DepartmentName"
-                                            data-score="@s.NegativeScoreValue"
-                                            data-incident-at="@s.IncidentAt.ToString("dd MMM, yyyy hh:mm tt")"
-                                            data-ward-name="@s.WardName"
-                                            data-cpi-number="@s.CPINumber"
-                                            data-patient-name="@s.PatientName"
-                                            data-room-number="@s.RoomNumber"
-                                            data-description="@s.Description" 
-                                            data-comments="@s.Comments" 
-                                            class="moreButton_Details btn btn-link p-0 pb-2">Details</button>
+                                        data-label="Details"
+                                        data-case-department="@submission.CaseFeedback.CaseDepartment.DepartmentName"
+                                        data-incident-at="@submission.CaseFeedback.IncidentAt.ToString("dd MMM, yyyy hh:mm tt")"
+                                        data-ward-name="@submission.CaseFeedback.WardName"
+                                        data-cpi-number="@submission.CaseFeedback.CPINumber"
+                                        data-patient-name="@submission.CaseFeedback.PatientName"
+                                        data-room-number="@submission.CaseFeedback.RoomNumber"
+                                        data-description="@submission.CaseFeedback.Description"
+
+                                        data-lookupId="@submission.LookupId.ToString()"
+                                        data-submitter-name="@submission.SubmittedBy.FullName"
+                                        data-submitter-department-name="@submission.SubmittedBy.Department.DepartmentName"
+                                        data-submitter-phone="@submission.SubmittedBy.PhoneNumber"
+                                        data-score="@submission.NegativeScoreValue"
+                                        data-comments="@submission.Comments" 
+
+                                        class="moreButton_Details btn btn-link p-0 pb-2">Details</button>
                                 </td>
                             </tr>
                         }
@@ -115,43 +129,30 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <div class="row bg-light submitter-info"> @* ===== submitter's info ===== *@
-                    <div class="col">
-                        <label class="" for="">Name</label>
-                        <p id="dSubmitterName"></p>
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <strong>Case Details</strong>
                     </div>
-                    <div class="col">
-                        <label class="" for="">Department</label>
-                        <p id="dSubmitterDepartment"></p>
-                    </div>
-                    <div class="col">
-                        <label class="" for="">Contact Phone</label>
-                        <p id="dSubmitterPhone"></p>
-                    </div>
-                </div>
-                <div class="row bg-light case-department-info"> @* ===== case department info===== *@
-                    <div class="col-12 col-sm-6 col-md-4">
-                        <label class="" for="">Case Department</label>
-                        <p id="dCaseDepartmentName"></p>
-                    </div>
-                    <div class="col-12 col-sm-6 col-md-auto">
-                        <label class="" for="">Given Score</label>
-                        <p id="dGivenScore"></p>
-                    </div>
-                </div>
-                <div class="row mb-3 bg-light patient-info"> @* ===== patient info===== *@
-                    <div class="col">
-                        <div class="row mb-4">
-                            <div class="col-12 col-sm-6 col-md-4">
-                                <label class="" for="">Ward Name</label>
-                                <p id="dWardName"></p>
+                    <div class="card-body">
+                        <div class="row border-bottom py-3">
+                            <div class="col">
+                                <label class="" for="">Case Department</label>
+                                <p id="dCaseDepartmentName"></p>
                             </div>
-                            <div class="col-12 col-sm-6 col-md-auto">
+                            <div class="col">
                                 <label class="" for="">Incident At</label>
                                 <p id="dIncidentAt"></p>
                             </div>
+                            <div class="col">
+                                <label class="" for="">Feedback by</label>
+                                <p id="dFeedbackSubmitterName"></p>
+                            </div>
                         </div>
-                        <div class="row">
+                        <div class="row border-bottom py-3">
+                            <div class="col">
+                                <label class="" for="">Ward Name</label>
+                                <p id="dWardName"></p>
+                            </div>
                             <div class="col">
                                 <label class="" for="">Patient Name</label>
                                 <p id="dPatientName"></p>
@@ -165,19 +166,40 @@
                                 <p id="dRoomNumber"></p>
                             </div>
                         </div>
+                        <div class="row py-3">
+                            <div class="col">
+                                <label class="" for="">Description</label>
+                                <p id="dCaseDescription" class="longText"></p>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="row mb-3 bg-light description-and-suggestions"> @* ===== description & suggestions===== *@
-                    <div class="col">
-                        <label class="" for="">Description</label>
-                        <p id="dCaseDescription" class="longText"></p>
+
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <strong>Submission Details</strong>
                     </div>
-                    <div class="col">
-                        <label class="" for="">Suggestion</label>
-                        <p id="dCaseSuggestion" class="longText"></p>
+                    <div class="card-body">
+                        <div class="row border-bottom py-3">
+                            <div class="col">
+                                <label class="" for="">Score by</label>
+                                <span class="d-flex align-items-center">
+                                    <p id="dSubmitterName"></p> (<p id="dSubmitterDepartment"></p>) <p id="dSubmitterPhone"></p>
+                                </span>
+                            </div>
+                            <div class="col">
+                                <label class="" for="">Given Score</label>
+                                <p id="dGivenScore"></p>
+                            </div>
+                        </div>
+                        <div class="row py-3">
+                            <div class="col">
+                                <label class="" for="">Comment</label>
+                                <p id="dCaseComment" class="longText"></p>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                @* <p id="dContent"></p> *@
             </div>
              <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -210,7 +232,7 @@
         .patient-info p {
             color: var(--metric-blue-color);
         }
-        .description-and-suggestions p {
+        .description-and-comments p {
             color: var(--metric-blue-color);
         }
     </style>
@@ -226,17 +248,19 @@
                 searching: true,
                 autoWidth: true,
                 columnDefs: [
-                    { width: "10%", targets: [
+                    { width: "20%", targets: [
                         "colSubmitterName", 
-                        "colSubmitterDepartment", 
-                        "colCaseDepartment"
+                        @* "colSubmitterDepartment",  *@
                     ]},
+                    { width: "14%", targets: ["colCaseDepartment"] },
+
+                    { width: "40%", targets: ["colComment"] },
                     { width: "6%", targets: ["colScore"] },
                     { width: "14%", targets: ["colIncidentAt"] },
-                    { width: "10%", targets: ["colWard"] },
-                    { width: "12%", targets: ["colCPINo", "colPatientName"] },
-                    { width: "10%", targets: ["colRoomNo"] },
-                    { width: "10%", targets: ["colActions"] },
+                    @* { width: "10%", targets: ["colWard"] }, *@
+                    @* { width: "12%", targets: ["colCPINo", "colPatientName"] }, *@
+                    @* { width: "10%", targets: ["colRoomNo"] }, *@
+                    { width: "5%", targets: ["colActions"] },
 
                     @* { orderable: false, targets: [0] } *@
                 ],
@@ -261,7 +285,7 @@
                 $("#dPatientName").text($(this).data('patient-name'));
                 $("#dRoomNumber").text($(this).data('room-number'));
                 $("#dCaseDescription").text($(this).data('description'));
-                $("#dCaseSuggestion").text($(this).data('comments'));
+                $("#dCaseComment").text($(this).data('comments'));
 
                 $("#dialog_textDetail").modal("show");
                 @* $("#dialogContent").text(fullText); *@

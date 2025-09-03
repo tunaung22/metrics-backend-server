@@ -150,14 +150,14 @@
                             <label class="form-label">Incident Details</label>
                             <textarea asp-for="FormInput.Description" class="form-control" rows="4"></textarea>
                         </div>
-                        <div class="col-xs-12 col-md-6">
+                        @* <div class="col-xs-12 col-md-6">
                             <label class="form-label">Suggestions</label>
                             <textarea asp-for="FormInput.Comments" class="form-control" rows="4"></textarea>
-                        </div>
+                        </div> *@
                     </div>
                 </div>
 
-                <div class="score card mb-3 px-3 py-4">
+                @* <div class="score card mb-3 px-3 py-4">
                     <div class="mb-3">
                         <span><strong>Rate:</strong></span>
                     </div>
@@ -181,32 +181,13 @@
                                         <strong>@score</strong>
                                     </label>
                                 }
-                                @* @for(int x = 0; x < scoreOptions.Length; x++)
-                                {
-                                    var radioId = $"radio_{x}_{@scoreOptions[x]}";
-                                    var score = scoreOptions[x];
-
-                                    <label for="@radioId" 
-                                            class="radioLabel__score 
-                                                    form-check-label
-                                                    rounded-3 
-                                                    ps-2 pe-4">
-                                        <input class="radioInput__score"
-                                                type="radio" 
-                                                asp-for="FormInput.ScoreValue" 
-                                                value="@score" 
-                                                checked="@(Model.FormInput.ScoreValue == score)" />
-                                                id="@radioId" />
-                                        <strong>@scoreOptions[x]</strong>
-                                    </label>
-                                } *@
                             </div>
                             <div>
                                 <span asp-validation-for="FormInput.ScoreValue" class="text-danger"></span>
                             </div>
                         </div>
                     </div>
-                </div>
+                </div> *@
             </form>
 
         </section>

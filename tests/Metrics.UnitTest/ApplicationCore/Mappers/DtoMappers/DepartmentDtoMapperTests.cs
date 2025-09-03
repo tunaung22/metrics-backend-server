@@ -1,5 +1,5 @@
 using Metrics.Application.Domains;
-using Metrics.Application.DTOs.DepartmentDtos;
+using Metrics.Application.DTOs.Department;
 using Metrics.Application.Mappers.DtoMappers;
 
 namespace Metrics.UnitTest.ApplicationCore.Mappers.DtoMappers;

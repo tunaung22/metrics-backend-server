@@ -1,6 +1,8 @@
 using Metrics.Application.Domains;
+using Metrics.Application.DTOs;
 using Metrics.Application.DTOs.AccountDtos;
-using Metrics.Application.DTOs.UserAccountDtos;
+using Metrics.Application.DTOs.User;
+using Metrics.Application.Results;
 using Microsoft.AspNetCore.Identity;
 
 namespace Metrics.Application.Interfaces.IServices;
@@ -8,7 +10,7 @@ namespace Metrics.Application.Interfaces.IServices;
 public interface IUserService
 {
 
-    Task<IdentityResult> RegisterUserAsync(UserAccountCreateDto createDto);
+    Task<IdentityResult> RegisterUserAsync(UserCreateDto createDto);
     Task<ApplicationUser> UpdateAsync(string userId, UserUpdateDto updateDto);
     Task<ApplicationUser> UpdateProfileAsync(string userId, UserProfileUpdateDto updateDto);
     Task<IdentityResult> UpdatePasswordAsync(ApplicationUser user, string oldPassword, string newPassword);
@@ -34,6 +36,7 @@ public interface IUserService
     // Task<IEnumerable<ApplicationUser>> FindAllAsync();
 
 
+    Task<ResultT<UserDto>> FindByIdAsync_2(string userId);
 
 
 

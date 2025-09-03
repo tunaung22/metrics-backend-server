@@ -2,11 +2,12 @@ using Metrics.Application.Interfaces;
 
 namespace Metrics.Application.Domains;
 
-public class KeyKpiSubmission : IAuditColumn
+public class KeyKpiSubmission : IAuditColumn, ISoftDelete
 {
     public long Id { get; set; }
     public DateTimeOffset SubmittedAt { get; set; }
     public DateOnly SubmissionDate { get; set; } // Generated Field
+    public bool IsDeleted { get; set; }
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
     public DateTimeOffset ModifiedAt { get; set; }
 

@@ -10,7 +10,7 @@ public class EmployeeGetAllDto
     public string? PhoneNumber { get; set; }
     public long DepartmentId { get; set; }
     public string ApplicationUserId { get; set; } = null!;
-    public Department CurrentDepartment { get; set; } = null!;
+    public Domains.Department CurrentDepartment { get; set; } = null!;
     public ApplicationUser UserAccount { get; set; } = null!;
 
 
