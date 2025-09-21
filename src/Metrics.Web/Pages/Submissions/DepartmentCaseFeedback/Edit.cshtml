@@ -1,4 +1,4 @@
-﻿@page "/Submissions/Department-Case-Feedback/{periodName}/Edit/{lookupId}"
+﻿@page "/Submissions/Department-Case-Feedback/{lookupId}/Edit"
 @model Metrics.Web.Pages.Submissions.DepartmentCaseFeedback.EditModel
 @{
     ViewData["Title"] = "Edit Department Case Feedback";
@@ -7,14 +7,13 @@
 
 
 <div class="sectionTitle">
-    <h4>Edit Department Case Feedback Form <strong>(@Model.SelectedPeriodName)</strong></h4>
+    <h4>Edit Department Case Feedback Form</h4>
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a asp-page="/Index">Home</a></li>
             <li class="breadcrumb-item"><a asp-page="/Submissions/Index">Submissions</a></li>
             <li class="breadcrumb-item"><a asp-page="/Submissions/DepartmentCaseFeedback/Index">Department Case Feedbacks</a></li>
-            <li class="breadcrumb-item"><a asp-page="/Submissions/DepartmentCaseFeedback/List" 
-                                            asp-route-periodName="@Model.SelectedPeriodName">Submissions List</a></li>
+            <li class="breadcrumb-item"><a asp-page="/Submissions/DepartmentCaseFeedback/List">Submissions List</a></li>
             <li class="breadcrumb-item active">New</li>
         </ol>
     </nav>
@@ -35,7 +34,7 @@
         <section class="form">
             <form method="post">
             @* asp-route-returnUrl="@Model.ReturnUrl"> *@
-                <input type="hidden" asp-for="SelectedPeriodName" />
+                @* <input type="hidden" asp-for="SelectedPeriodName" /> *@
                 <input type="hidden" asp-for="TargetSubmissionLookupId" />
                 @* <input type="hidden" asp-for="ReturnUrl" /> *@
                 <input type="hidden" asp-for="FormInput.SubmitterId" />

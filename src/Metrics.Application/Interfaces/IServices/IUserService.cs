@@ -2,6 +2,7 @@ using Metrics.Application.Domains;
 using Metrics.Application.DTOs;
 using Metrics.Application.DTOs.AccountDtos;
 using Metrics.Application.DTOs.User;
+using Metrics.Application.DTOs.UserClaims;
 using Metrics.Application.Results;
 using Microsoft.AspNetCore.Identity;
 
@@ -16,6 +17,8 @@ public interface IUserService
     Task<IdentityResult> UpdatePasswordAsync(ApplicationUser user, string oldPassword, string newPassword);
     Task<ApplicationUser> FindByUsernameAsync(string username);
     Task<ApplicationUser?> FindByIdAsync(string userId);
+
+    Task<long> FindCountAsync();
     // TODOs
     // Task<long> FindByUserIdAsync(string userId);
     // lock user
@@ -26,6 +29,16 @@ public interface IUserService
     // Task<IdentityResult> ToggleLockUserByIdAsync(string userId);
     Task<IEnumerable<ApplicationUser>> FindAllActiveAsync(string roleName);
     Task<IEnumerable<ApplicationUser>> FindAllAsync();
+
+    Task<ResultT<List<UserDto>>> FindAllAsync(int pageNumber = 1, int pageSize = 50);
+    Task<ResultT<List<UserDto>>> FindAllAsync(
+        string? searchTerm,
+        int pageNumber = 1,
+        int pageSize = 50);
+    Task<ResultT<List<UserClaimDto>>> GetUserClaimsAsync(List<string> userIDs);
+    // Task<ResultT<List<UserClaimDto>>> GetUserClaimsAsync(string userId);
+
+
 
 
     // ========== Return Entity ================================================

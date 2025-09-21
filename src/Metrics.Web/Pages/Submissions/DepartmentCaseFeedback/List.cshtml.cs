@@ -1,3 +1,4 @@
+using Metrics.Application.Authorization;
 using Metrics.Application.Interfaces.IServices;
 using Metrics.Web.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -7,23 +8,14 @@ using System.Security.Claims;
 
 namespace Metrics.Web.Pages.Submissions.DepartmentCaseFeedback;
 
-[Authorize(Policy = "CanSubmitCaseFeedbackPolicy")]
-public class ListModel : PageModel
-{
-    private readonly IUserService _userService;
-    private readonly IKpiSubmissionPeriodService _kpiPeriodService;
-    private readonly ICaseFeedbackService _caseFeedbackService;
-
-    public ListModel(
+[Authorize(Policy = ApplicationPolicies.CanGiveFeedbackPolicy)]
+public class ListModel(
         IUserService userService,
-        IKpiSubmissionPeriodService kpiPeriodService,
-        ICaseFeedbackService caseFeedbackService)
-    {
-        _userService = userService;
-        _kpiPeriodService = kpiPeriodService;
-        _caseFeedbackService = caseFeedbackService;
-    }
-
+        ICaseFeedbackService caseFeedbackService
+) : PageModel
+{
+    private readonly IUserService _userService = userService;
+    private readonly ICaseFeedbackService _caseFeedbackService = caseFeedbackService;
 
     // =============== MODELS ==================================================
     public class CaseFeedbackSubmissionViewModel
@@ -48,45 +40,15 @@ public class ListModel : PageModel
     }
     public List<CaseFeedbackSubmissionViewModel> ExistingCaseFeedbackSubmissions { get; set; } = [];
 
-    public string SelectedPeriodName { get; set; } = null!;
-
     public string? ReturnUrl { get; set; } = string.Empty;
 
-    public KpiPeriodViewModel SelectedPeriod { get; set; } = null!;
 
     // =============== HANDLERS ================================================
-    public async Task<IActionResult> OnGetAsync(
-        [FromRoute] string periodName,
-        string? returnUrl)
+    public async Task<IActionResult> OnGetAsync(string? returnUrl)
     {
         // ----------RETURN URL-------------------------------------------------
         if (!string.IsNullOrEmpty(returnUrl))
             ReturnUrl = returnUrl;
-
-        // ----------KPI PERIOD-------------------------------------------------
-        if (string.IsNullOrEmpty(periodName))
-        {
-            ModelState.AddModelError(string.Empty, "A valid Period Name is require.");
-            return Page();
-        }
-        var kpiPeriod = await _kpiPeriodService.FindByKpiPeriodNameAsync(periodName);
-        if (kpiPeriod != null)
-        {
-            SelectedPeriodName = kpiPeriod.PeriodName;
-            SelectedPeriod = new KpiPeriodViewModel() // ---- do we need entire KPI Period object??
-            {
-                Id = kpiPeriod.Id,
-                PeriodName = kpiPeriod.PeriodName,
-                SubmissionStartDate = kpiPeriod.SubmissionStartDate,
-                SubmissionEndDate = kpiPeriod.SubmissionEndDate
-            };
-        }
-        else
-        {
-            ModelState.AddModelError("", $"Period {periodName} not found.");
-            return Page();
-        }
-
 
         var userId = User?.FindFirstValue(ClaimTypes.NameIdentifier)
             ?? throw new InvalidOperationException("User is not authenticated.");
@@ -95,7 +57,7 @@ public class ListModel : PageModel
         {
             // get all existing submissions
             var existingSubmissions = await _caseFeedbackService
-                .FindByKpiPeriodAndSubmitterAsync(SelectedPeriod.Id, currentUser.Id);
+                .FindActiveBySubmitterAsync(currentUser.Id);
             // .FindByKpiPeriodAsync(SelectedPeriod.Id);
             if (existingSubmissions.Count > 0)
             {
@@ -111,6 +73,7 @@ public class ListModel : PageModel
                         SubmittedBy = new UserViewModel
                         {
                             Id = s.SubmittedBy.Id,
+                            UserCode = s.SubmittedBy.UserCode,
                             UserName = s.SubmittedBy.UserName ?? string.Empty,
                             FullName = s.SubmittedBy.FullName,
                             PhoneNumber = s.SubmittedBy.PhoneNumber,

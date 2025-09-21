@@ -1,0 +1,79 @@
+﻿@page
+@model Metrics.Web.Pages.Manage.Users.Permissions.IndexModel
+@{
+
+    ViewData["Titlte"] = "Permissions";
+}
+
+
+<div class="sectionTitle">
+    <div class="d-flex align-items-center">
+        <h3 class="flex-grow-1">Permissions</h3>
+        @* <span class="justify-content-end gap-2">
+            <a class="btn btn-success" 
+                asp-page="Create"
+                asp-route-returnUrl="@Url.Page("Index")"><i class="bi bi-plus"> </i>New</a>
+        </span> *@
+    </div>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-page="/Dashboard/Index">Dashboard</a></li>
+            <li class="breadcrumb-item active">Roles</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="container">
+        <h1>User Count: @Model.UserCount</h1>
+
+    <div class="px-4 pb-4">
+        <table id="departmentsTable" class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>Department Name</th>
+                    <th>Users</th>
+                    <th>Actions</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.UserClaims != null)
+                {
+
+                    @foreach (var uc in Model.UserClaims)
+                    {
+                        <tr class="align-middle">
+                            <td>@uc.User.FullName</td>
+                            <td>@uc.User.Department.DepartmentName</td>
+                            <td>
+                                @if(uc.Claims.Any())
+                                {
+                                    foreach(var c in uc.Claims)
+                                    {
+                                        <i>@c.ClaimValue : @c.ClaimType</i>
+                                    }
+                                }
+                            </td>
+                            <td class="text-center">
+                                @* <form method="post" style="display:inline;"> *@
+                                    @* <input type="hidden" name="departmentCode" value="@department.DepartmentCode" /> *@
+                                    @* <a class="btn__actionButtons btn btn-sm btn-outline-primary my-2 my-lg-0 me-2"
+                                        asp-page="Edit"
+                                        asp-route-departmentCode="@department.DepartmentCode"
+                                        asp-route-returnUrl="@HttpContext.Request.Path">
+                                        <i class="bi bi-pencil-square"> </i>Edit
+                                    </a> *@
+                                    @* <button class="btn btn-success" 
+                                        asp-route-departmentCode="@department.DepartmentCode"
+                                        asp-page-handler="Edit"
+                                        asp-route-returnUrl="@Url.Page("Index")">Edit</button> *@
+                                    @* <button type="submit" class="btn btn-danger" asp-page-handler="Delete">Delete</button> *@
+                                @* </form> *@
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

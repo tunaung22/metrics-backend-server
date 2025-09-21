@@ -13,7 +13,9 @@ public class CaseFeedbackScoreSubmissionConfig : IEntityTypeConfiguration<CaseFe
 
         // ===== Index =====
         builder.HasKey(e => e.Id);
-        builder.HasIndex(e => e.LookupId).IsUnique();
+        builder
+            .HasIndex(e => e.LookupId)
+            .IsUnique();
         builder
             .HasIndex(e => new
             {
@@ -48,6 +50,9 @@ public class CaseFeedbackScoreSubmissionConfig : IEntityTypeConfiguration<CaseFe
         builder.Property(e => e.Comments)
             .HasColumnName("comments")
             .HasColumnType("text");
+        builder.Property(e => e.Proceeded)
+            .HasColumnName("proceeded")
+            .HasColumnType("boolean");
 
         builder.HasOne(e => e.SubmittedBy)
             .WithMany(e => e.CaseFeedbackScoreSubmissions)
@@ -58,6 +63,13 @@ public class CaseFeedbackScoreSubmissionConfig : IEntityTypeConfiguration<CaseFe
             .WithMany(e => e.Submissions)
             .HasForeignKey(e => e.CaseFeedbackId)
             .HasConstraintName("fk_casefeedbacksubmissions_casefeedbacks_case_feedback_id")
+            .OnDelete(DeleteBehavior.Restrict)
+            .IsRequired();
+
+        builder.HasOne(e => e.TargetPeriod)
+            .WithMany(e => e.CaseFeedbackScoreSubmissions)
+            .HasForeignKey(e => e.KpiSubmissionPeriodId)
+            .HasConstraintName("fk_casefeedbacksubmissions_period_id")
             .OnDelete(DeleteBehavior.Restrict)
             .IsRequired();
 

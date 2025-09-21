@@ -1,7 +1,5 @@
-using Metrics.Application.Domains;
 using Metrics.Application.Interfaces.IServices;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using System.Threading.Tasks;
 
 namespace Metrics.Web.Pages.Manage.Users.Groups;
 

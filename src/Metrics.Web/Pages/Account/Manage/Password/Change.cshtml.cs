@@ -1,6 +1,5 @@
 using Metrics.Application.Domains;
 using Metrics.Application.Interfaces.IServices;
-using Metrics.Infrastructure.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;

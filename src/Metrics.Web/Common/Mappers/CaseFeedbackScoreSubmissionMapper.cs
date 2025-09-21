@@ -53,7 +53,7 @@ public static class CaseFeedbackScoreSubmissionMapper
     {
         return new CaseFeedbackExcelViewModel
         {
-            PeriodName = dto.CaseFeedback.TargetPeriod.PeriodName,
+            // PeriodName = dto.CaseFeedback.TargetPeriod.PeriodName,
             SubmittedBy = dto.SubmittedBy.FullName,
 
             CaseDepartment = dto.CaseFeedback.CaseDepartment.DepartmentName,

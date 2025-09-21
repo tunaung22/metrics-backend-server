@@ -36,8 +36,6 @@
 }
 
 html {
-  font-size: 14px;
-
   /* font-family: "Open Sans", sans-serif;
   font-optical-sizing: auto;
   font-weight: 400;
@@ -47,13 +45,23 @@ html {
   min-height: 100%;
 }
 
+html,
+body {
+  /* font-size: 0.9em; */
+  font-family: "Inter", sans-serif;
+}
+
+.mono-text {
+  font-family: "Roboto Mono", monospace;
+}
+
 /* #main-content {
 } */
 
 #appNavbar {
   z-index: 100;
-  /* background-color: rgba(255, 255, 255, 0.1) !important; */
-  /* transition: background 0.3s, backdrop-filter 0.3s; */
+  /* background-color: rgba(255, 255, 255, 0.1) !important;
+  transition: background 0.3s, backdrop-filter 0.3s; */
   backdrop-filter: blur(4px);
 }
 .app-header {
@@ -70,6 +78,9 @@ div .sectionTitle {
   /* rgba(0, 21, 159, 0.343) !important; */
   transition: background 0.3s, backdrop-filter 0.3s;
   backdrop-filter: blur(4px);
+}
+div .filter-toolbar {
+  z-index: 199;
 }
 #appFooter {
   z-index: 100;

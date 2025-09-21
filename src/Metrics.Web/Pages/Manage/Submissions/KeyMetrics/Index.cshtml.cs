@@ -7,7 +7,6 @@ using MiniExcelLibs;
 
 namespace Metrics.Web.Pages.Manage.Submissions.KeyMetrics;
 
-[Authorize(Policy = "CanAccessAdminFeaturePolicy")]
 public class IndexModel : PageModel
 {
     private readonly Microsoft.Extensions.Configuration.IConfiguration _config;

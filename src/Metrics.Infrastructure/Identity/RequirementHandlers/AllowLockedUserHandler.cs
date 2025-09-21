@@ -1,11 +1,14 @@
-using Metrics.Web.Security.PolicyRequirements;
+using Metrics.Infrastructure.Identity.Requirements;
 using Microsoft.AspNetCore.Authorization;
 
-namespace Metrics.Web.Security.PolicyHandlers;
+namespace Metrics.Infrastructure.Identity.RequirementHandlers;
+
 
 public class AllowLockedUserHandler : AuthorizationHandler<AllowLockedUserRequirement>
 {
-    protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, AllowLockedUserRequirement requirement)
+    protected override Task HandleRequirementAsync(
+        AuthorizationHandlerContext context,
+        AllowLockedUserRequirement requirement)
     {
         if (context.User.HasClaim(c => c.Type == "AccountLocked" && c.Value == "true"))
         {

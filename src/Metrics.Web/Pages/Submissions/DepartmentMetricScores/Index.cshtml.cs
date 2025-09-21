@@ -1,3 +1,4 @@
+using Metrics.Application.Authorization;
 using Metrics.Application.Interfaces.IServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -6,7 +7,7 @@ using System.Security.Claims;
 
 namespace Metrics.Web.Pages.Submissions.DepartmentMetricScores;
 
-[Authorize(Policy = "CanSubmitKeyScorePolicy")]
+[Authorize(Policy = ApplicationPolicies.CanSubmitKeyKpiScorePolicy)]
 public class IndexModel : PageModel
 {
     private readonly IUserService _userService;
@@ -94,7 +95,7 @@ public class IndexModel : PageModel
                         .OrderBy(c => c.DepartmentId)
                         .Select(c => c.DepartmentKeyMetric);
                     var departments = submissionConstraints
-                        .Select(c => c.DepartmentKeyMetric.TargetDepartment)
+                        .Select(c => c.DepartmentKeyMetric.KeyIssueDepartment)
                         .DistinctBy(department => department.Id)
                         .ToList();
                     // DepartmentList = KeyKpiSubmissionConstraints

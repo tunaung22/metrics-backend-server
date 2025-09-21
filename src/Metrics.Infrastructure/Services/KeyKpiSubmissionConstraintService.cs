@@ -136,7 +136,7 @@ public class KeyKpiSubmissionConstraintService : IKeyKpiSubmissionConstraintServ
                 .OrderBy(cx => cx.Department.DepartmentName)
                 .Include(cx => cx.Department)
                 .Include(cx => cx.DepartmentKeyMetric)
-                    .ThenInclude(cx => cx.TargetDepartment)
+                    .ThenInclude(cx => cx.KeyIssueDepartment)
                 .Include(cx => cx.DepartmentKeyMetric)
                     .ThenInclude(cx => cx.KpiSubmissionPeriod)
                 .Include(cx => cx.DepartmentKeyMetric)

@@ -16,5 +16,5 @@ public partial class KpiSubmissionPeriod : IAuditColumn, ISoftDelete
     public List<KpiSubmission> KpiSubmissions { get; set; } = [];
     public List<KeyKpiSubmission> KeyKpiSubmissions { get; set; } = [];
     public List<DepartmentKeyMetric> DepartmentKeyMetrics { get; set; } = [];
-    public List<CaseFeedback> CaseFeedbackSubmissions { get; set; } = [];
+    public List<CaseFeedbackScoreSubmission> CaseFeedbackScoreSubmissions { get; set; } = [];
 }

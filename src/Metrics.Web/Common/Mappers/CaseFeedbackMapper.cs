@@ -13,8 +13,8 @@ public static class CaseFeedbackMapper
         return new CaseFeedbackDto(
             Id: model.Id,
             LookupId: model.LookupId,
-            KpiSubmissionPeriodId: model.KpiSubmissionPeriodId,
-            TargetPeriod: model.TargetPeriod.MapToDto(),
+            // KpiSubmissionPeriodId: model.KpiSubmissionPeriodId,
+            // TargetPeriod: model.TargetPeriod.MapToDto(),
             SubmittedAt: model.SubmittedAt,
             SubmissionDate: model.SubmissionDate,
             FeedbackSubmitterId: model.FeedbackSubmitterId,
@@ -39,8 +39,8 @@ public static class CaseFeedbackMapper
         {
             Id = dto.Id,
             LookupId = dto.LookupId,
-            KpiSubmissionPeriodId = dto.KpiSubmissionPeriodId,
-            TargetPeriod = dto.TargetPeriod.MapToViewModel(),
+            // KpiSubmissionPeriodId = dto.KpiSubmissionPeriodId,
+            // TargetPeriod = dto.TargetPeriod.MapToViewModel(),
             SubmittedAt = dto.SubmittedAt,
             SubmissionDate = dto.SubmissionDate,
             FeedbackSubmitterId = dto.FeedbackSubmitterId,

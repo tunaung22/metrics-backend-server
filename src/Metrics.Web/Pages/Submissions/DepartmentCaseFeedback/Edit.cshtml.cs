@@ -1,6 +1,8 @@
+using Metrics.Application.Authorization;
 using Metrics.Application.Domains;
 using Metrics.Application.Interfaces.IServices;
 using Metrics.Web.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -9,22 +11,23 @@ using System.Security.Claims;
 
 namespace Metrics.Web.Pages.Submissions.DepartmentCaseFeedback;
 
+[Authorize(Policy = ApplicationPolicies.CanGiveFeedbackPolicy)]
 public class EditModel : PageModel
 {
     private readonly IUserService _userService;
     private readonly IDepartmentService _departmentService;
-    private readonly IKpiSubmissionPeriodService _kpiPeriodService;
+    // private readonly IKpiSubmissionPeriodService _kpiPeriodService;
     private readonly ICaseFeedbackService _caseFeedbackSubmissionService;
 
     public EditModel(
         IUserService userService,
         IDepartmentService departmentService,
-        IKpiSubmissionPeriodService kpiPeriodService,
+        // IKpiSubmissionPeriodService kpiPeriodService,
         ICaseFeedbackService caseFeedbackSubmissionService)
     {
         _userService = userService;
         _departmentService = departmentService;
-        _kpiPeriodService = kpiPeriodService;
+        // _kpiPeriodService = kpiPeriodService;
         _caseFeedbackSubmissionService = caseFeedbackSubmissionService;
 
     }
@@ -69,10 +72,10 @@ public class EditModel : PageModel
 
     public UserViewModel Submitter { get; set; } = null!;
     public string? CurrentUserGroupName { get; set; } = string.Empty;
-    public KpiPeriodViewModel SelectedPeriod { get; set; } = null!;
+    // public KpiPeriodViewModel SelectedPeriod { get; set; } = null!;
 
-    [BindProperty]
-    public string? SelectedPeriodName { get; set; } = string.Empty;
+    // [BindProperty]
+    // public string? SelectedPeriodName { get; set; } = string.Empty;
 
     [BindProperty]
     public string? TargetSubmissionLookupId { get; set; } = string.Empty;
@@ -80,36 +83,36 @@ public class EditModel : PageModel
 
     // =============== HANDLERS ================================================
     public async Task<IActionResult> OnGetAsync(
-        [FromRoute] string periodName,
+        // [FromRoute] string periodName,
         [FromRoute] string lookupId)
     {
-        if (string.IsNullOrEmpty(periodName) || string.IsNullOrEmpty(lookupId))
-        {
+        // if (string.IsNullOrEmpty(periodName) || string.IsNullOrEmpty(lookupId))
+        // {
 
-            // Can't process form wihout lookupId & periodName, 
-            // return to List instead.
-            return RedirectToPage("./List", new { periodName = SelectedPeriodName });
-        }
+        //     // Can't process form wihout lookupId & periodName, 
+        //     // return to List instead.
+        //     return RedirectToPage("./List", new { periodName = SelectedPeriodName });
+        // }
 
-        // ----------KPI PERIOD-------------------------------------------------
-        var kpiPeriod = await _kpiPeriodService.FindByKpiPeriodNameAsync(periodName);
-        if (kpiPeriod != null)
-        {
-            SelectedPeriodName = kpiPeriod.PeriodName;
-            SelectedPeriod = new KpiPeriodViewModel() // ---- do we need entire KPI Period object??
-            {
-                Id = kpiPeriod.Id,
-                PeriodName = kpiPeriod.PeriodName,
-                SubmissionStartDate = kpiPeriod.SubmissionStartDate,
-                SubmissionEndDate = kpiPeriod.SubmissionEndDate
-            };
-        }
-        else
-        {
-            // ModelState.AddModelError("", $"Period {periodName} not found.");
-            // return Page();
-            return RedirectToPage("./List", new { periodName = SelectedPeriodName });
-        }
+        // // ----------KPI PERIOD-------------------------------------------------
+        // var kpiPeriod = await _kpiPeriodService.FindByKpiPeriodNameAsync(periodName);
+        // if (kpiPeriod != null)
+        // {
+        //     SelectedPeriodName = kpiPeriod.PeriodName;
+        //     SelectedPeriod = new KpiPeriodViewModel() // ---- do we need entire KPI Period object??
+        //     {
+        //         Id = kpiPeriod.Id,
+        //         PeriodName = kpiPeriod.PeriodName,
+        //         SubmissionStartDate = kpiPeriod.SubmissionStartDate,
+        //         SubmissionEndDate = kpiPeriod.SubmissionEndDate
+        //     };
+        // }
+        // else
+        // {
+        //     // ModelState.AddModelError("", $"Period {periodName} not found.");
+        //     // return Page();
+        //     return RedirectToPage("./List", new { periodName = SelectedPeriodName });
+        // }
 
         // ----------DEPARTMENT-------------------------------------------------
         DepartmentListItems = await LoadDepartmentList();
@@ -122,12 +125,14 @@ public class EditModel : PageModel
         if (submission == null)
         {
             // Return to List if no submission found
-            return RedirectToPage("./List", new { periodName = SelectedPeriodName });
+            // return RedirectToPage("./List", new { periodName = SelectedPeriodName });
+            return RedirectToPage("./List");
         }
 
         Submitter = new UserViewModel
         {
             Id = submission.SubmittedBy.Id,
+            UserCode = submission.SubmittedBy.UserCode,
             UserName = submission.SubmittedBy.UserName!,
             FullName = submission.SubmittedBy.FullName,
             PhoneNumber = submission.SubmittedBy.PhoneNumber,
@@ -151,7 +156,7 @@ public class EditModel : PageModel
         // ----------FORM INPUT-------------------------------------------------
         FormInput = new FormInputModel
         {
-            SubmissionPeriodId = submission.KpiSubmissionPeriodId,
+            // SubmissionPeriodId = submission.KpiSubmissionPeriodId,
             SubmittedAt = submission.SubmittedAt,
             SubmitterId = submission.SubmitterId,
             // ScoreValue = submission.NegativeScoreValue,
@@ -169,7 +174,7 @@ public class EditModel : PageModel
     }
 
     public async Task<IActionResult> OnPostAsync(
-         [FromRoute] string periodName,
+        //  [FromRoute] string periodName,
         [FromRoute] string lookupId)
     {
         if (!ModelState.IsValid)
@@ -177,32 +182,32 @@ public class EditModel : PageModel
             return Page();
         }
 
-        if (string.IsNullOrEmpty(periodName) || string.IsNullOrEmpty(lookupId))
-        {
-            // Can't process form wihout lookupId & periodName, 
-            // return to List instead.
-            return RedirectToPage("./List", new { periodName = SelectedPeriodName });
-        }
+        // if (string.IsNullOrEmpty(periodName) || string.IsNullOrEmpty(lookupId))
+        // {
+        //     // Can't process form wihout lookupId & periodName, 
+        //     // return to List instead.
+        //     return RedirectToPage("./List", new { periodName = SelectedPeriodName });
+        // }
 
-        // ----------KPI PERIOD-------------------------------------------------
-        var kpiPeriod = await _kpiPeriodService.FindByKpiPeriodNameAsync(periodName);
-        if (kpiPeriod != null)
-        {
-            SelectedPeriodName = kpiPeriod.PeriodName;
-            SelectedPeriod = new KpiPeriodViewModel() // ---- do we need entire KPI Period object??
-            {
-                Id = kpiPeriod.Id,
-                PeriodName = kpiPeriod.PeriodName,
-                SubmissionStartDate = kpiPeriod.SubmissionStartDate,
-                SubmissionEndDate = kpiPeriod.SubmissionEndDate
-            };
-        }
-        else
-        {
-            // ModelState.AddModelError("", $"Period {periodName} not found.");
-            // return Page();
-            return RedirectToPage("./List", new { periodName = SelectedPeriodName });
-        }
+        // // ----------KPI PERIOD-------------------------------------------------
+        // var kpiPeriod = await _kpiPeriodService.FindByKpiPeriodNameAsync(periodName);
+        // if (kpiPeriod != null)
+        // {
+        //     SelectedPeriodName = kpiPeriod.PeriodName;
+        //     SelectedPeriod = new KpiPeriodViewModel() // ---- do we need entire KPI Period object??
+        //     {
+        //         Id = kpiPeriod.Id,
+        //         PeriodName = kpiPeriod.PeriodName,
+        //         SubmissionStartDate = kpiPeriod.SubmissionStartDate,
+        //         SubmissionEndDate = kpiPeriod.SubmissionEndDate
+        //     };
+        // }
+        // else
+        // {
+        //     // ModelState.AddModelError("", $"Period {periodName} not found.");
+        //     // return Page();
+        //     return RedirectToPage("./List", new { periodName = SelectedPeriodName });
+        // }
 
         // ----------DEPARTMENT-------------------------------------------------
         DepartmentListItems = await LoadDepartmentList();
@@ -214,7 +219,7 @@ public class EditModel : PageModel
         try
         {
             var entity = CaseFeedback.Create(
-                kpiSubmissionPeriodId: SelectedPeriod.Id,
+                // kpiSubmissionPeriodId: SelectedPeriod.Id,
                 submittedAt: DateTimeOffset.UtcNow,
                 submitterId: FormInput.SubmitterId,
                 caseDepartmentId: FormInput.CaseDepartmentId,
@@ -229,7 +234,8 @@ public class EditModel : PageModel
 
             await _caseFeedbackSubmissionService.UpdateAsync(TargetSubmissionLookupId, entity);
 
-            return RedirectToPage("./List", new { periodName = SelectedPeriodName });
+            // return RedirectToPage("./List", new { periodName = SelectedPeriodName });
+            return RedirectToPage("./List");
         }
         catch (Exception)
         {
@@ -240,7 +246,8 @@ public class EditModel : PageModel
 
     public IActionResult OnPostCancel()
     {
-        return RedirectToPage("./List", new { periodName = SelectedPeriodName });
+        // return RedirectToPage("./List", new { periodName = SelectedPeriodName });
+        return RedirectToPage("./List");
     }
 
     // ========== METHODS ======================================================
@@ -256,6 +263,7 @@ public class EditModel : PageModel
             return new UserViewModel
             {
                 Id = user.Id,
+                UserCode = user.UserCode,
                 UserName = user.UserName!,
                 FullName = user.FullName,
                 PhoneNumber = user.PhoneNumber,

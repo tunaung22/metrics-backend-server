@@ -1,12 +1,10 @@
 using System.ComponentModel.DataAnnotations;
 using Metrics.Application.Interfaces.IServices;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace Metrics.Web.Pages.Manage.Departments;
 
-[Authorize(Policy = "CanAccessAdminFeaturePolicy")]
 public class IndexModel : PageModel
 {
     private readonly IConfiguration _config;

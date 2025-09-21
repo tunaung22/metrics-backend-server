@@ -27,73 +27,75 @@
     </nav>
 </div>
 
+<div class="filter-toolbar mb-4 px-4 d-flex align-items-center justify-content-between">
+    <div class="d-flex align-items-center gap-2">
+        <form id="form__groupSelection" method="get" class="">
+            <span class="d-flex align-items-center">
+                <div class="col-auto me-2">
+                    <label for="ViewMode" class="form-label m-0">
+                        <i class="bi bi-collection-fill"></i> View Mode</label>
+                </div>
+                <div class="col-auto me-4">
+                    <select 
+                        asp-for="ViewMode"
+                        asp-items="Model.ViewModeListItems"
+                        onchange="this.form.submit()"
+                        class="form-select"
+                        aria-label="Select View Mode">
+                    </select>
+                </div>
+
+                <div class="col-auto me-2">
+                    <label for="Group" class="form-label m-0">
+                        <i class="bi bi-people-fill"></i> User Group</label>
+                </div>
+                <div class="col-auto me-4">
+                    <select 
+                        asp-for="Group"
+                        asp-items="Model.UserGroupListItems"
+                        onchange="this.form.submit()"
+                        class="form-select"
+                        aria-label="Select User Group">
+                    </select>
+                </div>
+            </span>
+        </form>
+        @* <button>Button</button> *@
+    </div>
+
+    <div class="exportData">
+        <form method="post" asp-page-handler="ExportExcel">
+                    <input type="hidden" asp-for="ViewMode">
+                    <input type="hidden" asp-for="Group">
+            @* 
+                **use single handler: ExportExcel
+                for all four models?
+            *@
+            @if(Model.AllUserGroupReportSummaryList.Any()
+                || Model.AllUserGroupReportDetailList.Any()
+                || Model.SingleUserGroupReportSummaryList.Any()
+                || Model.SingleUserGroupReportDetailList.Any())
+            {
+                <button type="submit" class="btn btn-success">
+                    <i class="bi bi-file-earmark-spreadsheet"></i> Export</button>
+            }
+            else
+            {
+                <button type="submit" 
+                    class="btn btn-success disabled">
+                <i class="bi bi-file-earmark-spreadsheet"></i> Export</button>
+            }
+        </form>
+    </div>
+</div>
+
+
 <div class="container-fluid">
     <div class="bg-light p-4 rounded-2">
-        <div class="filter-toolbar mb-4 d-flex align-items-center justify-content-between">
-            <div class="d-flex align-items-center gap-2">
-                <form id="form__groupSelection" method="get" class="">
-                    <span class="d-flex align-items-center">
-                        <div class="col-auto me-2">
-                            <label for="ViewMode" class="form-label m-0">
-                                <i class="bi bi-collection-fill"></i> View Mode</label>
-                        </div>
-                        <div class="col-auto me-4">
-                            <select 
-                                asp-for="ViewMode"
-                                asp-items="Model.ViewModeListItems"
-                                onchange="this.form.submit()"
-                                class="form-select"
-                                aria-label="Select View Mode">
-                            </select>
-                        </div>
-
-                        <div class="col-auto me-2">
-                            <label for="Group" class="form-label m-0">
-                                <i class="bi bi-people-fill"></i> User Group</label>
-                        </div>
-                        <div class="col-auto me-4">
-                            <select 
-                                asp-for="Group"
-                                asp-items="Model.UserGroupListItems"
-                                onchange="this.form.submit()"
-                                class="form-select"
-                                aria-label="Select User Group">
-                            </select>
-                        </div>
-                    </span>
-                </form>
-                @* <button>Button</button> *@
-            </div>
-
-            <div class="exportData">
-                <form method="post" asp-page-handler="ExportExcel">
-                            <input type="hidden" asp-for="ViewMode">
-                            <input type="hidden" asp-for="Group">
-                    @* 
-                        **use single handler: ExportExcel
-                        for all four models?
-                    *@
-                    @if(Model.AllUserGroupReportSummaryList.Any()
-                        || Model.AllUserGroupReportDetailList.Any()
-                        || Model.SingleUserGroupReportSummaryList.Any()
-                        || Model.SingleUserGroupReportDetailList.Any())
-                    {
-                        <button type="submit" class="btn btn-success">
-                            <i class="bi bi-file-earmark-spreadsheet"></i> Export</button>
-                    }
-                    else
-                    {
-                        <button type="submit" 
-                            class="btn btn-success disabled">
-                        <i class="bi bi-file-earmark-spreadsheet"></i> Export</button>
-                    }
-                </form>
-            </div>
-        </div>
 
         <div asp-validation-summary="ModelOnly" class="alert alert-danger text-danger" role="alert"></div>
 
-        <div class="table-responsive">
+        <div class="">
             
 
                 @if(!string.IsNullOrEmpty(Model.ViewMode) && !string.IsNullOrEmpty(Model.Group) ) {
@@ -200,12 +202,20 @@
                                 <table id="allUserGroupDetailTable" class="table table-bordered table-striped">
                                 <thead>
                                     <tr>
-                                        <th>Candidate</th>
+                                        <th colspan="4">Candidate</th>
+                                        @foreach(var department in Model.DepartmentList)
+                                        {
+                                            <th>@department.DepartmentName</th>
+                                        }
+                                    </tr>
+                                    <tr>
+                                        <th>Candidate ID</th>
+                                        <th>Name</th>
                                         <th>Department</th>
                                         <th>Group</th>
                                         @foreach(var department in Model.DepartmentList)
                                         {
-                                            <th>@department.DepartmentName</th>
+                                            <th>Score</th>
                                         }
                                     </tr>
                                 </thead>
@@ -213,6 +223,7 @@
                                     @foreach(var entry in Model.AllUserGroupReportDetailList) 
                                     {
                                         <tr>
+                                            <td>@entry.SubmittedBy.UserCode</td>
                                             <td>@entry.SubmittedBy.FullName</td>
                                             <td>@entry.SubmittedBy.Department.DepartmentName</td>
                                             <td>@entry.SubmittedBy.UserGroup.GroupName.ToUpper()</td>
@@ -240,6 +251,7 @@
                                 </tbody>
                                 <tfoot>
                                     <tr>
+                                        <th></th>
                                         <th></th> <!-- For the Candidate column -->
                                         <th></th>
                                         <th></th>
@@ -260,12 +272,20 @@
                                 <table id="singleUserGroupDetailTable" class="table table-bordered table-striped">
                                 <thead>
                                     <tr>
-                                        <th>Candidate</th>
+                                        <th colspan="3">Candidate</th>
+                                        @foreach(var department in Model.DepartmentList)
+                                        {
+                                            <th>@department.DepartmentName</th>
+                                        }
+                                    </tr>
+                                    <tr>
+                                        <th>Candidate ID</th>
+                                        <th>Name</th>
                                         <th>Department</th>
                                         @* <th>Group</th> *@
                                         @foreach(var department in Model.DepartmentList)
                                         {
-                                            <th>@department.DepartmentName</th>
+                                            <th>Score</th>
                                         }
                                     </tr>
                                 </thead>
@@ -273,6 +293,7 @@
                                     @foreach(var entry in Model.SingleUserGroupReportDetailList) 
                                     {
                                         <tr>
+                                            <td>@entry.SubmittedBy.UserCode</td>
                                             <td>@entry.SubmittedBy.FullName</td>
                                             <td>@entry.SubmittedBy.Department.DepartmentName</td>
                                             @* <td>@(entry.GroupName != null ? entry.GroupName.ToUpper() : "N/A")</td> *@
@@ -296,6 +317,7 @@
                                 </tbody>
                                 <tfoot>
                                     <tr>
+                                        <th></th>
                                         <th></th> <!-- For the Candidate column -->
                                         <th></th>
                                         @foreach(var department in Model.DepartmentList)
@@ -321,6 +343,7 @@
     </div>
 </div>
 
+
 @section Scripts {
     <script>
         $(function() {
@@ -331,19 +354,19 @@
                     info: true,
                     searching: false,
                     autoWidth: true,
-                    @* fixedHeader: true, *@
-                    fixedHeader: {
-                        header: true,
-                        footer: true
-                    },
+                    scroller: true,
+                    scrollY: 600,
                     columnDefs: [
                         { width: '16%', targets: 0 },
                         { sortable: false, targets: ['.no-sort'] },
                         @* { orderable: false, targets: noSortTargets } // Disable sorting for specified columns *@
                     ],
                     initComplete: function() {
-                        $('#allUserGroupSummaryTable thead th').addClass('text-light text-center align-middle');
-                        $('#allUserGroupSummaryTable thead th').addClass('bg-brand-color');
+                        $('.dataTable thead th').addClass('text-light text-center align-middle');
+                        $('.dataTable thead th').addClass('bg-brand-color');
+                        $('.dataTable tfoot th').addClass('bg-brand-color text-light');
+                        @* $('#allUserGroupSummaryTable thead th').addClass('text-light text-center align-middle');
+                        $('#allUserGroupSummaryTable thead th').addClass('bg-brand-color'); *@
                     }
                 });
             }
@@ -354,19 +377,19 @@
                     info: true,
                     searching: false,
                     autoWidth: true,
-                    @* fixedHeader: true, *@
-                    fixedHeader: {
-                        header: true,
-                        footer: true
-                    },
+                    scroller: true,
+                    scrollY: 600,
                     columnDefs: [
                         { width: '16%', targets: 0 },
                         { sortable: false, targets: ['.no-sort'] },
                         @* { orderable: false, targets: noSortTargets } // Disable sorting for specified columns *@
                     ],
                     initComplete: function() {
-                        $('#singleUserGroupSummaryTable thead th').addClass('text-light text-center align-middle');
-                        $('#singleUserGroupSummaryTable thead th').addClass('bg-brand-color');
+                        $('.dataTable thead th').addClass('text-light text-center align-middle');
+                        $('.dataTable thead th').addClass('bg-brand-color');
+                        $('.dataTable tfoot th').addClass('bg-brand-color text-light');
+                        @* $('#singleUserGroupSummaryTable thead th').addClass('text-light text-center align-middle');
+                        $('#singleUserGroupSummaryTable thead th').addClass('bg-brand-color'); *@
                     }
                 });
             }
@@ -377,27 +400,29 @@
                     info: true,
                     searching: false,
                     autoWidth: true,
-                    @* fixedHeader: true, *@
-                    fixedHeader: {
-                        header: true,
-                        footer: true
-                    },
+                    scroller: true,
+                    scrollY: 600,
                     columnDefs: [
                         { width: '16%', targets: 0 },
                         { sortable: false, targets: ['.no-sort'] },
                         @* { orderable: false, targets: noSortTargets } // Disable sorting for specified columns *@
                     ],
                     initComplete: function() {
-                        $('#allUserGroupDetailTable thead th').addClass('text-light text-center align-middle');
+                        $('.dataTable thead th').addClass('text-light text-center align-middle');
+                        $('.dataTable thead th').addClass('bg-brand-color');
+                        $('.dataTable tfoot th').addClass('bg-brand-color text-light');
+                        @* $('#allUserGroupDetailTable thead th').addClass('text-light text-center align-middle');
                         $('#allUserGroupDetailTable thead th').addClass('bg-brand-color');
-                        $('#allUserGroupDetailTable tfoot th').addClass('bg-brand-color text-light');
+                        $('#allUserGroupDetailTable tfoot th').addClass('bg-brand-color text-light'); *@
                     },
                     footerCallback: function (row, data, start, end, display) {
                         let api = this.api();
                 
                         @foreach(var department in Model.DepartmentList)
                         {
-                            var index = Model.DepartmentList.IndexOf(department) + 3; // +1 because Candidate is column 0
+                            //  0      1          2         3          4
+                            // ID, Candidate, Department, Group, Admin Department,...
+                            var index = Model.DepartmentList.IndexOf(department) + 4; // +1 for Candidate is column 0
                             <text>
                             // Calculate total for @department.DepartmentName (column @index)
                             var total_@(index) = api
@@ -425,26 +450,33 @@
                     searching: false,
                     autoWidth: true,
                     @* fixedHeader: true, *@
-                    fixedHeader: {
+                    @* fixedHeader: {
                         header: true,
                         footer: true
-                    },
+                    }, *@
+                    scroller: true,
+                    scrollY: 600,
                     columnDefs: [
                         { width: '16%', targets: 0 },
                         { sortable: false, targets: ['.no-sort'] },
                         @* { orderable: false, targets: noSortTargets } // Disable sorting for specified columns *@
                     ],
                     initComplete: function() {
-                        $('#singleUserGroupDetailTable thead th').addClass('text-light text-center align-middle');
+                        $('.dataTable thead th').addClass('text-light text-center align-middle');
+                        $('.dataTable thead th').addClass('bg-brand-color');
+                        $('.dataTable tfoot th').addClass('bg-brand-color text-light');
+                        @* $('#singleUserGroupDetailTable thead th').addClass('text-light text-center align-middle');
                         $('#singleUserGroupDetailTable thead th').addClass('bg-brand-color');
-                        $('#singleUserGroupDetailTable tfoot th').addClass('bg-brand-color text-light');
+                        $('#singleUserGroupDetailTable tfoot th').addClass('bg-brand-color text-light'); *@
                     },
                     footerCallback: function (row, data, start, end, display) {
                         let api = this.api();
                 
                         @foreach(var department in Model.DepartmentList)
                         {
-                            var index = Model.DepartmentList.IndexOf(department) + 2; // +1 because Candidate is column 0
+                            //  0      1          2              3
+                            // ID, Candidate, Department, Admin Department,...
+                            var index = Model.DepartmentList.IndexOf(department) + 3; // +1 for Candidate is column 0
                             <text>
                             // Calculate total for @department.DepartmentName (column @index)
                             var total_@(index) = api

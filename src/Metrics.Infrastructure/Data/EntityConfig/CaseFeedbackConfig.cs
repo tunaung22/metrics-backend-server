@@ -66,6 +66,9 @@ public class CaseFeedbackConfig : IEntityTypeConfiguration<CaseFeedback>
         builder.Property(e => e.Description)
             .HasColumnName("description")
             .HasColumnType("text");
+        builder.Property(e => e.Proceeded)
+            .HasColumnName("proceeded")
+            .HasColumnType("boolean");
         // builder.Property(e => e.Comments)
         //     .HasColumnName("comments")
         //     .HasColumnType("text");
@@ -84,11 +87,11 @@ public class CaseFeedbackConfig : IEntityTypeConfiguration<CaseFeedback>
 
 
         // ===== Relationships =====
-        builder.HasOne(e => e.TargetPeriod)
-            .WithMany(e => e.CaseFeedbackSubmissions)
-            .HasForeignKey(e => e.KpiSubmissionPeriodId)
-            .OnDelete(DeleteBehavior.Restrict)
-            .IsRequired();
+        // builder.HasOne(e => e.TargetPeriod)
+        //     .WithMany(e => e.CaseFeedbackSubmissions)
+        //     .HasForeignKey(e => e.KpiSubmissionPeriodId)
+        //     .OnDelete(DeleteBehavior.Restrict)
+        //     .IsRequired();
         builder.HasOne(e => e.SubmittedBy)
             .WithMany(e => e.CaseFeedbacks)
             .HasForeignKey(e => e.SubmitterId)

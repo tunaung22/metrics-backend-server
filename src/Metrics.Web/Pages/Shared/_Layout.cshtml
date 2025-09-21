@@ -1,8 +1,20 @@
-﻿@using Microsoft.AspNetCore.Authorization
+﻿@using Metrics.Application.Authorization
+@using Microsoft.AspNetCore.Authorization
 @inject IAuthorizationService AuthorizationService
 @{
-    var canAccessAdminFeatures = await AuthorizationService.AuthorizeAsync(User, "CanAccessAdminFeaturePolicy");
-    var canSubmitBaseScore = await AuthorizationService.AuthorizeAsync(User, "CanSubmitBaseScorePolicy");
+    AuthorizationResult? canAccessAdminFeatures = await AuthorizationService.AuthorizeAsync(
+        user: User, 
+        policyName: ApplicationPolicies.CanAccessAdminFeaturesPolicy);
+        
+    AuthorizationResult? canSubmitKpiScore= await AuthorizationService.AuthorizeAsync(user: User, policyName: ApplicationPolicies.CanSubmitKpiScorePolicy);
+    AuthorizationResult? canSubmitKeyKpiScore= await AuthorizationService.AuthorizeAsync(user: User, policyName: ApplicationPolicies.CanSubmitKpiScorePolicy);
+    AuthorizationResult? canSubmitFeedbackScore= await AuthorizationService.AuthorizeAsync(user: User, policyName: ApplicationPolicies.CanSubmitKpiScorePolicy);
+    bool canSubmitScore = (canSubmitKpiScore.Succeeded || canSubmitKeyKpiScore.Succeeded || canSubmitFeedbackScore.Succeeded);
+    
+    AuthorizationResult? canGiveFeedback = await AuthorizationService.AuthorizeAsync(
+        user: User, 
+        policyName: ApplicationPolicies.CanGiveFeedbackPolicy);
+    
     @* var pathAndQuery = Context.Request.Path + Context.Request.QueryString; *@
     @* var currentUrl = $"{Context.Request.Scheme}://{Context.Request.Host}{pathAndQuery}"; *@
     var currentUrl = Context.Request.Path;
@@ -21,15 +33,17 @@
     <link rel="stylesheet" href="~/lib/datatables/dataTables.bootstrap5.min.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/lib/bootstrap-icons/font/bootstrap-icons.min.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/lib/jquery-ui-1.14.1.custom/jquery-ui.css" asp-append-version="true" />
+    
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    @* <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet"> *@
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    @* Inter, Poppins, Roboto Mono  *@
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap" rel="stylesheet">
     @* ========== CSS Section ========== *@
     @RenderSection("Styles", required: false)
 </head>
 <body class="d-flex flex-column min-vh-100">
-    <header class="app-header sticky-top">
+    <header class="app-header ">
         <nav id="appNavbar" class="app-navbar 
                     navbar 
                     navbar-collapse-xs
@@ -65,6 +79,7 @@
                                 class="nav-link @(currentUrl=="/" ? "activeLink" : "")"> 
                                     <i class="bi bi-house-fill"></i> Home</a>
                         </li>
+                        @* ================================================================= *@
                         @* ========================== Admin Area ========================== *@
                         @if(canAccessAdminFeatures.Succeeded)
                         @* @if (User.IsInRole("admin") || User.IsInRole("sysadmin")) *@
@@ -89,10 +104,10 @@
                                         <i class="bi bi-bar-chart-fill"></i> Reports</a>
                             </li>
                         }
-
-                        @* ========================== Employee Area ========================== *@
-                        @if(canSubmitBaseScore.Succeeded)
-                        @* @if((await AuthorizationService.AuthorizeAsync(User, "CanSubmitBaseScorePolicy")).Succeeded) *@
+                        @* ================================================================= *@
+                        @* ========================== Users Area ========================== *@
+                        @* ===== Users who can score for KPI, KEY KPI, FEEDBACK ===== *@
+                        @if(canSubmitScore)
                         {
                             <li class="nav-item">
                                 <a asp-page="/Submissions/Index"
@@ -100,20 +115,25 @@
                                     class="nav-link @(currentUrl.StartsWithSegments("/submissions/") ? "activeLink" : "")">
                                         <i class="bi bi-ui-checks"></i> Score Submissions</a>
                             </li>
+                        }
+                        @* ===== Users who can give feedback (case feedback) ===== *@
+                        @if(canGiveFeedback.Succeeded)
+                        {
                             <li class="nav-item">
-                                <a asp-page="/Submissions/DepartmentCaseFeedback/Index"
+                                <a asp-page="/Submissions/DepartmentCaseFeedback/List"
                                     asp-area="" 
                                     class="nav-link @(currentUrl.StartsWithSegments("/submissions/department-case-feedback") ? "activeLink" : "")">
                                         <i class="bi bi-ui-checks"></i> Case Feedback</a>
                             </li>
                         }
-
+                        @* ================================================================= *@
                         @* ========================== Public Area ========================== *@
                         <li class="nav-item">
                                 <a asp-area="" asp-page="/About/Index"
                                     class="nav-link @(currentUrl.StartsWithSegments("/about/") ? "activeLink" : "")">
                                         <i class="bi bi-info-circle-fill"></i> About</a>
                         </li>
+                        @* ================================================================= *@
                     </ul>
                     @* <span id="theme-toggle" aria-label="Toggle dark mode" class="px-4">
                         <i class="bi bi-sun-fill"></i> <!-- Sun icon for dark mode -->

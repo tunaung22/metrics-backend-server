@@ -7,8 +7,8 @@ namespace Metrics.Application.DTOs;
 public record CaseFeedbackDto(
     long Id,
     Guid LookupId,
-    long KpiSubmissionPeriodId,
-    KpiPeriodDto TargetPeriod,
+    // long KpiSubmissionPeriodId,
+    // KpiPeriodDto TargetPeriod,
     DateTimeOffset SubmittedAt,
     DateOnly SubmissionDate,
     string FeedbackSubmitterId,

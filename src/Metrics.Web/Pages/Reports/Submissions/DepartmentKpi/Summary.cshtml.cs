@@ -11,7 +11,6 @@ using MiniExcelLibs;
 
 namespace Metrics.Web.Pages.Reports.Submissions.DepartmentKpi;
 
-[Authorize(Policy = "CanAccessAdminFeaturePolicy")]
 public class SummaryModel : PageModel
 {
     private readonly UserManager<ApplicationUser> _userManager;

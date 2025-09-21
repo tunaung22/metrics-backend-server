@@ -18,6 +18,6 @@ public class KeyMetric : IAuditColumn, ISoftDelete
 
     // Collection Navigational Properties
     public List<DepartmentKeyMetric> DepartmentKeyMetrics { get; set; } = [];
-    public List<KeyKpiSubmission> KeyKpiSubmissions { get; set; } = [];
-    public List<KeyKpiSubmissionItem> KeyKpiSubmissionItems { get; set; } = [];
+    // public List<KeyKpiSubmission> KeyKpiSubmissions { get; set; } = []; // for refer
+    // public List<KeyKpiSubmissionItem> KeyKpiSubmissionItems { get; set; } = [];
 }

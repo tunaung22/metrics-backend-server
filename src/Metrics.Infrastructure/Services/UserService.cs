@@ -2,6 +2,7 @@ using Metrics.Application.Common.Mappers;
 using Metrics.Application.Domains;
 using Metrics.Application.DTOs.AccountDtos;
 using Metrics.Application.DTOs.User;
+using Metrics.Application.DTOs.UserClaims;
 using Metrics.Application.Exceptions;
 using Metrics.Application.Interfaces.IRepositories;
 using Metrics.Application.Interfaces.IServices;
@@ -489,9 +490,9 @@ public class UserService : IUserService
         try
         {
             var users = await _userRepository.FindAllAsQueryable()
+                .Where(u => u.UserName != "sysadmin")
                 .Include(u => u.Department)
                 .Include(u => u.UserTitle)
-                .Where(u => u.UserName != "sysadmin")
                 .ToListAsync();
 
             return users;
@@ -502,6 +503,211 @@ public class UserService : IUserService
             throw new Exception("An unexpected error occurred. Please try again later.");
         }
     }
+
+
+    // public async Task<ResultT<List<UserClaimDto>>> GetUserClaimsAsync(string userId)
+    // {
+    //     try
+    //     {
+    //         List<UserClaimDto> claimData = [];
+    //         var user = await _userManager.FindByIdAsync(userId);
+    //         if (user != null)
+    //         {
+
+    //             var claims = await _userManager.GetClaimsAsync(user);
+    //             claimData = claims.Select(c => new UserClaimDto
+    //             {
+
+    //                 UserDto = user.MapToDto(),
+    //                 UserClaims = 
+    //                 ClaimType = c.Type,
+    //                 ClaimValue = c.Value,
+    //             }).ToList();
+    //         }
+
+    //         return ResultT<List<UserClaimDto>>.Success(claimData);
+    //     }
+    //     catch (Exception ex)
+    //     {
+    //         // log
+    //         _logger.LogError(ex, "Failed to get user claims by user ID: {msg}", ex.Message);
+    //         return ResultT<List<UserClaimDto>>.Fail("Failed to get user claims.", ErrorType.UnexpectedError);
+    //     }
+    // }
+
+    /// <summary>
+    /// Get User Claims by user ID list
+    /// </summary>
+    /// <param name="userIDs"></param>
+    /// <returns></returns>
+    public async Task<ResultT<List<UserClaimDto>>> GetUserClaimsAsync(List<string> userIDs)
+    {
+        try
+        {
+            List<UserClaimDto> claimData = [];
+            // find users by ids
+            // .....for each user id -> get list of claims
+            // .....return list of (user id + claim)
+            if (userIDs.Count == 0)
+                return ResultT<List<UserClaimDto>>.Success(claimData);
+
+            /* 
+                **Use service provider for thread safe works
+                ** or just use foreach and run synchronously
+                var tasks = userIDs.Select(async userId =>
+                {
+                    // Create a new scope for each parallel operation
+                    using var scope = _serviceProvider.CreateScope();
+                    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+            */
+            foreach (var userId in userIDs)
+            {
+                var user = await _userManager.FindByIdAsync(userId);
+                if (user != null)
+                {
+                    var claims = await _userManager.GetClaimsAsync(user);
+                    // MapToDto() => List<Claim> to List<ClaimDto>
+                    var claimDtoList = claims.Select(uc => uc.MapToDto()).ToList();
+
+                    // var userClaims = claims.Select(c => new UserClaimDto
+                    // {
+                    //     UserDto = user.MapToDto(),
+                    //     UserClaims = claimDtoList
+                    // }).ToList();
+                    var userClaims = new UserClaimDto
+                    {
+                        UserDto = user.MapToDto(),
+                        UserClaims = claimDtoList
+                    };
+
+                    claimData.Add(userClaims);
+                }
+            }
+
+            return ResultT<List<UserClaimDto>>.Success(claimData);
+        }
+        catch (Exception ex)
+        {
+            // log
+            _logger.LogError(ex, "Failed to get user claims by user ID: {msg}", ex.Message);
+            return ResultT<List<UserClaimDto>>.Fail("Failed to get user claims.", ErrorType.UnexpectedError);
+        }
+    }
+
+    public async Task<ResultT<List<UserDto>>> FindAllAsync(
+        string? searchTerm,
+        int pageNumber,
+        int pageSize)
+    {
+        try
+        {
+            List<UserDto> userData = [];
+
+
+            List<ApplicationUser>? usersList = [];
+            if (string.IsNullOrEmpty(searchTerm))
+            {
+                usersList = await _userManager.Users
+                    .Include(u => u.Department)
+                    .Include(u => u.UserTitle)
+                    .Where(u => u.UserName != "sysadmin")
+                    .OrderBy(u => u.UserName)
+                    .Skip((pageNumber - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToListAsync();
+            }
+            else
+            {
+                var searchWords = searchTerm.Split(' ');
+                usersList = await _userManager.Users
+                    .Include(u => u.Department)
+                    .Include(u => u.UserTitle)
+                    .Where(u => u.UserName != "sysadmin" &&
+                        (
+                            searchWords.Any(word =>
+                                u.UserCode.Contains(word) ||
+                                u.UserName!.Contains(word) ||
+                                u.FullName.Contains(word) ||
+                                u.Department.DepartmentName.Contains(word)
+                            )
+                        )
+                    )
+                    .OrderBy(u => u.UserName)
+                    .ToListAsync();
+            }
+            if (usersList != null)
+            {
+                userData = usersList.Select(u => new UserDto(
+                    Id: u.Id,
+                    UserCode: u.UserCode,
+                    UserName: u.UserName!,
+                    FullName: u.FullName,
+                    PhoneNumber: u.PhoneNumber ?? string.Empty,
+                    ContactAddress: u.ContactAddress,
+                    UserGroup: u.UserTitle.MapToDto(),
+                    Department: u.Department.MapToDto(),
+                    LockoutEnabled: u.LockoutEnabled,
+                    LockoutEnd: u.LockoutEnd
+                )).ToList();
+            }
+
+            return ResultT<List<UserDto>>.Success(userData);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching users. {msg}", ex.Message);
+            return ResultT<List<UserDto>>.Fail("Failed to get users.", ErrorType.UnexpectedError);
+        }
+    }
+
+    public async Task<ResultT<List<UserDto>>> FindAllAsync(
+        int pageNumber,
+        int pageSize)
+    {
+        try
+        {
+            List<UserDto> userData = [];
+
+            List<ApplicationUser>? usersList = [];
+            usersList = await _userManager.Users
+                .Where(u => u.UserName != "sysadmin")
+                .OrderBy(u => u.UserName)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .Include(u => u.Department)
+                .Include(u => u.UserTitle)
+                .ToListAsync();
+
+            if (usersList != null)
+            {
+                userData = usersList.Select(u => new UserDto(
+                    Id: u.Id,
+                    UserCode: u.UserCode,
+                    UserName: u.UserName!,
+                    FullName: u.FullName,
+                    PhoneNumber: u.PhoneNumber ?? string.Empty,
+                    ContactAddress: u.ContactAddress,
+                    UserGroup: u.UserTitle.MapToDto(),
+                    Department: u.Department.MapToDto(),
+                    LockoutEnabled: u.LockoutEnabled,
+                    LockoutEnd: u.LockoutEnd
+                )).ToList();
+            }
+
+            return ResultT<List<UserDto>>.Success(userData);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching users. {msg}", ex.Message);
+            return ResultT<List<UserDto>>.Fail("Failed to get users.", ErrorType.UnexpectedError);
+        }
+    }
+
+    public async Task<long> FindCountAsync()
+    {
+        return await _userManager.Users.CountAsync();
+    }
+
 
 
 

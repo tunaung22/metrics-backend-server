@@ -1,11 +1,11 @@
 using Metrics.Application.Interfaces.IServices;
-using Microsoft.AspNetCore.Authorization;
+using Metrics.Web.Common.Mappers;
+using Metrics.Web.Models.UserRoles;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace Metrics.Web.Pages.Manage.Users.Roles;
 
-[Authorize(Policy = "CanAccessAdminFeaturePolicy")]
 public class IndexModel : PageModel
 {
     private readonly IUserRoleService _userRoleService;
@@ -16,24 +16,21 @@ public class IndexModel : PageModel
 
 
     // =============== MODELS ==================================================
-    public class UserRoleModel
-    {
-        public required string Id { get; set; }
-        public required string RoleName { get; set; }
-    }
-
-    public List<UserRoleModel> UserRoleList { get; set; } = new List<UserRoleModel>();
+    public List<RoleViewModel> UserRoleList { get; set; } = [];
 
 
     // =============== HANDLERS ================================================
     public async Task<IActionResult> OnGet()
     {
         var roles = await _userRoleService.FindAllAsync();
-        UserRoleList = roles.Select(r => new UserRoleModel()
+        if (!roles.IsSuccess)
         {
-            RoleName = r.Name ?? string.Empty,
-            Id = r.Id
-        }).ToList();
+            ModelState.AddModelError(string.Empty, "Failed to fetch user roles.");
+            return Page();
+        }
+
+        if (roles.IsSuccess && roles.Data != null)
+            UserRoleList = roles.Data.Select(r => r.MapToViewModel()).ToList();
 
         return Page();
     }

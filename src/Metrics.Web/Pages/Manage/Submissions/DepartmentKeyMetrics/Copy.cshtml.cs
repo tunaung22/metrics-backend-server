@@ -157,7 +157,7 @@ public class CopyModel : PageModel
                         DepartmentKeyMetricCode = k.DepartmentKeyMetricCode,
                         KpiSubmissionPeriodId = k.KpiSubmissionPeriodId,
                         DepartmentId = k.DepartmentId,
-                        DepartmentName = k.TargetDepartment.DepartmentName,
+                        DepartmentName = k.KeyIssueDepartment.DepartmentName,
                         KeyMetricId = k.KeyMetricId,
                         KeyMetricTitle = k.KeyMetric.MetricTitle,
                         IsDeleted = k.IsDeleted

@@ -4,9 +4,9 @@ namespace Metrics.Web.Models.ExcelExportModels;
 
 public class CaseFeedbackExcelViewModel
 {
-    [ExcelColumnWidth(14)]
-    [ExcelColumn(Name = "Period Name")]
-    public string? PeriodName { get; set; }
+    // [ExcelColumnWidth(14)]
+    // [ExcelColumn(Name = "Period Name")]
+    // public string? PeriodName { get; set; }
 
     [ExcelColumnWidth(20)]
     [ExcelColumn(Name = "Submitted By")]

@@ -28,7 +28,7 @@ public class DepartmentKeyMetricRepository : IDepartmentKeyMetricRepository
     {
         return _context.DepartmentKeyMetrics
             .OrderBy(k => k.KpiSubmissionPeriod.PeriodName)
-            .ThenBy(k => k.TargetDepartment.DepartmentName)
+            .ThenBy(k => k.KeyIssueDepartment.DepartmentName)
             .ThenBy(k => k.KeyMetric.MetricTitle);
     }
 
@@ -36,7 +36,7 @@ public class DepartmentKeyMetricRepository : IDepartmentKeyMetricRepository
     {
         return await _context.DepartmentKeyMetrics
             .OrderBy(k => k.KpiSubmissionPeriod.PeriodName)
-            .ThenBy(k => k.TargetDepartment.DepartmentName)
+            .ThenBy(k => k.KeyIssueDepartment.DepartmentName)
             .ThenBy(k => k.KeyMetric.MetricTitle)
             .ToListAsync();
     }
@@ -92,7 +92,7 @@ public class DepartmentKeyMetricRepository : IDepartmentKeyMetricRepository
     {
         return await _context.DepartmentKeyMetrics
         .Where(k => k.KpiSubmissionPeriod.PeriodName == periodName
-                && k.TargetDepartment.DepartmentCode == departmentCode
+                && k.KeyIssueDepartment.DepartmentCode == departmentCode
                 && k.KeyMetric.MetricCode == keyMetricCode)
         .FirstOrDefaultAsync();
     }
@@ -102,8 +102,8 @@ public class DepartmentKeyMetricRepository : IDepartmentKeyMetricRepository
         return await _context.DepartmentKeyMetrics
             .Include(k => k.KpiSubmissionPeriod)
             .Include(k => k.KeyMetric)
-            .Include(k => k.TargetDepartment)
-            .OrderBy(k => k.TargetDepartment.DepartmentName)
+            .Include(k => k.KeyIssueDepartment)
+            .OrderBy(k => k.KeyIssueDepartment.DepartmentName)
             .Where(k => k.KpiSubmissionPeriodId == periodId)
             .ToListAsync();
     }
@@ -113,8 +113,8 @@ public class DepartmentKeyMetricRepository : IDepartmentKeyMetricRepository
         return await _context.DepartmentKeyMetrics
             .Include(k => k.KpiSubmissionPeriod)
             .Include(k => k.KeyMetric)
-            .Include(k => k.TargetDepartment)
-            .OrderBy(k => k.TargetDepartment.DepartmentName)
+            .Include(k => k.KeyIssueDepartment)
+            .OrderBy(k => k.KeyIssueDepartment.DepartmentName)
             .Where(k => k.KpiSubmissionPeriod.PeriodName == periodName)
             .ToListAsync();
     }
@@ -124,10 +124,10 @@ public class DepartmentKeyMetricRepository : IDepartmentKeyMetricRepository
         return await _context.DepartmentKeyMetrics
             .Include(k => k.KpiSubmissionPeriod)
             .Include(k => k.KeyMetric)
-            .Include(k => k.TargetDepartment)
-            .OrderBy(k => k.TargetDepartment.DepartmentName)
+            .Include(k => k.KeyIssueDepartment)
+            .OrderBy(k => k.KeyIssueDepartment.DepartmentName)
             .Where(k => k.KpiSubmissionPeriod.PeriodName == periodName
-                && k.TargetDepartment.DepartmentCode == departmentCode)
+                && k.KeyIssueDepartment.DepartmentCode == departmentCode)
             .ToListAsync();
     }
 

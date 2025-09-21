@@ -8,7 +8,6 @@ public static class CaseFeedbackMapper
     public static CaseFeedback MapToEntity(this CaseFeedbackDto dto)
     {
         return CaseFeedback.Create(
-            dto.KpiSubmissionPeriodId,
             dto.SubmittedAt,
             dto.FeedbackSubmitterId,
             dto.CaseDepartmentId,
@@ -26,8 +25,8 @@ public static class CaseFeedbackMapper
         return new CaseFeedbackDto(
             Id: entity.Id,
             LookupId: entity.LookupId,
-            KpiSubmissionPeriodId: entity.KpiSubmissionPeriodId,
-            TargetPeriod: entity.TargetPeriod.MapToDto(),
+            // KpiSubmissionPeriodId: entity.KpiSubmissionPeriodId,
+            // TargetPeriod: entity.TargetPeriod.MapToDto(),
             SubmittedAt: entity.SubmittedAt,
             SubmissionDate: entity.SubmissionDate,
             FeedbackSubmitterId: entity.SubmitterId,

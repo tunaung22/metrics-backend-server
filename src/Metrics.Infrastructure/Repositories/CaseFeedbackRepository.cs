@@ -3,6 +3,7 @@ using Metrics.Application.Exceptions;
 using Metrics.Application.Interfaces.IRepositories;
 using Metrics.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using System.Runtime.InteropServices;
 
 namespace Metrics.Infrastructure.Repositories;
 
@@ -63,7 +64,7 @@ public class CaseFeedbackRepository : ICaseFeedbackRepository
             .Include(e => e.SubmittedBy)
                 .ThenInclude(e => e.Department)
             .Include(e => e.SubmittedBy.UserTitle)
-            .Include(e => e.TargetPeriod)
+            // .Include(e => e.TargetPeriod)
             .Where(e => e.LookupId == Guid.Parse(lookupId))
             .FirstOrDefaultAsync();
 
@@ -74,20 +75,40 @@ public class CaseFeedbackRepository : ICaseFeedbackRepository
     /// Returns all submissions for a specific KPI period and submitter, 
     /// ordered by submission date and department.
     /// </summary>
-    public async Task<List<CaseFeedback>> FindByKpiPeriodAndSubmitterAsync(
-        long periodId,
-        string userId)
+    // public async Task<List<CaseFeedback>> FindByKpiPeriodAndSubmitterAsync(
+    //     long periodId,
+    //     string userId)
+    // {
+    //     var submissions = await _context.CaseFeedbacks
+    //         .Where(e => e.KpiSubmissionPeriodId == periodId
+    //             && e.SubmitterId == userId)
+    //         .OrderBy(e => e.SubmissionDate)
+    //             .ThenBy(e => e.CaseDepartment.DepartmentName)
+    //         .Include(e => e.CaseDepartment)
+    //         .Include(e => e.SubmittedBy)
+    //             .ThenInclude(e => e.Department)
+    //         .Include(e => e.SubmittedBy.UserTitle)
+    //         .Include(e => e.TargetPeriod)
+    //         .ToListAsync();
+
+    //     return submissions ?? [];
+    // }
+
+    /// <summary>
+    /// Returns all active submissions by submitter, 
+    /// ordered by submission date and department.
+    /// </summary>
+    public async Task<List<CaseFeedback>> FindActiveBySubmitterAsync(string userId)
     {
         var submissions = await _context.CaseFeedbacks
-            .Where(e => e.KpiSubmissionPeriodId == periodId
-                && e.SubmitterId == userId)
+            .Where(e => e.SubmitterId == userId
+                && e.Proceeded == false)
             .OrderBy(e => e.SubmissionDate)
                 .ThenBy(e => e.CaseDepartment.DepartmentName)
             .Include(e => e.CaseDepartment)
             .Include(e => e.SubmittedBy)
                 .ThenInclude(e => e.Department)
             .Include(e => e.SubmittedBy.UserTitle)
-            .Include(e => e.TargetPeriod)
             .ToListAsync();
 
         return submissions ?? [];
@@ -97,22 +118,22 @@ public class CaseFeedbackRepository : ICaseFeedbackRepository
     /// Returns all submissions for a specific KPI period, 
     /// ordered by submitter name, department, and submission date.
     /// </summary>
-    public async Task<List<CaseFeedback>> FindAllByKpiPeriodAsync(long periodId)
-    {
-        var submissions = await _context.CaseFeedbacks
-                .Where(e => e.KpiSubmissionPeriodId == periodId)
-                .OrderBy(e => e.SubmittedBy.FullName)
-                    .ThenBy(e => e.CaseDepartment.DepartmentName)
-                    .ThenBy(e => e.SubmissionDate)
-                .Include(e => e.CaseDepartment)
-                .Include(e => e.SubmittedBy)
-                    .ThenInclude(e => e.Department)
-                .Include(e => e.SubmittedBy.UserTitle)
-                .Include(e => e.TargetPeriod)
-                .ToListAsync();
+    // public async Task<List<CaseFeedback>> FindAllByKpiPeriodAsync(long periodId)
+    // {
+    //     var submissions = await _context.CaseFeedbacks
+    //             .Where(e => e.KpiSubmissionPeriodId == periodId)
+    //             .OrderBy(e => e.SubmittedBy.FullName)
+    //                 .ThenBy(e => e.CaseDepartment.DepartmentName)
+    //                 .ThenBy(e => e.SubmissionDate)
+    //             .Include(e => e.CaseDepartment)
+    //             .Include(e => e.SubmittedBy)
+    //                 .ThenInclude(e => e.Department)
+    //             .Include(e => e.SubmittedBy.UserTitle)
+    //             .Include(e => e.TargetPeriod)
+    //             .ToListAsync();
 
-        return submissions ?? [];
-    }
+    //     return submissions ?? [];
+    // }
 
     /// <summary>
     /// Returns all submissions, 
@@ -131,6 +152,44 @@ public class CaseFeedbackRepository : ICaseFeedbackRepository
             .ToListAsync();
 
         return result ?? [];
+    }
+
+    /// <summary>
+    /// Returns all active submissions, 
+    /// ordered by submitter name, department, and submission date.
+    /// </summary>
+    /// <returns></returns>
+    public async Task<List<CaseFeedback>> FindAllActiveAsync()
+    {
+        var result = await _context.CaseFeedbacks
+            .Where(e => e.Proceeded == false)
+            .OrderBy(e => e.SubmittedBy.FullName)
+                .ThenBy(e => e.CaseDepartment.DepartmentName)
+                .ThenBy(e => e.SubmissionDate)
+            .Include(e => e.CaseDepartment)
+            .Include(e => e.SubmittedBy)
+                .ThenInclude(e => e.Department)
+            .Include(e => e.SubmittedBy.UserTitle)
+            .ToListAsync();
+
+        return result ?? [];
+    }
+
+    public async Task<List<CaseFeedback>> FindAllActiveAsync(DateTimeOffset startDate, DateTimeOffset endDate)
+    {
+        return await _context.CaseFeedbacks
+            .Where(e =>
+                e.Proceeded == false &&
+                e.SubmittedAt >= startDate &&
+                e.SubmittedAt <= endDate) // date >= startDate && date <= endDate
+            .OrderBy(e => e.SubmittedBy.FullName)
+                .ThenBy(e => e.CaseDepartment.DepartmentName)
+                .ThenBy(e => e.SubmissionDate)
+            .Include(e => e.CaseDepartment)
+            .Include(e => e.SubmittedBy)
+                .ThenInclude(e => e.Department)
+            .Include(e => e.SubmittedBy.UserTitle)
+            .ToListAsync();
     }
 
 

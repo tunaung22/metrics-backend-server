@@ -2,19 +2,16 @@ using Metrics.Application.Domains;
 using Metrics.Application.DTOs.User;
 using Metrics.Application.Exceptions;
 using Metrics.Application.Interfaces.IServices;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
-using System.Security.Claims;
 using System.Text.Json;
 
 namespace Metrics.Web.Pages.Manage.Users.Register;
 
-[Authorize(Policy = "CanAccessAdminFeaturePolicy")]
 public class IndexModel : PageModel
 {
     private readonly ILogger<IndexModel> _logger;

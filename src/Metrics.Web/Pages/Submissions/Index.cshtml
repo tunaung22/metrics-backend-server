@@ -1,18 +1,20 @@
 ﻿@page
 @model Metrics.Web.Pages.Submissions.IndexModel
 
+@using Metrics.Application.Authorization
 @using Microsoft.AspNetCore.Authorization
 @inject IAuthorizationService AuthorizationService
 
 @{
     ViewData["Title"] = "Submissions";
-    var canSubmitBaseScore = await AuthorizationService.AuthorizeAsync(User, "CanSubmitBaseScorePolicy");
-    var canSubmitKeyKpiScore = await AuthorizationService.AuthorizeAsync(User, "CanSubmitKeyScorePolicy");
-    var canSubmitCaseFeedbackScore = await AuthorizationService.AuthorizeAsync(User, "CanSubmitCaseFeedbackPolicy");
+    var canSubmitKpiScore = await AuthorizationService.AuthorizeAsync(
+        User, ApplicationPolicies.CanSubmitKpiScorePolicy);
 
-    var isBaseScoreSubmitter = canSubmitBaseScore.Succeeded;
-    var isKeyScoreSubmitter = canSubmitKeyKpiScore.Succeeded;
-    var isCaseFeedbackScoreSubmitter = canSubmitCaseFeedbackScore.Succeeded;
+    AuthorizationResult? canSubmitKeyKpiScore = await AuthorizationService.AuthorizeAsync(
+        User, ApplicationPolicies.CanSubmitKeyKpiScorePolicy);
+
+    var canSubmitFeedbackScore = await AuthorizationService.AuthorizeAsync(
+        User, ApplicationPolicies.CanSubmitFeedbackScorePolicy);
 }
 
 <div class="sectionTitle">
@@ -32,7 +34,7 @@
 
 <div class="container">
     <div class="row mb-4 align-items-stretch">
-        @if(isBaseScoreSubmitter) {
+        @if(canSubmitKpiScore.Succeeded) {
             <div class="d-flex col-xs-12 col-md-12 col-lg-4 mb-3">
                 <div class="card w-100 department-score">
                     <div class="card-header">
@@ -48,7 +50,9 @@
                     </div>
                 </div>
             </div>
+        }
 
+        @if(canSubmitKeyKpiScore.Succeeded) {
             <div class="d-flex col-xs-12 col-md-12 col-lg-4 mb-3">
                 <div class="card w-100 department-metric-score">
                     <div class="card-header">
@@ -64,7 +68,9 @@
                     </div>
                 </div>
             </div>
+        }
 
+        @if(canSubmitFeedbackScore.Succeeded) {
             <div class="d-flex col-xs-12 col-md-12 col-lg-4 mb-3">
                 <div class="card w-100 department-case-feedback-score">
                     <div class="card-header">

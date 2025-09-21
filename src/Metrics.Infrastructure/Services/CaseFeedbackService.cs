@@ -2,6 +2,7 @@ using Metrics.Application.Domains;
 using Metrics.Application.Exceptions;
 using Metrics.Application.Interfaces.IRepositories;
 using Metrics.Application.Interfaces.IServices;
+using Metrics.Application.Results;
 using Metrics.Infrastructure.Data;
 using Metrics.Infrastructure.Data.Extensions;
 using Microsoft.EntityFrameworkCore;
@@ -78,21 +79,76 @@ public class CaseFeedbackService : ICaseFeedbackService
         return await _caseFeedbackRepo.FindByLookupIdAsync(lookupId);
     }
 
-    public async Task<List<CaseFeedback>> FindByKpiPeriodAndSubmitterAsync(
-        long periodId,
-        string userId)
+    // public async Task<List<CaseFeedback>> FindByKpiPeriodAndSubmitterAsync(
+    //     long periodId,
+    //     string userId)
+    // {
+    //     return await _caseFeedbackRepo.FindByKpiPeriodAndSubmitterAsync(periodId, userId);
+    // }
+
+    public async Task<List<CaseFeedback>> FindActiveBySubmitterAsync(string userId)
     {
-        return await _caseFeedbackRepo.FindByKpiPeriodAndSubmitterAsync(periodId, userId);
+        // TODO: Return Result Object
+        try
+        {
+            return await _caseFeedbackRepo.FindActiveBySubmitterAsync(userId);
+        }
+        catch (Exception)
+        {
+            // TODO: Log
+            // TODO: Return Result Object
+            throw;
+        }
     }
 
-    public async Task<List<CaseFeedback>> FindByKpiPeriodAsync(long periodId)
+    // public async Task<List<CaseFeedback>> FindByKpiPeriodAsync(long periodId)
+    // {
+    //     return await _caseFeedbackRepo.FindAllByKpiPeriodAsync(periodId);
+    // }
+
+    public async Task<ResultT<List<CaseFeedback>>> FindAllAsync()
     {
-        return await _caseFeedbackRepo.FindAllByKpiPeriodAsync(periodId);
+        try
+        {
+            var feedbacks = await _caseFeedbackRepo.FindAllAsync();
+
+            return ResultT<List<CaseFeedback>>.Success(feedbacks);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to fetch all Feedbacks. {msg}", ex.Message);
+            return ResultT<List<CaseFeedback>>.Fail("Failed to fetch all Feedbacks.", ErrorType.UnexpectedError);
+        }
     }
 
-    public async Task<List<CaseFeedback>> FindAllAsync()
+    public async Task<ResultT<List<CaseFeedback>>> FindAllActiveAsync()
     {
-        return await _caseFeedbackRepo.FindAllAsync();
+        try
+        {
+            var feedbacks = await _caseFeedbackRepo.FindAllActiveAsync();
+
+            return ResultT<List<CaseFeedback>>.Success(feedbacks);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to fetch all active Feedbacks. {msg}", ex.Message);
+            return ResultT<List<CaseFeedback>>.Fail("Failed to fetch all active Feedbacks.", ErrorType.UnexpectedError);
+        }
+    }
+
+    public async Task<ResultT<List<CaseFeedback>>> FindAllActiveAsync(DateTimeOffset startDate, DateTimeOffset endDate)
+    {
+        try
+        {
+            var feedbacks = await _caseFeedbackRepo.FindAllActiveAsync();
+
+            return ResultT<List<CaseFeedback>>.Success(feedbacks);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to fetch all active Feedbakcs by date range. {msg}", ex.Message);
+            return ResultT<List<CaseFeedback>>.Fail("Failed to fetch all active Feedbacks by date range.", ErrorType.UnexpectedError);
+        }
     }
 
 }

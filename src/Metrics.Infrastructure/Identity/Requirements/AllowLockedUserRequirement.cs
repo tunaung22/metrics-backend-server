@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 
-namespace Metrics.Web.Security.PolicyRequirements;
+namespace Metrics.Infrastructure.Identity.Requirements;
+
 
 public class AllowLockedUserRequirement : IAuthorizationRequirement
 {

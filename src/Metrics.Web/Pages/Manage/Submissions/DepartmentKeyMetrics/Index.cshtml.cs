@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 namespace Metrics.Web.Pages.Manage.Submissions.DepartmentKeyMetrics;
 
 
-[Authorize(Policy = "CanAccessAdminFeaturePolicy")]
 public class IndexModel : PageModel
 {
     private readonly IKpiSubmissionPeriodService _kpiPeriodService;

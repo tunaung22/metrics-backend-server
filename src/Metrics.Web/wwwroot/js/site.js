@@ -9,6 +9,8 @@ document.addEventListener("DOMContentLoaded", function () {
     if btn    -> 
       :show:btn
  */
+  // var tableResponive = document.getElementsByClassName("table-responsive")[0];
+  // var filterToolbar = document.getElementsByClassName("filter-toolbar")[0];
   var titleSection = document.getElementsByClassName("sectionTitle")[0];
   // var actionButtons = document.getElementsByClassName("actionButtons")[0];
   var goToTopButton = document.getElementById("goToTop");
@@ -34,7 +36,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
       // Event listeners
       window.addEventListener("scroll", toggleStickyTitle, { passive: true });
-      goToTopButton.addEventListener("click", scrollToTop);
+      if (goToTopButton != null) {
+        goToTopButton.addEventListener("click", scrollToTop);
+      }
       // Initialize
       toggleStickyTitle();
     }
@@ -118,13 +122,54 @@ document.addEventListener("DOMContentLoaded", function () {
   function toggleStickyTitle() {
     var scrollSize = getScrollPosition();
 
-    if (scrollSize >= 50) {
-      titleSection.classList.add("sticky-top");
-      goToTopButton.style.display = "block";
-    } else {
-      titleSection.classList.remove("sticky-top");
-      goToTopButton.style.display = "none";
-    }
+    // if (scrollSize >= 50 && scrollSize < 75) {
+    //   titleSection.classList.add("sticky-top");
+    //   if (goToTopButton != null) {
+    //     goToTopButton.style.display = "block";
+    //   }
+    //   if (filterToolbar != null) {
+    //     filterToolbar.classList.add("sticky-top");
+    //     filterToolbar.classList.add("shadow-sm");
+    //     filterToolbar.style.paddingTop = "0em";
+    //     filterToolbar.style.paddingBottom = "2em";
+    //     filterToolbar.style.background =
+    //       "linear-gradient(to right, #ffffffba, #f6f6f6af)";
+    //     filterToolbar.style.transition =
+    //       "background 0.3s, backdrop-filter 0.3s";
+    //     filterToolbar.style.backdropFilter = "blur(4px)";
+    //   }
+    // }
+    // //   // >=  75
+    // else if (scrollSize >= 75 && scrollSize < 100) {
+    //   if (filterToolbar != null) {
+    //     filterToolbar.style.paddingTop = "3em";
+    //   }
+    // }
+    // //   // >= 100
+    // else if (scrollSize >= 100 && scrollSize < 120) {
+    //   if (filterToolbar != null) {
+    //     filterToolbar.style.paddingTop = "8em";
+    //   }
+    // } else if (scrollSize >= 120) {
+    //   if (filterToolbar != null) {
+    //     filterToolbar.style.paddingTop = "8em";
+    //   }
+    // } else {
+    //   titleSection.classList.remove("sticky-top");
+    //   if (goToTopButton != null) {
+    //     goToTopButton.style.display = "none";
+    //   }
+    //   if (filterToolbar != null) {
+    //     filterToolbar.classList.remove("sticky-top");
+    //     filterToolbar.style.paddingTop = "0em";
+    //     filterToolbar.style.paddingBottom = "1em";
+    //     filterToolbar.style.background = "none";
+    //     // "linear-gradient(to right, #ffffffba, #f6f6f6af)";
+    //     filterToolbar.style.transition = "none";
+    //     // "background 0.3s, backdrop-filter 0.3s";
+    //     filterToolbar.style.backdropFilter = "none"; //"blur(4px)";
+    //   }
+    // }
   }
 
   // Scroll to top function

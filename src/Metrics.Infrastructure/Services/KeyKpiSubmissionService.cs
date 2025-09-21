@@ -37,7 +37,7 @@ public class KeyKpiSubmissionService : IKeyKpiSubmissionService
                         .ThenInclude(dkm => dkm.KeyMetric)
                 .Include(e => e.KeyKpiSubmissionItems)
                     .ThenInclude(i => i.DepartmentKeyMetric)
-                        .ThenInclude(dkm => dkm.TargetDepartment);
+                        .ThenInclude(dkm => dkm.KeyIssueDepartment);
 
             var foundSubmissions = await query.ToListAsync();
             if (foundSubmissions.Count > 0)
@@ -226,7 +226,8 @@ public class KeyKpiSubmissionService : IKeyKpiSubmissionService
             var submittedAt = DateTimeOffset.UtcNow;
 
             // DTO to Entity
-            var parentEntities = createDtos.Select(dto =>
+            List<KeyKpiSubmission>? parentEntities = [];
+            foreach (var dto in createDtos)
             {
                 var parentItem = new KeyKpiSubmission
                 {
@@ -234,16 +235,34 @@ public class KeyKpiSubmissionService : IKeyKpiSubmissionService
                     DepartmentId = dto.DepartmentId,
                     ScoreSubmissionPeriodId = dto.ScoreSubmissionPeriodId,
                     ApplicationUserId = dto.ApplicationUserId,
-                    KeyKpiSubmissionItems = dto.keyKpiSubmissionItemDtos
-                        .Select(item => new KeyKpiSubmissionItem
-                        {
-                            DepartmentKeyMetricId = item.DepartmentKeyMetricId,
-                            ScoreValue = item.ScoreValue,
-                            Comments = item.Comments
-                        }).ToList()
+                    KeyKpiSubmissionItems = dto.KeyKpiSubmissionItemDtos
+                                        .Select(item => new KeyKpiSubmissionItem
+                                        {
+                                            DepartmentKeyMetricId = item.DepartmentKeyMetricId,
+                                            ScoreValue = item.ScoreValue,
+                                            Comments = item.Comments
+                                        }).ToList()
                 };
-                return parentItem;
-            }).ToList();
+                parentEntities.Add(parentItem);
+            }
+            // var parentEntities = createDtos.Select(dto =>
+            // {
+            //     var parentItem = new KeyKpiSubmission
+            //     {
+            //         SubmittedAt = submittedAt,
+            //         DepartmentId = dto.DepartmentId,
+            //         ScoreSubmissionPeriodId = dto.ScoreSubmissionPeriodId,
+            //         ApplicationUserId = dto.ApplicationUserId,
+            //         KeyKpiSubmissionItems = dto.keyKpiSubmissionItemDtos
+            //             .Select(item => new KeyKpiSubmissionItem
+            //             {
+            //                 DepartmentKeyMetricId = item.DepartmentKeyMetricId,
+            //                 ScoreValue = item.ScoreValue,
+            //                 Comments = item.Comments
+            //             }).ToList()
+            //     };
+            //     return parentItem;
+            // }).ToList();
 
             // _context.KeyKpiSubmissions.AddRange(parents);
             foreach (var item in parentEntities)
@@ -265,7 +284,7 @@ public class KeyKpiSubmissionService : IKeyKpiSubmissionService
                         KeyKpiSubmissionId = existingParent.Id,
                         DepartmentKeyMetricId = i.DepartmentKeyMetricId,
                         ScoreValue = i.ScoreValue,
-                        Comments = i.Comments
+                        Comments = i.Comments,
                     }).ToList();
 
                     await _context.KeyKpiSubmissionItems.AddRangeAsync(childItems);
@@ -273,12 +292,21 @@ public class KeyKpiSubmissionService : IKeyKpiSubmissionService
                 else
                 {
                     // Parent + Child
+                    // **note item contains child items values
+                    // **no need to add child item
                     await _context.KeyKpiSubmissions.AddRangeAsync(item);
                 }
             }
 
             await _context.SaveChangesAsync();
             return true;
+        }
+        catch (DbUpdateException ex)
+        {
+            _logger.LogError(ex, "DB Update error while creating submission.");
+            throw new Exception("DB Update error while creating submission.");
+
+
         }
         catch (Exception ex)
         {

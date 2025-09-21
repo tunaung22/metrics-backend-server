@@ -1,3 +1,4 @@
+using Metrics.Application.Authorization;
 using Metrics.Application.Domains;
 using Metrics.Application.DTOs.KpiPeriod;
 using Metrics.Application.Interfaces.IServices;
@@ -9,7 +10,7 @@ using System.Security.Claims;
 namespace Metrics.Web.Pages.Submissions.DepartmentScores;
 
 
-[Authorize(Policy = "CanSubmitBaseScorePolicy")]
+[Authorize(Policy = ApplicationPolicies.CanSubmitKpiScorePolicy)]
 public class IndexModel : PageModel
 {
     private readonly IUserService _userService;

@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
-using System;
 
-namespace Metrics.Web.Security.PolicyRequirements;
+namespace Metrics.Infrastructure.Identity.Requirements;
 
 public class HasPermissionRequirement : IAuthorizationRequirement
 {

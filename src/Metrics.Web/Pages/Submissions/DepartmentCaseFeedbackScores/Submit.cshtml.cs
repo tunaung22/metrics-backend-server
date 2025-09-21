@@ -1,8 +1,10 @@
+using Metrics.Application.Authorization;
 using Metrics.Application.Domains;
 using Metrics.Application.DTOs.CaseFeedbackScoreSubmission;
 using Metrics.Application.Interfaces.IServices;
 using Metrics.Web.Common.Mappers;
 using Metrics.Web.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.ComponentModel.DataAnnotations;
@@ -10,6 +12,7 @@ using System.Security.Claims;
 
 namespace Metrics.Web.Pages.Submissions.DepartmentCaseFeedbackScores;
 
+[Authorize(Policy = ApplicationPolicies.CanSubmitFeedbackScorePolicy)]
 public class SubmitModel(
     IUserService userService,
     IKpiSubmissionPeriodService kpiPeriodService,
@@ -380,14 +383,25 @@ public class SubmitModel(
         return true;
     }
 
+    /// <summary>
+    /// Load unproceeded feedbacks (by date range??)
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
     private async Task<List<FeedbackViewModel>> LoadFeedbacks(long id)
     {
         List<FeedbackViewModel> feedbackList = [];
 
-        var feedbacks = await _feedbackService.FindByKpiPeriodAsync(id);
-        if (feedbacks.Count > 0)
+        // TODO: load feedback by date range??
+        // var feedbacks = await _feedbackService.FindByKpiPeriodAsync(id);
+        // var feedbacks = await _feedbackService.FindAllActiveAsync();
+
+        var feedbacks = await _feedbackService.FindAllActiveAsync(
+            SelectedPeriod.SubmissionStartDate,
+            SelectedPeriod.SubmissionEndDate);
+        if (feedbacks.IsSuccess && feedbacks.Data != null)
         {
-            feedbackList = feedbacks.Select(fb => new FeedbackViewModel
+            feedbackList = feedbacks.Data.Select(fb => new FeedbackViewModel
             {
                 Id = fb.Id,
                 CaseDepartmentId = fb.CaseDepartmentId,
@@ -398,7 +412,7 @@ public class SubmitModel(
                 Description = fb.Description,
                 PatientName = fb.PatientName,
                 RoomNumber = fb.RoomNumber,
-                SubmissionPeriodId = fb.KpiSubmissionPeriodId,
+                // SubmissionPeriodId = fb.KpiSubmissionPeriodId,
                 SubmittedAt = fb.SubmittedAt,
                 FeedbackSubmitterId = fb.SubmitterId,
                 FeedbackSubmitter = fb.SubmittedBy

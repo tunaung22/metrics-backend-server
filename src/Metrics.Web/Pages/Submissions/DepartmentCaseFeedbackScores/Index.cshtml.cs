@@ -1,6 +1,5 @@
-using Metrics.Application.Domains;
+using Metrics.Application.Authorization;
 using Metrics.Application.Interfaces.IServices;
-using Metrics.Web.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -8,7 +7,7 @@ using System.Security.Claims;
 
 namespace Metrics.Web.Pages.Submissions.DepartmentCaseFeedbackScores;
 
-[Authorize(Policy = "CanSubmitCaseFeedbackPolicy")]
+[Authorize(Policy = ApplicationPolicies.CanSubmitFeedbackScorePolicy)]
 public class IndexModel : PageModel
 {
     private readonly IKpiSubmissionPeriodService _kpiPeriodService;

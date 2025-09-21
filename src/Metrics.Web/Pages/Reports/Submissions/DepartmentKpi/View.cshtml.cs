@@ -65,8 +65,8 @@ public class ViewModel : PageModel
     public class DepartmentScoreViewModel
     {
         public string? DepartmentName { get; set; }
-        public string? Comment { get; set; }
         public decimal ScoreValue { get; set; }
+        public string? Comment { get; set; }
     }
 
     // ----------DETAIL + ALL---------------------------------------------------
@@ -255,7 +255,7 @@ public class ViewModel : PageModel
             {
                 // SINGLE + SUMMARY
                 // ViewMode ~= hod, management, staff,...
-                SingleUserGroupReportSummaryList = LoadSingleUserGroupSummaryList(
+                SingleUserGroupReportSummaryList = Load_SingleUserGroup_SummaryList(
                                     SelectedPeriod.PeriodName, //
                                     Group, // group to show
                                     submissionsByPeriod, // source
@@ -311,7 +311,7 @@ public class ViewModel : PageModel
                 // department list -> for include all departments
 
                 // TODO: **WHICH APPROACH TO USE??
-                AllUserGroupReportDetailList = LoadAllUserGroupDetailList(
+                AllUserGroupReportDetailList = Load_AllUserGroup_DetailList(
                     submissionsByPeriod,
                     UserList,
                     DepartmentList);
@@ -340,7 +340,7 @@ public class ViewModel : PageModel
             else
             {
                 // ViewMode ~= hod, management, staff,...
-                SingleUserGroupReportDetailList = LoadSingleUserGroupDetailList(
+                SingleUserGroupReportDetailList = Load_SingleUserGroup_DetailList(
                     SelectedPeriod.PeriodName,
                     Group,
                     submissionsByPeriod,
@@ -609,7 +609,7 @@ public class ViewModel : PageModel
             else
             {
                 // SINGLE + SUMMARY
-                SingleUserGroupReportSummaryList = LoadSingleUserGroupSummaryList(
+                SingleUserGroupReportSummaryList = Load_SingleUserGroup_SummaryList(
                     SelectedPeriod.PeriodName, //
                     Group, // group to show
                     submissionsByPeriod, // source
@@ -689,13 +689,14 @@ public class ViewModel : PageModel
             if (GROUP_ALL)
             {
                 // ALL + DETAIL
-                AllUserGroupReportDetailList = LoadAllUserGroupDetailList(
+                AllUserGroupReportDetailList = Load_AllUserGroup_DetailList(
                     submissionsByPeriod,
                     UserList,
                     DepartmentList);
 
                 // PREPARE FOR EXCEL FILE
                 var colPeriod = "Period";
+                var colCandidateID = "Candidate ID";
                 var colCandidate = "Candidate";
                 var colDepartment = "Department";
                 var colGroupName = "Group";
@@ -709,6 +710,7 @@ public class ViewModel : PageModel
                     var data = new Dictionary<string, object>()
                     {
                         [colPeriod] = submission.PeriodName ?? "[undefined period]",
+                        [colCandidateID] = submission.SubmittedBy.UserCode ?? "[undefined ID]",
                         [colCandidate] = submission.SubmittedBy.FullName ?? "[undefined candidate]",
                         [colDepartment] = submission.SubmittedBy.Department.DepartmentName ?? "[undefined department]",
                         [colGroupName] = submission.SubmittedBy.UserGroup.GroupName.ToUpper()
@@ -757,7 +759,7 @@ public class ViewModel : PageModel
             {
                 // SINGLE + DETAIL
                 // ViewMode ~= hod, management, staff,...
-                SingleUserGroupReportDetailList = LoadSingleUserGroupDetailList(
+                SingleUserGroupReportDetailList = Load_SingleUserGroup_DetailList(
                     SelectedPeriod.PeriodName,
                     Group,
                     submissionsByPeriod,
@@ -766,6 +768,7 @@ public class ViewModel : PageModel
 
                 // PREPARE FOR EXCEL FILE
                 var colPeriod = "Period";
+                var colCandidateID = "Candidate ID";
                 var colCandidate = "Candidate";
                 var colDepartment = "Department";
                 var colGroupName = "Group";
@@ -777,6 +780,7 @@ public class ViewModel : PageModel
                     var data = new Dictionary<string, object>()
                     {
                         [colPeriod] = submission.PeriodName ?? "undefined period",
+                        [colCandidateID] = submission.SubmittedBy.UserCode ?? "[undefined ID]",
                         [colCandidate] = submission.SubmittedBy.FullName ?? "[undefined candidate]",
                         [colDepartment] = submission.SubmittedBy.Department.DepartmentName ?? "[undefined department]",
                         [colGroupName] = submission.SubmittedBy.UserGroup.GroupName.ToUpper() ?? "[undefined group]"
@@ -1052,6 +1056,7 @@ public class ViewModel : PageModel
                 .Select(user => new UserViewModel
                 {
                     Id = user.Id,
+                    UserCode = user.UserCode,
                     UserName = user.UserName ?? "unknown username",
                     FullName = user.FullName,
                     PhoneNumber = user.PhoneNumber,
@@ -1198,7 +1203,7 @@ public class ViewModel : PageModel
     /// <param name="submissions"></param>
     /// <param name="departmentList"></param>
     /// <returns></returns>
-    private static List<SingleUserGroupReportSummaryViewModel> LoadSingleUserGroupSummaryList(
+    private static List<SingleUserGroupReportSummaryViewModel> Load_SingleUserGroup_SummaryList(
         string periodName,
         string selectedGroupName,
         List<KpiSubmission> submissions,
@@ -1244,7 +1249,7 @@ public class ViewModel : PageModel
     /// <param name="userList"></param>
     /// <param name="departmentList"></param>
     /// <returns></returns>
-    private List<AllUserGroupReportDetailViewModel> LoadAllUserGroupDetailList(
+    private List<AllUserGroupReportDetailViewModel> Load_AllUserGroup_DetailList(
         List<KpiSubmission> submissionsByPeriod,
         List<UserViewModel> userList,
         List<DepartmentViewModel> departmentList)
@@ -1294,7 +1299,7 @@ public class ViewModel : PageModel
         }).ToList();
     }
 
-    private static List<SingleUserGroupReportDetailViewModel> LoadSingleUserGroupDetailList(
+    private static List<SingleUserGroupReportDetailViewModel> Load_SingleUserGroup_DetailList(
         string periodName,
         string selectedGroupName,
         List<KpiSubmission> submissions,

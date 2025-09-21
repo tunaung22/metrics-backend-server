@@ -6,13 +6,14 @@ public class CaseFeedback : IAuditColumn, ISoftDelete
 {
     public long Id { get; set; }
     public Guid LookupId { get; set; }
-    public long KpiSubmissionPeriodId { get; set; }
-    public KpiSubmissionPeriod TargetPeriod { get; set; } = null!;
+    // public long KpiSubmissionPeriodId { get; set; }
+    // public KpiSubmissionPeriod TargetPeriod { get; set; } = null!;
     public DateTimeOffset SubmittedAt { get; set; }
     public DateOnly SubmissionDate { get; set; } // Generated Field
     // public decimal NegativeScoreValue { get; set; }
     public string SubmitterId { get; set; } = null!; // Foreign Keys
     public ApplicationUser SubmittedBy { get; set; } = null!; // Reference Navigational Properties
+    public bool Proceeded { get; set; }
     // **get SubmitterDepartment, PhoneNumber from Submitter 
     // public long SubmitterDepartmentId { get; set; } // Foreign Keys
     // public Department SubmitterDepartment { get; set; } = null!; // Reference Navigational Properties
@@ -41,7 +42,7 @@ public class CaseFeedback : IAuditColumn, ISoftDelete
     private CaseFeedback() { }
 
     public CaseFeedback(
-        long kpiSubmissionPeriodId,
+        // long kpiSubmissionPeriodId,
         DateTimeOffset submittedAt,
         string submitterId,
         long caseDepartmentId,
@@ -53,7 +54,7 @@ public class CaseFeedback : IAuditColumn, ISoftDelete
         string? description,
         bool isDeleted)
     {
-        KpiSubmissionPeriodId = kpiSubmissionPeriodId;
+        // KpiSubmissionPeriodId = kpiSubmissionPeriodId;
         SubmittedAt = submittedAt;
         SubmitterId = submitterId;
         CaseDepartmentId = caseDepartmentId;
@@ -67,7 +68,7 @@ public class CaseFeedback : IAuditColumn, ISoftDelete
     }
 
     public static CaseFeedback Create(
-        long kpiSubmissionPeriodId,
+        // long kpiSubmissionPeriodId,
         DateTimeOffset submittedAt,
         string submitterId,
         long caseDepartmentId,
@@ -82,8 +83,8 @@ public class CaseFeedback : IAuditColumn, ISoftDelete
         // domain validations
         if (string.IsNullOrEmpty(submitterId))
             throw new ArgumentException("Submitter ID is required or invalid.", nameof(submitterId));
-        if (kpiSubmissionPeriodId == 0)
-            throw new ArgumentException("Kpi Submission Period ID is required or invalid.", nameof(kpiSubmissionPeriodId));
+        // if (kpiSubmissionPeriodId == 0)
+        //     throw new ArgumentException("Kpi Submission Period ID is required or invalid.", nameof(kpiSubmissionPeriodId));
         if (caseDepartmentId == 0)
             throw new ArgumentException("Case Department ID is required or invalid.", nameof(caseDepartmentId));
         if (string.IsNullOrEmpty(wardName))
@@ -97,7 +98,7 @@ public class CaseFeedback : IAuditColumn, ISoftDelete
 
         return new CaseFeedback
         {
-            KpiSubmissionPeriodId = kpiSubmissionPeriodId,
+            // KpiSubmissionPeriodId = kpiSubmissionPeriodId,
             SubmittedAt = submittedAt,
             SubmitterId = submitterId,
             CaseDepartmentId = caseDepartmentId,

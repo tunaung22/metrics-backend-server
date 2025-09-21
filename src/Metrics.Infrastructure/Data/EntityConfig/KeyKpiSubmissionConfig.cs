@@ -67,6 +67,11 @@ public class KeyKpiSubmissionConfig : IEntityTypeConfiguration<KeyKpiSubmission>
             .OnDelete(DeleteBehavior.Restrict)
             .IsRequired();
 
+        // builder.HasMany(e => e.KeyKpiSubmissionItems)
+        //     .WithOne(e => e.ParentSubmission)
+        //     .HasForeignKey(e => e.KeyKpiSubmissionId)
+        //     .OnDelete(DeleteBehavior.Restrict);
+
 
         // builder.HasMany(e => e.KeyKpiSubmissionItems)
         //     .WithOne(e => e.ParentSubmission)

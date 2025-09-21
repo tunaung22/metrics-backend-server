@@ -39,7 +39,7 @@
                             <td class="text-center">
                                 <strong>@period.PeriodName</strong>
                             </td>
-                            <td class="" style="padding-left: 6em;">
+                            <td class="mono-text" style="padding-left: 6em;">
                                 <label>
                                     <i class="bi bi-calendar4-week text-primary"> </i> 
                                     @period.SubmissionStartDate.ToLocalTime().ToString("dd MMM, yyyy") - @period.SubmissionEndDate.ToLocalTime().ToString("dd MMM, yyyy")</label>
@@ -57,9 +57,11 @@
                             <td class="text-center"> 
                                 @if(period.IsValid)
                                 { 
-                                    <a asp-page="Submit" 
+                                    @* <a asp-page="Submit" 
                                         asp-route-periodName="@period.PeriodName"
-                                        class="link-offset-2"><strong>Submit</strong></a>
+                                        class="link-offset-2"><strong>Submit</strong></a> *@
+                                    <a aria-disabled="true" class="link-offset-2 text-secondary">Submit</a>
+                                    
                                 }
                                 else 
                                 {

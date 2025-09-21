@@ -11,12 +11,15 @@ public static class UserMapper
     {
         return new UserDto(
             Id: model.Id,
+            UserCode: model.UserCode,
             UserName: model.UserName,
             FullName: model.FullName,
             PhoneNumber: model.PhoneNumber ?? string.Empty,
             ContactAddress: model.ContactAddress ?? string.Empty,
             Department: model.Department.MapToDto(),
-            UserGroup: model.UserGroup.MapToDto()
+            UserGroup: model.UserGroup.MapToDto(),
+            LockoutEnabled: model.LockoutEnabled,
+            LockoutEnd: model.LockoutEnd
         );
     }
 
@@ -25,12 +28,15 @@ public static class UserMapper
         return new UserViewModel
         {
             Id = dto.Id,
+            UserCode = dto.UserCode,
             UserName = dto.UserName,
             FullName = dto.FullName,
             PhoneNumber = dto.PhoneNumber,
             ContactAddress = dto.ContactAddress,
             Department = dto.Department.MapToViewModel(),
-            UserGroup = dto.UserGroup.MapToViewModel()
+            UserGroup = dto.UserGroup.MapToViewModel(),
+            LockoutEnabled = dto.LockoutEnabled,
+            LockoutEnd = dto.LockoutEnd
         };
     }
 

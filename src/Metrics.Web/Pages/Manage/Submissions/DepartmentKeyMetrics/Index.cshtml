@@ -31,10 +31,10 @@
         @* =============== Filter Bar =============================================== *@
         <div id="filter-bar" class="d-flex align-items-center px-4 pt-4">
             <span class="d-flex flex-grow-1">
-                <ol>
-                    <li>Assign Department with Key Metrics for each Period</li>
-                    <li>Assign Evaluator Department with Department Key Metrics</li>
-                </ol>
+                <ul>
+                    <li>Setp 1: Assign Key to Issuer Department.</li>
+                    <li>Setp 2: Assign Which Department can Submit which Keys Metrics.</li>
+                </ul>
                 @* <text class="me-2">Departments: </text> <strong>@Model.TotalDepartments</strong> *@
             </span>
             <div class="col-sm-4">
@@ -54,8 +54,8 @@
                         <th colspan="2">Actions</th>
                     </tr>
                     <tr>
-                        <th>Assign Department and Keys</th>
-                        <th>Assign Submitter Deparmtent</th>
+                        <th>1. Assign Department and Keys</th>
+                        <th>2. Assign Submitter Deparmtent</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -65,13 +65,14 @@
                         {
                             <tr>
                                 <td class="text-center">
-                                    <a asp-page="View" 
+                                    <strong>@p.PeriodName</strong>
+                                    @* <a asp-page="View" 
                                         asp-route-periodName="@p.PeriodName"
                                         class="link-primary 
                                                 link-offset-2 
                                                 link-underline-opacity-25 
                                                 link-underline-opacity-100-hover">
-                                        <strong>@p.PeriodName</strong></a>
+                                        <strong>@p.PeriodName</strong></a> *@
                                 </td>
                                 @* <td>@p.SubmissionStartDate.ToLocalTime().UtcDateTime.ToString("MMM dd, yyyy hh:mm:ss tt")</td>
                                 <td>@p.SubmissionEndDate.ToLocalTime().UtcDateTime.ToString("MMM dd, yyyy hh:mm:ss tt")</td> *@
