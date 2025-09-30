@@ -96,6 +96,11 @@ jobs:
           PATCH=${PARTS[2]:-0}
           BUILD=${PARTS[3]:-0}
 
+          MAJOR=$((10#$MAJOR))
+          MINOR=$((10#$MINOR))
+          PATCH=$((10#$PATCH))
+          BUILD_NUMBER=$((10#${{ steps.build_number.outputs.BUILD_NUMBER }}))
+
           FILE_VERSION="$MAJOR.$MINOR.$PATCH.${{ steps.build_number.outputs.BUILD_NUMBER }}"
           # FILE_VERSION="$MAJOR.$MINOR.$PATCH.$BUILD"
 
