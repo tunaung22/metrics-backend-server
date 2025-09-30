@@ -81,7 +81,9 @@ jobs:
         id: build_number
         run: |
           BUILD_DATE=$(date +%Y%m%d)
-          BUILD_NUMBER=$(date +%H%M%S)
+          # BUILD_NUMBER=$(date +%H%M%S)
+          # BUILD_NUMBER=$(%H%M%S)
+          BUILD_NUMBER=$(( $(date +'%H') * 60 + $(date +'%M') ))
           echo "BUILD_DATE=$BUILD_DATE" >> $GITHUB_OUTPUT
           echo "BUILD_NUMBER=$BUILD_NUMBER" >> $GITHUB_OUTPUT
 
@@ -96,12 +98,13 @@ jobs:
           PATCH=${PARTS[2]:-0}
           BUILD=${PARTS[3]:-0}
 
-          MAJOR=$((10#$MAJOR))
-          MINOR=$((10#$MINOR))
-          PATCH=$((10#$PATCH))
-          BUILD_NUMBER=$((10#${{ steps.build_number.outputs.BUILD_NUMBER }}))
+          # MAJOR=$((10#$MAJOR))
+          # MINOR=$((10#$MINOR))
+          # PATCH=$((10#$PATCH))
+          # BUILD_NUMBER=$((10#${{ steps.build_number.outputs.BUILD_NUMBER }}))
 
-          FILE_VERSION="$MAJOR.$MINOR.$PATCH.${{ github.run_number}}"
+          FILE_VERSION="$MAJOR.$MINOR.$PATCH.${{ steps.build_number.outputs.BUILD_NUMBER }}"
+          # FILE_VERSION="$MAJOR.$MINOR.$PATCH.${{ github.run_number}}"
           # FILE_VERSION="$MAJOR.$MINOR.$PATCH.$BUILD"
 
           ASSEMBLY_VERSION="$MAJOR.$MINOR.${PATCH-0}.${BUILD-0}"
