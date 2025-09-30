@@ -77,6 +77,14 @@ jobs:
         id: get_version
         run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
 
+      - name: Set build number
+        id: build_number
+        run: |
+          BUILD_DATE=$(date +%Y%m%d)
+          BUILD_NUMBER=$(date +%H%M%S)
+          echo "BUILD_DATE=$BUILD_DATE" >> $GITHUB_OUTPUT
+          echo "BUILD_NUMBER=$BUILD_NUMBER" >> $GITHUB_OUTPUT
+
       - name: Refine Version
         id: versions
         run: |
@@ -87,20 +95,15 @@ jobs:
           MINOR=${PARTS[1]:-0}
           PATCH=${PARTS[2]:-0}
           BUILD=${PARTS[3]:-0}
-          FILE_VERSION="$MAJOR.$MINOR.$PATCH.$BUILD"
+
+          FILE_VERSION="$MAJOR.$MINOR.$PATCH.${{ steps.build_number.outputs.BUILD_NUMBER }}""
+          # FILE_VERSION="$MAJOR.$MINOR.$PATCH.$BUILD"
+
           ASSEMBLY_VERSION="$MAJOR.$MINOR.${PATCH-0}.${BUILD-0}"
 
           echo "FILE_VERSION=$FILE_VERSION" >> $GITHUB_OUTPUT
           echo "ASSEMBLY_VERSION=$ASSEMBLY_VERSION" >> $GITHUB_OUTPUT
           echo "INFORMATIONAL_VERSION=${{ steps.get_version.outputs.VERSION}}+${{ github.sha }}" >> $GITHUB_OUTPUT
-
-      - name: Set build number
-        id: build_number
-        run: |
-          BUILD_DATE=$(date +%Y%m%d)
-          BUILD_NUMBER=$(date +%H%M%S)
-          echo "BUILD_DATE=$BUILD_DATE" >> $GITHUB_OUTPUT
-          echo "BUILD_NUMBER=$BUILD_NUMBER" >> $GITHUB_OUTPUT
 
       # - name: Set Release Directory
       #   id: set_release_dir
@@ -108,7 +111,7 @@ jobs:
       #     RELEASE_DIR="release/publish-${{ steps.get_version.outputs.VERSION }}"
       #     echo "RELEASE_DIR=$RELEASE_DIR" >> $GITHUB_OUTPUT
 
-      - name: Print  Working Directory
+      - name: Print the Working Directory
         run: |
           pwd && ls -l
 
@@ -116,10 +119,12 @@ jobs:
       #   run: |
       #     rm -rf ${{ env.RELEASE_BASE_DIR }}/all-*
       #     rm -rf ${{ env.RELEASE_BASE_DIR }}/win-x64-*
-      - name: Clean previous releases
+
+      - name: Clean Previous Releases
         run: rm -rf ${{ env.RELEASE_BASE_DIR }}/*
 
       # FILE_VERSION=$(echo "${{ steps.get_version.outputs.VERSION}}" | sed 's/[^0-9.]//g' | awk -F. '{printf "%d.%d.%d.%d", $1,$2,$3,$4}')
+
       - name: Publish *
         run: |
           cd src/Metrics.Web/ &&

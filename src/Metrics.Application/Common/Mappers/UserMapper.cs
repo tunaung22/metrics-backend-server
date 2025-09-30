@@ -27,7 +27,7 @@ public static class UserMapper
             ContactAddress: e.ContactAddress ?? string.Empty,
             UserGroup: e.UserTitle.MapToDto(),
             DepartmentId: e.DepartmentId,
-            Department: includeDepartment ? e.Department.MapToDto() : null,
+            Department: e.Department.MapToDto(),
             LockoutEnabled: e.LockoutEnabled,
             LockoutEnd: e.LockoutEnd
         );
