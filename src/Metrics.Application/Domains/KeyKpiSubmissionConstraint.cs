@@ -12,12 +12,7 @@ public class KeyKpiSubmissionConstraint : IAuditColumn, ISoftDelete
 
     // Foreign Keys
     public long DepartmentId { get; set; }
+    public Department SubmitterDepartment { get; set; } = null!;
     public long DepartmentKeyMetricId { get; set; }
-
-    // Reference Navigational Properties
-    public Department Department { get; set; } = null!;
     public DepartmentKeyMetric DepartmentKeyMetric { get; set; } = null!;
-
-    // Collection Navigational Properties
-
 }

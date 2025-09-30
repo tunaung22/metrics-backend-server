@@ -1,7 +1,6 @@
 using Metrics.Application.Domains;
 using Metrics.Application.DTOs.AccountDtos;
 using Metrics.Application.Interfaces.IServices;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -11,7 +10,6 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Metrics.Web.Pages.Manage.Users;
 
-[Authorize(Policy = "CanAccessAdminFeaturePolicy")]
 public class EditModel : PageModel
 {
     private readonly UserManager<ApplicationUser> _userManager;

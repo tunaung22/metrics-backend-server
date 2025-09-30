@@ -52,6 +52,10 @@ class KpiSubmissionConfig : IEntityTypeConfiguration<KpiSubmission>
         builder.Property(e => e.Comments)
             .HasColumnName("comments")
             .HasColumnType("text");
+        builder.Property(e => e.IsDeleted)
+            .HasColumnName("is_deleted")
+            .HasColumnType("boolean")
+            .HasDefaultValue(false);
         builder.Property(e => e.CreatedAt)
             .HasColumnName("created_at")
             .HasColumnType("timestamp with time zone");
@@ -66,7 +70,7 @@ class KpiSubmissionConfig : IEntityTypeConfiguration<KpiSubmission>
             .OnDelete(DeleteBehavior.Restrict)
             .IsRequired();
         builder.HasOne(e => e.TargetDepartment)
-            .WithMany(e => e.DepartmentScores)
+            .WithMany(e => e.KpiSubmissions)
             .HasForeignKey(e => e.DepartmentId)
             .OnDelete(DeleteBehavior.Restrict)
             .IsRequired();

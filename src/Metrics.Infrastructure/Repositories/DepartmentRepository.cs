@@ -1,19 +1,14 @@
 ﻿using Metrics.Application.Domains;
-using Metrics.Application.Exceptions;
 using Metrics.Application.Interfaces.IRepositories;
 using Metrics.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace Metrics.Infrastructure.Repositories;
 
-public class DepartmentRepository : IDepartmentRepository
+public class DepartmentRepository(MetricsDbContext context) : IDepartmentRepository
 {
-    private readonly MetricsDbContext _context;
+    private readonly MetricsDbContext _context = context;
 
-    public DepartmentRepository(MetricsDbContext context)
-    {
-        _context = context;
-    }
 
     public void Create(Department entity)
     {
@@ -80,15 +75,17 @@ public class DepartmentRepository : IDepartmentRepository
         return await _context.Departments
             .Include(d => d.DepartmentKeyMetrics)
             .OrderBy(e => e.DepartmentName)
+            .AsNoTracking()
             .ToListAsync();
     }
 
     public async Task<IEnumerable<Department>> FindAllAsync(int pageNumber, int pageSize)
     {
         return await _context.Departments
-            .Include(d => d.ApplicationUsers)
+            .Include(d => d.ApplicationUsers).ThenInclude(u => u.UserTitle)
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
+            .AsNoTracking()
             .ToListAsync();
     }
 

@@ -32,15 +32,28 @@ public class MetricsDbContext : IdentityDbContext<ApplicationUser, ApplicationRo
     public DbSet<KeyKpiSubmissionConstraint> KeyKpiSubmissionConstraints { get; set; }
     public DbSet<DepartmentKeyMetric> DepartmentKeyMetrics { get; set; }
     public DbSet<KeyKpiSubmission> KeyKpiSubmissions { get; set; }
-    public DbSet<KeyKpiSubmissionItem> KeyKpiSubmissionItems { get; set; }
-    public DbSet<CaseFeedbackSubmission> CaseFeedbackSubmissions { get; set; }
+    // public DbSet<KeyKpiSubmissionItem> KeyKpiSubmissionItems { get; set; }
+    public DbSet<CaseFeedback> CaseFeedbacks { get; set; }
+    public DbSet<CaseFeedbackScoreSubmission> CaseFeedbackScoreSubmissions { get; set; }
 
 
     public override int SaveChanges()
     {
+        SetAuditTimestamps();
+        return base.SaveChanges();
+    }
+
+    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        SetAuditTimestamps();
+        return base.SaveChangesAsync(cancellationToken);
+    }
+
+    private void SetAuditTimestamps()
+    {
         var entries = ChangeTracker.Entries()
             .Where(e => e.Entity is IAuditColumn &&
-                        (e.State == EntityState.Added || e.State == EntityState.Modified));
+                   (e.State == EntityState.Added || e.State == EntityState.Modified));
 
         foreach (var entry in entries)
         {
@@ -51,8 +64,6 @@ public class MetricsDbContext : IdentityDbContext<ApplicationUser, ApplicationRo
             }
             entity.ModifiedAt = DateTimeOffset.UtcNow; // Always set modified date
         }
-
-        return base.SaveChanges();
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -141,10 +152,13 @@ public class MetricsDbContext : IdentityDbContext<ApplicationUser, ApplicationRo
             .ApplyConfiguration(new DepartmentKeyMetricConfig()) // ------ Key KPI
             .ApplyConfiguration(new KeyKpiSubmissionConstraintConfig()) // --- Key KPI Submission Constraint 
             .ApplyConfiguration(new KeyKpiSubmissionConfig()) // --------- Key KPI
-            .ApplyConfiguration(new KeyKpiSubmissionItemConfig()); // ---- Key KPI
+                                                              // .ApplyConfiguration(new KeyKpiSubmissionItemConfig() // ---- Key KPI
+        ;
 
         builder
-            .ApplyConfiguration(new CaseFeedbackSubmissionConfig()); // -------- Case Feedback
+            .ApplyConfiguration(new CaseFeedbackConfig()) // -------- Case Feedback
+            .ApplyConfiguration(new CaseFeedbackScoreSubmissionConfig()
+        );
 
         // ----------- Seeding -----------
         // builder.Entity<...>().HasData(...);

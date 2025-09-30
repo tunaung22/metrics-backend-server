@@ -1,14 +1,12 @@
 using Metrics.Application.Domains;
 using Metrics.Application.Exceptions;
 using Metrics.Application.Interfaces.IServices;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.ComponentModel.DataAnnotations;
 
 namespace Metrics.Web.Pages.Manage.Departments;
 
-[Authorize(Policy = "CanAccessAdminFeaturePolicy")]
 public class CreateModel : PageModel
 {
     private readonly IDepartmentService _departmentService;

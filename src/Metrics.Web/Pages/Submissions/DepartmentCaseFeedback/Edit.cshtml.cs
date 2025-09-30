@@ -1,6 +1,8 @@
+using Metrics.Application.Authorization;
 using Metrics.Application.Domains;
 using Metrics.Application.Interfaces.IServices;
 using Metrics.Web.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -9,22 +11,23 @@ using System.Security.Claims;
 
 namespace Metrics.Web.Pages.Submissions.DepartmentCaseFeedback;
 
+[Authorize(Policy = ApplicationPolicies.CanGiveFeedbackPolicy)]
 public class EditModel : PageModel
 {
     private readonly IUserService _userService;
     private readonly IDepartmentService _departmentService;
-    private readonly IKpiSubmissionPeriodService _kpiPeriodService;
-    private readonly ICaseFeedbackSubmissionService _caseFeedbackSubmissionService;
+    // private readonly IKpiSubmissionPeriodService _kpiPeriodService;
+    private readonly ICaseFeedbackService _caseFeedbackSubmissionService;
 
     public EditModel(
         IUserService userService,
         IDepartmentService departmentService,
-        IKpiSubmissionPeriodService kpiPeriodService,
-        ICaseFeedbackSubmissionService caseFeedbackSubmissionService)
+        // IKpiSubmissionPeriodService kpiPeriodService,
+        ICaseFeedbackService caseFeedbackSubmissionService)
     {
         _userService = userService;
         _departmentService = departmentService;
-        _kpiPeriodService = kpiPeriodService;
+        // _kpiPeriodService = kpiPeriodService;
         _caseFeedbackSubmissionService = caseFeedbackSubmissionService;
 
     }
@@ -35,9 +38,9 @@ public class EditModel : PageModel
         public DateTimeOffset SubmittedAt { get; set; }
         public string SubmitterId { get; set; } = null!; // Foreign Keys
 
-        [Required(ErrorMessage = "Score is required")]
-        [Range(-5, -1, ErrorMessage = "Score must be between -1 to -5")]
-        public decimal ScoreValue { get; set; } // **note: Negative value
+        // [Required(ErrorMessage = "Score is required")]
+        // [Range(-5, -1, ErrorMessage = "Score must be between -1 to -5")]
+        // public decimal ScoreValue { get; set; } // **note: Negative value
 
         [Required(ErrorMessage = "Department is required")]
         public long CaseDepartmentId { get; set; } // Foreign Keys
@@ -56,7 +59,7 @@ public class EditModel : PageModel
         [Required(ErrorMessage = "Room Number is required")]
         public string RoomNumber { get; set; } = null!;
         public string? Description { get; set; } = string.Empty; // Case Details
-        public string? Comments { get; set; } = string.Empty; // Additional Notes
+        // public string? Comments { get; set; } = string.Empty; // Additional Notes
     }
 
     [BindProperty]
@@ -69,10 +72,10 @@ public class EditModel : PageModel
 
     public UserViewModel Submitter { get; set; } = null!;
     public string? CurrentUserGroupName { get; set; } = string.Empty;
-    public KpiPeriodViewModel SelectedPeriod { get; set; } = null!;
+    // public KpiPeriodViewModel SelectedPeriod { get; set; } = null!;
 
-    [BindProperty]
-    public string? SelectedPeriodName { get; set; } = string.Empty;
+    // [BindProperty]
+    // public string? SelectedPeriodName { get; set; } = string.Empty;
 
     [BindProperty]
     public string? TargetSubmissionLookupId { get; set; } = string.Empty;
@@ -80,36 +83,36 @@ public class EditModel : PageModel
 
     // =============== HANDLERS ================================================
     public async Task<IActionResult> OnGetAsync(
-        [FromRoute] string periodName,
+        // [FromRoute] string periodName,
         [FromRoute] string lookupId)
     {
-        if (string.IsNullOrEmpty(periodName) || string.IsNullOrEmpty(lookupId))
-        {
+        // if (string.IsNullOrEmpty(periodName) || string.IsNullOrEmpty(lookupId))
+        // {
 
-            // Can't process form wihout lookupId & periodName, 
-            // return to List instead.
-            return RedirectToPage("./List", new { periodName = SelectedPeriodName });
-        }
+        //     // Can't process form wihout lookupId & periodName, 
+        //     // return to List instead.
+        //     return RedirectToPage("./List", new { periodName = SelectedPeriodName });
+        // }
 
-        // ----------KPI PERIOD-------------------------------------------------
-        var kpiPeriod = await _kpiPeriodService.FindByKpiPeriodNameAsync(periodName);
-        if (kpiPeriod != null)
-        {
-            SelectedPeriodName = kpiPeriod.PeriodName;
-            SelectedPeriod = new KpiPeriodViewModel() // ---- do we need entire KPI Period object??
-            {
-                Id = kpiPeriod.Id,
-                PeriodName = kpiPeriod.PeriodName,
-                SubmissionStartDate = kpiPeriod.SubmissionStartDate,
-                SubmissionEndDate = kpiPeriod.SubmissionEndDate
-            };
-        }
-        else
-        {
-            // ModelState.AddModelError("", $"Period {periodName} not found.");
-            // return Page();
-            return RedirectToPage("./List", new { periodName = SelectedPeriodName });
-        }
+        // // ----------KPI PERIOD-------------------------------------------------
+        // var kpiPeriod = await _kpiPeriodService.FindByKpiPeriodNameAsync(periodName);
+        // if (kpiPeriod != null)
+        // {
+        //     SelectedPeriodName = kpiPeriod.PeriodName;
+        //     SelectedPeriod = new KpiPeriodViewModel() // ---- do we need entire KPI Period object??
+        //     {
+        //         Id = kpiPeriod.Id,
+        //         PeriodName = kpiPeriod.PeriodName,
+        //         SubmissionStartDate = kpiPeriod.SubmissionStartDate,
+        //         SubmissionEndDate = kpiPeriod.SubmissionEndDate
+        //     };
+        // }
+        // else
+        // {
+        //     // ModelState.AddModelError("", $"Period {periodName} not found.");
+        //     // return Page();
+        //     return RedirectToPage("./List", new { periodName = SelectedPeriodName });
+        // }
 
         // ----------DEPARTMENT-------------------------------------------------
         DepartmentListItems = await LoadDepartmentList();
@@ -122,12 +125,14 @@ public class EditModel : PageModel
         if (submission == null)
         {
             // Return to List if no submission found
-            return RedirectToPage("./List", new { periodName = SelectedPeriodName });
+            // return RedirectToPage("./List", new { periodName = SelectedPeriodName });
+            return RedirectToPage("./List");
         }
 
         Submitter = new UserViewModel
         {
             Id = submission.SubmittedBy.Id,
+            UserCode = submission.SubmittedBy.UserCode,
             UserName = submission.SubmittedBy.UserName!,
             FullName = submission.SubmittedBy.FullName,
             PhoneNumber = submission.SubmittedBy.PhoneNumber,
@@ -139,6 +144,7 @@ public class EditModel : PageModel
                 GroupName = submission.SubmittedBy.UserTitle.TitleName,
                 Description = submission.SubmittedBy.UserTitle.Description
             },
+            DepartmentId = submission.SubmittedBy.DepartmentId,
             Department = new DepartmentViewModel
             {
                 Id = submission.SubmittedBy.Department.Id,
@@ -151,10 +157,10 @@ public class EditModel : PageModel
         // ----------FORM INPUT-------------------------------------------------
         FormInput = new FormInputModel
         {
-            SubmissionPeriodId = submission.KpiSubmissionPeriodId,
+            // SubmissionPeriodId = submission.KpiSubmissionPeriodId,
             SubmittedAt = submission.SubmittedAt,
             SubmitterId = submission.SubmitterId,
-            ScoreValue = submission.NegativeScoreValue,
+            // ScoreValue = submission.NegativeScoreValue,
             CaseDepartmentId = submission.CaseDepartmentId,
             IncidentAt = submission.IncidentAt,
             WardName = submission.WardName,
@@ -162,14 +168,14 @@ public class EditModel : PageModel
             PatientName = submission.PatientName,
             RoomNumber = submission.RoomNumber,
             Description = submission.Description ?? string.Empty,
-            Comments = submission.Comments ?? string.Empty
+            // Comments = submission.Comments ?? string.Empty
         };
 
         return Page();
     }
 
     public async Task<IActionResult> OnPostAsync(
-         [FromRoute] string periodName,
+        //  [FromRoute] string periodName,
         [FromRoute] string lookupId)
     {
         if (!ModelState.IsValid)
@@ -177,32 +183,32 @@ public class EditModel : PageModel
             return Page();
         }
 
-        if (string.IsNullOrEmpty(periodName) || string.IsNullOrEmpty(lookupId))
-        {
-            // Can't process form wihout lookupId & periodName, 
-            // return to List instead.
-            return RedirectToPage("./List", new { periodName = SelectedPeriodName });
-        }
+        // if (string.IsNullOrEmpty(periodName) || string.IsNullOrEmpty(lookupId))
+        // {
+        //     // Can't process form wihout lookupId & periodName, 
+        //     // return to List instead.
+        //     return RedirectToPage("./List", new { periodName = SelectedPeriodName });
+        // }
 
-        // ----------KPI PERIOD-------------------------------------------------
-        var kpiPeriod = await _kpiPeriodService.FindByKpiPeriodNameAsync(periodName);
-        if (kpiPeriod != null)
-        {
-            SelectedPeriodName = kpiPeriod.PeriodName;
-            SelectedPeriod = new KpiPeriodViewModel() // ---- do we need entire KPI Period object??
-            {
-                Id = kpiPeriod.Id,
-                PeriodName = kpiPeriod.PeriodName,
-                SubmissionStartDate = kpiPeriod.SubmissionStartDate,
-                SubmissionEndDate = kpiPeriod.SubmissionEndDate
-            };
-        }
-        else
-        {
-            // ModelState.AddModelError("", $"Period {periodName} not found.");
-            // return Page();
-            return RedirectToPage("./List", new { periodName = SelectedPeriodName });
-        }
+        // // ----------KPI PERIOD-------------------------------------------------
+        // var kpiPeriod = await _kpiPeriodService.FindByKpiPeriodNameAsync(periodName);
+        // if (kpiPeriod != null)
+        // {
+        //     SelectedPeriodName = kpiPeriod.PeriodName;
+        //     SelectedPeriod = new KpiPeriodViewModel() // ---- do we need entire KPI Period object??
+        //     {
+        //         Id = kpiPeriod.Id,
+        //         PeriodName = kpiPeriod.PeriodName,
+        //         SubmissionStartDate = kpiPeriod.SubmissionStartDate,
+        //         SubmissionEndDate = kpiPeriod.SubmissionEndDate
+        //     };
+        // }
+        // else
+        // {
+        //     // ModelState.AddModelError("", $"Period {periodName} not found.");
+        //     // return Page();
+        //     return RedirectToPage("./List", new { periodName = SelectedPeriodName });
+        // }
 
         // ----------DEPARTMENT-------------------------------------------------
         DepartmentListItems = await LoadDepartmentList();
@@ -213,28 +219,24 @@ public class EditModel : PageModel
         // ----------SUBMIT THE FORM--------------------------------------------
         try
         {
-            var entity = new CaseFeedbackSubmission
-            {
-                KpiSubmissionPeriodId = SelectedPeriod.Id,
-                SubmittedAt = DateTimeOffset.UtcNow,
-                NegativeScoreValue = FormInput.ScoreValue,
-                SubmitterId = FormInput.SubmitterId,
-                // **SubmitterDepartment, PhoneNumber are from Submitter 
-                // Case Info
-                CaseDepartmentId = FormInput.CaseDepartmentId,
-                WardName = FormInput.WardName,
-                CPINumber = FormInput.CPINumber,
-                PatientName = FormInput.PatientName,
-                RoomNumber = FormInput.RoomNumber,
-                IncidentAt = FormInput.IncidentAt.UtcDateTime,
-                // Case Info > Details
-                Description = FormInput.Description,
-                Comments = FormInput.Comments
-            };
+            var entity = CaseFeedback.Create(
+                // kpiSubmissionPeriodId: SelectedPeriod.Id,
+                submittedAt: DateTimeOffset.UtcNow,
+                submitterId: FormInput.SubmitterId,
+                caseDepartmentId: FormInput.CaseDepartmentId,
+                wardName: FormInput.WardName,
+                cPINumber: FormInput.CPINumber,
+                patientName: FormInput.PatientName,
+                roomNumber: FormInput.RoomNumber,
+                incidentAt: FormInput.IncidentAt.UtcDateTime,
+                description: FormInput.Description,
+                isDeleted: false
+            );
 
             await _caseFeedbackSubmissionService.UpdateAsync(TargetSubmissionLookupId, entity);
 
-            return RedirectToPage("./List", new { periodName = SelectedPeriodName });
+            // return RedirectToPage("./List", new { periodName = SelectedPeriodName });
+            return RedirectToPage("./List");
         }
         catch (Exception)
         {
@@ -245,7 +247,8 @@ public class EditModel : PageModel
 
     public IActionResult OnPostCancel()
     {
-        return RedirectToPage("./List", new { periodName = SelectedPeriodName });
+        // return RedirectToPage("./List", new { periodName = SelectedPeriodName });
+        return RedirectToPage("./List");
     }
 
     // ========== METHODS ======================================================
@@ -261,6 +264,7 @@ public class EditModel : PageModel
             return new UserViewModel
             {
                 Id = user.Id,
+                UserCode = user.UserCode,
                 UserName = user.UserName!,
                 FullName = user.FullName,
                 PhoneNumber = user.PhoneNumber,
@@ -272,6 +276,7 @@ public class EditModel : PageModel
                     GroupName = user.UserTitle.TitleName,
                     Description = user.UserTitle.Description
                 },
+                DepartmentId = user.DepartmentId,
                 Department = new DepartmentViewModel
                 {
                     Id = user.Department.Id,

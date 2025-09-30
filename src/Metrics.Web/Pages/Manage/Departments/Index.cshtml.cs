@@ -1,12 +1,12 @@
 using System.ComponentModel.DataAnnotations;
 using Metrics.Application.Interfaces.IServices;
-using Microsoft.AspNetCore.Authorization;
+using Metrics.Web.Common.Mappers;
+using Metrics.Web.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace Metrics.Web.Pages.Manage.Departments;
 
-[Authorize(Policy = "CanAccessAdminFeaturePolicy")]
 public class IndexModel : PageModel
 {
     private readonly IConfiguration _config;
@@ -22,12 +22,12 @@ public class IndexModel : PageModel
 
 
     // =============== MODELS ==================================================
-    public class DepartmentModel
-    {
-        public Guid DepartmentCode { get; set; }
-        public string DepartmentName { get; set; } = null!;
-        public long NumberOfUsers { get; set; }
-    }
+    // public class DepartmentModel
+    // {
+    //     public Guid DepartmentCode { get; set; }
+    //     public string DepartmentName { get; set; } = null!;
+    //     public long NumberOfUsers { get; set; }
+    // }
 
     public class DepartmentInputModel
     {
@@ -42,7 +42,7 @@ public class IndexModel : PageModel
     [BindProperty]
     public DepartmentInputModel DepartmentInput { get; set; } = new DepartmentInputModel();
 
-    public IEnumerable<DepartmentModel> Departments { get; set; } = [];
+    public IEnumerable<DepartmentViewModel> Departments { get; set; } = [];
 
     [TempData]
     public string? StatusMessage { get; set; }
@@ -93,26 +93,41 @@ public class IndexModel : PageModel
     }
 
     // =============== HELPER METHODS ==========================================
-    private async Task<List<DepartmentModel>> LoadDepartments(int currentPage, int pageSize)
+    private async Task<List<DepartmentViewModel>> LoadDepartments(int currentPage, int pageSize)
     {
-        var result = await _departmentService.FindAllAsync(
+        var departments = await _departmentService.FindAllAsync(
             pageNumber: currentPage,
             pageSize: pageSize);
 
-        if (result.Any())
+        if (departments.IsSuccess)
         {
-            return result.Select(e => new DepartmentModel
+            if (departments.Data != null)
             {
-                DepartmentCode = e.DepartmentCode,
-                DepartmentName = e.DepartmentName,
-                NumberOfUsers = e.ApplicationUsers
-                    .Where(u => u.UserName != "sysadmin")
-                    .ToList()
-                    .Count
-            }).ToList();
+                return departments.Data
+                    .Where(e =>
+                        e.DepartmentStaffs.All(user => !user.UserName.Equals("sysadmin", StringComparison.OrdinalIgnoreCase)))
+                    .Select(e => e.MapToViewModel())
+                    .ToList();
+            }
+        }
+        else
+        {
+            ModelState.AddModelError(string.Empty, "Failed to fetch departments.");
         }
 
         return [];
     }
 
 }
+
+
+
+// new DepartmentViewModel
+// {
+//     DepartmentCode = e.DepartmentCode,
+//     DepartmentName = e.DepartmentName,
+//     NumberOfUsers = e
+//     .Where(u => u.UserName != "sysadmin")
+//     .ToList()
+//     .Count
+// }

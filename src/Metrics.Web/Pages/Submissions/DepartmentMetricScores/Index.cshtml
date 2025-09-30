@@ -19,112 +19,79 @@
 <div class="container">
     <div class="my-4 pb-4">
 
-    @if(Model.IsSubmissionAvaiable)
-    {
-        @* <div class="my-4 pb-4">check Submissions is avaiable (early or late)</div> *@
-        <table id="dataTable" class="table table-bordered table-striped" style="width: 100%;">
-            <thead>
-                <tr>
-                    <th>Period</th>
-                    <th>Duration</th>
-                    <th>Status</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                @if(Model.SubmissionPeriods.Any())
+    <table id="dataTable" class="table table-bordered table-striped" style="width: 100%;">
+        <thead>
+            <tr>
+                <th>Period</th>
+                <th>Duration</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if(Model.SubmissionPeriods.Any())
+            {
+                @foreach(var period in Model.SubmissionPeriods)
                 {
-                    @foreach(var period in Model.SubmissionPeriods)
-                    {
-                        <tr>
-                            <td class="text-center">
-                                <strong>@period.PeriodName</strong>
-                            </td>
-                            <td class="" style="padding-left: 6em;">
-                                <label>
-                                    <i class="bi bi-calendar4-week text-primary"> </i> 
+                    <tr>
+                        <td class="text-center">
+                            <strong>@period.PeriodName</strong>
+                        </td>
+                        <td class="text-center mono-text">
+                            <div class="period-container">
+                                <i class="bi bi-calendar4-week text-primary"> </i> 
+                                <label class="ms-2">
                                     @period.SubmissionStartDate.ToLocalTime().ToString("dd MMM, yyyy") - @period.SubmissionEndDate.ToLocalTime().ToString("dd MMM, yyyy")</label>
-                            </td>
-                            <td class="" style="padding-left: 4em;">
-                                @* 
-                                    **user can view perivous submission ONLY WITHIN VALID PERIOD
-                                    valid
-                                        submitted
-                                            - done
-                                        not-submitted
-                                            - pending
-                                    not-valid (disable actions)
-                                        submitted
-                                            - done
-                                        not-submitted
-                                            - due
-                                *@
-                                @if(period.IsValid) {
-                                    @if(period.IsSubmitted) { 
-                                        <i class="bi bi-check2-circle text-success"> </i><label>Done</label> 
-                                    }
-                                    else
-                                    {
-                                        <i class="bi bi-exclamation-circle text-danger"> </i><label>Pending</label> 
-                                    }
-                                }
-                                else
-                                {
-                                    @if(period.IsSubmitted) { 
-                                        <i class="bi bi-check2-circle text-success"> </i><label>Done</label> 
-                                    }
-                                    else
-                                    {
-                                        <i class="bi bi-exclamation-circle text-secondary"> </i><label class="text-secondary">Invalid</label> 
-                                    }
-                                }
-
-
-
-
-                                @* @if(period.IsSubmitted) { 
-                                    <i class="bi bi-check2-circle text-success"> </i><label>Done</label> 
+                            </div>
+                        </td>
+                        <td class="text-center">
+                            <div class="status-container">
+                                @if(period.IsSubmitted) {
+                                    <i class="bi bi-check2-circle text-success @(period.IsValid ? "" : "text-secondary")"> </i>
+                                        <label class="ms-2 @(period.IsValid ? "" : "text-secondary")">Completed</label> 
                                 }
                                 else {
-                                    @if(period.IsValid) {
-                                        <i class="bi bi-exclamation-circle text-danger"> </i><label>Pending</label> 
-                                    }
-                                    else {
-                                        <i class="bi bi-exclamation-diamond text-secondary"> </i><label class="text-secondary">Invalid</label> 
-                                    }
-                                } *@
-                            </td>
-                            <td class="text-center"> 
-                                @if(period.IsSubmitted) { 
+                                    <i class="bi bi-exclamation-circle text-danger @(period.IsValid ? "" : "text-secondary")"> </i>
+                                        <label class="ms-2 @(period.IsValid ? "" : "text-secondary")">
+                                            @(period.IsValid ? "Incomplete" : "-")</label> 
+                                }
+                            </div>
+                        </td>
+                        <td class="text-center"> 
+                            @if(period.IsSubmitted) {
+                                @if(period.IsValid) {
                                     <a asp-page="Submit" 
                                         asp-route-periodName="@period.PeriodName"
                                         class="link-offset-2"><strong>View</strong></a>
+                                } else {
+                                    <a disabled class="text-secondary link-offset-2" aria-disabled="true">View</a>
+                                }
+                            }
+                            else
+                            {
+                                @if(period.IsValid) {
+                                    <a asp-page="Submit" 
+                                        asp-route-periodName="@period.PeriodName"
+                                        class="link-offset-2"><strong>Submit</strong></a>
                                 }
                                 else {
-                                    @if(period.IsValid) {
-                                        <a asp-page="Submit" 
-                                            asp-route-periodName="@period.PeriodName"
-                                            class="link-offset-2"><strong>Submit</strong></a>
-                                    }
-                                    else {
-                                        <a aria-disabled="true" class="link-offset-2 text-secondary">-</a>
-                                    }
+                                    <a aria-disabled="true" class="link-offset-2 text-secondary">View</a>
                                 }
-                            </td>
-                        </tr>
-                    }
+                            }
+                        </td>
+                    </tr>
                 }
-            </tbody>
-        </table>
-    }
-    else
-    {
-        <span class="text-success">No Submission Avaiable Currently.</span>
-    }
-    </div>
+            }
+        </tbody>
+    </table>
 </div>
 
 
+@section Styles {
+<style>
+ 
+</style>
+}
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

@@ -12,6 +12,7 @@ env:
   DOTNET_VERSION: "9.0.x"
   CONFIGURATION: "Release"
   APP_DIR: "src/Metrics.Web"
+  RELEASE_BASE_DIR: "release"
   RELEASE_BUILD_DIR: "src/Metrics.Web/bin/Release/net9.0"
 
 jobs:
@@ -47,7 +48,7 @@ jobs:
     name: Create Release
     needs: build-test
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
 
     steps:
       - name: Checkout code
@@ -73,6 +74,31 @@ jobs:
         id: get_version
         run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
 
+      - name: Refine Version
+        id: versions
+        run: |
+          CLEAN_VERSION=$(echo "${{ steps.get_version.outputs.VERSION}}" | sed 's/^v//' | sed 's/[^0-9.]//g')
+
+          IFS='.' read -ra PARTS <<< "$CLEAN_VERSION"
+          MAJOR=${PARTS[0]:-0}
+          MINOR=${PARTS[1]:-0}
+          PATCH=${PARTS[2]:-0}
+          BUILD=${PARTS[3]:-0}
+          FILE_VERSION="$MAJOR.$MINOR.$PATCH.$BUILD"
+          ASSEMBLY_VERSION="$MAJOR.$MINOR.${PATCH-0}.${BUILD-0}"
+
+          echo "FILE_VERSION=$FILE_VERSION" >> $GITHUB_OUTPUT
+          echo "ASSEMBLY_VERSION=$ASSEMBLY_VERSION" >> $GITHUB_OUTPUT
+          echo "INFORMATIONAL_VERSION=${{ steps.get_version.outputs.VERSION}}+${{ github.sha }}" >> $GITHUB_OUTPUT
+
+      - name: Set build number
+        id: build_number
+        run: |
+          BUILD_DATE=$(date +%Y%m%d)
+          BUILD_NUMBER=$(date +%H%M%S)
+          echo "BUILD_DATE=$BUILD_DATE" >> $GITHUB_OUTPUT
+          echo "BUILD_NUMBER=$BUILD_NUMBER" >> $GITHUB_OUTPUT
+
       # - name: Set Release Directory
       #   id: set_release_dir
       #   run: |
@@ -83,33 +109,37 @@ jobs:
         run: |
           pwd && ls -l
 
-      - name: Clean Release Directories
-        run: |
-          rm -rf release/all-*
-          rm -rf release/win-x64-*
+      # - name: Clean Release Directories
+      #   run: |
+      #     rm -rf ${{ env.RELEASE_BASE_DIR }}/all-*
+      #     rm -rf ${{ env.RELEASE_BASE_DIR }}/win-x64-*
+      - name: Clean previous releases
+        run: rm -rf ${{ env.RELEASE_BASE_DIR }}/*
 
+      # FILE_VERSION=$(echo "${{ steps.get_version.outputs.VERSION}}" | sed 's/[^0-9.]//g' | awk -F. '{printf "%d.%d.%d.%d", $1,$2,$3,$4}')
       - name: Publish *
         run: |
-          FILE_VERSION=$(echo "${{ steps.get_version.outputs.VERSION}}" | sed 's/[^0-9.]//g' | awk -F. '{printf "%d.%d.%d.%d", $1,$2,$3,$4}')
           cd src/Metrics.Web/ &&
           dotnet publish --configuration ${{ env.CONFIGURATION }} \
             --self-contained false \
-            --output $GITHUB_WORKSPACE/release/all-${{ steps.get_version.outputs.VERSION }} \
+            --output $GITHUB_WORKSPACE/${{ env.RELEASE_BASE_DIR }}/all-${{ steps.get_version.outputs.VERSION }} \
             -p:Version=${{ steps.get_version.outputs.VERSION }} \
-            -p:FileVersion=$FILE_VERSION \
-            -p:InformationalVersion=${{ steps.get_version.outputs.VERSION }}
+            -p:FileVersion=${{ steps.versions.outputs.FILE_VERSION }}.${{ steps.build_number.outputs.BUILD_NUMBER }} \
+            -p:InformationalVersion=${{ steps.versions.outputs.INFORMATIONAL_VERSION }} \
+            -p:AssemblyVersion=${{ steps.versions.outputs.ASSEMBLY_VERSION }}
 
+      # FILE_VERSION=$(echo "${{ steps.get_version.outputs.VERSION}}" | sed 's/[^0-9.]//g' | awk -F. '{printf "%d.%d.%d.%d", $1,$2,$3,$4}')
       - name: Publish win-x64
         run: |
-          FILE_VERSION=$(echo "${{ steps.get_version.outputs.VERSION}}" | sed 's/[^0-9.]//g' | awk -F. '{printf "%d.%d.%d.%d", $1,$2,$3,$4}')
           cd src/Metrics.Web/ &&
           dotnet publish --configuration ${{ env.CONFIGURATION }} \
             -r win-x64 \
             --self-contained false \
-            --output $GITHUB_WORKSPACE/release/win-x64-${{ steps.get_version.outputs.VERSION }} \
+            --output $GITHUB_WORKSPACE/${{ env.RELEASE_BASE_DIR }}/win-x64-${{ steps.get_version.outputs.VERSION }} \
             -p:Version=${{ steps.get_version.outputs.VERSION }} \
-            -p:FileVersion=$FILE_VERSION \
-            -p:InformationalVersion=${{ steps.get_version.outputs.VERSION }}
+            -p:FileVersion=${{ steps.versions.outputs.FILE_VERSION }}.${{ steps.build_number.outputs.BUILD_NUMBER }} \
+            -p:InformationalVersion=${{ steps.versions.outputs.INFORMATIONAL_VERSION }} \
+            -p:AssemblyVersion=${{ steps.versions.outputs.ASSEMBLY_VERSION }}
 
       - name: Print  Working Directory
         run: |
@@ -117,19 +147,19 @@ jobs:
 
       - name: Create sql directory
         run: |
-          mkdir -p release/all-${{ steps.get_version.outputs.VERSION }}/sql &&
-          mkdir -p release/win-x64-${{ steps.get_version.outputs.VERSION }}/sql
+          mkdir -p ${{ env.RELEASE_BASE_DIR }}/all-${{ steps.get_version.outputs.VERSION }}/sql &&
+          mkdir -p ${{ env.RELEASE_BASE_DIR }}/win-x64-${{ steps.get_version.outputs.VERSION }}/sql
 
       - name: Copy SQL files
         run: |
-          cp src/Metrics.Web/Migrations/*.sql release/all-${{ steps.get_version.outputs.VERSION }}/sql &&
-          cp src/Metrics.Web/Migrations/*.sql release/win-x64-${{ steps.get_version.outputs.VERSION }}/sql
+          cp src/Metrics.Web/Migrations/*.sql ${{ env.RELEASE_BASE_DIR }}/all-${{ steps.get_version.outputs.VERSION }}/sql &&
+          cp src/Metrics.Web/Migrations/*.sql ${{ env.RELEASE_BASE_DIR }}/win-x64-${{ steps.get_version.outputs.VERSION }}/sql
 
       - name: Print Current Working Directory
         run: pwd && ls -l
 
       - name: Print Release Directory
-        run: ls -R release/
+        run: ls -R ${{ env.RELEASE_BASE_DIR }}/
 
       # - name: Create zip
       #   run: |
@@ -141,13 +171,13 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: release-metrics-all-${{ steps.get_version.outputs.VERSION }}
-          path: release/all-${{ steps.get_version.outputs.VERSION }}
+          path: ${{ env.RELEASE_BASE_DIR }}/all-${{ steps.get_version.outputs.VERSION }}
 
       - name: Upload Release Artifact for win-x64
         uses: actions/upload-artifact@v4
         with:
           name: release-metrics-winx64-${{ steps.get_version.outputs.VERSION }}
-          path: release/win-x64-${{ steps.get_version.outputs.VERSION }}
+          path: ${{ env.RELEASE_BASE_DIR }}/win-x64-${{ steps.get_version.outputs.VERSION }}
 
       # - name: Create GitHub Release
       #   uses: softprops/action-gh-release@v2
@@ -156,6 +186,17 @@ jobs:
       #     name: Release ${{ steps.get_version.outputs.VERSION }}
       #     body: Release ${{ steps.get_version.outputs.VERSION }}
       #     files: publish-${{ steps.get_version.outputs.VERSION }}.zip
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ env.VERSION }}
+          body: |
+            Automated release for version ${{ env.VERSION }}
+            - Commit: ${{ github.sha }}
+            - Build: ${{ github.run_number }}
+          files: ${{ env.RELEASE_BASE_DIR }}/**/*
 
       - name: Clean Runner (Optional)
         run: rm -rf publish-* # Clean up release directory

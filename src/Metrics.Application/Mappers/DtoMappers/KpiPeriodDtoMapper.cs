@@ -1,4 +1,4 @@
-using Metrics.Application.DTOs.KpiPeriodDtos;
+using Metrics.Application.DTOs.KpiPeriod;
 using Metrics.Application.Domains;
 
 namespace Metrics.Application.Mappers.DtoMappers;

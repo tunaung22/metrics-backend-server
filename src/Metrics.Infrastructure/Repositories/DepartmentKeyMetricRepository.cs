@@ -1,18 +1,15 @@
 using Metrics.Application.Domains;
 using Metrics.Application.Interfaces.IRepositories;
+using Metrics.Application.Results;
 using Metrics.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace Metrics.Infrastructure.Repositories;
 
-public class DepartmentKeyMetricRepository : IDepartmentKeyMetricRepository
+public class DepartmentKeyMetricRepository(MetricsDbContext context) : IDepartmentKeyMetricRepository
 {
-    private readonly MetricsDbContext _context;
+    private readonly MetricsDbContext _context = context;
 
-    public DepartmentKeyMetricRepository(MetricsDbContext context)
-    {
-        _context = context;
-    }
 
     public void Create(DepartmentKeyMetric entity)
     {
@@ -28,7 +25,7 @@ public class DepartmentKeyMetricRepository : IDepartmentKeyMetricRepository
     {
         return _context.DepartmentKeyMetrics
             .OrderBy(k => k.KpiSubmissionPeriod.PeriodName)
-            .ThenBy(k => k.TargetDepartment.DepartmentName)
+            .ThenBy(k => k.KeyIssueDepartment.DepartmentName)
             .ThenBy(k => k.KeyMetric.MetricTitle);
     }
 
@@ -36,7 +33,7 @@ public class DepartmentKeyMetricRepository : IDepartmentKeyMetricRepository
     {
         return await _context.DepartmentKeyMetrics
             .OrderBy(k => k.KpiSubmissionPeriod.PeriodName)
-            .ThenBy(k => k.TargetDepartment.DepartmentName)
+            .ThenBy(k => k.KeyIssueDepartment.DepartmentName)
             .ThenBy(k => k.KeyMetric.MetricTitle)
             .ToListAsync();
     }
@@ -92,7 +89,7 @@ public class DepartmentKeyMetricRepository : IDepartmentKeyMetricRepository
     {
         return await _context.DepartmentKeyMetrics
         .Where(k => k.KpiSubmissionPeriod.PeriodName == periodName
-                && k.TargetDepartment.DepartmentCode == departmentCode
+                && k.KeyIssueDepartment.DepartmentCode == departmentCode
                 && k.KeyMetric.MetricCode == keyMetricCode)
         .FirstOrDefaultAsync();
     }
@@ -102,8 +99,12 @@ public class DepartmentKeyMetricRepository : IDepartmentKeyMetricRepository
         return await _context.DepartmentKeyMetrics
             .Include(k => k.KpiSubmissionPeriod)
             .Include(k => k.KeyMetric)
-            .Include(k => k.TargetDepartment)
-            .OrderBy(k => k.TargetDepartment.DepartmentName)
+            .Include(k => k.KeyIssueDepartment).ThenInclude(u => u.ApplicationUsers)
+            .Include(k => k.KeyIssueDepartment)
+                .ThenInclude(u => u.ApplicationUsers)
+            .Include(k => k.KeyIssueDepartment.ApplicationUsers)
+                .ThenInclude(g => g.UserTitle)
+            .OrderBy(k => k.KeyIssueDepartment.DepartmentName)
             .Where(k => k.KpiSubmissionPeriodId == periodId)
             .ToListAsync();
     }
@@ -113,9 +114,23 @@ public class DepartmentKeyMetricRepository : IDepartmentKeyMetricRepository
         return await _context.DepartmentKeyMetrics
             .Include(k => k.KpiSubmissionPeriod)
             .Include(k => k.KeyMetric)
-            .Include(k => k.TargetDepartment)
-            .OrderBy(k => k.TargetDepartment.DepartmentName)
+            .Include(k => k.KeyIssueDepartment)
+            .OrderBy(k => k.KeyIssueDepartment.DepartmentName)
             .Where(k => k.KpiSubmissionPeriod.PeriodName == periodName)
+            .ToListAsync();
+    }
+
+    public async Task<IEnumerable<DepartmentKeyMetric>> FindByPeriodByKeyIssueDepartmentAsync(
+        long periodId,
+        Guid keyIssueDepartmentCode)
+    {
+        return await _context.DepartmentKeyMetrics
+            .Include(k => k.KpiSubmissionPeriod)
+            .Include(k => k.KeyMetric)
+            .Include(k => k.KeyIssueDepartment)
+            .OrderBy(k => k.KeyIssueDepartment.DepartmentName)
+            .Where(k => k.KpiSubmissionPeriod.Id == periodId
+                && k.KeyIssueDepartment.DepartmentCode == keyIssueDepartmentCode)
             .ToListAsync();
     }
 
@@ -124,10 +139,10 @@ public class DepartmentKeyMetricRepository : IDepartmentKeyMetricRepository
         return await _context.DepartmentKeyMetrics
             .Include(k => k.KpiSubmissionPeriod)
             .Include(k => k.KeyMetric)
-            .Include(k => k.TargetDepartment)
-            .OrderBy(k => k.TargetDepartment.DepartmentName)
+            .Include(k => k.KeyIssueDepartment)
+            .OrderBy(k => k.KeyIssueDepartment.DepartmentName)
             .Where(k => k.KpiSubmissionPeriod.PeriodName == periodName
-                && k.TargetDepartment.DepartmentCode == departmentCode)
+                && k.KeyIssueDepartment.DepartmentCode == departmentCode)
             .ToListAsync();
     }
 
@@ -137,4 +152,15 @@ public class DepartmentKeyMetricRepository : IDepartmentKeyMetricRepository
             .Where(k => k.DepartmentKeyMetricCode == departmentKeyMetricCode)
             .FirstOrDefaultAsync();
     }
+
+
+    public async Task<Dictionary<long, int>> FindCountsByPeriodAsync(List<long> periodIds)
+    {
+        return await _context.DepartmentKeyMetrics
+            .Where(e => periodIds.Contains(e.KpiSubmissionPeriodId))
+            .GroupBy(e => e.KpiSubmissionPeriodId)
+            .Select(e => new { PeriodId = e.Key, Count = e.Count() })
+            .ToDictionaryAsync(e => e.PeriodId, e => e.Count);
+    }
+
 }

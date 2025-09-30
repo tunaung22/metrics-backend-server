@@ -1,9 +1,14 @@
 using Metrics.Application.Domains;
+using Metrics.Application.Results;
 
 namespace Metrics.Application.Interfaces.IRepositories;
 
 public interface IDepartmentKeyMetricRepository
 {
+    Task<IEnumerable<DepartmentKeyMetric>> FindByPeriodByKeyIssueDepartmentAsync(
+        long periodId,
+        Guid keyIssueDepartmentCode);
+
     void Create(DepartmentKeyMetric entity);
     void Update(DepartmentKeyMetric entity);
     // void Delete(DepartmentKeyMetric entity);
@@ -23,6 +28,9 @@ public interface IDepartmentKeyMetricRepository
         Guid departmentCode);
     Task<bool> KeyKpiExistsAsync(Guid metricCode);
     Task<long> FindCountAsync();
+
+    // ========== Count ====================================================
+    Task<Dictionary<long, int>> FindCountsByPeriodAsync(List<long> periodIds);
 
     // ========== Queryable ====================================================
     IQueryable<DepartmentKeyMetric> FindAllAsQueryable();

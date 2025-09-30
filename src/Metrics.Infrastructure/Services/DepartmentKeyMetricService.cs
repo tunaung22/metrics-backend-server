@@ -1,7 +1,10 @@
+using Metrics.Application.Common.Mappers;
 using Metrics.Application.Domains;
+using Metrics.Application.DTOs.DepartmentKeyMetric;
 using Metrics.Application.Exceptions;
 using Metrics.Application.Interfaces.IRepositories;
 using Metrics.Application.Interfaces.IServices;
+using Metrics.Application.Results;
 using Metrics.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -186,6 +189,40 @@ public class DepartmentKeyMetricService : IDepartmentKeyMetricService
     //     }
     // }
 
+    public async Task<ResultT<List<DepartmentKeyMetricDto>>> FindByPeriodIdAsync(long periodId)
+    {
+        try
+        {
+            var data = await _departmentKeyMetricRepository.FindAllByPeriodIdAsync(periodId);
+            var result = data.Select(e => e.MapToDto()).ToList();
+
+            return ResultT<List<DepartmentKeyMetricDto>>.Success(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Exception occured at fetching department key metrics by period id. {msg}", ex.Message);
+            return ResultT<List<DepartmentKeyMetricDto>>.Fail("Failed to fetch department key metrics by period.", ErrorType.UnexpectedError);
+        }
+    }
+
+    public async Task<ResultT<List<DepartmentKeyMetricDto>>> FindByPeriodByKeyIssueDepartmentAsync(
+        long periodId, Guid keyIssueDepartmentCode)
+    {
+        try
+        {
+            var data = await _departmentKeyMetricRepository.FindByPeriodByKeyIssueDepartmentAsync(periodId, keyIssueDepartmentCode);
+            var result = data.Select(e => e.MapToDto()).ToList();
+
+            return ResultT<List<DepartmentKeyMetricDto>>.Success(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error occured while fetching department key metrics by period id by key issue department. {msg}", ex.Message);
+            return ResultT<List<DepartmentKeyMetricDto>>.Fail("Failed to fetch department key metrics by period by key issue department", ErrorType.UnexpectedError);
+        }
+    }
+
+
     public async Task<IEnumerable<DepartmentKeyMetric>> FindAllByPeriodIdAsync(long periodId)
     {
         try
@@ -226,11 +263,11 @@ public class DepartmentKeyMetricService : IDepartmentKeyMetricService
             //     .FindAllByPeriodAndDepartmentAsync(CurrentPeriodName, CurrentDepartmentCode);
             var result = await _context.DepartmentKeyMetrics
                 .Where(k => k.KpiSubmissionPeriod.PeriodName == currentPeriodName
-                    && k.TargetDepartment.DepartmentCode == currentDepartmentCode)
-                .OrderBy(k => k.TargetDepartment.DepartmentName)
+                    && k.KeyIssueDepartment.DepartmentCode == currentDepartmentCode)
+                .OrderBy(k => k.KeyIssueDepartment.DepartmentName)
                 .Include(k => k.KpiSubmissionPeriod)
                 .Include(k => k.KeyMetric)
-                .Include(k => k.TargetDepartment)
+                .Include(k => k.KeyIssueDepartment)
                 .ToListAsync();
 
             return result ?? [];
@@ -313,6 +350,38 @@ public class DepartmentKeyMetricService : IDepartmentKeyMetricService
         {
             _logger.LogError(ex, "Unexpected error while updating Key KPI.");
             throw new Exception("An unexpected error occurred. Please try again later.");
+        }
+    }
+
+    public async Task<ResultT<List<DepartmentKeyMetricDto>>> FindByPeriodNameAsync(string periodName)
+    {
+        try
+        {
+            var data = await _departmentKeyMetricRepository.FindAllByPeriodNameAsync(periodName);
+            var result = data.Select(e => e.MapToDto()).ToList();
+
+            return ResultT<List<DepartmentKeyMetricDto>>.Success(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An unexpected error occurred while fetching department key metrics by period name.");
+            return ResultT<List<DepartmentKeyMetricDto>>.Fail("An unexpected error occurred while fetching department key metrics by period name.", ErrorType.UnexpectedError);
+        }
+    }
+
+
+    public async Task<ResultT<Dictionary<long, int>>> FindCountsByPeriodAsync(List<long> periodIds)
+    {
+        try
+        {
+            var countResult = await _departmentKeyMetricRepository.FindCountsByPeriodAsync(periodIds);
+
+            return ResultT<Dictionary<long, int>>.Success(countResult);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to get department key metric count by Periods.");
+            return ResultT<Dictionary<long, int>>.Fail("Failed to get department key metric count by Periods.", ErrorType.UnexpectedError);
         }
     }
 }

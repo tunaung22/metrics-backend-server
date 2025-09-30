@@ -12,15 +12,13 @@ public class KeyKpiSubmissionConfig : IEntityTypeConfiguration<KeyKpiSubmission>
 
         // ===== Index =====
         builder.HasKey(e => e.Id);
-        // builder.HasIndex(e => e.SubmissionDate).IsUnique();
         builder
             .HasIndex(e => new
             {
-                e.ScoreSubmissionPeriodId,
-                e.DepartmentId,
-                e.ApplicationUserId
+                e.DepartmentKeyMetricId,
+                e.SubmitterId
             })
-            .HasDatabaseName("ix_key_kpi_submissions_period_id_dpt_id_user_id")
+            .HasDatabaseName("ix_key_kpi_submissions_dkm_id_user_id")
             .IsUnique();
 
         // ===== Columns =====
@@ -29,6 +27,7 @@ public class KeyKpiSubmissionConfig : IEntityTypeConfiguration<KeyKpiSubmission>
             .HasColumnType("bigint")
             .UseHiLo("key_kpi_submissions_id_seq");
         // .UseHiLo();
+
         builder.Property(e => e.SubmittedAt)
             .HasColumnName("submitted_at")
             .HasColumnType("timestamp with time zone")
@@ -39,6 +38,17 @@ public class KeyKpiSubmissionConfig : IEntityTypeConfiguration<KeyKpiSubmission>
             // SQL: submission_date date GENERATED ALWAYS AS((submitted_at AT TIME ZONE 'UTC')::date) STORED,
             // **Only after get utc format should then convert to date
             .HasComputedColumnSql("(submitted_at AT TIME ZONE 'UTC')::date", stored: true);
+        builder.Property(e => e.ScoreValue)
+            .HasColumnName("score_value")
+            .HasColumnType("decimal(4,2)")
+            .IsRequired();
+        builder.Property(e => e.Comments)
+            .HasColumnName("comments")
+            .HasColumnType("text");
+        builder.Property(e => e.IsDeleted)
+            .HasColumnName("is_deleted")
+            .HasColumnType("boolean")
+            .HasDefaultValue(false);
         builder.Property(e => e.CreatedAt)
             .HasColumnName("created_at")
             .HasColumnType("timestamp with time zone");
@@ -46,40 +56,27 @@ public class KeyKpiSubmissionConfig : IEntityTypeConfiguration<KeyKpiSubmission>
             .HasColumnName("modified_at")
             .HasColumnType("timestamp with time zone");
 
+        builder.Property(e => e.DepartmentKeyMetricId)
+            .HasColumnName("department_key_metric_id")
+            .IsRequired();
+        builder.Property(e => e.SubmitterId)
+            .HasColumnName("submitter_id")
+            .IsRequired();
         // ===== Relationships =====
-        builder.HasOne(e => e.TargetPeriod)
+        // builder.HasOne(e => e.TargetPeriod)
+        //     .WithMany(e => e.KeyKpiSubmissions)
+        //     .HasForeignKey(e => e.ScoreSubmissionPeriodId)
+        //     .OnDelete(DeleteBehavior.Restrict)
+        //     .IsRequired();
+        builder.HasOne(e => e.DepartmentKeyMetric)
             .WithMany(e => e.KeyKpiSubmissions)
-            .HasForeignKey(e => e.ScoreSubmissionPeriodId)
-            .OnDelete(DeleteBehavior.Restrict)
-            .IsRequired();
-        builder.HasOne(e => e.TargetDepartment)
-            .WithMany(e => e.KeyKpiSubmissions)
-            .HasForeignKey(e => e.DepartmentId)
-            .OnDelete(DeleteBehavior.Restrict)
-            .IsRequired();
+            .HasForeignKey(e => e.DepartmentKeyMetricId)
+            .HasConstraintName("fk_key_kpi_submissions_dkm_id")
+            .OnDelete(DeleteBehavior.Restrict);
         builder.HasOne(e => e.SubmittedBy)
             .WithMany(e => e.KeyKpiSubmissions)
-            .HasForeignKey(e => e.ApplicationUserId)
-            .OnDelete(DeleteBehavior.Restrict)
-            .IsRequired();
-
-
-        // builder.HasMany(e => e.KeyKpiSubmissionItems)
-        //     .WithOne(e => e.ParentSubmission)
-        //     .HasForeignKey(e => e.KeyKpiSubmissionId);
-
-        // The property 'KeyKpiSubmission.KeyMetricId' was created in shadow state because there are no eligible CLR members with a matching name.
-        // EF Core detects a potential relationship path but can't find the explicit property in the class
-        // KeyKpiSubmission → KeyKpiSubmissionItem → DepartmentKeyMetric → KeyMetric
-        // Ignore Shadow Property
-        // builder.Ignore("KeyMetricId");
-
-        // The property 'KeyKpiSubmission.DepartmentKeyMetricId' was created in shadow state because there are no eligible CLR members with a matching name.
-        // Ignore Shadow Property
-        // builder.Ignore("DepartmentKeyMetricId");
-
-
-        // builder.Ignore("DepartmentKeyMetricId");
-        // builder.Ignore("KeyMetricId");
+            .HasForeignKey(e => e.SubmitterId)
+            .HasConstraintName("fk_key_kpi_submissions_submitter_id")
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

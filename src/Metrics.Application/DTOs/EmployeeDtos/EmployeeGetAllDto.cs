@@ -10,10 +10,10 @@ public class EmployeeGetAllDto
     public string? PhoneNumber { get; set; }
     public long DepartmentId { get; set; }
     public string ApplicationUserId { get; set; } = null!;
-    public Department CurrentDepartment { get; set; } = null!;
+    public Domains.Department CurrentDepartment { get; set; } = null!;
     public ApplicationUser UserAccount { get; set; } = null!;
 
 
     // ----- Collection Navigational Properties
-    public List<KpiSubmission> KpiSubmissions { get; set; } = [];
+    public List<KeyKpiSubmission> KpiSubmissions { get; set; } = [];
 }

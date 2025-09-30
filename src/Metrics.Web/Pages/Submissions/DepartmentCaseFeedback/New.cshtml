@@ -1,20 +1,18 @@
-﻿@page "/Submissions/Department-Case-Feedback/{periodName}/New"
+﻿@page "/Submissions/Department-Case-Feedback/New"
 @model Metrics.Web.Pages.Submissions.DepartmentCaseFeedback.NewModel
 @{
     ViewData["Title"] = "New Department Case Feedback";
-    decimal[] scoreList = new decimal[] { -1M, -2M, -3M, -4M, -5M };
 }
 
 
 <div class="sectionTitle">
-    <h4>New Department Case Feedback <strong>(@Model.SelectedPeriod.PeriodName)</strong></h4>
+    <h4>New Department Case Feedback</strong></h4>
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a asp-page="/Index">Home</a></li>
             <li class="breadcrumb-item"><a asp-page="/Submissions/Index">Submissions</a></li>
             <li class="breadcrumb-item"><a asp-page="/Submissions/DepartmentCaseFeedback/Index">Department Case Feedbacks</a></li>
-            <li class="breadcrumb-item"><a asp-page="/Submissions/DepartmentCaseFeedback/List" 
-                                            asp-route-periodName="@Model.SelectedPeriodName">Submissions List</a></li>
+            <li class="breadcrumb-item"><a asp-page="/Submissions/DepartmentCaseFeedback/List">Submissions List</a></li>
             <li class="breadcrumb-item active">New</li>
         </ol>
     </nav>
@@ -34,7 +32,7 @@
         <section class="form">
             <form method="post">
             @* asp-route-returnUrl="@Model.ReturnUrl"> *@
-                <input type="hidden" asp-for="SelectedPeriodName" />
+                @* <input type="hidden" asp-for="SelectedPeriodName" /> *@
                 @* <input type="hidden" asp-for="ReturnUrl" /> *@
                 <input type="hidden" asp-for="FormInput.SubmitterId" />
 
@@ -148,14 +146,14 @@
                             <label class="form-label">Incident Details</label>
                             <textarea asp-for="FormInput.Description" class="form-control" rows="4"></textarea>
                         </div>
-                        <div class="col-xs-12 col-md-6">
+                        @* <div class="col-xs-12 col-md-6">
                             <label class="form-label">Suggestions</label>
                             <textarea asp-for="FormInput.Comments" class="form-control" rows="4"></textarea>
-                        </div>
+                        </div> *@
                     </div>
                 </div>
 
-                <div class="score card mb-3 px-3 py-4">
+                @* <div class="score card mb-3 px-3 py-4">
                     <div class="mb-3">
                         <span><strong>Rate:</strong></span>
                     </div>
@@ -185,7 +183,7 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </div> *@
             </form>
 
         </section>

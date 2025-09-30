@@ -2,7 +2,7 @@
 
 namespace Metrics.Application.Domains;
 
-public class KpiSubmission : IAuditColumn
+public class KpiSubmission : IAuditColumn, ISoftDelete
 {
     public long Id { get; set; }
     public DateTimeOffset SubmittedAt { get; set; }
@@ -11,6 +11,7 @@ public class KpiSubmission : IAuditColumn
     public string? PositiveAspects { get; set; } = string.Empty;
     public string? NegativeAspects { get; set; } = string.Empty;
     public string? Comments { get; set; } = string.Empty;
+    public bool IsDeleted { get; set; }
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
     public DateTimeOffset ModifiedAt { get; set; }
 

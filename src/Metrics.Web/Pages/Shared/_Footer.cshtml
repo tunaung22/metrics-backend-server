@@ -1,15 +1,21 @@
 ﻿@inject Metrics.Web.Models.VersionInfo AppVersionInfo
 
-<footer class="mt-auto sticky-bottom border-top footer text-muted pt-2 px-4">
+<footer id="appFooter" class="app-footer 
+                footer 
+                border-top 
+                mt-auto 
+                text-muted 
+                pt-2 
+                px-4">
     <div class="d-flex justify-content-between">
-        <p class="px-4">
+        <p class="col-auto">
             &copy; 2025 - Metrics Backend
         </p>
-        <p class="px-4">
+        <p class="col-auto text-end">
             <small>
                 @* @AppVersionInfo.FileVersion *@
-                @* v@(AppVersionInfo.AssemblyVersion)  *@
-                v@(AppVersionInfo.InformationalVersion)
+                v@(AppVersionInfo.AssemblyVersion) 
+                @* v@(AppVersionInfo.InformationalVersion) *@
             </small>
         </p>
     </div>

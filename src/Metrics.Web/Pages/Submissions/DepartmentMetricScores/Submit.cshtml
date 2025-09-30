@@ -1,13 +1,16 @@
-﻿@page "/Submissions/Department-Metric-Scores/{periodName}"
+﻿@page "/Submissions/Department-Metric-Scores/{periodName}/Submit"
+@using Metrics.Application.Domains
+@using Microsoft.EntityFrameworkCore.Metadata.Internal
+@using Microsoft.VisualBasic
 @model Metrics.Web.Pages.Submissions.DepartmentMetricScores.SubmitModel
 @{
-    ViewData["Title"] = "Submit Department Metric Score";
+    ViewData["Title"] = "Submission for Department Key Metric Score";
     decimal[] scoreList = new decimal[] { 1M, 2M, 3M, 4M, 5M, 6M, 7M, 8M, 9M, 10M };
 }
 
 
 <div class="sectionTitle">
-    <h4>Submit Department Metric Score (Keyed) for <strong>@Model.TargetKpiPeriodName</strong></h4>
+    <h4>Submission for Department Key Metric Score <strong>@Model.TargetKpiPeriodName</strong></h4>
     @* <div id="submissionStatusBar" class="fixed-bottom mt-2 mb-0 px-4 p-2 d-flex align-items-center justify-content-center">
         <p class="px-4 mb-0"><strong>Progress:</strong> <span id="formProgress">0</span> of @Model.SubmissionInput.Count</p>
     </div> *@
@@ -19,14 +22,13 @@
             <li class="breadcrumb-item active">Submit</li>
         </ol>
     </nav>
-</diusing Microsoft.EntityFrameworkCore.Metadata.Internal;
-#line default
+</div>
 
 
 <div class="container-fluid">
     <div class="p-4">
 
-        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger text-danger"></div>
 
         @if(Model.IsSubmissionValid)  @* Date is due or early. *@
         {
@@ -35,248 +37,312 @@
             {
                 @if (Model.KeyKpiSubmissionConstraints.Count > 0)
                 {
-                    @* ===== Departments are based on KeyKpiSubmissionConstraints ===== *@
-                    @* ===== No KeyKpiSubmissionConstraints means No Departments ===== *@
-                    @if (Model.DepartmentList.Count > 0)
-                    {
-                        <form method="post">
-                            @* ======== Submitter's Info ========= *@
-                            <div class="d-flex align-items-center mb-2 bg-light p-4 rounded-2">
-                                <h5 class="d-flex align-items-center gap-2 mb-0">
-                                    <div class="">Submitter: 
-                                        <span class="text-success">@Model.Submitter.FullName</span></div>
-                                    <div>Department: 
-                                        <span class="text-success">@Model.Submitter.Department.DepartmentName</span></div>
-                                </h5>
-                                <div class="form-group col-md d-flex justify-content-end align-items-center gap-2">
-                                    <button type="button" class="btn btn-warning me-2" 
-                                            data-bs-toggle="modal" 
-                                            data-bs-target="#cancelDialogstaticBackdrop">
-                                        <i class="bi bi-x-circle"> </i>Cancel</button>
-                                    <button type="button" class="btn btn-primary me-2" 
-                                            data-bs-toggle="modal" 
-                                            data-bs-target="#submitDialogBackdrop">
-                                        <i class="bi bi-check-circle"> </i>Submit</button>
-                                </div>
+                    @* ===== Departments are based on DepartmentKeyMetrics which depends on KeyKpiSubmissionConstraints ===== *@
+                    @* ===== No KeyKpiSubmissionConstraints means: No Department Key Metrics ===== *@
+                    <form method="post">
+                        @* ======== Submitter's Info ========= *@
+                        <div class="d-flex align-items-center mb-2 bg-light p-4 rounded-2">
+                            <h5 class="d-flex align-items-center gap-2 mb-0">
+                                <div class="">Submitter: 
+                                    <span class="text-success">@Model.Submitter.FullName</span></div>
+                                <div>Department: 
+                                    <span class="text-success">@Model.Submitter.Department.DepartmentName</span></div>
+                            </h5>
+                            <div class="form-group col-md d-flex justify-content-end align-items-center gap-2">
+                                <button type="button" class="btn btn-warning me-2" 
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#cancelDialogstaticBackdrop">
+                                    <i class="bi bi-x-circle"> </i>Cancel</button>
+                                <button type="button" class="btn btn-primary me-2" 
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#submitDialogBackdrop">
+                                    <i class="bi bi-check-circle"> </i>Submit</button>
                             </div>
+                        </div>
 
+                        <div>
+                            @* -----METHOD 3: Change Input Model ------------- *@
                             @* 
-                                foreach departments:
-                                    foreach department key metrics:
-                                        render form input
+                                1. get key issue departments from Model
+                                2. loop departments, for each department:
+                                    - get render and bind with child items                            
                             *@
 
-                            @* <div>
-                                <ul>
-                                    @foreach(var c in Model.KeyKpiSubmissionConstraints) {
-                                        <li>
-                                        ID: @c.Id | Submitter department:  @c.DepartmentId | DKM: @c.DepartmentKeyMetric.TargetDepartment.DepartmentName | Key: @c.DepartmentKeyMetric.KeyMetric.MetricTitle
-                                        </li>
+                            <table id="submissionTable" class="table table-striped table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>No.</th>
+                                        <th>Department</th>
+                                        <th>Key</th>
+                                        <th>Score</th>
+                                        <th>Comments</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @{ 
+                                        long rowNo = 0; 
                                     }
-                                </ul>
-                            </div> *@
+                                    @for(int i=0; i<Model.Inputs.Count; i++)
+                                    {
+                                        var keyDepartmentName = Model.KeyIssueDepartmentList
+                                            .Where(d=> d.Id == Model.Inputs[i].KeyIssueDepartmentId)
+                                            .Select(d=>d.DepartmentName)
+                                            .FirstOrDefault();
 
-                            <div class="">
-                            @if (Model.DepartmentList != null) {
-                                var a = Model.DepartmentList.Count;
-                                @for(int i=0 ; i<Model.DepartmentList.Count; i++)
-                                {
-                                    <div class="card mt-4">
-                                        @* ---------- Target Department ---------- *@
-                                        @* <div class="card-header fs-4 px-4">
-                                            <div class="d-flex justify-content-between align-items-center">
-                                                <div>
-                                                    <label class="mb-0">
-                                                        <strong>@(i+1)</strong>/@Model.DepartmentList.Count Department:</label>
-                                                    <label class="mb-0 text-primary"
-                                                        asp-for="SubmissionInputs[i].TargetDepartmentId">
-                                                        <strong>@Model.DepartmentList[i].DepartmentName</strong></label>
-                                                </div>
-                                            </div>
-                                        </div> *@
+                                        for(int k=0; k<Model.Inputs[i].InputDetails.Count; k++)
+                                        {
+                                            rowNo += 1;
+                                            var inputDetailCount = @Model.Inputs[i].InputDetails.Count;
+                                            @* <li>DKM ID: @InputDetails[k].DepartmentKeyMetricsId</li>
+                                            <li>Score: @InputDetails[k].ScoreValue</li>
+                                            <li>Comment: @InputDetails[k].Comments</li> *@
+                                            <tr>
+                                                <td>@rowNo</td>
+                                                <input type="hidden" asp-for="Inputs[i].InputDetails[k].DepartmentKeyMetricsId" />
+                                                <td>@(k+1)/@inputDetailCount <strong>@keyDepartmentName</strong></td>
+                                                <td>@Model.Inputs[i].InputDetails[k].DepartmentKeyMetric?.KeyMetric.MetricTitle</td>
+                                                <td>
+                                                    <select asp-for="Inputs[i].InputDetails[k].ScoreValue" class="form-select">
+                                                        @for(int x = 0; x < scoreList.Length; x++) {
+                                                            <option value="@scoreList[x]">
+                                                                @scoreList[x].ToString("0.00")
+                                                            </option>
+                                                        }
+                                                    </select>
+                                                </td>
+                                                <td>
+                                                    <textarea asp-for="Inputs[i].InputDetails[k].Comments" 
+                                                            class="form-control" 
+                                                            rows="5"></textarea>
+                                                </td>
+                                            </tr>   
+                                        }
 
-                                        @* ---------- Keys ---------- *@
-                                        <div class="row p-4">
-                                            @if(Model.DepartmentKeyMetrics.Count > 0)
+                                    }
+                                </tbody>
+                            </table>
+
+
+@* 
+                                    @foreach(var input in Model.Inputs)
+                                    {
+                                    }
+
+                                        for(int i=0; i<departments.Count; i++)
+                                        {
+                                            // get keys of a department
+                                            var DKMs = Model.KeyKpiSubmissionConstraints
+                                                .Where(c=> c.DepartmentKeyMetric.KeyIssueDepartmentId == departments[i].Id)
+                                                .Select(c => c.DepartmentKeyMetric).ToList();
+
+                                            for(int k=0; k<DKMs.Count; k++)
                                             {
-                                                @* @for(int k=0; k<Model.DepartmentKeyMetrics.Count; k++) *@
-                                                var avaiableKeys = Model.DepartmentKeyMetrics.Where(dkm => dkm.DepartmentId == Model.DepartmentList[i].Id).ToList();
-                                                if (avaiableKeys.Count() > 0) {
-                                                    <ul class="list-group list-group-flush">
-                                                    @for (int k=0; k<avaiableKeys.Count; k++) 
-                                                    {
-                                                        <li class="list-group-item">
-                                                            @* ---------- Key Title ---------- *@
-                                                            <div class="row pb-2">
-                                                                <div class="col-sm-9 col-md-12 col-lg-12">
-                                                                    <span class="d-flex">
-                                                                        <label class="mb-0">
-                                                                            <strong>@(i+1)</strong>/@Model.DepartmentList.Count Department:</label>
-                                                                        <label class="mb-0 text-primary"
-                                                                            asp-for="SubmissionInputs[i].TargetDepartmentId">
-                                                                            <strong>@Model.DepartmentList[i].DepartmentName</strong></label>
-                                                                        @* <strong class="flex-grow-1 justify-content-start">@(k+1). @avaiableKeys[k].KeyMetric.MetricTitle</strong> *@
-                                                                        <strong class="flex-grow-1 justify-content-start">@avaiableKeys[k].KeyMetric.MetricTitle</strong>
-                                                                        <span class="justify-content-end">
-                                                                            <label class="me-4">Metric: <strong>@(k+1)</strong>/@avaiableKeys.Count</label>
-                                                                        </span>
-                                                                    </span>
-                                                                </div>
-                                                            </div>
-                                                            @* ---------- Score Value (radio inputs) ---------- *@
-                                                            <div class="row pb-2">
-                                                                <label class="col-3 col-sm-3 col-md-3 col-lg-2 form-label" asp-for="SubmissionInputs[i].SubmissionInputItems[k].ScoreValue">KPI Score: </label>
-                                                                <div class="radio__scoreValue form-check form-check-inline col d-flex flex-wrap gap-2">
-                                                                    <span></span>
-                                                                    @for(int x = 0; x < scoreList.Length; x++) {
-                                                                        <label for="radio_[@i][@x][@k]" 
-                                                                                class="radioLabel__scoreValue 
-                                                                                        form-check-label
-                                                                                        rounded-3 
-                                                                                        ps-2 pe-4">
-                                                                                        
-                                                                                <input asp-for="SubmissionInputs[i].SubmissionInputItems[k].ScoreValue" 
-                                                                                        id="radio_[@i][@x][@k]"
-                                                                                        class="radioInput__scoreValue"
-                                                                                        type="radio" 
-                                                                                        value="@scoreList[x]" />
-                                                                    
-                                                                            <strong>@scoreList[x]</strong>
-                                                                        </label>
-                                                                    }
-                                                                </div>
-                                                            </div>
-                                                            @* ---------- Comments ---------- *@
-                                                            <div class="row pb-4">
-                                                                <label asp-for="SubmissionInputs[i].SubmissionInputItems[k].Comments" 
-                                                                        class="col-3 col-sm-3 col-md-3 col-lg-2 form-label">Comments: </label>
-                                                                <div class="col-9 col-sm-9 col-md-9 col-lg-10">
-                                                                    <textarea asp-for="SubmissionInputs[i].SubmissionInputItems[k].Comments" class="form-control" rows="2"></textarea>
-                                                                </div>
-                                                            </div>
-                                                        </li>
-                                                    }
-                                                    </ul>
-                                                    @* foreach(var keyMetric in avaiableKeys)
-                                                    {
-                                                        keyIndex ++;
-                                                        keyNumber += 1;
-                                                        var keyId = $"index-{keyNumber}_titleId-{keyMetric.Id.ToString()}"; // unique id for radio elements
-
-                                                        <div class="row pb-2">
-                                                            <div class="col-9 col-sm-9 col-md-9 col-lg-10">
-                                                                <span class="d-flex">
-                                                                    <strong class="flex-grow-1 justify-content-start">@keyNumber. @keyMetric.KeyMetric.MetricTitle</strong>
-                                                                </span>
-                                                            </div>
-                                                        </div>
-                                                        <div class="row pb-2">
-                                                            <div class="radio__scoreValue form-check form-check-inline col d-flex flex-wrap gap-2">
-                                                                <span>@keyId</span>
-                                                                @for(int x = 0; x < scoreList.Length; x++) {
-                                                                    <label for="radio_[@i][@x][@keyNumber]" 
-                                                                            class="radioLabel__scoreValue 
-                                                                                    form-check-label
-                                                                                    rounded-3 
-                                                                                    ps-2 pe-4">
-                                                                                    
-                                                                            <input class="radioInput__scoreValue"
-                                                                                type="radio" 
-                                                                                asp-for="SubmissionInputs[i].SubmissionInputItems[keyIndex].ScoreValue" 
-                                                                                value="@scoreList[x]" 
-                                                                                id="radio_[@i][@x][@keyNumber]" />
-                                                                
-                                                                        <strong>@scoreList[x]</strong>
-                                                                    </label>
-                                                                }
-                                                            </div>
-                                                        </div>
-                                                        <div class="row pb-2">
-                                                            <textarea name="" id="" placeholder="Add comments"></textarea>
-                                                        </div>
-                                                    } *@
-                                                } else {
-                                                    <div class="row pb-2">
-                                                            <div class="col-sm-9 col-md-12 col-lg-12">
-                                                                <span class="d-flex flex-grow-1 justify-content-start">
-                                                                    Not Assignment
-                                                                </span>
-                                                            </div>
-                                                    </div>
+                                                rowNo += 1;
+                                                var dkmId = DKMs[k].Id;
+                                                var input = Model.SubmissionInputs.Where(i=> i.DepartmentKeyMetricsId == dkmId).FirstOrDefault();
+                                                if(input != null)
+                                                {
+                                                    
                                                 }
                                             }
-                                            else
-                                            {
-                                                <div>
-                                                    <p>No Metric Keys assigned yet</p>
-                                                </div>
-                                            }
-                                        </div>
-                                    </div> @* END card *@
-                                }
+                                        } *@
+                               
+                            
+
+
+
+                            @* -----METHOD 2: loop by Department------------- *@
+                            @* -----**WARN**:  SubmissionInputs only get the last loop's data
+                                        as it bind the model with index SubmissionInputs[i].ScoreValue
+                                POSSIBLE: due to flat layout of input model
+                                FIX: it works if not rendering by department
+                            *@
+                            
+                            @* @{
+                                var departments = Model.SubmissionInputs
+                                    .OrderBy(i=> i.DepartmentKeyMetric.KeyIssueDepartment.DepartmentName)
+                                    .DistinctBy(i=> i.DepartmentKeyMetric.KeyIssueDepartment.DepartmentName)
+                                    .Select(i=>i.DepartmentKeyMetric.KeyIssueDepartment)
+                                    .ToList();
                             }
-                            </div>
 
+                            <table id="submissionTable" class="table table-striped table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>No.</th>
+                                        <th>Department</th>
+                                        <th>Key</th>
+                                        <th>Score</th>
+                                        <th>Comments</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if(departments != null)
+                                    {
+                                        long rowNo = 0;
 
-                            @* =========== MODAL =========== *@
-                            @* ---------- SUBMIT DIALOG ---------- *@
-                            <div class="modal fade" id="submitDialogBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="submitDialogStaticBackdropLabel" aria-hidden="true">
-                                <div class="modal-dialog">
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h1 class="modal-title fs-5" id="submitDialogStaticBackdropLabel">Confirmation</h1>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                        </div>
-                                        <div class="modal-body">
-                                            Are you sure you want to submit the form?
-                                        </div>
-                                        <div class="modal-footer">
-                                            <button type="button" 
-                                                    class="btn btn-secondary"
-                                                    data-bs-dismiss="modal">
-                                                <i class="bi bi-x-circle"> </i>No</button>
-                                            <button type="submit"
-                                                    class="btn btn-primary me-2">
-                                                <i class="bi bi-check-circle"> </i>Submit</button>
-                                        </div>
+                                        for(int i=0; i<departments.Count; i++)
+                                        {
+                                            // get keys of a department
+                                            var DKMs = Model.KeyKpiSubmissionConstraints
+                                                .Where(c=> c.DepartmentKeyMetric.KeyIssueDepartmentId == departments[i].Id)
+                                                .Select(c => c.DepartmentKeyMetric).ToList();
+
+                                            for(int k=0; k<DKMs.Count; k++)
+                                            {
+                                                rowNo += 1;
+                                                var dkmId = DKMs[k].Id;
+                                                var input = Model.SubmissionInputs.Where(i=> i.DepartmentKeyMetricsId == dkmId).FirstOrDefault();
+                                                if(input != null)
+                                                {
+                                                    <tr>
+                                                        <td>@rowNo</td>
+                                                        <input type="hidden" asp-for="SubmissionInputs[k].DepartmentKeyMetricsId" />
+                                                        <td>(@(i+1)/@DKMs.Count) <strong>@departments[i].DepartmentName</strong></td>
+                                                        <td>@DKMs[i].KeyMetric.MetricTitle</td>
+                                                        <td>
+                                                            <select asp-for="SubmissionInputs[k].ScoreValue" class="form-select">
+                                                                @for(int x = 0; x < scoreList.Length; x++) {
+                                                                    <option value="@scoreList[x]">
+                                                                        @scoreList[x].ToString("0.00")
+                                                                    </option>
+                                                                }
+                                                            </select>
+                                                        </td>
+                                                        <td>
+                                                            <textarea asp-for="SubmissionInputs[k].Comments" 
+                                                                    class="form-control" 
+                                                                    rows="5"></textarea>
+                                                        </td>
+                                                    </tr>   
+                                                }
+                                            }
+                                        }
+                                    }
+                                </tbody>
+                            </table> *@
+
+                            
+                            @* -----METHOD 1: loop by Department------------- *@
+                            @* -----Group by key issue department------------ *@
+                            @* **WARN**:  SubmissionInputs only get the last loop's data
+                                        as it bind the model with index SubmissionInputs[i].ScoreValue
+                            *@
+
+                            @* @{
+                                var departments = Model.SubmissionInputs
+                                    .OrderBy(i=> i.DepartmentKeyMetric.KeyIssueDepartment.DepartmentName)
+                                    .DistinctBy(i=> i.DepartmentKeyMetric.KeyIssueDepartment.DepartmentName)
+                                    .Select(i=>i.DepartmentKeyMetric.KeyIssueDepartment)
+                                    .ToList();
+                            }
+                            
+                            <table id="submissionTable" class="table table-striped table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>No.</th>
+                                        <th>Department</th>
+                                        <th>Key</th>
+                                        <th>Score</th>
+                                        <th>Comments</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @{ long rowNo = 0; }
+                                    @if(departments != null)
+                                    {
+                                        @foreach(var department in departments)
+                                        {
+                                            var keysOfDepartment = Model.SubmissionInputs
+                                                .Where(i => i.DepartmentKeyMetric.KeyIssueDepartmentId==department.Id)
+                                                .ToList();
+
+                                            @for(int i=0; i<keysOfDepartment.Count; i++)
+                                            {
+                                                rowNo += 1;
+
+                                                <tr>
+                                                    <td>@rowNo</td>
+                                                    <input type="hidden" asp-for="SubmissionInputs[i].DepartmentKeyMetricsId" />
+                                                    <td>(@(i+1)/@keysOfDepartment.Count) <strong>@department.DepartmentName</strong></td>
+                                                    <td>@keysOfDepartment[i].DepartmentKeyMetric?.KeyMetric.MetricTitle</td>
+                                                    <td>
+                                                        <select asp-for="SubmissionInputs[i].ScoreValue" class="form-select">
+                                                            @for(int x = 0; x < scoreList.Length; x++) {
+                                                                <option value="@scoreList[x]">
+                                                                    @scoreList[x].ToString("0.00")
+                                                                </option>
+                                                            }
+                                                        </select>
+                                                    </td>
+                                                    <td>
+                                                        <textarea asp-for="SubmissionInputs[i].Comments" 
+                                                                class="form-control" 
+                                                                rows="5"></textarea>
+                                                    </td>
+                                                </tr>   
+                                            }
+                                        }
+                                    }
+                                </tbody>
+                            </table> *@
+                        </div>
+
+                        @* =========== MODAL =========== *@
+                        @* ---------- SUBMIT DIALOG ---------- *@
+                        <div class="modal fade" id="submitDialogBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="submitDialogStaticBackdropLabel" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h1 class="modal-title fs-5" id="submitDialogStaticBackdropLabel">Confirmation</h1>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        Are you sure you want to submit the form?
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" 
+                                                class="btn btn-secondary"
+                                                data-bs-dismiss="modal">
+                                            <i class="bi bi-x-circle"> </i>No</button>
+                                        <button type="submit"
+                                                class="btn btn-primary me-2">
+                                            <i class="bi bi-check-circle"> </i>Submit</button>
                                     </div>
                                 </div>
                             </div>
-                            @* ---------- CANCEL DIALOG ---------- *@
-                            <div class="modal fade" id="cancelDialogstaticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="cancelDialogStaticBackdropLabel" aria-hidden="true">
-                                <div class="modal-dialog">
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h1 class="modal-title fs-5" id="cancelDialogStaticBackdropLabel">Cancel</h1>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                        </div>
-                                        <div class="modal-body">
-                                            Are you sure you want to cancel the submission?
-                                        </div>
-                                        <div class="modal-footer">
-                                            <button type="button" 
-                                                    class="btn btn-secondary"
-                                                    data-bs-dismiss="modal">
-                                                <i class="bi bi-x-circle"> </i>No</button>
+                        </div>
+                        @* ---------- CANCEL DIALOG ---------- *@
+                        <div class="modal fade" id="cancelDialogstaticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="cancelDialogStaticBackdropLabel" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h1 class="modal-title fs-5" id="cancelDialogStaticBackdropLabel">Cancel</h1>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        Are you sure you want to cancel the submission?
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" 
+                                                class="btn btn-secondary"
+                                                data-bs-dismiss="modal">
+                                            <i class="bi bi-x-circle"> </i>No</button>
 
-                                                <button asp-page-handler="Cancel" type="submit" 
-                                                        class="btn btn-primary ms-2" formnovalidate>
-                                                    <i class="bi bi-check-circle"> </i>Yes</button>
+                                            <button asp-page-handler="Cancel" type="submit" 
+                                                    class="btn btn-primary ms-2" formnovalidate>
+                                                <i class="bi bi-check-circle"> </i>Yes</button>
 
-                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </form>
-                    }
-                    else
-                    {
-                        <h5 class="my-4 text-danger">No Departments! Contact Administrators.</h5>
-                    }
+                        </div>
+                    </form>
                 }
-                else // else for Model.KeyKpiSubmissionConstraints.Count > 0
+                else // Model.KeyKpiSubmissionConstraints.Count == 0
                 {
-                    @* <h5 class="my-4 text-danger">No Submissions - No metrics have set for Departments, contact Administrators.</h5> *@
+                    <h5 class="my-4 mx-auto alert alert-danger">No submissions avaiable, Please contact Administrator.
+                        <small>(Reason: No keys avaiable.)</small></h5>
                 }
             }
             else
@@ -300,58 +366,53 @@
                                 <tr>
                                     <th id="colDepartment">Department</th>
                                     <th id="colMetric">Metrics</th>
-                                    <th id="colIssueDepartment">Issued by</th>
                                     <th id="colScore">Score Given</th>
                                     <th id="colComments">Comments</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @if (Model.FinishedSubmissions.Any())
+                                @if (Model.Finished.Any())
                                 {
-                                    @foreach (var s in Model.FinishedSubmissions)
+                                    @foreach (var submission in Model.Finished)
                                     {
-                                        @foreach(var i in s.SubmissionInputItems)
-                                        {
-                                            <tr>
-                                                @* <td class="text-center">@s.SubmissionDate.ToString("MMM dd, yyyy")</td> *@
-                                                <td class="text-center"><strong>@s.TargetDepartmentName</strong></td>
-                                                <td>
-                                                    @{
-                                                        var metricTitle = i.DepartmentKeyMetrics.KeyMetric.MetricTitle;
-                                                    }
-                                                    @if(metricTitle != null && metricTitle.Any()) {
-                                                        if(metricTitle.Length > 150) {
-                                                            @(metricTitle.Substring(0, 150) + "...")
-                                                            <button data-details="@metricTitle" data-label="Comments"
-                                                                    class="moreButton_comments btn btn-link p-0 pb-2">More</button>
-                                                        }
-                                                        else {
-                                                            @metricTitle
-                                                        }
+                                        <tr>
+                                            @* <td class="text-center">@s.SubmissionDate.ToString("MMM dd, yyyy")</td> *@
+                                            <td class=""><strong>@submission.KeyIssueDepartmentName</strong></td>
+                                            <td>
+                                                @{
+                                                    var metricTitle = submission.DepartmentKeyMetrics.KeyMetric.MetricTitle;
+                                                }
+                                                @if(metricTitle != null && metricTitle.Any()) {
+                                                    if(metricTitle.Length > 150) {
+                                                        @(metricTitle.Substring(0, 150) + "...")
+                                                        <button data-details="@metricTitle" data-label="Comments"
+                                                                class="moreButton_comments btn btn-link p-0 pb-2">More</button>
                                                     }
                                                     else {
-                                                        @:None
+                                                        @metricTitle
                                                     }
-                                                </td>
-                                                <td class="text-center">@i.DepartmentKeyMetrics.TargetDepartment.DepartmentName</td>
-                                                <td class="text-center">@i.ScoreValue</td>
-                                                <td>
-                                                    @if(i.Comments != null && i.Comments.Any()) {
-                                                        if(i.Comments.Length > 150) {
-                                                            @(i.Comments.Substring(0, 150) + "...")
-                                                            <button data-details="@i.Comments" data-label="Comments"
-                                                                    class="moreButton_comments btn btn-link p-0 pb-2">More</button>
-                                                        }
-                                                        else {
-                                                            @i.Comments
-                                                        }
+                                                }
+                                                else {
+                                                    @:None
+                                                }
+                                            </td>
+                                            <td class="text-center">@submission.ScoreValue</td>
+                                            <td>
+                                                @if(submission.Comments != null && submission.Comments.Any()) {
+                                                    if(submission.Comments.Length > 150) {
+                                                        @(submission.Comments.Substring(0, 150) + "...")
+                                                        <button data-details="@submission.Comments" data-label="Comments"
+                                                                class="moreButton_comments btn btn-link p-0 pb-2">More</button>
                                                     }
                                                     else {
-                                                        @:None
+                                                        @submission.Comments
                                                     }
-                                                </td>
-                                            </tr>
-                                        }
+                                                }
+                                                else {
+                                                    @:None
+                                                }
+                                            </td>
+                                        </tr>
                                     }
                                 }
                             </tbody>
@@ -360,8 +421,9 @@
                 </div>
             }
         }
-        @* else
+        else
         {
+            <h1>Submission not valid.</h1>
             @if (!ModelState.IsValid && !Model.IsSubmissionsExist)
             {
 
@@ -374,7 +436,7 @@
                     </div>
                 </div>
             }
-        } *@
+        }
     </div>
 </div>
 
@@ -430,6 +492,24 @@
     <script>
         $(function() {
             // ------------------- Data Table ----------------------------------
+            new DataTable('#submissionTable', {
+                paging: false,
+                info: false,
+                searching: false,
+                autoWidth: true,
+                columnDefs: [
+                    { orderable: false, targets: [ 0, 3, 4 ] },
+                    { width: "40%", targets: [4] },
+                ],
+                initComplete: function() {
+                    $('thead th').addClass('text-light text-center align-middle');
+                    $('thead th').addClass('bg-brand-color');
+                }
+            });
+
+
+
+
             new DataTable('#dataTable', {
                 paging: false,
                 info: false,

@@ -1,3 +1,4 @@
+using Metrics.Application.Authorization;
 using Metrics.Application.Interfaces.IServices;
 using Metrics.Web.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -7,23 +8,14 @@ using System.Security.Claims;
 
 namespace Metrics.Web.Pages.Submissions.DepartmentCaseFeedback;
 
-[Authorize(Policy = "CanSubmitCaseFeedbackPolicy")]
-public class ListModel : PageModel
-{
-    private readonly IUserService _userService;
-    private readonly IKpiSubmissionPeriodService _kpiPeriodService;
-    private readonly ICaseFeedbackSubmissionService _caseFeedbackService;
-
-    public ListModel(
+[Authorize(Policy = ApplicationPolicies.CanGiveFeedbackPolicy)]
+public class ListModel(
         IUserService userService,
-        IKpiSubmissionPeriodService kpiPeriodService,
-        ICaseFeedbackSubmissionService caseFeedbackService)
-    {
-        _userService = userService;
-        _kpiPeriodService = kpiPeriodService;
-        _caseFeedbackService = caseFeedbackService;
-    }
-
+        ICaseFeedbackService caseFeedbackService
+) : PageModel
+{
+    private readonly IUserService _userService = userService;
+    private readonly ICaseFeedbackService _caseFeedbackService = caseFeedbackService;
 
     // =============== MODELS ==================================================
     public class CaseFeedbackSubmissionViewModel
@@ -31,7 +23,7 @@ public class ListModel : PageModel
         public long Id { get; set; }
         public Guid LookupId { get; set; }
         public DateTimeOffset SubmittedAt { get; set; }
-        public decimal NegativeScoreValue { get; set; }
+        // public decimal NegativeScoreValue { get; set; }
         public string SubmitterId { get; set; } = null!;
         public UserViewModel SubmittedBy { get; set; } = null!;
         // Case Info
@@ -44,49 +36,19 @@ public class ListModel : PageModel
         public DateTimeOffset IncidentAt { get; set; }
         // Case Info > Details
         public string? Description { get; set; } = string.Empty;
-        public string? Comments { get; set; } = string.Empty;
+        // public string? Comments { get; set; } = string.Empty;
     }
     public List<CaseFeedbackSubmissionViewModel> ExistingCaseFeedbackSubmissions { get; set; } = [];
 
-    public string SelectedPeriodName { get; set; } = null!;
-
     public string? ReturnUrl { get; set; } = string.Empty;
 
-    public KpiPeriodViewModel SelectedPeriod { get; set; } = null!;
 
     // =============== HANDLERS ================================================
-    public async Task<IActionResult> OnGetAsync(
-        [FromRoute] string periodName,
-        string? returnUrl)
+    public async Task<IActionResult> OnGetAsync(string? returnUrl)
     {
         // ----------RETURN URL-------------------------------------------------
         if (!string.IsNullOrEmpty(returnUrl))
             ReturnUrl = returnUrl;
-
-        // ----------KPI PERIOD-------------------------------------------------
-        if (string.IsNullOrEmpty(periodName))
-        {
-            ModelState.AddModelError(string.Empty, "A valid Period Name is require.");
-            return Page();
-        }
-        var kpiPeriod = await _kpiPeriodService.FindByKpiPeriodNameAsync(periodName);
-        if (kpiPeriod != null)
-        {
-            SelectedPeriodName = kpiPeriod.PeriodName;
-            SelectedPeriod = new KpiPeriodViewModel() // ---- do we need entire KPI Period object??
-            {
-                Id = kpiPeriod.Id,
-                PeriodName = kpiPeriod.PeriodName,
-                SubmissionStartDate = kpiPeriod.SubmissionStartDate,
-                SubmissionEndDate = kpiPeriod.SubmissionEndDate
-            };
-        }
-        else
-        {
-            ModelState.AddModelError("", $"Period {periodName} not found.");
-            return Page();
-        }
-
 
         var userId = User?.FindFirstValue(ClaimTypes.NameIdentifier)
             ?? throw new InvalidOperationException("User is not authenticated.");
@@ -95,7 +57,7 @@ public class ListModel : PageModel
         {
             // get all existing submissions
             var existingSubmissions = await _caseFeedbackService
-                .FindByKpiPeriodAndSubmitterAsync(SelectedPeriod.Id, currentUser.Id);
+                .FindActiveBySubmitterAsync(currentUser.Id);
             // .FindByKpiPeriodAsync(SelectedPeriod.Id);
             if (existingSubmissions.Count > 0)
             {
@@ -111,10 +73,12 @@ public class ListModel : PageModel
                         SubmittedBy = new UserViewModel
                         {
                             Id = s.SubmittedBy.Id,
+                            UserCode = s.SubmittedBy.UserCode,
                             UserName = s.SubmittedBy.UserName ?? string.Empty,
                             FullName = s.SubmittedBy.FullName,
                             PhoneNumber = s.SubmittedBy.PhoneNumber,
                             ContactAddress = s.SubmittedBy.ContactAddress,
+                            DepartmentId = s.SubmittedBy.DepartmentId,
                             Department = new DepartmentViewModel
                             {
                                 Id = s.SubmittedBy.Department.Id,
@@ -136,7 +100,7 @@ public class ListModel : PageModel
                             DepartmentCode = s.CaseDepartment.DepartmentCode,
                             DepartmentName = s.CaseDepartment.DepartmentName
                         },
-                        NegativeScoreValue = s.NegativeScoreValue,
+                        // NegativeScoreValue = s.NegativeScoreValue,
 
                         IncidentAt = s.IncidentAt.ToLocalTime(),
                         WardName = s.WardName,
@@ -144,7 +108,7 @@ public class ListModel : PageModel
                         PatientName = s.PatientName,
                         RoomNumber = s.RoomNumber,
                         Description = s.Description ?? string.Empty,
-                        Comments = s.Comments ?? string.Empty
+                        // Comments = s.Comments ?? string.Empty
                     }).ToList();
             }
         }

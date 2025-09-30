@@ -1,11 +1,15 @@
 ﻿@page "/Manage/Submissions/Department-Key-Metrics/{periodName}/Assign"
+@*           /manage/submissions/department-keys/issue-keys (assign key to department) *@
 @model Metrics.Web.Pages.Manage.Submissions.DepartmentKeyMetrics.AssignModel
 @using System.Text.Json;
 @{
     ViewData["Title"] = $"Key Metrics for {Model.CurrentPeriodName}";
     var currentDepartmentCode = string.Empty;
-    var departmentKeyMetrics = Model.DepartmentKeyMetrics
-        .Where(e=> e.IsDeleted == false);
+
+    // Serialize constratins to json fro JavaScript
+    var departmentKeyMetrics = 
+        Model.DepartmentKeyMetrics
+            .Where(e=> e.IsDeleted == false);
     var jsonString = JsonSerializer.Serialize(departmentKeyMetrics);
 }
 

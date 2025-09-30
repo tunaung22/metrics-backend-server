@@ -1,4 +1,4 @@
-using Metrics.Application.DTOs.DepartmentDtos;
+using Metrics.Application.DTOs.Department;
 using Metrics.Application.Domains;
 
 namespace Metrics.Application.Mappers.DtoMappers;

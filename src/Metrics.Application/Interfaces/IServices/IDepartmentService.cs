@@ -1,10 +1,22 @@
 ﻿using Metrics.Application.Domains;
+using Metrics.Application.DTOs.Department;
 using Metrics.Application.Results;
 
 namespace Metrics.Application.Interfaces.IServices;
 
 public interface IDepartmentService
 {
+    // ========== Operation Result Pattern =====================================
+    Task<ResultT<List<DepartmentDto>>> FindAllAsync(
+        int pageNumber = 1, int pageSize = 50);
+    // Task<Result<Department>> FindById_ResultAsync(long id);
+    // Task<Result<Department>> FindByDepartmentCode_ResultAsync(string departmentCode);
+    // Task<Result<Department>> Create_ResultAsync(Department entity);
+    // Task<Result<Department>> Update_ResultAsync(string departmentCode, Department entity);
+    // Task<Result<bool>> Delete_ResultAsync(string departmentCode);
+    // Task<Result<IEnumerable<Department>>> FindAll_ResultAsync();
+    // Task<Result<IEnumerable<Department>>> FindAll_ResultAsync(int pageNumber = 1, int pageSize = 20);
+    // Task<Result<long>> FindCount_ResultAsync();
     // ========== Return Entity =====================================
     Task<Department> CreateAsync(Department entity);
     Task<Department> UpdateAsync(string departmentCode, Department entity);
@@ -13,7 +25,7 @@ public interface IDepartmentService
     Task<Department> FindByDepartmentCodeAsync(string departmentCode);
     Task<Department?> FindByDepartmentNameAsync(string departmentName);
     Task<IEnumerable<Department>> FindAllAsync();
-    Task<IEnumerable<Department>> FindAllAsync(int pageNumber = 1, int pageSize = 20);
+    Task<IEnumerable<Department>> FindAll_Async(int pageNumber = 1, int pageSize = 20);
     Task<long> FindCountAsync();
 
 
@@ -29,13 +41,4 @@ public interface IDepartmentService
     // Task<IEnumerable<DepartmentDto>> FindAllInsecureAsync();
     // Task<IEnumerable<DepartmentDto>> FindAllInsecureAsync(int pageNumber = 1, int pageSize = 20);
     // Task<int> FindCountAsync();
-    // ========== Operation Result Pattern =====================================
-    // Task<Result<Department>> FindById_ResultAsync(long id);
-    // Task<Result<Department>> FindByDepartmentCode_ResultAsync(string departmentCode);
-    // Task<Result<Department>> Create_ResultAsync(Department entity);
-    // Task<Result<Department>> Update_ResultAsync(string departmentCode, Department entity);
-    // Task<Result<bool>> Delete_ResultAsync(string departmentCode);
-    // Task<Result<IEnumerable<Department>>> FindAll_ResultAsync();
-    // Task<Result<IEnumerable<Department>>> FindAll_ResultAsync(int pageNumber = 1, int pageSize = 20);
-    // Task<Result<long>> FindCount_ResultAsync();
 }

@@ -6,11 +6,6 @@
 
 @{
     ViewData["Title"] = "Home";
-    var claims = User.Claims.ToList();
-    var canSubmitBaseScore = await AuthorizationService.AuthorizeAsync(User, "CanSubmitBaseScorePolicy");
-    @* var canSubmitKeyKpiScore = true;
-    var canSubmitCaseFeedbackScore = true; *@
-    var isScoreSubmitter = canSubmitBaseScore.Succeeded;
 }
 
 <div class="sectionTitle">
@@ -33,14 +28,6 @@
     @* <div class="p-4">
         <h5>Your have <strong>@Model.PendingSubmission</strong> pending submissions.</h5>
     </div> *@
-    @if(isScoreSubmitter) {
-
-        @* <div class="card mb-4">
-            <div class="card-header">Submissions</div>
-            <div class="card-body nav-item">
-                <strong><a class="nav-link" asp-area="" asp-page="/Submissions/Departments/Scores/Index">Submissions</a></strong>
-            </div>
-        </div> *@
 
 
         @* <div class="card mb-4">
@@ -65,6 +52,4 @@
             }
             </div>
         </div> *@
-    }
-
 </div>

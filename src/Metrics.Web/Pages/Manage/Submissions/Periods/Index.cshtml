@@ -7,7 +7,7 @@
 
 <div class="sectionTitle">
     <div class="d-flex align-items-center">
-        <h4 class="flex-grow-1">Score Submission Periods</h4>
+        <h4 class="flex-grow-1"><i class="bi bi-calendar2-week-fill"></i> Score Submission Periods</h4>
         <span class="justify-content-end gap-2">
             <a class="btn btn-success" 
                 asp-page="Create"
@@ -16,7 +16,8 @@
     </div>
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a asp-page="/Dashboard/Index">Dashboard</a></li>
+            <li class="breadcrumb-item"><a asp-page="/Index">Home</a></li>
+            <li class="breadcrumb-item"><a asp-page="/Manage/Index">Manage</a></li>
             <li class="breadcrumb-item active">Submission Periods</li>
         </ol>
     </nav>
@@ -55,7 +56,7 @@
 
     @* =============== Table ==================================================== *@
     <div class="bg-light p-4">
-        <table id="kpiPeriodTable" class="table table-striped">
+        <table id="kpiPeriodTable" class="table table-bordered table-striped">
             <thead>
                 <tr>
                     <th>Periods Name</th>
@@ -71,9 +72,9 @@
                     @foreach (var period in Model.KpiPeriods)
                     {
                         <tr class="align-middle">
-                            <td class="text-center">@period.PeriodName</td>
-                            <td class="text-center">@period.SubmissionStartDate.LocalDateTime.ToString("MMM dd, yyyy")</td>
-                            <td class="text-center">@period.SubmissionEndDate.LocalDateTime.Date.ToString("MMM dd, yyyy")</td>
+                            <td class="text-center mono-text">@period.PeriodName</td>
+                            <td class="text-center mono-text">@period.SubmissionStartDate.LocalDateTime.ToString("MMM dd, yyyy")</td>
+                            <td class="text-center mono-text">@period.SubmissionEndDate.LocalDateTime.Date.ToString("MMM dd, yyyy")</td>
                             <td class="text-center">
                                 @* <button class="btn btn-success">
                                     Edit

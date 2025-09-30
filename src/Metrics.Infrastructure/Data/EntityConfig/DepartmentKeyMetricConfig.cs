@@ -51,7 +51,7 @@ public class DepartmentKeyMetricConfig : IEntityTypeConfiguration<DepartmentKeyM
             .HasForeignKey(e => e.KpiSubmissionPeriodId)
             .OnDelete(DeleteBehavior.Restrict)
             .IsRequired();
-        builder.HasOne(e => e.TargetDepartment)
+        builder.HasOne(e => e.KeyIssueDepartment)
             .WithMany(e => e.DepartmentKeyMetrics)
             .HasForeignKey(e => e.DepartmentId)
             .OnDelete(DeleteBehavior.Restrict)
@@ -61,6 +61,11 @@ public class DepartmentKeyMetricConfig : IEntityTypeConfiguration<DepartmentKeyM
             .HasForeignKey(e => e.KeyMetricId)
             .OnDelete(DeleteBehavior.Restrict)
             .IsRequired();
+
+        // builder.HasMany(e => e.KeyKpiSubmissionItems)
+        //     .WithOne(e => e.DepartmentKeyMetric)
+        //     .HasForeignKey(e => e.DepartmentKeyMetricId)
+        //     .OnDelete(DeleteBehavior.Restrict);
         // ===== Check Constraints ======
     }
 }

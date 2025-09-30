@@ -1,7 +1,10 @@
-﻿using Metrics.Application.Domains;
+﻿using Metrics.Application.Common.Mappers;
+using Metrics.Application.Domains;
+using Metrics.Application.DTOs.Department;
 using Metrics.Application.Exceptions;
 using Metrics.Application.Interfaces.IRepositories;
 using Metrics.Application.Interfaces.IServices;
+using Metrics.Application.Results;
 using Metrics.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -9,23 +12,32 @@ using Npgsql;
 
 namespace Metrics.Infrastructure.Services;
 
-public class DepartmentService : IDepartmentService
-{
-    private readonly MetricsDbContext _context;
-    // private readonly IUnitOfWork _unitOfWork;
-    private readonly ILogger<DepartmentService> _logger;
-    private readonly IDepartmentRepository _departmentRepository;
-
-    public DepartmentService(
+public class DepartmentService(
         MetricsDbContext context,
         // IUnitOfWork unitOfWork,
         ILogger<DepartmentService> logger,
-        IDepartmentRepository departmentRepository)
+        IDepartmentRepository departmentRepository) : IDepartmentService
+{
+    private readonly MetricsDbContext _context = context;
+    // private readonly IUnitOfWork _unitOfWork;
+    private readonly ILogger<DepartmentService> _logger = logger;
+    private readonly IDepartmentRepository _departmentRepository = departmentRepository;
+
+
+    public async Task<ResultT<List<DepartmentDto>>> FindAllAsync(int pageNumber = 1, int pageSize = 50)
     {
-        _context = context;
-        // _unitOfWork = unitOfWork;
-        _logger = logger;
-        _departmentRepository = departmentRepository;
+        try
+        {
+            var data = await _departmentRepository.FindAllAsync(pageNumber, pageSize);
+            var result = data.Select(e => e.MapToDto()).ToList();
+
+            return ResultT<List<DepartmentDto>>.Success(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error occured while fetching all dpearmtnets. {msg}", ex.Message);
+            return ResultT<List<DepartmentDto>>.Fail("Failed to fetch departments.", ErrorType.UnexpectedError);
+        }
     }
 
 
@@ -199,7 +211,7 @@ public class DepartmentService : IDepartmentService
         }
     }
 
-    public async Task<IEnumerable<Department>> FindAllAsync(int pageNumber = 1, int pageSize = 20)
+    public async Task<IEnumerable<Department>> FindAll_Async(int pageNumber = 1, int pageSize = 20)
     {
         try
         {

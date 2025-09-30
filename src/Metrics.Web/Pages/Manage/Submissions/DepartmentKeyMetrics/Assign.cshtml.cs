@@ -148,9 +148,9 @@ public class AssignModel : PageModel
                         DepartmentId = k.DepartmentId,
                         Department = new DepartmentViewModel
                         {
-                            Id = k.TargetDepartment.Id,
-                            DepartmentCode = k.TargetDepartment.DepartmentCode,
-                            DepartmentName = k.TargetDepartment.DepartmentName
+                            Id = k.KeyIssueDepartment.Id,
+                            DepartmentCode = k.KeyIssueDepartment.DepartmentCode,
+                            DepartmentName = k.KeyIssueDepartment.DepartmentName
                         },
                         KeyMetricId = k.KeyMetricId,
                         KeyMetric = new KeyMetricViewModel
@@ -267,9 +267,9 @@ public class AssignModel : PageModel
                         DepartmentId = k.DepartmentId,
                         Department = new DepartmentViewModel
                         {
-                            Id = k.TargetDepartment.Id,
-                            DepartmentCode = k.TargetDepartment.DepartmentCode,
-                            DepartmentName = k.TargetDepartment.DepartmentName
+                            Id = k.KeyIssueDepartment.Id,
+                            DepartmentCode = k.KeyIssueDepartment.DepartmentCode,
+                            DepartmentName = k.KeyIssueDepartment.DepartmentName
                         },
                         KeyMetricId = k.KeyMetricId,
                         KeyMetric = new KeyMetricViewModel

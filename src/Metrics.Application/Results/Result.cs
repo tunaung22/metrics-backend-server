@@ -1,41 +1,26 @@
 namespace Metrics.Application.Results;
 
-public enum ErrorType
+public class Result
 {
-    None = 0,
-    NotFound,
-    ConcurrencyConflict,
-    InvalidArgument,
-    ValidationError,
-    DatabaseError,
-    DuplicateKey,
-    UnexpectedError
-}
-
-public class Result<T>
-{
-    public bool Success { get; set; }
-    public T? Data { get; set; }
+    public bool IsSuccess { get; set; }
     public string ErrorMessage { get; set; } = null!;
     public ErrorType ErrorType { get; set; }
 
-    public static Result<T> Ok(T data)
+    public static Result Success()
     {
-        return new Result<T>
+        return new Result
         {
-            Success = true,
-            Data = data
+            IsSuccess = true
         };
     }
 
-    public static Result<T> Fail(string errorMessage, ErrorType errorType)
+    public static Result Fail(string errorMessage, ErrorType errorType)
     {
-        return new Result<T>
+        return new Result
         {
-            Success = false,
+            IsSuccess = false,
             ErrorMessage = errorMessage,
             ErrorType = errorType
         };
     }
-
 }

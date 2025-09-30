@@ -1,19 +1,29 @@
-using Metrics.Application.Domains;
-using Metrics.Application.DTOs;
+using Metrics.Application.DTOs.KeyKpiSubmissions;
+using Metrics.Application.Results;
 
 namespace Metrics.Application.Interfaces.IServices;
 
 public interface IKeyKpiSubmissionService
 {
+    // =====Create=====
+    Task<Result> SubmitSubmissionsAsync(List<CreateKeyKpiSubmissionDto> createDtos);
+    // Update
+    // Delete
 
-    Task<bool> SubmitScoreAsync(List<KeyKpiSubmissionCreateDto> createDtos);
+    // =====Retrieve=====
+    Task<ResultT<List<KeyKpiSubmissionDto>>> FindByPeriodAsync(long periodId);
+    Task<ResultT<List<KeyKpiSubmissionDto>>> FindByPeriodBySubmitterAsync(long periodId, string userId);
+    Task<ResultT<List<KeyKpiSubmissionDto>>> FindByPeriodBySubmitterAsync(List<long> periodIds, string userId);
+    Task<ResultT<List<KeyKpiSubmissionDto>>> FindByDepartmentKeyMetricsAsync(List<long> departmentKeyMetricIDs);
+    // Task<ResultT<List<KpiSubmission>>> FindBySubmitterByPeriodByDepartmentListAsync(
+    //     ApplicationUser candidate,
+    //     long kpiPeriodId,
+    //     List<long> departmentIdList); // find by Submitter & KpiPeriod & Department ID list
 
-    Task<List<KeyKpiSubmission>> FindByKpiPeriodAsync(long id);
-
-    Task<List<KeyKpiSubmission>> FindBySubmitterByPeriodByDepartmentListAsync(
-        ApplicationUser candidate,
-        long kpiPeriodId,
-        List<long> departmentIdList); // find by Employee & KpiPeriod & Department ID list
-    Task<long> FindCountByUserByPeriodAsync(string currentUserId, long kpiPeriodId);
+    // =====COUNT=====
+    // Task<ResultT<long>> FindCountByUserByPeriodAsync(string currentUserId, long kpiPeriodId);
+    Task<ResultT<long>> FindCountByPeriodBySubmitterAsync(long kpiPeriodId, string currentUserId);
+    Task<ResultT<long>> FindCountByPeriodBySubmitterAsync(List<long> kpiPeriodId, string currentUserId);
+    Task<ResultT<Dictionary<long, int>>> FindSubmissionsCountDictByPeriodBySubmitterAsync(List<long> kpiPeriodIds, string currentUserId);
 }
 

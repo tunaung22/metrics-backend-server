@@ -15,6 +15,8 @@
   --metric-deepred-color: rgb(91, 3, 48);
   --metric-blue-color: rgb(33, 63, 163);
   --metric-deepblue-color: rgb(3, 16, 91);
+
+  --metric-lightblue-color: rgb(38, 99, 212);
 }
 
 /*
@@ -29,16 +31,6 @@
   font-variation-settings: "wdth" 100;
 } */
 
-html {
-  font-size: 14px;
-
-  /* font-family: "Open Sans", sans-serif;
-  font-optical-sizing: auto;
-  font-weight: 400;
-  font-style: normal;
-  font-variation-settings: "wdth" 100; */
-}
-
 @media (min-width: 768px) {
   html {
     font-size: 16px;
@@ -46,12 +38,59 @@ html {
 }
 
 html {
+  /* font-family: "Open Sans", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+  font-variation-settings: "wdth" 100; */
   position: relative;
   min-height: 100%;
+  color-scheme: dark;
 }
 
-footer {
-  background: #fffffff1;
+html,
+body {
+  /* font-size: 0.9em; */
+  font-family: "Inter", sans-serif;
+}
+
+.mono-text {
+  font-family: "Roboto Mono", monospace;
+}
+
+/* #main-content {
+} */
+
+#appNavbar {
+  z-index: 100;
+  /* background-color: rgba(255, 255, 255, 0.1) !important;
+  transition: background 0.3s, backdrop-filter 0.3s; */
+  backdrop-filter: blur(4px);
+}
+.app-header {
+  background: none;
+  z-index: 100;
+}
+
+div .sectionTitle {
+  padding-top: 0.8em;
+  padding-bottom: 0.4em;
+  z-index: 200;
+  color: var(--brand-color);
+  background: linear-gradient(to right, #ffffffba, #f6f6f6af);
+  /* rgba(0, 21, 159, 0.343) !important; */
+  transition: background 0.3s, backdrop-filter 0.3s;
+  backdrop-filter: blur(4px);
+}
+div .filter-toolbar {
+  z-index: 199;
+}
+#appFooter {
+  z-index: 100;
+  /* background-color: rgba(255, 255, 255, 0.1) !important; */
+  background: linear-gradient(to right bottom, #ffffffba 10%, #f6f6f63c);
+  transition: background 0.3s, backdrop-filter 0.3s;
+  backdrop-filter: blur(4px);
 }
 
 .bg-brand-color {
@@ -66,6 +105,22 @@ footer {
 /* box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb; */
 /* box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25em var(--brand-color); */
 /* } */
+
+.status-container {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin: 0 auto;
+  min-width: 120px;
+}
+
+.period-container {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin: 0 auto;
+  min-width: 50%;
+}
 
 a {
   color: var(--brand-color);
@@ -182,6 +237,13 @@ ul#metrics__main-navbar .nav-item .nav-link:hover {
 }
 
 /* -----BUTTON----- */
+/* .metric_red {}
+.metric_deepred {}
+.metric_blue {}
+.metric_deepblue {}
+.metric_green {}
+.metric_deepgreen {} */
+
 .btn__actionButtons {
   width: 6em;
 }
@@ -230,11 +292,6 @@ button#goToTop {
   /* @* border-radius: 0.4em; *@ */
 }
 
-div .sectionTitle {
-  background: #fff;
-  margin: 0em 3em;
-}
-
 a.activeLink {
   color: var(--metric-deepblue-color) !important;
 }
@@ -281,40 +338,49 @@ a.activeLink:hover {
 }
 
 /* ========== Dark theme styles ==============================================*/
-html[data-bs-theme="dark"] {
-  background-color: #343a40; /* Dark background */
-  color: #ffffff; /* Light text */
+/* html:has(#mode-switcher #light:checked) {
+  color-scheme: dark;
+} */
+/* html[data-bs-theme="dark"] {
+  background-color: #343a40;
+  color: #ffffff;
+} */
+table thead th {
+  background: var(--metric-blue-color) !important;
+  color: var(--light-color) !important;
 }
-
+html[data-bs-theme="dark"] thead th {
+  background: var(--metric-lightblue-color) !important;
+}
 html[data-bs-theme="dark"] .bg-brand-color {
-  background: #0f386f !important; /* Darker brand color */
+  background: #0f386f !important;
 }
 
 html[data-bs-theme="dark"] .nav-item .nav-link {
-  color: #ffffff; /* Light text for nav links */
+  color: #ffffff;
 }
 
 html[data-bs-theme="dark"] .nav-item .nav-link:hover {
-  color: #1980ff; /* Light hover color */
+  color: #1980ff;
 }
 
 html[data-bs-theme="dark"] #submissionStatusBar {
-  background: rgba(50, 50, 50, 0.8); /* Darker background for status bar */
+  background: rgba(50, 50, 50, 0.8);
 }
 
 html[data-bs-theme="dark"] .card {
-  background-color: #495057; /* Dark card background */
-  color: #ffffff; /* Light text in card */
+  background-color: #495057;
+  color: #ffffff;
 }
 
 html[data-bs-theme="dark"] button#goToTop {
-  background-color: #007bff; /* Button color for dark mode */
-  color: #ffffff; /* Button text color */
+  background-color: #007bff;
+  color: #ffffff;
 }
 
 html[data-bs-theme="dark"] .bg-light {
-  background-color: #292c2e !important; /* Dark background for bg-light */
-  color: #ffffff; /* Light text for better contrast */
+  background-color: #292c2e !important;
+  color: #ffffff;
 }
 
 /* ========== DARK: Card List =============================================== */

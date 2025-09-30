@@ -7,4 +7,5 @@ public class PeriodListPartialModel
     public bool IncludeScripts { get; set; } = true;
     public List<PeriodListButton> Buttons { get; set; } = new();
     public IEnumerable<KpiPeriodViewModel> Periods { get; set; } = Enumerable.Empty<KpiPeriodViewModel>();
+    public string? Color { get; set; }
 }

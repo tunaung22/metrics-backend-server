@@ -1,4 +1,4 @@
-﻿@page "/Submissions/Department-Case-Feedback/{periodName}/List"
+﻿@page "/Submissions/Department-Case-Feedback/List"
 @model Metrics.Web.Pages.Submissions.DepartmentCaseFeedback.ListModel
 @{
     ViewData["Title"] = "Case Feedback";
@@ -10,8 +10,8 @@
         <span class="d-flex align-items-center flex-grow-1">
             <h4>Department Case Feedbacks</h4>
             <span class="mx-4">
-                Period: <strong>@Model.SelectedPeriod.PeriodName</strong>
-                <small>(@Model.SelectedPeriod.SubmissionStartDate.ToString("MMM dd, yyyy") - @Model.SelectedPeriod.SubmissionEndDate.ToString("MMM dd, yyyy"))</small>
+                @* Period: <strong>@Model.SelectedPeriod.PeriodName</strong> *@
+                @* <small>(@Model.SelectedPeriod.SubmissionStartDate.ToString("MMM dd, yyyy") - @Model.SelectedPeriod.SubmissionEndDate.ToString("MMM dd, yyyy"))</small> *@
             </span>
         </span>
         <span class="justify-content-end gap-2">
@@ -35,13 +35,13 @@
             </span>
             <div>
                 @{
-                    var submissionValid = Model.SelectedPeriod.SubmissionStartDate <= DateTime.Now && 
-                                          Model.SelectedPeriod.SubmissionEndDate >= DateTime.Now;
+                    var submissionValid = true;
+                     @* Model.SelectedPeriod.SubmissionStartDate <= DateTime.Now && Model.SelectedPeriod.SubmissionEndDate >= DateTime.Now; *@
                 }
                 @if(submissionValid)
                 {
+                    @* asp-route-perioadName="@Model.SelectedPeriod.PeriodName" *@
                     <a asp-page="/Submissions/DepartmentCaseFeedback/New"
-                        asp-route-periodName="@Model.SelectedPeriod.PeriodName"
                         class="btn btn-primary">
                         <i class="bi bi-plus-circle-fill"></i> New
                     </a>
@@ -61,7 +61,7 @@
                     <th>No.</th>
                     <th>Submitted At</th>
                     <th>Case Department</th>
-                    <th>Score</th>
+                    @* <th>Score</th> *@
                     <th>Incident Date/Time</th>
                     <th>Ward</th>
                     <th>Actions</th>
@@ -84,9 +84,9 @@
                             <td class="text-danger">
                                 @submission.CaseDepartment.DepartmentName
                             </td>
-                            <td class="text-danger">
+                            @* <td class="text-danger">
                                 <strong>@submission.NegativeScoreValue</strong>
-                            </td>
+                            </td> *@
                             <td>
                                 <strong>@submission.IncidentAt.ToLocalTime().ToString("dd MMM, yyyy hh:mm tt")</strong>
                             </td>
@@ -108,7 +108,7 @@
                                 {
                                     <a asp-page="Edit"
                                         asp-route-lookupId="@submission.LookupId"
-                                        asp-route-periodName="@Model.SelectedPeriodName"
+                                        @* asp-route-periodName="@Model.SelectedPeriodName" *@
                                         class="btn__actionButtons 
                                                 btn btn-sm btn-outline-success
                                                 my-2 my-lg-0 me-2">

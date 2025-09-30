@@ -51,8 +51,8 @@ public class ApplicationUserConfig : IEntityTypeConfiguration<ApplicationUser>
             .HasColumnName("created_at")
             .HasColumnType("timestamp with time zone");
         builder.Property(e => e.ModifiedAt)
-                .HasColumnName("modified_at")
-                .HasColumnType("timestamp with time zone");
+            .HasColumnName("modified_at")
+            .HasColumnType("timestamp with time zone");
 
         // ===== Foreign Keys ======
         builder.HasOne(e => e.Department)

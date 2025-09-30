@@ -1,3 +1,4 @@
+using Metrics.Application.Authorization;
 using Metrics.Application.Domains;
 using Metrics.Application.Interfaces.IServices;
 using Metrics.Web.Models;
@@ -8,7 +9,7 @@ using System.Security.Claims;
 
 namespace Metrics.Web.Pages.Submissions.DepartmentCaseFeedback;
 
-[Authorize(Policy = "CanSubmitCaseFeedbackPolicy")]
+[Authorize(Policy = ApplicationPolicies.CanGiveFeedbackPolicy)]
 public class IndexModel : PageModel
 {
     private readonly IKpiSubmissionPeriodService _kpiPeriodService;
@@ -41,10 +42,10 @@ public class IndexModel : PageModel
                 {
                     Id = p.Id,
                     PeriodName = p.PeriodName,
-                    SubmissionStartDate = p.SubmissionStartDate,
-                    SubmissionEndDate = p.SubmissionEndDate,
-                    IsValid = DateTimeOffset.Now.UtcDateTime > p.SubmissionStartDate
-                            && DateTimeOffset.Now.UtcDateTime < p.SubmissionEndDate
+                    SubmissionStartDate = p.SubmissionStartDate.DateTime,
+                    SubmissionEndDate = p.SubmissionEndDate.DateTime,
+                    IsValid = DateTimeOffset.Now.UtcDateTime >= p.SubmissionStartDate.DateTime
+                            && DateTimeOffset.Now.UtcDateTime <= p.SubmissionEndDate.DateTime
                 })
                 .ToList();
         }

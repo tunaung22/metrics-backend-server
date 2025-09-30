@@ -33,6 +33,10 @@ class KpiSubmissionPeriodConfig : IEntityTypeConfiguration<KpiSubmissionPeriod>
             .HasColumnName("submission_end_date")
             .HasColumnType("timestamp with time zone")
             .IsRequired();
+        builder.Property(e => e.IsDeleted)
+            .HasColumnName("is_deleted")
+            .HasColumnType("boolean")
+            .HasDefaultValue(false);
         builder.Property(e => e.CreatedAt)
             .HasColumnName("created_at")
             .HasColumnType("timestamp with time zone");

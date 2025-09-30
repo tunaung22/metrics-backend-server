@@ -1,9 +1,19 @@
 using Metrics.Application.Domains;
+using Metrics.Application.DTOs.DepartmentKeyMetric;
+using Metrics.Application.Results;
 
 namespace Metrics.Application.Interfaces.IServices;
 
 public interface IDepartmentKeyMetricService
 {
+    Task<ResultT<List<DepartmentKeyMetricDto>>> FindByPeriodIdAsync(long periodId);
+    Task<ResultT<List<DepartmentKeyMetricDto>>> FindByPeriodByKeyIssueDepartmentAsync(
+        long periodId,
+        Guid keyIssueDepartmentCode);
+
+
+
+
     Task<DepartmentKeyMetric> CreateAsync(DepartmentKeyMetric entity);
     Task<DepartmentKeyMetric> UpdateAsync(Guid code, DepartmentKeyMetric entity);
     Task<bool> DeleteAsync(Guid departmentKeyMetricCode);
@@ -23,4 +33,8 @@ public interface IDepartmentKeyMetricService
     Task<IEnumerable<DepartmentKeyMetric>> FindAllAsync();
     Task<IEnumerable<DepartmentKeyMetric>> FindAllAsync(int pageNumber = 1, int pageSize = 20);
     Task<long> FindCountAsync();
+
+    Task<ResultT<List<DepartmentKeyMetricDto>>> FindByPeriodNameAsync(string periodName);
+
+    Task<ResultT<Dictionary<long, int>>> FindCountsByPeriodAsync(List<long> periodIds);
 }
