@@ -15,5 +15,5 @@ public class EmployeeGetAllDto
 
 
     // ----- Collection Navigational Properties
-    public List<KpiSubmission> KpiSubmissions { get; set; } = [];
+    public List<KeyKpiSubmission> KpiSubmissions { get; set; } = [];
 }

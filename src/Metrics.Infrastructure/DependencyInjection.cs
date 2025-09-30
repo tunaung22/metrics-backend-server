@@ -1,4 +1,5 @@
 using Metrics.Application.Authorization;
+using Metrics.Application.Common;
 using Metrics.Application.Interfaces.IRepositories;
 using Metrics.Application.Interfaces.IServices;
 using Metrics.Infrastructure.Identity;
@@ -65,12 +66,16 @@ public static class DependencyInjection
             // ADMIN FEATURES
             options.AddPolicy(ApplicationPolicies.CanAccessAdminFeaturesPolicy, policy =>
             {
+                // policy.RequireRole("Admin");
+                policy.AddRequirements(new AdminRoleRequirement());
                 policy.AddRequirements(new AccessAdminFeaturesRequirement());
             });
 
             // SCORE KEY KPI
             options.AddPolicy(ApplicationPolicies.CanSubmitKeyKpiScorePolicy, policy =>
             {
+                // policy.RequireRole("Staff");
+                policy.AddRequirements(new StaffRoleRequirement());
                 policy.AddRequirements(new SubmitKeyKpiScoreRequirement(new List<string>
                 {
                     // UserGroups.Staff, // staff not allowed
@@ -82,6 +87,8 @@ public static class DependencyInjection
             // SCORE FEEDBACK
             options.AddPolicy(ApplicationPolicies.CanSubmitFeedbackScorePolicy, policy =>
             {
+                // policy.RequireRole("Staff");
+                policy.AddRequirements(new StaffRoleRequirement());
                 policy.AddRequirements(new SubmitFeedbackScoreRequirement(new List<string>
                 {
                     // UserGroups.Staff, // allows management only
@@ -93,6 +100,8 @@ public static class DependencyInjection
             // SCORE KPI
             options.AddPolicy(ApplicationPolicies.CanSubmitKpiScorePolicy, policy =>
             {
+                // policy.RequireRole("Staff");
+                policy.AddRequirements(new StaffRoleRequirement());
                 policy.AddRequirements(new SubmitKpiScoreRequirement(new List<string>
                 {
                     UserGroups.Staff,
@@ -104,6 +113,8 @@ public static class DependencyInjection
             // GIVE FEEDBACK
             options.AddPolicy(ApplicationPolicies.CanGiveFeedbackPolicy, policy =>
             {
+                // policy.RequireRole("Staff");
+                policy.AddRequirements(new StaffRoleRequirement());
                 policy.AddRequirements(new GiveFeedbackRequirement(new List<string>
                 {
                     UserGroups.Staff,
@@ -171,6 +182,9 @@ public static class DependencyInjection
 
     public static IServiceCollection AddAuthorizationHandlers(this IServiceCollection services)
     {
+        services.AddSingleton<IAuthorizationHandler, AdminRoleRequirementHandler>();
+        services.AddSingleton<IAuthorizationHandler, StaffRoleRequirementHandler>();
+
         services.AddSingleton<IAuthorizationHandler, AllowLockedUserHandler>();
         // builder.Services.AddSingleton<IAuthorizationHandler, MinimumLevelHandler>();
         services.AddScoped<IAuthorizationHandler, AccessAdminFeaturesHandler>();

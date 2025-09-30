@@ -18,6 +18,7 @@ public class SubmitKpiScoreHandler(
         AuthorizationHandlerContext context,
         SubmitKpiScoreRequirement requirement)
     {
+        // -----Check User Title-----
         var allowedUserTitles = requirement.AllowedUserTitles;
 
         var user = await _userManager.GetUserAsync(context.User);
@@ -29,5 +30,6 @@ public class SubmitKpiScoreHandler(
 
         if (result.IsSuccess && result.Data == true)
             context.Succeed(requirement);
+
     }
 }

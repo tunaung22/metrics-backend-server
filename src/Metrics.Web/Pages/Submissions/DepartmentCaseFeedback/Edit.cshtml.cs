@@ -144,6 +144,7 @@ public class EditModel : PageModel
                 GroupName = submission.SubmittedBy.UserTitle.TitleName,
                 Description = submission.SubmittedBy.UserTitle.Description
             },
+            DepartmentId = submission.SubmittedBy.DepartmentId,
             Department = new DepartmentViewModel
             {
                 Id = submission.SubmittedBy.Department.Id,
@@ -275,6 +276,7 @@ public class EditModel : PageModel
                     GroupName = user.UserTitle.TitleName,
                     Description = user.UserTitle.Description
                 },
+                DepartmentId = user.DepartmentId,
                 Department = new DepartmentViewModel
                 {
                     Id = user.Department.Id,

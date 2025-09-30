@@ -8,7 +8,7 @@
 
 <div class="sectionTitle">
     <div class="d-flex align-items-center my-2">
-        <h4 class="flex-grow-1">Department Key KPI Reports (Key KPI)</h4>
+        <h4 class="flex-grow-1"><i class="bi bi-table"></i> Department Key KPI Reports (Key KPI)</h4>
         <span class="justify-content-end gap-2"></span>
     </div>
 
@@ -21,7 +21,6 @@
     </nav>
 </div>
 
-
 <div class="container">
     <div class="bg-light p-4 rounded-2">
         <partial name="./List/_PeriodList" model="@(new PeriodListPartialModel {
@@ -32,8 +31,12 @@
             Buttons = new List<PeriodListButton> {
                 @* new PeriodListButton { Page = "Summary", Text = "Summary" },
                 new PeriodListButton { Page = "Detail", Text = "Details" }, *@
-                new PeriodListButton { Page = "View", Text = "View" }
-            }
+                // summary:     bi bi-clipboard-data-fill
+                // detail:      bi bi-file-spreadsheet-fill
+                new PeriodListButton { Page = "Summary", Text = "Summary", IconClass = "bi bi-clipboard-data-fill" },
+                new PeriodListButton { Page = "Detail", Text = "Detail", IconClass = "bi bi-file-spreadsheet-fill" }
+            },
+            @* Color = "red" *@
         })" />
     </div>  
 </div>

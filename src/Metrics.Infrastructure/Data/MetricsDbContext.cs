@@ -32,7 +32,7 @@ public class MetricsDbContext : IdentityDbContext<ApplicationUser, ApplicationRo
     public DbSet<KeyKpiSubmissionConstraint> KeyKpiSubmissionConstraints { get; set; }
     public DbSet<DepartmentKeyMetric> DepartmentKeyMetrics { get; set; }
     public DbSet<KeyKpiSubmission> KeyKpiSubmissions { get; set; }
-    public DbSet<KeyKpiSubmissionItem> KeyKpiSubmissionItems { get; set; }
+    // public DbSet<KeyKpiSubmissionItem> KeyKpiSubmissionItems { get; set; }
     public DbSet<CaseFeedback> CaseFeedbacks { get; set; }
     public DbSet<CaseFeedbackScoreSubmission> CaseFeedbackScoreSubmissions { get; set; }
 
@@ -152,8 +152,8 @@ public class MetricsDbContext : IdentityDbContext<ApplicationUser, ApplicationRo
             .ApplyConfiguration(new DepartmentKeyMetricConfig()) // ------ Key KPI
             .ApplyConfiguration(new KeyKpiSubmissionConstraintConfig()) // --- Key KPI Submission Constraint 
             .ApplyConfiguration(new KeyKpiSubmissionConfig()) // --------- Key KPI
-            .ApplyConfiguration(new KeyKpiSubmissionItemConfig() // ---- Key KPI
-        );
+                                                              // .ApplyConfiguration(new KeyKpiSubmissionItemConfig() // ---- Key KPI
+        ;
 
         builder
             .ApplyConfiguration(new CaseFeedbackConfig()) // -------- Case Feedback

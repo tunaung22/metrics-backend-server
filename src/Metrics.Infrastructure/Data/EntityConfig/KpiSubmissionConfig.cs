@@ -70,7 +70,7 @@ class KpiSubmissionConfig : IEntityTypeConfiguration<KpiSubmission>
             .OnDelete(DeleteBehavior.Restrict)
             .IsRequired();
         builder.HasOne(e => e.TargetDepartment)
-            .WithMany(e => e.DepartmentScores)
+            .WithMany(e => e.KpiSubmissions)
             .HasForeignKey(e => e.DepartmentId)
             .OnDelete(DeleteBehavior.Restrict)
             .IsRequired();

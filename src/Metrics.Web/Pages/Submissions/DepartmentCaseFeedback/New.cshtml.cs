@@ -159,6 +159,7 @@ public class NewModel : PageModel
                     GroupName = user.UserTitle.TitleName,
                     Description = user.UserTitle.Description
                 },
+                DepartmentId = user.DepartmentId,
                 Department = new DepartmentViewModel
                 {
                     Id = user.Department.Id,

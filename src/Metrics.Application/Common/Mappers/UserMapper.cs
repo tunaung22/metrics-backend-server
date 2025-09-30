@@ -16,7 +16,7 @@ public static class UserMapper
         };
     }
 
-    public static UserDto MapToDto(this ApplicationUser e)
+    public static UserDto MapToDto(this ApplicationUser e, bool includeDepartment = true)
     {
         return new UserDto(
             Id: e.Id,
@@ -26,7 +26,8 @@ public static class UserMapper
             PhoneNumber: e.PhoneNumber ?? string.Empty,
             ContactAddress: e.ContactAddress ?? string.Empty,
             UserGroup: e.UserTitle.MapToDto(),
-            Department: e.Department.MapToDto(),
+            DepartmentId: e.DepartmentId,
+            Department: includeDepartment ? e.Department.MapToDto() : null,
             LockoutEnabled: e.LockoutEnabled,
             LockoutEnd: e.LockoutEnd
         );

@@ -1,3 +1,5 @@
+using Metrics.Web.Models.DepartmentKeyMetric;
+
 namespace Metrics.Web.Models;
 
 public class KeyKpiSubmissionItemViewModel

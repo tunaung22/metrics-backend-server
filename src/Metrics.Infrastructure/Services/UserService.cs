@@ -493,6 +493,7 @@ public class UserService : IUserService
                 .Where(u => u.UserName != "sysadmin")
                 .Include(u => u.Department)
                 .Include(u => u.UserTitle)
+                .AsNoTracking()
                 .ToListAsync();
 
             return users;
@@ -614,6 +615,7 @@ public class UserService : IUserService
                     .OrderBy(u => u.UserName)
                     .Skip((pageNumber - 1) * pageSize)
                     .Take(pageSize)
+                    .AsNoTracking()
                     .ToListAsync();
             }
             else
@@ -633,6 +635,7 @@ public class UserService : IUserService
                         )
                     )
                     .OrderBy(u => u.UserName)
+                    .AsNoTracking()
                     .ToListAsync();
             }
             if (usersList != null)
@@ -645,6 +648,7 @@ public class UserService : IUserService
                     PhoneNumber: u.PhoneNumber ?? string.Empty,
                     ContactAddress: u.ContactAddress,
                     UserGroup: u.UserTitle.MapToDto(),
+                    DepartmentId: u.DepartmentId,
                     Department: u.Department.MapToDto(),
                     LockoutEnabled: u.LockoutEnabled,
                     LockoutEnd: u.LockoutEnd
@@ -676,6 +680,7 @@ public class UserService : IUserService
                 .Take(pageSize)
                 .Include(u => u.Department)
                 .Include(u => u.UserTitle)
+                .AsNoTracking()
                 .ToListAsync();
 
             if (usersList != null)
@@ -688,6 +693,7 @@ public class UserService : IUserService
                     PhoneNumber: u.PhoneNumber ?? string.Empty,
                     ContactAddress: u.ContactAddress,
                     UserGroup: u.UserTitle.MapToDto(),
+                    DepartmentId: u.DepartmentId,
                     Department: u.Department.MapToDto(),
                     LockoutEnabled: u.LockoutEnabled,
                     LockoutEnd: u.LockoutEnd
@@ -705,7 +711,11 @@ public class UserService : IUserService
 
     public async Task<long> FindCountAsync()
     {
-        return await _userManager.Users.CountAsync();
+        return await _userManager.Users
+            .Where(u =>
+                u.UserName != null
+                && !u.UserName.ToLower().Contains("sysadmin"))
+            .CountAsync();
     }
 
 

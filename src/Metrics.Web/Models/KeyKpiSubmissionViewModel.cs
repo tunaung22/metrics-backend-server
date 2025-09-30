@@ -1,14 +1,15 @@
+using Metrics.Web.Models.DepartmentKeyMetric;
+
 namespace Metrics.Web.Models;
 
 public class KeyKpiSubmissionViewModel
 {
-    public long Id { get; set; }
-    public DateTimeOffset SubmittedAt { get; set; }
-    public long KpiPeriodId { get; set; }
-    public KpiPeriodViewModel TargetKpiPeriod { get; set; } = null!;
-    public long DepartmentId { get; set; }
-    public DepartmentViewModel TargetDepartment { get; set; } = null!;
-    public string SubmitterId { get; set; } = null!;
-    public UserViewModel SubmittedBy { get; set; } = null!;
-    public List<KeyKpiSubmissionItemViewModel> KeyKpiSubmissionItems { get; set; } = [];
+    public long Id { get; init; }
+    public long PeriodId { get; init; }
+    public string SubmitterId { get; init; } = null!;
+    public UserViewModel SubmittedBy { get; init; } = null!;
+    public long DepartmentKeyMetricId { get; init; }
+    public DepartmentKeyMetricViewModel DepartmentKeyMetric { get; init; } = null!;
+    public decimal ScoreValue { get; init; }
+    public string? Comments { get; init; } = string.Empty;
 }

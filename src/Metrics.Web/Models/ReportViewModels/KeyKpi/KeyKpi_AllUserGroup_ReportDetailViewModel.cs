@@ -30,12 +30,30 @@ namespace Metrics.Web.Models.ReportViewModels.KeyKpi;
 //     public List<KeyKpi_DepartmentScoreDetail> DepartmentScoreDetails { get; set; } = [];
 // }
 
+// public class KeyKpi_AllUserGroup_ReportDetailViewModel
+// {
+//     public string? PeriodName { get; set; }
+//     public UserViewModel SubmittedBy { get; set; } = null!;
+//     // public DateTimeOffset SubmittedAt { get; set; }
+//     // flatten KeyKPISubmisionItems: key, issuer, score, comments
+//     // public List<KeyKpi_DepartmentScoreSummary> KeyKpi_DepartmentScoreSummary { get; set; } = [];
+//     public List<KeyKpi_DepartmentScoreDetail> KeyKpi_DepartmentScoreDetails { get; set; } = [];
+// }
+
+
+
 public class KeyKpi_AllUserGroup_ReportDetailViewModel
 {
     public string? PeriodName { get; set; }
     public UserViewModel SubmittedBy { get; set; } = null!;
+    public string KeyIssueDepartmentName { get; set; } = string.Empty;
+    public string? KeyTitle { get; set; } = null!;
+    public decimal ScoreValue { get; set; }
+    public string? Comments { get; set; } = string.Empty;
     // public DateTimeOffset SubmittedAt { get; set; }
     // flatten KeyKPISubmisionItems: key, issuer, score, comments
     // public List<KeyKpi_DepartmentScoreSummary> KeyKpi_DepartmentScoreSummary { get; set; } = [];
-    public List<KeyKpi_DepartmentScoreDetail> KeyKpi_DepartmentScoreDetails { get; set; } = [];
+    // public DepartmentKeyMetricViewModel? DepartmentKeyMetric { get; set; }
+    // public long KeyId { get; set; }
+    // public long DKMId { get; set; }
 }

@@ -21,7 +21,6 @@ public class DepartmentKeyMetric : IAuditColumn, ISoftDelete
     public KeyMetric KeyMetric { get; set; } = null!;
 
     // Collection Navigational Properties
-    // public List<KeyKpiSubmission> KeyKpiSubmissions { get; set; } = [];
-    public List<KeyKpiSubmissionItem> KeyKpiSubmissionItems { get; set; } = [];
+    public List<KeyKpiSubmission> KeyKpiSubmissions { get; set; } = [];
     public List<KeyKpiSubmissionConstraint> KeyKpiSubmissionConstraints { get; set; } = [];
 }

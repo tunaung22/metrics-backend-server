@@ -8,9 +8,9 @@ public class UserViewModel
     public required string FullName { get; set; }
     public string? PhoneNumber { get; set; } = string.Empty;
     public string? ContactAddress { get; set; } = string.Empty;
-    // public long DepartmentId { get; set; }
+    public required long DepartmentId { get; set; }
     // public long UserTitleId { get; set; }
-    public DepartmentViewModel Department { get; set; } = null!;
+    public DepartmentViewModel? Department { get; set; }
     public UserGroupViewModel UserGroup { get; set; } = null!;
     public bool LockoutEnabled { get; set; }
     public DateTimeOffset? LockoutEnd { get; set; }

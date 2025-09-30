@@ -21,7 +21,9 @@ public static class DepartmentMapper
         {
             Id = dto.Id,
             DepartmentCode = dto.DepartmentCode,
-            DepartmentName = dto.DepartmentName
+            DepartmentName = dto.DepartmentName,
+            StaffCount = dto.DepartmentStaffs.Count,
+            DepartmentStaffs = dto.DepartmentStaffs.Select(u => u.MapToViewModel(false)).ToList()
         };
     }
 }

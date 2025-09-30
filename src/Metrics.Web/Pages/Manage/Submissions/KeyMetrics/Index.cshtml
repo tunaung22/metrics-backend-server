@@ -1,12 +1,12 @@
 ﻿@page "/Manage/Submissions/Key-Metrics"
 @model Metrics.Web.Pages.Manage.Submissions.KeyMetrics.IndexModel
 @{
-    ViewData["Title"] = "Key Metrics for Key KPI";
+    ViewData["Title"] = "Key Metrics";
 }
 
 <div class="sectionTitle">
     <div class="d-flex align-items-center my-2">
-        <h4 class="flex-grow-1">Key Metrics for Key KPI</h4>
+        <h4 class="flex-grow-1"><i class="bi bi-rulers"></i> Key Metrics</h4>
         <span class="d-flex justify-content-end gap-2">
             <a class="btn btn-success"
                 asp-page="Create"
@@ -16,8 +16,8 @@
     </div>
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a asp-page="/Dashboard/Index">Dashboard</a></li>
-            @* <li class="breadcrumb-item"><a asp-page="/Manage/Submissions/Index">Submissions</a></li> *@
+            <li class="breadcrumb-item"><a asp-page="/Index">Home</a></li>
+            <li class="breadcrumb-item"><a asp-page="/Manage/Index">Manage</a></li>
             <li class="breadcrumb-item active">Key Metrics</li>
         </ol>
     </nav>

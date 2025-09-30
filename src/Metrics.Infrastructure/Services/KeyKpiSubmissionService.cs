@@ -1,318 +1,265 @@
-using Metrics.Application.Domains;
-using Metrics.Application.DTOs;
+using Metrics.Application.Common.Mappers;
+using Metrics.Application.DTOs.KeyKpiSubmissions;
+using Metrics.Application.Interfaces.IRepositories;
 using Metrics.Application.Interfaces.IServices;
+using Metrics.Application.Results;
 using Metrics.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace Metrics.Infrastructure.Services;
 
-public class KeyKpiSubmissionService : IKeyKpiSubmissionService
+public class KeyKpiSubmissionService(
+    ILogger<KeyKpiSubmissionService> logger,
+    MetricsDbContext context,
+    IKeyKpiSubmissionRepository keyKpiSubmissionRepo) : IKeyKpiSubmissionService
 {
+    private readonly ILogger<KeyKpiSubmissionService> _logger = logger;
+    private readonly MetricsDbContext _context = context;
+    private readonly IKeyKpiSubmissionRepository _keyKpiSubmissionRepo = keyKpiSubmissionRepo;
 
-    private readonly ILogger<KeyKpiSubmissionService> _logger;
-    private readonly MetricsDbContext _context;
 
-    public KeyKpiSubmissionService(
-        ILogger<KeyKpiSubmissionService> logger,
-        MetricsDbContext context)
-    {
-        _logger = logger;
-        _context = context;
-    }
-
-    public async Task<List<KeyKpiSubmission>> FindByKpiPeriodAsync(long id)
+    public async Task<Result> SubmitSubmissionsAsync(List<CreateKeyKpiSubmissionDto> createDtos)
     {
         try
         {
-            var query = _context.KeyKpiSubmissions
-                .Where(e => e.ScoreSubmissionPeriodId == id)
-                .OrderBy(e => e.SubmittedAt)
-                .Include(e => e.TargetPeriod)
-                .Include(e => e.TargetDepartment)
-                .Include(e => e.SubmittedBy)
-                    .ThenInclude(u => u.UserTitle)
-                .Include(e => e.KeyKpiSubmissionItems)
-                    .ThenInclude(i => i.DepartmentKeyMetric)
-                        .ThenInclude(dkm => dkm.KeyMetric)
-                .Include(e => e.KeyKpiSubmissionItems)
-                    .ThenInclude(i => i.DepartmentKeyMetric)
-                        .ThenInclude(dkm => dkm.KeyIssueDepartment);
-
-            var foundSubmissions = await query.ToListAsync();
-            if (foundSubmissions.Count > 0)
-            {
-                return foundSubmissions;
-            }
-
-            return [];
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Unexpected error while querying key metric submissions by period");
-            throw new Exception("An unexpected error occurred. Please try again later.");
-        }
-    }
-
-    public async Task<List<KeyKpiSubmission>> FindBySubmitterByPeriodByDepartmentListAsync(
-        ApplicationUser candidate,
-        long kpiPeriodId,
-        List<long> departmentIdList)
-    {
-        try
-        {
-            // var foundSubmissions = await _keyMetricSubmissionRepository.FindAllAsQueryable()
-            //     .Include(e => e.TargetPeriod)
-            //     .Include(e => e.TargetDepartment)
-            //     .Include(e => e.SubmittedBy)
-            //     .Include(e => e.KeyKpiSubmissionItems)
-            //     .Where(e => e.SubmittedBy.Id == candidate.Id
-            //         && e.ScoreSubmissionPeriodId == kpiPeriodId
-            //         && departmentIdList.Any(d => d == e.DepartmentId))
-            //     .ToListAsync();
-            // REMOVE: Repository 
-            var query = _context.KeyKpiSubmissions
-                .Where(e => e.SubmittedBy.Id == candidate.Id
-                    && e.ScoreSubmissionPeriodId == kpiPeriodId
-                    // && departmentIdList.Any(departmentId => departmentId == e.DepartmentId))
-                    && departmentIdList.Contains(e.DepartmentId))
-                .OrderBy(e => e.SubmittedAt)
-                .Include(e => e.TargetPeriod)
-                .Include(e => e.TargetDepartment)
-                .Include(e => e.SubmittedBy)
-                .Include(e => e.KeyKpiSubmissionItems);
-            var foundSubmissions = await query.ToListAsync();
-
-            if (foundSubmissions.Count > 0)
-            {
-                return foundSubmissions;
-                // return foundSubmissions.Select(s => new KeyKpiSubmission
-                // {
-                //     SubmittedAt = s.SubmittedAt,
-                //     SubmissionDate = s.SubmissionDate,
-                //     ScoreSubmissionPeriodId = s.ScoreSubmissionPeriodId,
-                //     DepartmentId = s.DepartmentId,
-                //     ApplicationUserId = s.ApplicationUserId,
-                //     SubmittedBy = s.SubmittedBy,
-                //     TargetDepartment = s.TargetDepartment,
-                //     TargetPeriod = s.TargetPeriod,
-                //     KeyKpiSubmissionItems = s.KeyKpiSubmissionItems
-                // }).ToList();
-            }
-
-            return [];
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Unexpected error while querying key metric submissions by submittter by period by department list.");
-            throw new Exception("An unexpected error occurred. Please try again later.");
-        }
-    }
-
-    public async Task<long> FindCountByUserByPeriodAsync(
-        string currentUserId,
-        long kpiPeriodId)
-    {
-        try
-        {
-            // return await _keyMetricSubmissionRepository
-            //     .FindCountByUserByPeriodAsync(currentUserId, kpiPeriodId);
-            // REMOVE: Repository 
-            return await _context.KeyKpiSubmissions
-                .Where(s =>
-                    s.ApplicationUserId == currentUserId
-                    && s.ScoreSubmissionPeriodId == kpiPeriodId)
-                .CountAsync();
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Unexpected error while counting submissions.");
-            throw new Exception("An unexpected error occurred. Please try again later.");
-
-        }
-    }
-
-    public async Task<bool> SubmitScoreAsync(List<KeyKpiSubmissionCreateDto> createDtos)
-    {
-        // await using var transaction = await _context.Database.BeginTransactionAsync();
-
-        try
-        {
-            // 1. insert parent
-            // 2. insert child item (use parent's id)
-            // ...... METHOD 1 vs METHOD 2
-            // ...... METHOD 1 - save all parents, then save all children??? (better roundtrips)
-            // ...... METHOD 2 - save one parent, then save its children??? (more database roundtrips)
-            // ...... **both run inside transaction (no data inconsistency)
-            // REMOVE: Repository 
-            // METHOD 1
-            // var submittedAt = DateTimeOffset.UtcNow;
-            // var parentItems = new List<KeyKpiSubmission>();
-            // var childItems = new List<KeyKpiSubmissionItem>();
-
-            // foreach (var dto in createDtos)
-            // {
-            //     parentItems.Add(new KeyKpiSubmission
-            //     {
-            //         SubmittedAt = submittedAt,
-            //         DepartmentId = dto.DepartmentId,
-            //         ScoreSubmissionPeriodId = dto.ScoreSubmissionPeriodId,
-            //         ApplicationUserId = dto.ApplicationUserId
-            //     });
-            // }
-            // _context.KeyKpiSubmissions.AddRange(parentItems);
-            // await _context.SaveChangesAsync();
-
-            // var a = parentItems.Zip(createDtos, (p, d) =>
-            // {
-            //     return (p, d);
-            // });
-            // foreach (var (parent, dto) in parentItems.Zip(createDtos, (p, d) => (p, d)))
-            // {
-            //     var childItem = dto.keyKpiSubmissionItemDtos
-            //         .Select(item => new KeyKpiSubmissionItem
-            //         {
-            //             KeyKpiSubmissionId = parent.Id,
-            //             DepartmentKeyMetricId = item.DepartmentKeyMetricsId,
-            //             ScoreValue = item.ScoreValue,
-            //             Comments = item.Comments
-            //         });
-            //     childItems.AddRange(childItem);
-            // }
-            // _context.KeyKpiSubmissionItems.AddRange(childItems);
-            // await _context.SaveChangesAsync();
-
-            // METHOD 2
-            // var submittedAt = DateTime.UtcNow;
-            // foreach (var dto in createDtos)
-            // {
-            //     var parentItem = _context.KeyKpiSubmissions.Add(new KeyKpiSubmission
-            //     {
-            //         SubmittedAt = submittedAt,
-            //         DepartmentId = dto.DepartmentId,
-            //         ScoreSubmissionPeriodId = dto.ScoreSubmissionPeriodId,
-            //         ApplicationUserId = dto.ApplicationUserId
-            //     });
-            //     await _context.SaveChangesAsync();
-            //     // save child items
-            //     /*
-            //     foreach (var item in dto.keyKpiSubmissionItemDtos)
-            //     {
-            //         _context.KeyKpiSubmissionItems.Add(new KeyKpiSubmissionItem
-            //         {
-            //             KeyKpiSubmissionId = parentItem.Entity.Id,
-            //             DepartmentKeyMetricId = item.DepartmentKeyMetricsId,
-            //             ScoreValue = item.ScoreValue,
-            //             Comments = item.Comments
-            //         });
-            //         await _context.SaveChangesAsync();
-            //     } */
-            //     var childItems = dto.keyKpiSubmissionItemDtos
-            //         .Select(item => new KeyKpiSubmissionItem
-            //         {
-            //             KeyKpiSubmissionId = parentItem.Entity.Id,
-            //             DepartmentKeyMetricId = item.DepartmentKeyMetricsId,
-            //             ScoreValue = item.ScoreValue,
-            //             Comments = item.Comments
-            //         }).ToList();
-            //     _context.AddRange(childItems);
-            //     await _context.SaveChangesAsync();
-            // }
-
-            // METHOD 3
-            // **Note:: need to check parent item exist or not
-            //  IF Exist -> insert Parent + insert Child Items
-            //  ELSE     -> skip   Parent + insert Child Items
             var submittedAt = DateTimeOffset.UtcNow;
-
-            // DTO to Entity
-            List<KeyKpiSubmission>? parentEntities = [];
             foreach (var dto in createDtos)
             {
-                var parentItem = new KeyKpiSubmission
+                // check existing
+                // by submitter, period, key id
+                var existingEntry = await _keyKpiSubmissionRepo
+                    .FindBySubmitterByDepartmentKeyMetricAsync(
+                        submitterId: dto.SubmitterId,
+                        departmentKeyMetricId: dto.DepartmentKeyMetricId);
+                //
+                if (existingEntry != null)
                 {
-                    SubmittedAt = submittedAt,
-                    DepartmentId = dto.DepartmentId,
-                    ScoreSubmissionPeriodId = dto.ScoreSubmissionPeriodId,
-                    ApplicationUserId = dto.ApplicationUserId,
-                    KeyKpiSubmissionItems = dto.KeyKpiSubmissionItemDtos
-                                        .Select(item => new KeyKpiSubmissionItem
-                                        {
-                                            DepartmentKeyMetricId = item.DepartmentKeyMetricId,
-                                            ScoreValue = item.ScoreValue,
-                                            Comments = item.Comments
-                                        }).ToList()
-                };
-                parentEntities.Add(parentItem);
-            }
-            // var parentEntities = createDtos.Select(dto =>
-            // {
-            //     var parentItem = new KeyKpiSubmission
-            //     {
-            //         SubmittedAt = submittedAt,
-            //         DepartmentId = dto.DepartmentId,
-            //         ScoreSubmissionPeriodId = dto.ScoreSubmissionPeriodId,
-            //         ApplicationUserId = dto.ApplicationUserId,
-            //         KeyKpiSubmissionItems = dto.keyKpiSubmissionItemDtos
-            //             .Select(item => new KeyKpiSubmissionItem
-            //             {
-            //                 DepartmentKeyMetricId = item.DepartmentKeyMetricId,
-            //                 ScoreValue = item.ScoreValue,
-            //                 Comments = item.Comments
-            //             }).ToList()
-            //     };
-            //     return parentItem;
-            // }).ToList();
+                    // update
 
-            // _context.KeyKpiSubmissions.AddRange(parents);
-            foreach (var item in parentEntities)
-            {
-                // Check each parent already exist by period, submitter, department
-                var existingParent = _context.KeyKpiSubmissions
-                    .Where(s =>
-                        s.ScoreSubmissionPeriodId == item.ScoreSubmissionPeriodId
-                        && s.ApplicationUserId == item.ApplicationUserId
-                        && s.DepartmentId == item.DepartmentId)
-                    .FirstOrDefault();
-
-                if (existingParent != null)
-                {
-                    // Only Child
-                    // update child entity with parentId
-                    var childItems = item.KeyKpiSubmissionItems.Select(i => new KeyKpiSubmissionItem
-                    {
-                        KeyKpiSubmissionId = existingParent.Id,
-                        DepartmentKeyMetricId = i.DepartmentKeyMetricId,
-                        ScoreValue = i.ScoreValue,
-                        Comments = i.Comments,
-                    }).ToList();
-
-                    await _context.KeyKpiSubmissionItems.AddRangeAsync(childItems);
                 }
                 else
                 {
-                    // Parent + Child
-                    // **note item contains child items values
-                    // **no need to add child item
-                    await _context.KeyKpiSubmissions.AddRangeAsync(item);
+                    // insert
+                    _keyKpiSubmissionRepo.Add(dto.MapToEntity());
                 }
             }
-
             await _context.SaveChangesAsync();
-            return true;
+
+            return Result.Success();
         }
         catch (DbUpdateException ex)
         {
-            _logger.LogError(ex, "DB Update error while creating submission.");
-            throw new Exception("DB Update error while creating submission.");
-
-
+            _logger.LogError(ex, "DB Update error while creating submission. {e}", ex.Message);
+            return Result.Fail("Failed to submit key kpi submissions.", ErrorType.UnexpectedError);
         }
         catch (Exception ex)
         {
-            // await transaction.RollbackAsync();
-            _logger.LogError(ex, "Unexpected error while creating submission.");
-            throw new Exception("An unexpected error occurred. Please try again later.");
+            _logger.LogError(ex, "Failed to submit key kpi submissions. {msg}", ex.Message);
+            return Result.Fail("Failed to submit key kpi submissions.", ErrorType.UnexpectedError);
         }
     }
+
+    // public async Task<ResultT<List<KeyKpiSubmissionDto>>> FindByPeriodAsync(long periodId)
+    // {
+    //     try
+    //     {
+    //         var data = await _keyKpiSubmissionRepo.findbyperio
+    //         return ResultT<List<KeyKpiSubmissionDto>>.Success();
+
+    //     }
+    //     catch (Exception ex)
+    //     {
+    //         _logger.LogError(ex, "Unexpected error while querying key metric submissions by period");
+    //         return ResultT<List<KeyKpiSubmissionDto>>.Fail("Failed to find submissions by period.", ErrorType.UnexpectedError);
+    //     }
+    // }
+
+    public async Task<ResultT<List<KeyKpiSubmissionDto>>> FindByPeriodAsync(long periodId)
+    {
+        try
+        {
+            var data = await _keyKpiSubmissionRepo.FindByPeriodAsync(periodId);
+            var result = data.Select(submission => submission.MapToDto()).ToList();
+
+            return ResultT<List<KeyKpiSubmissionDto>>.Success(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed fetching submissions by period id. {msg}", ex.Message);
+            return ResultT<List<KeyKpiSubmissionDto>>.Fail("Failed to fetch submissions by period", ErrorType.UnexpectedError);
+        }
+    }
+
+    public async Task<ResultT<List<KeyKpiSubmissionDto>>> FindByPeriodBySubmitterAsync(long periodId, string userId)
+    {
+        try
+        {
+            var data = await _keyKpiSubmissionRepo.FindByPeriodBySubmitterAsync(periodId, userId);
+            var result = data.Select(submission => submission.MapToDto()).ToList();
+
+            return ResultT<List<KeyKpiSubmissionDto>>.Success(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed fetching submissions by period id by submitter id. {msg}", ex.Message);
+            return ResultT<List<KeyKpiSubmissionDto>>.Fail("Failed to fetch submissions by period by submitter.", ErrorType.UnexpectedError);
+        }
+    }
+
+    public async Task<ResultT<List<KeyKpiSubmissionDto>>> FindByPeriodBySubmitterAsync(List<long> periodIds, string userId)
+    {
+        try
+        {
+            var data = await _keyKpiSubmissionRepo.FindByPeriodBySubmitterAsync(periodIds, userId);
+            var result = data.Select(submission => submission.MapToDto()).ToList();
+
+            return ResultT<List<KeyKpiSubmissionDto>>.Success(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed fetching submissions by period id by submitter id. {msg}", ex.Message);
+            return ResultT<List<KeyKpiSubmissionDto>>.Fail("Failed to fetch submissions by period by submitter.", ErrorType.UnexpectedError);
+        }
+    }
+
+
+
+    public async Task<ResultT<List<KeyKpiSubmissionDto>>> FindByDepartmentKeyMetricsAsync(List<long> departmentKeyMetricIDs)
+    {
+        try
+        {
+            var data = await _keyKpiSubmissionRepo.FindByDepartmentKeyMetricListAsync(departmentKeyMetricIDs);
+            var result = data.Select(submission => submission.MapToDto()).ToList();
+
+            return ResultT<List<KeyKpiSubmissionDto>>.Success(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed fetching submissions by department key metric list. {msg}", ex.Message);
+            return ResultT<List<KeyKpiSubmissionDto>>.Fail("Failed to fetch submissions by department key metric list.", ErrorType.UnexpectedError);
+        }
+    }
+
+    // public async Task<ResultT<long>> FindCountByUserByPeriodAsync(
+    //     string currentUserId, long kpiPeriodId)
+    // {
+    //     try
+    //     {
+    //         var countResult = await _keyKpiSubmissionRepo.FindCountByPeriodBySubmitterAsync(
+    //             submitterId: currentUserId,
+    //             periodId: kpiPeriodId);
+
+    //         return ResultT<long>.Success(countResult);
+    //     }
+    //     catch (Exception ex)
+    //     {
+    //         _logger.LogError(ex, "Failed to get submission count by User by Period.");
+    //         return ResultT<long>.Fail("Failed to get submission count by User by Period.", ErrorType.UnexpectedError);
+    //     }
+    // }
+
+    public async Task<ResultT<long>> FindCountByPeriodBySubmitterAsync(long kpiPeriodId, string currentUserId)
+    {
+        try
+        {
+            var countResult = await _keyKpiSubmissionRepo.FindCountByPeriodBySubmitterAsync(
+                submitterId: currentUserId,
+                periodId: kpiPeriodId);
+
+            return ResultT<long>.Success(countResult);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to get submission count by User by Period.");
+            return ResultT<long>.Fail("Failed to get submission count by User by Period.", ErrorType.UnexpectedError);
+        }
+    }
+
+    public async Task<ResultT<long>> FindCountByPeriodBySubmitterAsync(List<long> kpiPeriodIds, string currentUserId)
+    {
+        try
+        {
+            var countResult = await _keyKpiSubmissionRepo.FindCountByPeriodBySubmitterAsync(
+                submitterId: currentUserId,
+                periodIds: kpiPeriodIds);
+
+            return ResultT<long>.Success(countResult);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to get submission count by User by Period.");
+            return ResultT<long>.Fail("Failed to get submission count by User by Period.", ErrorType.UnexpectedError);
+        }
+    }
+
+    public async Task<ResultT<Dictionary<long, int>>> FindSubmissionsCountDictByPeriodBySubmitterAsync(List<long> kpiPeriodIds, string currentUserId)
+    {
+        try
+        {
+            var countResult = await _keyKpiSubmissionRepo.FindSubmissionCountsByPeriodBySubmitterAsync(
+                submitterId: currentUserId,
+                periodIds: kpiPeriodIds);
+
+            return ResultT<Dictionary<long, int>>.Success(countResult);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to get submission count by User by Period.");
+            return ResultT<Dictionary<long, int>>.Fail("Failed to get submission count by User by Period.", ErrorType.UnexpectedError);
+        }
+    }
+
+
+
+
+    // public async Task<List<KpiSubmission>> FindBySubmitterByPeriodByDepartmentListAsync(
+    //     ApplicationUser candidate,
+    //     long kpiPeriodId,
+    //     List<long> departmentIdList)
+    // {
+    //     try
+    //     {
+    //         // submissions by Period by User by Department (of DKM)
+    //         // var foundSubmissions = await _keyMetricSubmissionRepository.FindAllAsQueryable()
+    //         //     .Include(e => e.TargetPeriod)
+    //         //     .Include(e => e.TargetDepartment)
+    //         //     .Include(e => e.SubmittedBy)
+    //         //     .Include(e => e.KeyKpiSubmissionItems)
+    //         //     .Where(e => e.SubmittedBy.Id == candidate.Id
+    //         //         && e.ScoreSubmissionPeriodId == kpiPeriodId
+    //         //         && departmentIdList.Any(d => d == e.DepartmentId))
+    //         //     .ToListAsync();
+    //         // REMOVE: Repository 
+    //         var query = await _keyKpiSubmissionRepo.FindAllByPeriodBySubmitterByDepartmentAsync(
+    //             periodId: kpiPeriodId,
+    //             submitterId: candidate.Id,
+    //             departmentId: depart
+    //         )
+
+
+    //         //  _context.KeyKpiSubmissions
+    //         //     .Where(e => e.SubmittedBy.Id == candidate.Id
+    //         //         && e.ScoreSubmissionPeriodId == kpiPeriodId
+    //         //         // && departmentIdList.Any(departmentId => departmentId == e.DepartmentId))
+    //         //         && departmentIdList.Contains(e.TargetDepartmentKeyMetric.DepartmentId))
+    //         //     .OrderBy(e => e.SubmittedAt)
+    //         //     .Include(e => e.TargetPeriod)
+    //         //     .Include(e => e.TargetDepartmentKeyMetric)
+    //         //         .ThenInclude(i => i.KeyMetric)
+    //         //     .Include(e => e.TargetDepartmentKeyMetric)
+    //         //         .ThenInclude(i => i.KeyIssueDepartment)
+    //         //     .Include(e => e.SubmittedBy)
+    //         //         .ThenInclude(i => i.Department);
+
+    //         }
+
+    //         return [];
+    //     }
+    //     catch (Exception ex)
+    //     {
+    //         _logger.LogError(ex, "Unexpected error while querying key metric submissions by submittter by period by department list.");
+    //         throw new Exception("An unexpected error occurred. Please try again later.");
+    //     }
+    // }
 }

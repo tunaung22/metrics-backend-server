@@ -16,6 +16,7 @@ public static class UserMapper
             FullName: model.FullName,
             PhoneNumber: model.PhoneNumber ?? string.Empty,
             ContactAddress: model.ContactAddress ?? string.Empty,
+            DepartmentId: model.DepartmentId,
             Department: model.Department.MapToDto(),
             UserGroup: model.UserGroup.MapToDto(),
             LockoutEnabled: model.LockoutEnabled,
@@ -23,7 +24,7 @@ public static class UserMapper
         );
     }
 
-    public static UserViewModel MapToViewModel(this UserDto dto)
+    public static UserViewModel MapToViewModel(this UserDto dto, bool includeDepartment = true)
     {
         return new UserViewModel
         {
@@ -33,7 +34,8 @@ public static class UserMapper
             FullName = dto.FullName,
             PhoneNumber = dto.PhoneNumber,
             ContactAddress = dto.ContactAddress,
-            Department = dto.Department.MapToViewModel(),
+            DepartmentId = dto.DepartmentId,
+            Department = includeDepartment ? dto.Department.MapToViewModel() : null,
             UserGroup = dto.UserGroup.MapToViewModel(),
             LockoutEnabled = dto.LockoutEnabled,
             LockoutEnd = dto.LockoutEnd

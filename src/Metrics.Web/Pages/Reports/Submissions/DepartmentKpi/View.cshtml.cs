@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using MiniExcelLibs;
 using MiniExcelLibs.Attributes;
 using MiniExcelLibs.OpenXml;
-using System.Threading.Tasks;
 
 namespace Metrics.Web.Pages.Reports.Submissions.DepartmentKpi;
 
@@ -315,26 +314,6 @@ public class ViewModel : PageModel
                     submissionsByPeriod,
                     UserList,
                     DepartmentList);
-                // AllUserGroupReportDetailList = UserList.Select(user =>
-                // {
-                //     // submission by [user]
-                //     var userSubmissions = submissionsByPeriod
-                //         .Where(s => s.ApplicationUserId == user.Id)
-                //         // **note: sort by DepartmentName is required
-                //         .OrderBy(s => s.TargetDepartment.DepartmentName)
-                //         .ToList() ?? [];
-
-                //     return new AllUserGroupReportDetailViewModel
-                //     {
-                //         PeriodName = SelectedPeriod.PeriodName,
-                //         SubmittedBy = user,
-                //         DepartmentScores = userSubmissions.Select(s => new DepartmentScoreViewModel
-                //         {
-                //             DepartmentName = s.TargetDepartment.DepartmentName,
-                //             ScoreValue = s.ScoreValue
-                //         }).ToList()
-                //     };
-                // }).ToList();
             }
             // ---GROUP: SINGLE
             else
@@ -346,31 +325,6 @@ public class ViewModel : PageModel
                     submissionsByPeriod,
                     UserList,
                     DepartmentList); // department to includes all department
-                // SingleUserGroupReportDetailList = UserList
-                //     .Where(user => user.UserGroup.GroupName.Equals(Group, StringComparison.OrdinalIgnoreCase))
-                //     .Select(user =>
-                //     {
-                //         // submission by [user] of [group]
-                //         var submissions = submissionsByPeriod
-                //             .Where(s => s.ApplicationUserId == user.Id)
-                //             // .Where(s => s.SubmittedBy.UserTitle.TitleName.Equals(Group, StringComparison.OrdinalIgnoreCase)
-                //             //     && s.ApplicationUserId == user.Id)
-                //             // **note: sort by DepartmentName is required
-                //             .OrderBy(s => s.TargetDepartment.DepartmentName)
-                //             .ToList();
-
-                //         return new SingleUserGroupReportDetailViewModel
-                //         {
-                //             PeriodName = SelectedPeriod.PeriodName,
-                //             SubmittedBy = user,
-                //             GroupName = user.UserGroup.GroupName,
-                //             DepartmentScores = submissions.Select(s => new DepartmentScoreViewModel
-                //             {
-                //                 DepartmentName = s.TargetDepartment.DepartmentName,
-                //                 ScoreValue = s.ScoreValue
-                //             }).ToList()
-                //         };
-                //     }).ToList();
             }
         }
 
@@ -741,10 +695,10 @@ public class ViewModel : PageModel
                 MiniExcel.SaveAs(
                     stream: memoryStream,
                     value: excelData,
-                configuration: new OpenXmlConfiguration
-                {
-                    DynamicColumns = dynamicCols.ToArray(),
-                }
+                    configuration: new OpenXmlConfiguration
+                    {
+                        DynamicColumns = dynamicCols.ToArray(),
+                    }
                 );
                 memoryStream.Position = 0; // Reset stream position
 
@@ -1061,6 +1015,7 @@ public class ViewModel : PageModel
                     FullName = user.FullName,
                     PhoneNumber = user.PhoneNumber,
                     ContactAddress = user.ContactAddress,
+                    DepartmentId = user.DepartmentId,
                     Department = new DepartmentViewModel
                     {
                         Id = user.Department.Id,
@@ -1091,6 +1046,8 @@ public class ViewModel : PageModel
         {
             return userGroups
                 // filter user without staff
+                .Where(g => !g.TitleName.Equals("staff", StringComparison.OrdinalIgnoreCase)
+                    && !g.TitleName.Equals("sysadmin", StringComparison.OrdinalIgnoreCase))
                 .Select(g => new UserGroupViewModel
                 {
                     Id = g.Id,
@@ -1254,7 +1211,8 @@ public class ViewModel : PageModel
         List<UserViewModel> userList,
         List<DepartmentViewModel> departmentList)
     {
-        return userList.Select(user =>
+        return userList
+            .Select(user =>
         {
             var userSubmissions = submissionsByPeriod
                 .Where(s => s.ApplicationUserId == user.Id)

@@ -7,7 +7,7 @@
 
 <div class="sectionTitle">
     <div class="d-flex align-items-center">
-        <h4 class="flex-grow-1">User Groups</h4>
+        <h4 class="flex-grow-1"><i class="bi bi-people-fill"></i> User Groups</h4>
         <span class="justify-content-end gap-2">
             <a class="btn btn-success" 
                 asp-page="Create"
@@ -16,7 +16,8 @@
     </div>
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="/Dashboard/Index">Dashboard</a></li>
+            <li class="breadcrumb-item"><a asp-page="/Index">Home</a></li>
+            <li class="breadcrumb-item"><a asp-page="/Manage/Index">Manage</a></li>
             <li class="breadcrumb-item active">Groups</li>
         </ol>
     </nav>
@@ -27,18 +28,20 @@
         <table id="groupTable" class="table table-bordered table-striped">
             <thead>
                 <tr>
-                    @* <th>ID</th> *@
-                    <th>Group Name</th>
+                    <th class="text-center">No</th>
+                    <th class="text-center">Group Name</th>
                 </tr>
             </thead>
             <tbody>
                 @if(Model.UserTitleList.Any())
                 {
+                    var rowNo = 0;
                     @foreach(var role in Model.UserTitleList)
                     {
+                        rowNo += 1;
                         <tr>
-                            @* <td>@role.Id</td> *@
-                            <td>@role.TitleName</td>
+                            <td class="pe-4">@rowNo</td>
+                            <td class="">@role.TitleName</td>
                         </tr>
                     }
                 }
@@ -68,7 +71,7 @@
                     { width: '20%', targets: 0 },
                 ], *@
                 initComplete: function() {
-                    $('#groupTable thead th').addClass('bg-brand-color text-light');
+                    @* $('#groupTable thead th').addClass('bg-brand-color text-light'); *@
                 }
             });
         });

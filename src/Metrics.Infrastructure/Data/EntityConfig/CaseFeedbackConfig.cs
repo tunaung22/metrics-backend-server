@@ -98,7 +98,7 @@ public class CaseFeedbackConfig : IEntityTypeConfiguration<CaseFeedback>
             .OnDelete(DeleteBehavior.Restrict)
             .IsRequired();
         builder.HasOne(e => e.CaseDepartment)
-            .WithMany(e => e.CaseFeedbackSubmissions)
+            .WithMany(e => e.CaseFeedbacks)
             .HasForeignKey(e => e.CaseDepartmentId)
             .OnDelete(DeleteBehavior.Restrict)
             .IsRequired();

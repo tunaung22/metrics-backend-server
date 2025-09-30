@@ -45,7 +45,7 @@ public class KeyKpiSubmissionConstraintConfig : IEntityTypeConfiguration<KeyKpiS
             .HasColumnType("timestamp with time zone");
 
         // ===== Relationships =====
-        builder.HasOne(e => e.Department)
+        builder.HasOne(e => e.SubmitterDepartment)
             .WithMany(e => e.KeyKpiSubmissionConstraints)
             .HasForeignKey(e => e.DepartmentId)
             .OnDelete(DeleteBehavior.Restrict)

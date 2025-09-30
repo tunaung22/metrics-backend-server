@@ -5,8 +5,7 @@
     <thead>
         <tr>
             <th>Period Name</th>
-            <th>Start Date</th>
-            <th>End Date</th>
+            <th>Duration</th>
             <th>Actions</th>
         </tr>
     </thead>
@@ -19,14 +18,13 @@
                     <td>
                         <strong>@p.PeriodName</strong>
                     </td>
-                    <td>@p.SubmissionStartDate.ToLocalTime().ToString("MMM dd, yyyy")</td>
-                    <td>@p.SubmissionEndDate.ToLocalTime().ToString("MMM dd, yyyy")</td>
+                    <td class="text-center mono-text">@p.SubmissionStartDate.ToLocalTime().ToString("MMM dd, yyyy") - @p.SubmissionEndDate.ToLocalTime().ToString("MMM dd, yyyy")</td>
                     <td>
                         @foreach (var button in Model.Buttons)
                         {
                             <a asp-page="@Model.LinkBasePage/@button.Page" 
                                 asp-route-periodName="@p.PeriodName"
-                                class="btn btn-sm btn-outline-primary my-2 my-lg-0 me-2">
+                                class="btn btn-sm btn-outline-primary mybtn my-2 my-lg-0 me-2">
                                 <strong><i class="@button.IconClass"> </i>@button.Text</strong></a>
                         }
                     </td>
@@ -36,6 +34,49 @@
     </tbody>
 </table>
 
+@if(!string.IsNullOrEmpty(Model.Color))
+{
+    var varLightColor = "--light-color";
+
+    if(Model.Color.Equals("red", StringComparison.OrdinalIgnoreCase))
+    {
+        var varMetricRed = "--metric-red-color";
+        var varMetricDeepRed = "--metric-deepred-color";
+        <style>
+                #@Model.TableId thead th {
+                    background: var(@varMetricRed);
+                }
+                .mybtn {
+                    color: var(@varMetricDeepRed) !important;
+                    border-color: var(@varMetricDeepRed) !important;
+                }
+                .mybtn:hover {
+                    background: var(@varMetricDeepRed) !important;
+                    border-color: var(@varMetricDeepRed) !important;
+                    color: var(@varLightColor) !important;
+                }
+        </style>
+    }
+    else if(Model.Color.Equals("green", StringComparison.OrdinalIgnoreCase))
+    {
+        var varMetricGreen = "--metric-green-color";
+        var varMetricDeepGreen = "--metric-deepgreen-color";
+        <style>
+                #@Model.TableId thead th {
+                    background: var(@varMetricGreen);
+                }
+                .mybtn {
+                    color: var(@varMetricDeepGreen) !important;
+                    border-color: var(@varMetricDeepGreen) !important;
+                }
+                .mybtn:hover {
+                    background: var(@varMetricDeepGreen) !important;
+                    border-color: var(@varMetricDeepGreen) !important;
+                    color: var(@varLightColor) !important;
+                }
+        </style>
+    }
+}
 
 @if (Model.IncludeScripts)
 {
@@ -44,18 +85,23 @@
             // Verify jQuery is available
             if (window.jQuery) {
                 $(function() {
+                    const defaultColor = @Json.Serialize(string.IsNullOrEmpty(Model.Color));
+                    console.log(defaultColor);
                     new DataTable('#@Model.TableId', {
                         paging: false,
                         info: false,
                         searching: false,
                         autoWidth: true,
                         columnDefs: [
-                            { width: "20%", targets: [0] },
-                            { orderable: false, targets: [0] }
+                            @* { width: "20%", targets: [0] }, *@
+                            { orderable: false, targets: [2] }
                         ],
                         initComplete: function() {
                             $('thead th').addClass('text-light text-center ');
-                            $('thead th').addClass('bg-brand-color');
+                            if(defaultColor)
+                            {
+                                $('thead th').addClass('bg-brand-color');         
+                            }
                         }
                     });
                 });
@@ -63,3 +109,4 @@
         });
     </script>
 }
+

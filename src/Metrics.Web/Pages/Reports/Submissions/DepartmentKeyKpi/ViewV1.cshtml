@@ -1,8 +1,8 @@
-﻿@page "/Reports/Submissions/Department-Key-Kpi/{periodName}"
+﻿@page "/Reports/Submissions/Department-Key-Kpi/{periodName}/View/V1"
 @using Metrics.Application.Domains
 @using Metrics.Infrastructure.Services
 @using Microsoft.EntityFrameworkCore.Metadata.Internal
-@model Metrics.Web.Pages.Reports.Submissions.DepartmentKeyKpi.ViewModel
+@model Metrics.Web.Pages.Reports.Submissions.DepartmentKeyKpi.ViewV1Model
 @{
     ViewData["Title"] = "Department Key KPI Report";
 }
@@ -190,55 +190,45 @@
                         }
                     }
 
-@* =============DETAIL VIEW======================================================================== *@
+@* =============DETAIL VIEW===================================================== *@
                     else if (Model.ViewMode.Equals("detail", StringComparison.OrdinalIgnoreCase))
                     {
-@* ============= ALL GROUP + DETAIL ===== *@
-                        @* submitter, [department score], ..., score, totalScr *@
+
+@* ============= ALL GROUP + DETAIL ============================================ *@
+@* submitter, [department score], ..., score, totalScr   *@
+                        
                         if (Model.Group.Equals("all", StringComparison.OrdinalIgnoreCase))
                         {
-                            @if(Model.AllUserGroup_DetailList.Any())
+                            @if(Model.KeyKpi_AllUserGroup_ReportDetails.Any())
                             {
                                 <table id="allUserGroupDetailTable" class="allUserGroupDetailTable table table-bordered table-striped">
-                                <thead>
+                                    <thead>
                                     <tr>
-                                        <th colspan="4" rowspan="2" 
-                                            class="fs-3 fw-bold"
+                                        <th colspan="4" rowspan="1" 
+                                            @* class="fs-3 fw-bold" *@
                                             data-dt-order="disable">Candidate</th>
 
-                                        @foreach(var department in Model.DepartmentList)
+                                        @foreach(var department in Model.KeyIssueDepartmentList)
                                         {
-                                            @* var noOfKeys = Model.AllUserGroup_DetailList
-                                                .DistinctBy(i=> i.KeyKpi_DepartmentScoreDetails)
-                                                .SelectMany(i=> i.KeyKpi_DepartmentScoreDetails)
-                                                .Where(detail => 
-                                                    string.Equals(detail.DepartmentName,department.DepartmentName, StringComparison.OrdinalIgnoreCase))
-                                                .ToList().Count; *@
                                             var noOfKeys = Model.DepartmentKeyMetrics
-                                                .Where(dkm => dkm.DepartmentId == department.Id)
-                                                .Count();
-                                            
+                                                .Where(dkm => dkm.KeyIssueDepartmentId == department.Id).Count();
                                             <th colspan="@(noOfKeys > 0 ? noOfKeys*2 : 2)"
-                                                data-dt-order="disable">@department.DepartmentName @noOfKeys</th>
-                                            @* @for(int i= 0; i<noOfKeys; i++) {
-                                                <th colspan="2" class="text-center">@department.DepartmentName @noOfKeys</th>
-                                            } *@
+                                                data-dt-order="disable">@department.DepartmentName @*@noOfKeys*@</th>
                                         }
                                     </tr>
                                     <tr>
-                                        @foreach(var department in Model.DepartmentList)
+                                        <th colspan="4" data-dt-order="disable"></th>
+                                        @foreach(var department in Model.KeyIssueDepartmentList)
                                         {
-                                            @* var keyItems = Model.AllUserGroup_DetailList
-                                                .SelectMany(i=> i.KeyKpi_DepartmentScoreDetails)
-                                                .Where(detail => 
-                                                    string.Equals(detail.DepartmentName, department.DepartmentName, StringComparison.OrdinalIgnoreCase))
-                                                .ToList(); *@
                                             var keyItems = Model.DepartmentKeyMetrics
-                                                .Where(dkm => dkm.DepartmentId == department.Id)
+                                                .Where(dkm => dkm.KeyIssueDepartmentId == department.Id)
+                                                .OrderBy(dkm=>dkm.KeyMetric.MetricTitle)
                                                 .ToList();
 
+                                            @* var keyNumber = 0; *@
                                             foreach(var key in keyItems)
                                             {
+                                                @* keyNumber += 1; *@
                                                 <th colspan="2" class="keyTitle mono-text" data-dt-order="disable">
                                                     <div class="text-warning">@department.DepartmentName</div>
                                                     <div>@key.KeyMetric.MetricTitle</div>
@@ -252,7 +242,7 @@
                                         <th>Department</th>
                                         <th>Group</th>
 
-                                        @foreach(var department in Model.DepartmentList)
+                                        @foreach(var department in Model.KeyIssueDepartmentList)
                                         {
                                             @* var keyItems = Model.AllUserGroup_DetailList
                                                 .SelectMany(i=> i.KeyKpi_DepartmentScoreDetails)
@@ -260,7 +250,7 @@
                                                     string.Equals(detail.DepartmentName, department.DepartmentName, StringComparison.OrdinalIgnoreCase))
                                                 .ToList(); *@
                                             var keyItems = Model.DepartmentKeyMetrics
-                                                .Where(dkm => dkm.DepartmentId == department.Id)
+                                                .Where(dkm => dkm.KeyIssueDepartmentId == department.Id)
                                                 .ToList();
 
                                             foreach(var key in keyItems)
@@ -272,47 +262,68 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach(var entry in Model.AllUserGroup_DetailList) 
+                                    @foreach(var user in Model.SubmitterList) // loop all submitters
                                     {
-                                        <tr>
-                                            <td>@entry.SubmittedBy.UserCode</td>
-                                            <td>@entry.SubmittedBy.FullName</td>
-                                            <td>@entry.SubmittedBy.Department.DepartmentName</td>
-                                            <td>@entry.SubmittedBy.UserGroup.GroupName</td>
+                                        // filter/find submissions by User
+                                        if(Model.KeyKpi_AllUserGroup_ReportDetails.Any())
+                                        {
+                                            var submissionsByUser = Model.KeyKpi_AllUserGroup_ReportDetails
+                                                .Where(s => s.SubmittedBy.Id == user.Id)
+                                                .ToList();
+                                            @foreach(var entry in submissionsByUser)
+                                            {
+                                                <tr>
+                                                    <td>@entry.SubmittedBy.UserCode</td>
+                                                    <td>@entry.SubmittedBy.FullName</td>
+                                                    <td>@entry.SubmittedBy.Department.DepartmentName</td>
+                                                    <td>@entry.SubmittedBy.UserGroup.GroupName</td>
 
-                                            @if (entry.KeyKpi_DepartmentScoreDetails!=null && 
-                                                entry.KeyKpi_DepartmentScoreDetails.Count >0)
-                                            {
-                                                @foreach(var item in entry.KeyKpi_DepartmentScoreDetails)
-                                                {
-                                                    <td>@item.ScoreValue.ToString("0.00")</td>
-                                                    <td>
-                                                        @if(@item.Comments != null && @item.Comments.Any()) {
-                                                            @if(@item.Comments.Length > 50) {
-                                                                @(@item.Comments.Substring(0, 50) + "...")
-                                                                <button data-details="@item.Comments" data-label="Positive Aspects"
-                                                                        class="moreButton_positiveAspects btn btn-link p-0 pb-2">More</button>
-                                                            }
-                                                            else {
-                                                                @item.Comments
-                                                            }
+                                                    @if (entry.KeyKpi_AllUserGroup_ReportDetailItem != null && 
+                                                        entry.KeyKpi_AllUserGroup_ReportDetailItem.Count > 0)
+                                                    {
+                                                        @foreach(var item in entry.KeyKpi_AllUserGroup_ReportDetailItem)
+                                                        {
+                                                            <td>@item.ScoreValue.ToString("0.00")</td>
+                                                            <td>
+                                                                @if(@item.Comments != null && @item.Comments.Any()) {
+                                                                    var comments = @item.Comments.Substring(0, 25) + "...";
+                                                                    @if(@item.Comments.Length > 25) 
+                                                                    {
+                                                                        @comments
+                                                                        <button data-details="@item.Comments" data-label="Positive Aspects"
+                                                                                class="moreButton_positiveAspects btn btn-link p-0 pb-2">More</button>
+                                                                    }
+                                                                    else 
+                                                                    {
+                                                                        @item.Comments
+                                                                    }
+                                                                }
+                                                                else 
+                                                                {
+                                                                    @:None
+                                                                }
+                                                            </td>
                                                         }
-                                                        else {
-                                                            @:None
-                                                        }
-                                                    </td>
-                                                }
+                                                    }
+                                                    else
+                                                    {
+                                                        // 
+                                                        <td>0.00</td>
+                                                        <td>-</td>
+                                                    }
+                                                </tr>
                                             }
-                                            else
-                                            {
-                                                <td>-1.00</td>
-                                                <td>-</td>
-                                            }
-                                        </tr>
+                                        }
+                                    }
+
+
+                                    @foreach(var entry in Model.KeyKpi_AllUserGroup_ReportDetails)
+                                    {
+                                        
                                     }
                                 </tbody>
                                 <tfoot>
-                                    <tr>
+                                     <tr>
                                         <!-- For the Candidate column -->
                                         <th></th> @* candidate id *@
                                         <th></th> @* candidate name *@
@@ -320,23 +331,23 @@
                                         <th></th> @* candidate group *@
 
                                         @{
-                                            var flattenedDepartmentDetails = Model.AllUserGroup_DetailList
-                                                .SelectMany(e=>e.KeyKpi_DepartmentScoreDetails).ToList();
+                                            var flattenedDepartmentDetails = Model.KeyKpi_AllUserGroup_ReportDetails
+                                                .SelectMany(e=>e.KeyKpi_AllUserGroup_ReportDetailItem).ToList();
                                         }
                                         
-                                        @foreach(var department in Model.DepartmentList)
+                                        @foreach(var department in Model.KeyIssueDepartmentList)
                                         {
                                             // Filter DKMs by Department
                                             var DKMs = Model.DepartmentKeyMetrics
-                                                .Where(dkm => dkm.DepartmentId == department.Id)
+                                                .Where(dkm => dkm.KeyIssueDepartmentId == department.Id)
                                                 .ToList();
 
                                             foreach(var dkm in DKMs)
                                             {
                                                 // for each DKM, get Sum of Score from all Details(of department)
                                                 var totalScore = flattenedDepartmentDetails
-                                                    .Where(d=> d.DKMId == dkm.Id)
-                                                    .OrderBy(d=> d.KeyId)
+                                                    .Where(d=> d.DepartmentKeyMetric?.Id == dkm.Id)
+                                                    .OrderBy(d=> d.DepartmentKeyMetric?.Id)
                                                     .Sum(d=>d.ScoreValue);
 
                                                 <th>@totalScore.ToString("0.00")</th>
@@ -346,6 +357,10 @@
                                     </tr>
                                 </tfoot>
                                 </table>
+                            }
+                            else
+                            {
+                                <p class="alert alert-danger text-danger text-center">No Data</p>
                             }
                         }
                         else {
@@ -357,7 +372,7 @@
                                 <thead>
                                     <tr>
                                         <th colspan="3">Candidate</th>
-                                        @foreach(var department in Model.DepartmentList)
+                                        @foreach(var department in Model.KeyIssueDepartmentList)
                                         {
                                             <th>@department.DepartmentName</th>
                                         }
@@ -366,7 +381,7 @@
                                         <th>Candidate ID</th>
                                         <th>Name</th>
                                         <th>Department</th>
-                                        @foreach(var department in Model.DepartmentList)
+                                        @foreach(var department in Model.KeyIssueDepartmentList)
                                         {
                                             <th>Score</th>
                                         }
@@ -380,7 +395,7 @@
                                             <td>@entry.SubmittedBy.FullName</td>
                                             <td>@entry.SubmittedBy.Department.DepartmentName</td>
                                             @* <td>@(entry.GroupName != null ? entry.GroupName.ToUpper() : "N/A")</td> *@
-                                            @foreach(var d in Model.DepartmentList)
+                                            @foreach(var d in Model.KeyIssueDepartmentList)
                                             {
                                                 // if Department == DepartmentScores.Department
                                                 // **likely contains only 1 if exist
@@ -404,7 +419,7 @@
                                         <th></th>
                                         <th></th> <!-- For the Candidate column -->
                                         <th></th>
-                                        @foreach(var department in Model.DepartmentList)
+                                        @foreach(var department in Model.KeyIssueDepartmentList)
                                         {
                                             <th></th> <!-- Empty cells that will be filled by footerCallback -->
                                         }
@@ -640,11 +655,11 @@
                     footerCallback: function (row, data, start, end, display) {
                         let api = this.api();
                 
-                        @foreach(var department in Model.DepartmentList)
+                        @foreach(var department in Model.KeyIssueDepartmentList)
                         {
                             //  0      1          2              3
                             // ID, Candidate, Department, Admin Department,...
-                            var index = Model.DepartmentList.IndexOf(department) + 3; // +1 for Candidate is column 0
+                            var index = Model.KeyIssueDepartmentList.IndexOf(department) + 3; // +1 for Candidate is column 0
                             <text>
                             // Calculate total for @department.DepartmentName (column @index)
                             var total_@(index) = api

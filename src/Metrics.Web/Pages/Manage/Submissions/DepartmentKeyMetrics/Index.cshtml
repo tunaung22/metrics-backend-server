@@ -6,7 +6,7 @@
 
 <div class="sectionTitle">
     <div class="d-flex align-items-center my-2">
-        <h4 class="flex-grow-1">Department Key Metrics for Key KPI</h4>
+        <h4 class="flex-grow-1"><i class="bi bi-ui-checks-grid"></i> Department Keys for Key KPI</h4>
         <span class="justify-content-end gap-2">
             @* <a class="btn btn-success" 
                 asp-page="Create"
@@ -16,7 +16,8 @@
     </div>
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a asp-page="/Dashboard/Index">Dashboard</a></li>
+            <li class="breadcrumb-item"><a asp-page="/Index">Home</a></li>
+            <li class="breadcrumb-item"><a asp-page="/Manage/Index">Manage</a></li>
             @* <li class="breadcrumb-item"><a asp-page="/Manage/Submissions/Index">Submissions</a></li> *@
             <li class="breadcrumb-item active">Department Key Metrics</li>
         </ol>
@@ -31,9 +32,27 @@
         @* =============== Filter Bar =============================================== *@
         <div id="filter-bar" class="d-flex align-items-center px-4 pt-4">
             <span class="d-flex flex-grow-1">
-                <ul>
-                    <li>Setp 1: Assign Key to Issuer Department.</li>
-                    <li>Setp 2: Assign Which Department can Submit which Keys Metrics.</li>
+                <ul class="mono-text">
+                    @{
+                        var step1Text = "<div><strong>Setup 1: Issuing Keys</strong> <br/>This first step is to issues the key metrics for each department.<br/>[Who own which key metrics?]</div>";
+                        var step2Text = "<div><strong>Setup 2: Assign Eligible Departments</strong> <br/>This step involves assigning which department users are eligible to submit scores for the keys.<br/>[Who can submit which department keys?]</div>";
+                    }
+                    <li>
+                        Setp 1: Issue key metrics. 
+                        <i class="bi bi-info-circle-fill"
+                            data-bs-toggle="tooltip" 
+                            data-bs-html="true"
+                            data-bs-title="@step1Text"
+                            data-bs-placement="right"></i>
+                    </li>
+                    <li>
+                        Setp 2: Set key metrics to eligible departments.
+                        <i class="bi bi-info-circle-fill" 
+                            data-bs-toggle="tooltip" 
+                            data-bs-html="true"
+                            data-bs-title="@step2Text"
+                            data-bs-placement="right"></i>
+                    </li>
                 </ul>
                 @* <text class="me-2">Departments: </text> <strong>@Model.TotalDepartments</strong> *@
             </span>
@@ -45,17 +64,15 @@
         @* ================ Table =================================================== *@
         <div class="px-4 pb-4">
             <table id="kpiPeriodTable" class="table table-bordered table-striped">
-                <thead>
+                <thead class="mono-text">
                     <tr>
                         <th rowspan="2">Period Name</th>
-                        <th rowspan="2">Start Date</th>
-                        <th rowspan="2">End Date</th>
-                        @* <th>Status</th> *@
+                        <th rowspan="2">Period</th>
                         <th colspan="2">Actions</th>
                     </tr>
                     <tr>
-                        <th>1. Assign Department and Keys</th>
-                        <th>2. Assign Submitter Deparmtent</th>
+                        <th>Step 1: Department Keys</th>
+                        <th>Step 2: Eligible Departments</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -76,8 +93,10 @@
                                 </td>
                                 @* <td>@p.SubmissionStartDate.ToLocalTime().UtcDateTime.ToString("MMM dd, yyyy hh:mm:ss tt")</td>
                                 <td>@p.SubmissionEndDate.ToLocalTime().UtcDateTime.ToString("MMM dd, yyyy hh:mm:ss tt")</td> *@
-                                <td class="text-center">@p.SubmissionStartDate.ToLocalTime().ToString("MMM dd, yyyy")</td>
-                                <td class="text-center">@p.SubmissionEndDate.ToLocalTime().ToString("MMM dd, yyyy")</td>
+                                <td class="text-center mono-text">
+                                    @p.SubmissionStartDate.ToLocalTime().ToString("MMM dd, yyyy") - 
+                                    @p.SubmissionEndDate.ToLocalTime().ToString("MMM dd, yyyy")
+                                </td>
                                 @* <td class="text-center">000</td> *@
                                 @{
                                     @* var pillColor = "success"; *@
@@ -91,7 +110,7 @@
                                     <a asp-page="Assign" 
                                         asp-route-periodName="@p.PeriodName"
                                         class="btn btn-sm btn-outline-primary my-2 my-lg-0 me-2">
-                                        <strong><i class="bi bi-clipboard2-data"> </i>Assign</strong></a>
+                                        <strong><i class="bi bi-ui-checks"></i> Issue Keys</strong></a>
                                     @* <a asp-page="View" 
                                         asp-route-periodName="@p.PeriodName"
                                         class="btn btn-sm btn-outline-primary my-2 my-lg-0 me-2">
@@ -105,7 +124,7 @@
                                     <a asp-page="SubmissionAssignment" 
                                         asp-route-periodName="@p.PeriodName"
                                         class="btn btn-sm btn-outline-primary my-2 my-lg-0 me-2">
-                                        <strong><i class="bi bi-clipboard2-data"> </i>Assign</strong></a>
+                                        <strong><i class="bi bi-check-circle-fill"></i> Assign Keys</strong></a>
                                 </td>
                             </tr>
                         }
@@ -160,6 +179,10 @@
                 info: false,
                 searching: false,
                 autoWidth: true,
+                columnDefs: [
+                    { width: '35%', targets: [1] },
+
+                ],
                 initComplete: function() {
                     $('thead th').addClass('text-light text-center align-middle');
                     $('thead th').addClass('bg-brand-color');

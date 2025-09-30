@@ -1,6 +1,6 @@
 using Metrics.Application.Interfaces.IRepositories;
 
-namespace Metrics.Application.Interfaces.IServices;
+namespace Metrics.Application.Common;
 
 public interface IUnitOfWork
 {

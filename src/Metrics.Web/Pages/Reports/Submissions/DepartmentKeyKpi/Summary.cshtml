@@ -1,4 +1,211 @@
-﻿@page "/Reports/Submissions/DepartmentKeyKpi/{periodName}"
+﻿@page "/Reports/Submissions/Department-Key-Kpi/{periodName}/Summary"
 @model Metrics.Web.Pages.Reports.Submissions.DepartmentKeyKpi.SummaryModel
 @{
+    ViewData["Title"] = "Department Key KPI Summary Report";
+}
+
+
+<div class="sectionTitle">
+    <div class="d-flex align-items-center my-2">
+        <span class="d-flex align-items-center flex-grow-1">
+            <h4><i class="bi bi-table"></i> Key KPI Summary Report for Period @Model.SelectedPeriodName</h4>
+            <span class="mx-4">
+                Period: <strong>@Model.SelectedPeriod.PeriodName</strong>
+                <small>(@Model.SelectedPeriod.SubmissionStartDate.ToString("MMM dd, yyyy") - @Model.SelectedPeriod.SubmissionEndDate.ToString("MMM dd, yyyy"))</small>
+            </span>
+        </span>
+        <span class="justify-content-end gap-2">
+        </span>
+    </div>
+
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-page="/Dashboard/Index">Dashboard</a></li>
+            <li class="breadcrumb-item"><a asp-page="/Reports/Submissions/Index">Reports</a></li>
+            <li class="breadcrumb-item"><a asp-page="/Reports/Submissions/DepartmentKeyKpi/Index">Department Key KPI</a></li>
+            <li class="breadcrumb-item active">Summary</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="filter-toolbar mb-4 px-4 d-flex align-items-center justify-content-between">
+    <div class="d-flex align-items-center gap-2">
+        <form id="form__groupSelection" method="get" class="">
+            <span class="d-flex align-items-center">
+                <div class="col-auto me-2">
+                    <label for="Group" class="form-label m-0">
+                        <i class="bi bi-people-fill"></i> User Group</label>
+                </div>
+                <div class="col-auto me-4">
+                    <select 
+                        asp-for="Group"
+                        asp-items="Model.UserGroupListItems"
+                        onchange="this.form.submit()"
+                        class="form-select"
+                        aria-label="Select User Group">
+                    </select>
+                </div>
+            </span>
+        </form>
+        @* <button>Button</button> *@
+    </div>
+
+    <div class="exportData">
+        <form method="post" asp-page-handler="ExportExcel">
+            <input type="hidden" asp-for="Group">
+
+            @if(Model.SummaryReportList.Any())
+            {
+                <button type="submit" class="btn btn-success">
+                    <i class="bi bi-file-earmark-spreadsheet"></i> Export</button>
+            }
+            else
+            {
+                <button type="submit" 
+                    class="btn btn-success disabled">
+                <i class="bi bi-file-earmark-spreadsheet"></i> Export</button>
+            }
+        </form>
+    </div>
+</div>
+
+<div class="container-fluid">
+    <div class="bg-light p-4 rounded-2">
+
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger text-danger" role="alert"></div>
+
+        <div class="table-responsive">
+            @if(Model.SummaryReportList.Any())
+            {
+                @* =============ALL GROUP============================================ *@
+                @if (Model.Group.Equals("all", StringComparison.OrdinalIgnoreCase))
+                {
+                    <table id="summaryReportTable" class="table table-bordered table-striped">
+                        <thead>
+                            <tr>
+                                <th colspan="2">Key Departments</th>
+                                @if(Model.UserGroupList.Count > 0)
+                                {
+                                    foreach(var group in Model.UserGroupList)
+                                    {
+                                        <th colspan="2">@group.GroupName</th>
+                                    }
+                                }
+                                <th rowspan="2">Total Submissions</th>
+                                <th rowspan="2">Total Score</th>
+                                <th rowspan="2">KPI Score</th>
+                            </tr>
+                            <tr>
+                                <th><strong>Name</strong></th>
+                                <th>Total Keys</th>
+                                @if(Model.UserGroupList.Count > 0)
+                                {
+                                    foreach(var group in Model.UserGroupList)
+                                    {
+                                        <th>Submissions</th>
+                                        <th>Score</th>
+                                    }
+                                }
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach(var submission in Model.SummaryReportList) // per Pepartment
+                            {
+                                <tr>
+                                    <td>@submission.KeyIssueDepartment.DepartmentName</td>
+                                    <td>@submission.TotalKeys</td>
+                                    @if(Model.UserGroupList.Count > 0)
+                                    {
+                                        foreach(var item in submission.SummaryReport_UserGroupDetails)
+                                        {
+                                            <td>@item.TotalSubmissions</td>
+                                            <td>@item.TotalScore</td>
+                                        }
+                                    }
+                                    <td>@submission.TotalSubmissions.ToString("0")</td>
+                                    <td>@submission.TotalScore.ToString("0.00")</td>
+                                    <td>
+                                        <strong>
+                                            @submission.KpiScore.ToString("0.00")
+                                        </strong>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot></tfoot>
+                    </table>
+                }
+                @* =====SINGLE GROUP========================== *@
+                else
+                {
+                    <table id="summaryReportTable" class="table table-bordered table-striped">
+                        <thead>
+                            <tr>
+                                <th><strong>Key Departments</strong></th>
+                                <th>Total Keys</th>
+                                <th>Group</th>
+                                <th>Total Submissions</th>
+                                <th>Total Score</th>
+                                <th>KPI Score</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach(var submission in Model.SummaryReportList)
+                            {
+                                <tr>
+                                    <td><strong>@submission.KeyIssueDepartment.DepartmentName</strong></td>
+                                    <td>@submission.TotalKeys</td>
+                                    <td>@Model.Group.ToUpper()</td>
+                                    <td>@submission.TotalSubmissions.ToString("0")</td>
+                                    <td>@submission.TotalScore.ToString("0.00")</td>
+                                    <td>
+                                        <strong>
+                                            @submission.KpiScore.ToString("0.00")
+                                        </strong>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot></tfoot>
+                    </table>
+                }
+            }
+            else
+            {
+                <p class="alert alert-danger text-danger text-center">No Data</p>
+            }
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // ------------------- DATATABLE -----------------------------------
+            if($("#summaryReportTable").length) {
+                new DataTable('#summaryReportTable', {
+                    paging: false,
+                    pageLength: 50,
+                    info: false,
+                    searching: false,
+                    autoWidth: true,
+                    scroller: true,
+                    scrollY: 600,
+                    columnDefs: [
+                        { width: '16%', targets: 0 },
+                        { sortable: false, targets: ['.no-sort'] },
+                        @* { orderable: false, targets: noSortTargets } // Disable sorting for specified columns *@
+                    ],
+                    initComplete: function() {
+                        $('.dataTable thead th').addClass('text-light text-center align-middle');
+                        $('.dataTable thead th').addClass('bg-brand-color');
+                        $('.dataTable tfoot th').addClass('bg-brand-color text-light');
+                        @* $('#allUserGroupSummaryTable thead th').addClass('text-light text-center align-middle');
+                        $('#allUserGroupSummaryTable thead th').addClass('bg-brand-color'); *@
+                    }
+                });
+            }
+        });
+    </script>
 }

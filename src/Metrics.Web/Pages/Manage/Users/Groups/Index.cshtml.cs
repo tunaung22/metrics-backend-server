@@ -3,14 +3,9 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace Metrics.Web.Pages.Manage.Users.Groups;
 
-public class IndexModel : PageModel
+public class IndexModel(IUserTitleService userTitleService) : PageModel
 {
-    public readonly IUserTitleService _userTitleService;
-
-    public IndexModel(IUserTitleService userTitleService)
-    {
-        _userTitleService = userTitleService;
-    }
+    public readonly IUserTitleService _userTitleService = userTitleService;
 
     public class UserTitleModel
     {
@@ -22,10 +17,12 @@ public class IndexModel : PageModel
     public async Task<PageResult> OnGet()
     {
         var titles = await _userTitleService.FindAllAsync();
-        UserTitleList = titles.Select(r => new UserTitleModel()
-        {
-            TitleName = r.TitleName ?? string.Empty
-        }).ToList();
+        UserTitleList = titles
+            .Where(g => !g.TitleName.Equals("sysadmin", StringComparison.OrdinalIgnoreCase))
+            .Select(g => new UserTitleModel()
+            {
+                TitleName = g.TitleName ?? string.Empty
+            }).ToList();
 
         return Page();
     }

@@ -78,6 +78,7 @@ public class ListModel(
                             FullName = s.SubmittedBy.FullName,
                             PhoneNumber = s.SubmittedBy.PhoneNumber,
                             ContactAddress = s.SubmittedBy.ContactAddress,
+                            DepartmentId = s.SubmittedBy.DepartmentId,
                             Department = new DepartmentViewModel
                             {
                                 Id = s.SubmittedBy.Department.Id,

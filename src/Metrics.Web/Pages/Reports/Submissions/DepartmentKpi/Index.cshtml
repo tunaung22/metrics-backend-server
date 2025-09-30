@@ -1,5 +1,6 @@
 ﻿@page "/Reports/Submissions/Department-Kpi/"
 @model Metrics.Web.Pages.Reports.Submissions.DepartmentKpi.IndexModel
+@using Metrics.Web.Models.PartialViewModels
 @{
     ViewData["Title"] = "Department Score Reports (KPI)";
 }
@@ -7,7 +8,7 @@
 
 <div class="sectionTitle">
     <div class="d-flex align-items-center my-2">
-        <h4 class="flex-grow-1">Department Score Reports (KPI)</h4>
+        <h4 class="flex-grow-1"><i class="bi bi-table"></i> Department Score Reports (KPI)</h4>
         <span class="justify-content-end gap-2"></span>
     </div>
 
@@ -22,57 +23,25 @@
 
 <div class="container">
     <div class="bg-light p-4 rounded-2">
-        <table id="reportIndexTable" class="table table-bordered table-striped">
-            <thead>
-                <tr>
-                    <th>Period Name</th>
-                    <th>Start Date</th>
-                    <th>End Date</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @if (Model.KpiPeriodList.Any())
-                {
-                    @foreach(var p in Model.KpiPeriodList)
-                    {
-                        <tr>
-                            <td class="text-center">
-                                <a asp-page="Summary" 
-                                    asp-route-periodName="@p.PeriodName"
-                                    class="link-primary 
-                                            link-offset-2 
-                                            link-underline-opacity-25 
-                                            link-underline-opacity-100-hover">
-                                    <strong>@p.PeriodName</strong></a>
-                            </td>
-                            @* <td>@p.SubmissionStartDate.ToLocalTime().UtcDateTime.ToString("MMM dd, yyyy hh:mm:ss tt")</td>
-                            <td>@p.SubmissionEndDate.ToLocalTime().UtcDateTime.ToString("MMM dd, yyyy hh:mm:ss tt")</td> *@
-                            <td class="text-center">@p.SubmissionStartDate.ToLocalTime().ToString("MMM dd, yyyy")</td>
-                            <td class="text-center">@p.SubmissionEndDate.ToLocalTime().ToString("MMM dd, yyyy")</td>
-                            <td class="text-center">
-                                @* <a asp-page="Summary" 
-                                    asp-route-periodName="@p.PeriodName"
-                                    class="btn btn-sm btn-outline-primary my-2 my-lg-0 me-2">
-                                    <strong><i class="bi bi-clipboard2-data"> </i>Summary</strong></a> *@
-                                <a asp-page="View" 
-                                    asp-route-periodName="@p.PeriodName"
-                                    class="btn btn-sm btn-outline-primary my-2 my-lg-0 me-2">
-                                    <strong><i class="bi bi-clipboard2-data"> </i>View</strong></a>
-                                <a asp-page="Detail" 
-                                    asp-route-periodName="@p.PeriodName"
-                                    class="btn btn-sm btn-outline-primary my-2 my-lg-0 me-2">
-                                    <strong><i class="bi bi-clipboard2-data"> </i>Details</strong></a>
-                            </td>
-                        </tr>
-                    }
-                }
-            </tbody>
-        </table>
-    </div>
+        <partial name="./List/_PeriodList" model="@(new PeriodListPartialModel {
+            @* IncludeScripts = true, *@
+            TableId = "reportTable",
+            LinkBasePage = "/Reports/Submissions/DepartmentKpi",
+            Periods = Model.KpiPeriodList,
+            Buttons = new List<PeriodListButton> {
+                // summary:     bi bi-clipboard-data-fill
+                // detail:      bi bi-file-spreadsheet-fill
+                new PeriodListButton { Page = "View", Text = "View", IconClass = "bi bi-clipboard-data-fill" } 
+            },
+            @* Color = "green" *@
+        })" />
+    </div>  
 </div>
 
-@section Scripts {
+
+@* new PeriodListButton { Page = "Summary", Text = "Summary" },
+new PeriodListButton { Page = "Detail", Text = "Details" }, *@
+@* @section Scripts {
     <script>
         $(function() {
             new DataTable('#reportIndexTable', {
@@ -91,4 +60,4 @@
             });
         });
     </script>
-}
+} *@

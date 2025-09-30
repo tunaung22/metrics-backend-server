@@ -1,8 +1,10 @@
+using Metrics.Web.Models.DepartmentKeyMetric;
+
 namespace Metrics.Web.Models.ReportViewModels.KeyKpi;
 
 public class KeyKpi_DepartmentScoreDetail
 {
-    public string DepartmentName { get; set; } = string.Empty;
+    public string KeyIssueDepartmentName { get; set; } = string.Empty;
     public DepartmentKeyMetricViewModel? DepartmentKeyMetric { get; set; }
     public long KeyId { get; set; }
     public long DKMId { get; set; }

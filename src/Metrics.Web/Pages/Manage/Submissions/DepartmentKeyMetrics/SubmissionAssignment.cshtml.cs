@@ -1,76 +1,66 @@
 using Metrics.Application.Domains;
 using Metrics.Application.Interfaces.IServices;
+using Metrics.Web.Common.Mappers;
 using Metrics.Web.Models;
+using Metrics.Web.Models.DepartmentKeyMetric;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using System.Text.Json;
 
 namespace Metrics.Web.Pages.Manage.Submissions.DepartmentKeyMetrics;
 
-public class SubmissionAssignmentModel : PageModel
+public class SubmissionAssignmentModel(
+    ILogger<SubmissionAssignmentModel> logger,
+    IDepartmentService departmentService,
+    IKpiSubmissionPeriodService kpiSubmissionPeriodService,
+    IKeyMetricService keyMetricService,
+    IDepartmentKeyMetricService departmentKeyMetricService,
+    IKeyKpiSubmissionConstraintService keyKpiSubmissionConstraintService) : PageModel
 {
-    private readonly IDepartmentService _departmentService;
-    private readonly IKpiSubmissionPeriodService _kpiSubmissionPeriodService; // Period
-    private readonly IKeyMetricService _keyMetricService; // Key Metric
-    private readonly IDepartmentKeyMetricService _departmentKeyMetricService;
-    private readonly IKeyKpiSubmissionConstraintService _keyKpiSubmissionConstraintService;
+    private readonly ILogger<SubmissionAssignmentModel> _logger = logger;
+    private readonly IDepartmentService _departmentService = departmentService;
+    private readonly IKpiSubmissionPeriodService _kpiSubmissionPeriodService = kpiSubmissionPeriodService; // Period
+    private readonly IKeyMetricService _keyMetricService = keyMetricService; // Key Metric
+    private readonly IDepartmentKeyMetricService _departmentKeyMetricService = departmentKeyMetricService;
+    private readonly IKeyKpiSubmissionConstraintService _keyKpiSubmissionConstraintService = keyKpiSubmissionConstraintService;
 
-    public SubmissionAssignmentModel(
-        IDepartmentService departmentService,
-        IKpiSubmissionPeriodService kpiSubmissionPeriodService,
-        IKeyMetricService keyMetricService,
-        IDepartmentKeyMetricService departmentKeyMetricService,
-        IKeyKpiSubmissionConstraintService keyKpiSubmissionConstraintService)
-    {
-        _departmentService = departmentService;
-        _kpiSubmissionPeriodService = kpiSubmissionPeriodService;
-        _keyMetricService = keyMetricService;
-        _departmentKeyMetricService = departmentKeyMetricService;
-        _keyKpiSubmissionConstraintService = keyKpiSubmissionConstraintService;
-    }
 
     // =============== MODELS ==================================================
-    public class KeyKpiSubmissionConstraintViewModel
-    {
-        public long Id { get; set; }
-        public Guid LookupId { get; set; }
-        public bool IsDeleted { get; set; }
-        public long DepartmentId { get; set; }
-        public DepartmentViewModel Department { get; set; } = null!;
-        public long DepartmentKeyMetricId { get; set; }
-        public DepartmentKeyMetricViewModel DepartmentKeyMetric { get; set; } = null!;
-    }
     public List<KeyKpiSubmissionConstraintViewModel> UpdateConstraintViewModel { get; set; } = [];
     public List<KeyKpiSubmissionConstraintViewModel> KeyKpiSubmissionConstraints { get; set; } = [];
 
-    public class DepartmentKeyMetricViewModel
-    {
-        public long Id { get; set; }
-        public Guid DepartmentKeyMetricCode { get; set; }
-        public bool IsDeleted { get; set; }
-        public long KpiSubmissionPeriodId { get; set; }
-        public long DepartmentId { get; set; }
-        public DepartmentViewModel Department { get; set; } = null!;
-        public long KeyMetricId { get; set; }
-        public KeyMetricViewModel KeyMetric { get; set; } = null!;
-    }
+    // public class DepartmentKeyMetricViewModel
+    // {
+    //     public long Id { get; set; }
+    //     public Guid DepartmentKeyMetricCode { get; set; }
+    //     public bool IsDeleted { get; set; }
+    //     public long KpiSubmissionPeriodId { get; set; }
+    //     public long DepartmentId { get; set; }
+    //     public DepartmentViewModel Department { get; set; } = null!;
+    //     public long KeyMetricId { get; set; }
+    //     public KeyMetricViewModel KeyMetric { get; set; } = null!;
+    // }
 
-    public class KeyMetricViewModel
-    {
-        public long Id { get; set; }
-        public Guid MetricCode { get; set; }
-        public string MetricTitle { get; set; } = null!;
-        public string? Description { get; set; }
-    }
+    // public class KeyMetricViewModel
+    // {
+    //     public long Id { get; set; }
+    //     public Guid MetricCode { get; set; }
+    //     public string MetricTitle { get; set; } = null!;
+    //     public string? Description { get; set; }
+    // }
 
     public List<DepartmentKeyMetricViewModel> DepartmentKeyMetrics { get; set; } = [];
 
     [BindProperty]
-    public string? CurrentPeriodName { get; set; }
+    public string? SelectedPeriodName { get; set; }
+
+    public KpiPeriodViewModel SelectedPeriod { get; set; } = null!;
 
     [BindProperty]
     public List<SelectListItem> DepartmentListItems { get; set; } = [];
+
+    public List<DepartmentViewModel> Departments { get; set; } = [];
+
     [BindProperty(Name = "Department", SupportsGet = true)]
     public string? CurrentDepartmentCode { get; set; } // QueryString => Current Department Code
 
@@ -83,21 +73,26 @@ public class SubmissionAssignmentModel : PageModel
             ModelState.AddModelError(string.Empty, "A valid Period Name is required.");
             return Page();
         }
-        CurrentPeriodName = periodName;
 
-        // Department List Items
-        var departments = await _departmentService.FindAllAsync();
-        if (!departments.Any())
-        {
-            ModelState.AddModelError(string.Empty, "No Department exist.");
+        // ----------KPI PERIOD-------------------------------------------------
+        var selectedPeriod = await LoadKpiPeriod(periodName);
+        if (selectedPeriod == null)
             return Page();
-        }
-        DepartmentListItems = departments.Select((d, index) => new SelectListItem
-        {
-            // $"{(index + 1).ToString("00")}" 
-            Value = d.DepartmentCode.ToString(),
-            Text = d.DepartmentName
-        }).ToList();
+
+        SelectedPeriod = selectedPeriod;
+        SelectedPeriodName = selectedPeriod.PeriodName;
+
+        // ----------DEPARTMENTS------------------------------------------------
+        Departments = await LoadDepartmentList();
+        if (Departments.Count == 0)
+            return Page();
+        // Department List Items
+        DepartmentListItems = Departments
+            .Select((d, index) => new SelectListItem
+            {
+                Value = d.DepartmentCode.ToString(),
+                Text = d.DepartmentName
+            }).ToList();
 
         // Current Department Code and Name
         if (string.IsNullOrEmpty(CurrentDepartmentCode))
@@ -106,85 +101,56 @@ public class SubmissionAssignmentModel : PageModel
             if (!string.IsNullOrEmpty(code))
                 CurrentDepartmentCode = code;
             else
-            {
-                CurrentDepartmentCode = departments.First().DepartmentCode.ToString();
-            }
+                CurrentDepartmentCode = Departments.First().DepartmentCode.ToString();
         }
 
         // Department Key Metrics
         var departmentKeyMetrics = await _departmentKeyMetricService
-            .FindAllByPeriodNameAsync(CurrentPeriodName);
-        if (departmentKeyMetrics.Any())
+            .FindByPeriodIdAsync(SelectedPeriod.Id);
+
+        if (departmentKeyMetrics.IsSuccess)
         {
-            DepartmentKeyMetrics = departmentKeyMetrics
-                .Select(k => new DepartmentKeyMetricViewModel
-                {
-                    Id = k.Id,
-                    DepartmentKeyMetricCode = k.DepartmentKeyMetricCode,
-                    KpiSubmissionPeriodId = k.KpiSubmissionPeriodId,
-                    DepartmentId = k.DepartmentId,
-                    Department = new DepartmentViewModel
-                    {
-                        Id = k.KeyIssueDepartment.Id,
-                        DepartmentCode = k.KeyIssueDepartment.DepartmentCode,
-                        DepartmentName = k.KeyIssueDepartment.DepartmentName
-                    },
-                    KeyMetricId = k.KeyMetricId,
-                    KeyMetric = new KeyMetricViewModel
-                    {
-                        Id = k.KeyMetric.Id,
-                        MetricCode = k.KeyMetric.MetricCode,
-                        MetricTitle = k.KeyMetric.MetricTitle
-                    },
-                    IsDeleted = k.IsDeleted
-                }).ToList();
+            if (departmentKeyMetrics.Data != null)
+            {
+                DepartmentKeyMetrics = departmentKeyMetrics.Data
+                    .Select(dkm => dkm.MapToViewModel())
+                    .ToList();
+            }
         }
+        else
+        {
+            ModelState.AddModelError(string.Empty, "Failed to fetch department key metrics.");
+        }
+
 
         // KeyKpiSubmissionConstraint 
         // (Department Key Metric Submission Constraint)
         if (CurrentDepartmentCode != null)
         {
             var keyKpiSubmissionConstraint = await _keyKpiSubmissionConstraintService
-                .FindAllByDepartmentAsync(Guid.Parse(CurrentDepartmentCode));
-            if (keyKpiSubmissionConstraint.Any())
+                .FindByPeriodBySubmitterDepartmentAsync(
+                    SelectedPeriod.Id,
+                    Guid.Parse(CurrentDepartmentCode));
+            if (keyKpiSubmissionConstraint.IsSuccess)
             {
-                KeyKpiSubmissionConstraints = keyKpiSubmissionConstraint
-                    .Select(k => new KeyKpiSubmissionConstraintViewModel
-                    {
-                        Id = k.Id,
-                        LookupId = k.LookupId,
-                        // Department = k.Department,
-                        Department = new DepartmentViewModel
-                        {
-                            Id = k.Department.Id,
-                            DepartmentCode = k.Department.DepartmentCode,
-                            DepartmentName = k.Department.DepartmentName
-                        },
-
-                        DepartmentId = k.DepartmentId,
-                        DepartmentKeyMetric = new DepartmentKeyMetricViewModel
-                        {
-                            Id = k.DepartmentKeyMetric.Id,
-                            DepartmentKeyMetricCode = k.DepartmentKeyMetric.DepartmentKeyMetricCode,
-                            IsDeleted = k.DepartmentKeyMetric.IsDeleted,
-                            KpiSubmissionPeriodId = k.DepartmentKeyMetric.KpiSubmissionPeriodId,
-                            DepartmentId = k.DepartmentKeyMetric.DepartmentId,
-                            // Department = new DepartmentViewModel
-                            // {
-                            //     Id = k.TargetDepartment.Id,
-                            //     DepartmentCode = k.TargetDepartment.DepartmentCode,
-                            //     DepartmentName = k.TargetDepartment.DepartmentName
-                            // },
-                            //  DepartmentViewModel Department { get; set; } = null!;
-                            KeyMetricId = k.DepartmentKeyMetric.KeyMetricId
-                            //  KeyMetricViewModel KeyMetric { get; set; } = null!;
-                        },
-                        DepartmentKeyMetricId = k.DepartmentKeyMetricId,
-                        IsDeleted = k.IsDeleted
-                    }).ToList();
+                if (keyKpiSubmissionConstraint.Data != null)
+                {
+                    KeyKpiSubmissionConstraints = keyKpiSubmissionConstraint.Data
+                        .Select(k => k.MapToViewModel()).ToList();
+                    // new KeyKpiSubmissionConstraintViewModel
+                    // {
+                    //     Id = k.Id,
+                    //     LookupId = k.LookupId,
+                    //     // Department = k.Department,
+                    //     Department = k.DepartmentKeyMetric.KeyIssueDepartment.MapToViewModel(),
+                    //     DepartmentId = k.DepartmentKeyMetric.KeyIssuDepartmentId,
+                    //     DepartmentKeyMetric = k.DepartmentKeyMetric.MapToViewModel(),
+                    //     DepartmentKeyMetricId = k.DepartmentKeyMetricId,
+                    //     IsDeleted = k.IsDeleted
+                    // }
+                }
             }
         }
-
         return Page();
     }
 
@@ -192,7 +158,7 @@ public class SubmissionAssignmentModel : PageModel
     public async Task<IActionResult> OnPostUpdateAsync(
         [FromRoute] string periodName, // use to fetch "department key metric" by period
         [FromQuery] string department, // submitter department
-        [FromBody] InputValueViewModel requestBody)
+        [FromBody] UserSelectionViewModel requestBody)
     {
         // Selected Period
         if (string.IsNullOrEmpty(periodName))
@@ -200,21 +166,25 @@ public class SubmissionAssignmentModel : PageModel
             ModelState.AddModelError(string.Empty, "A valid Period Name is required.");
             return Page();
         }
-        CurrentPeriodName = periodName;
-
-        // Department List Items
-        var departments = await _departmentService.FindAllAsync();
-        if (!departments.Any())
-        {
-            ModelState.AddModelError(string.Empty, "No Department exist.");
+        // ----------KPI PERIOD-------------------------------------------------
+        var selectedPeriod = await LoadKpiPeriod(periodName);
+        if (selectedPeriod == null)
             return Page();
-        }
-        DepartmentListItems = departments.Select((d, index) => new SelectListItem
-        {
-            // $"{(index + 1).ToString("00")}" 
-            Value = d.DepartmentCode.ToString(),
-            Text = d.DepartmentName
-        }).ToList();
+
+        SelectedPeriod = selectedPeriod;
+        SelectedPeriodName = selectedPeriod.PeriodName;
+
+        // ----------DEPARTMENTS------------------------------------------------
+        Departments = await LoadDepartmentList();
+        if (Departments.Count == 0)
+            return Page();
+        // Department List Items
+        DepartmentListItems = Departments
+            .Select((d, index) => new SelectListItem
+            {
+                Value = d.DepartmentCode.ToString(),
+                Text = d.DepartmentName
+            }).ToList();
 
         // Current Department Code and Name
         if (string.IsNullOrEmpty(CurrentDepartmentCode))
@@ -223,38 +193,25 @@ public class SubmissionAssignmentModel : PageModel
             if (!string.IsNullOrEmpty(code))
                 CurrentDepartmentCode = code;
             else
-            {
-                CurrentDepartmentCode = departments.First().DepartmentCode.ToString();
-            }
+                CurrentDepartmentCode = Departments.First().DepartmentCode.ToString();
         }
 
-        // Department Key Metrics (for the selected period)
+        // Department Key Metrics
         var departmentKeyMetrics = await _departmentKeyMetricService
-            .FindAllByPeriodNameAsync(CurrentPeriodName);
-        if (departmentKeyMetrics.Any())
+            .FindByPeriodIdAsync(SelectedPeriod.Id);
+
+        if (departmentKeyMetrics.IsSuccess)
         {
-            DepartmentKeyMetrics = departmentKeyMetrics
-                .Select(k => new DepartmentKeyMetricViewModel
-                {
-                    Id = k.Id,
-                    DepartmentKeyMetricCode = k.DepartmentKeyMetricCode,
-                    KpiSubmissionPeriodId = k.KpiSubmissionPeriodId,
-                    DepartmentId = k.DepartmentId,
-                    Department = new DepartmentViewModel
-                    {
-                        Id = k.KeyIssueDepartment.Id,
-                        DepartmentCode = k.KeyIssueDepartment.DepartmentCode,
-                        DepartmentName = k.KeyIssueDepartment.DepartmentName
-                    },
-                    KeyMetricId = k.KeyMetricId,
-                    KeyMetric = new KeyMetricViewModel
-                    {
-                        Id = k.KeyMetric.Id,
-                        MetricCode = k.KeyMetric.MetricCode,
-                        MetricTitle = k.KeyMetric.MetricTitle
-                    },
-                    IsDeleted = k.IsDeleted
-                }).ToList();
+            if (departmentKeyMetrics.Data != null)
+            {
+                DepartmentKeyMetrics = departmentKeyMetrics.Data
+                    .Select(dkm => dkm.MapToViewModel())
+                    .ToList();
+            }
+        }
+        else
+        {
+            ModelState.AddModelError(string.Empty, "Failed to fetch department key metrics.");
         }
 
         // KeyKpiSubmissionConstraint 
@@ -262,57 +219,25 @@ public class SubmissionAssignmentModel : PageModel
         if (CurrentDepartmentCode != null)
         {
             var keyKpiSubmissionConstraint = await _keyKpiSubmissionConstraintService
-                .FindAllByDepartmentAsync(
+                .FindBySubmitterDepartmentAsync(
                     Guid.Parse(CurrentDepartmentCode));
-            if (keyKpiSubmissionConstraint.Any())
+            if (keyKpiSubmissionConstraint.IsSuccess)
             {
-                KeyKpiSubmissionConstraints = keyKpiSubmissionConstraint
-                    .Select(k => new KeyKpiSubmissionConstraintViewModel
-                    {
-                        Id = k.Id,
-                        LookupId = k.LookupId,
-                        // Department = k.Department,
-                        Department = new DepartmentViewModel
-                        {
-                            Id = k.Department.Id,
-                            DepartmentCode = k.Department.DepartmentCode,
-                            DepartmentName = k.Department.DepartmentName
-                        },
-
-                        DepartmentId = k.DepartmentId,
-                        DepartmentKeyMetric = new DepartmentKeyMetricViewModel
-                        {
-                            Id = k.DepartmentKeyMetric.Id,
-                            DepartmentKeyMetricCode = k.DepartmentKeyMetric.DepartmentKeyMetricCode,
-                            IsDeleted = k.DepartmentKeyMetric.IsDeleted,
-                            KpiSubmissionPeriodId = k.DepartmentKeyMetric.KpiSubmissionPeriodId,
-                            DepartmentId = k.DepartmentKeyMetric.DepartmentId,
-                            // Department = new DepartmentViewModel
-                            // {
-                            //     Id = k.TargetDepartment.Id,
-                            //     DepartmentCode = k.TargetDepartment.DepartmentCode,
-                            //     DepartmentName = k.TargetDepartment.DepartmentName
-                            // },
-                            //  DepartmentViewModel Department { get; set; } = null!;
-                            KeyMetricId = k.DepartmentKeyMetric.KeyMetricId
-                            //  KeyMetricViewModel KeyMetric { get; set; } = null!;
-                        },
-                        DepartmentKeyMetricId = k.DepartmentKeyMetricId,
-                        IsDeleted = k.IsDeleted
-                    }).ToList();
+                if (keyKpiSubmissionConstraint.Data != null)
+                {
+                    KeyKpiSubmissionConstraints = keyKpiSubmissionConstraint.Data
+                        .Select(k => k.MapToViewModel()).ToList();
+                }
             }
-
-
-            // using var transaction = await _context.Database.BeginTransactionAsync();
             // ===== ASSIGNMENT Operation ==========================================
             try
             {
-                if (requestBody.DepartmentCode == Guid.Parse(CurrentDepartmentCode))
+                if (requestBody.SubmitterDepartmentCode == Guid.Parse(CurrentDepartmentCode))
                 {
                     // 1. Unassign  all keys which   does not    exist in requestBody
                     // 2. Assign    all keys which   does        exist in requestBody
                     // 3. Create new keys
-                    var inputDKMs = requestBody.DepartmentKeyMetrics;
+                    var inputDKMs = requestBody.DKMCodes;
 
                     // ========== UNASSIGN =====================================
                     // 1. Unassign  all keys which   does not    exist in requestBody
@@ -321,13 +246,13 @@ public class SubmissionAssignmentModel : PageModel
                     // DepartmentKeyMetrics - User selected DepartmentKeyMetrics
                     var notSelectedDKMs = DepartmentKeyMetrics
                         .Where(dkm => !inputDKMs
-                            .Select(i => i.DepartmentKeyMetricCode)
-                            .Contains(dkm.DepartmentKeyMetricCode))
+                            .Select(i => Guid.Parse(i.Code))
+                            .Contains(dkm.LookupId))
                         .ToList();
                     var toDeleteItems = KeyKpiSubmissionConstraints
                         .Where(c => notSelectedDKMs
-                            .Select(dkms => dkms.DepartmentKeyMetricCode)
-                            .Contains(c.DepartmentKeyMetric.DepartmentKeyMetricCode)
+                            .Select(dkms => dkms.LookupId)
+                            .Contains(c.DepartmentKeyMetric.LookupId)
                             && c.IsDeleted == false)
                         // .Select(dkms => dkms.Id)
                         // .Contains(c.DepartmentKeyMetricId))
@@ -341,8 +266,8 @@ public class SubmissionAssignmentModel : PageModel
                     // ========== ASSIGN =======================================
                     var toAssignItems = DepartmentKeyMetrics
                        .Where(k => inputDKMs
-                            .Select(i => i.DepartmentKeyMetricCode)
-                            .Contains(k.DepartmentKeyMetricCode))
+                            .Select(i => Guid.Parse(i.Code))
+                            .Contains(k.LookupId))
                        .ToList();
 
                     // 2. Assign    all keys which   does        exist in requestBody
@@ -351,8 +276,8 @@ public class SubmissionAssignmentModel : PageModel
                     //      and update and set isDelete to false (aka. unDelete)
                     var toReassignItems = KeyKpiSubmissionConstraints
                         .Where(c => toAssignItems
-                            .Select(i => i.DepartmentKeyMetricCode)
-                            .Contains(c.DepartmentKeyMetric.DepartmentKeyMetricCode)
+                            .Select(i => i.LookupId)
+                            .Contains(c.DepartmentKeyMetric.LookupId)
                             && c.IsDeleted == true)
                         .ToList();
                     foreach (var c in toReassignItems)
@@ -365,8 +290,8 @@ public class SubmissionAssignmentModel : PageModel
                     // 3. Create new keys
                     var newItems = toAssignItems
                         .Where(i => !KeyKpiSubmissionConstraints
-                            .Select(c => c.DepartmentKeyMetric.DepartmentKeyMetricCode)
-                            .Contains(i.DepartmentKeyMetricCode))
+                            .Select(c => c.DepartmentKeyMetric.LookupId)
+                            .Contains(i.LookupId))
                         .ToList();
                     if (newItems.Count > 0)
                     {
@@ -387,9 +312,10 @@ public class SubmissionAssignmentModel : PageModel
                     StatusMessage = "Updated successfully.";
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 // 1. Log
+                _logger.LogError(ex, "Unexpected error occured while saving submission constraints. {msg}", ex.Message);
                 // 2. set message
                 StatusSuccess = false;
                 StatusMessage = "Save failed!";
@@ -400,14 +326,23 @@ public class SubmissionAssignmentModel : PageModel
     }
 
     [BindProperty]
-    public InputValueViewModel InputValues { get; set; } = null!;
+    public UserSelectionViewModel UserSelection { get; set; } = null!;
 
-    public class InputValueViewModel
+    public class UserSelectionViewModel
     {
-        public Guid DepartmentCode { get; set; }
-        public List<DepartmentKeyMetricViewModel> DepartmentKeyMetrics { get; set; } = [];
+        public Guid SubmitterDepartmentCode { get; set; }
+        public List<DKMCodeViewModel> DKMCodes { get; set; } = [];
     }
 
+    public class DKMCodeViewModel
+    {
+        public string Code { get; set; } = null!;
+    }
+
+    // let userSelection = {
+    //         submitterDepartmentCode: "@Model.CurrentDepartmentCode?.ToString()",
+    //         departmentKeyMetrics: []
+    //     };
 
 
     // [TempData]
@@ -416,6 +351,56 @@ public class SubmissionAssignmentModel : PageModel
     public string? StatusMessage { get; set; }
     [TempData]
     public bool StatusSuccess { get; set; }
+
+
+    private async Task<List<DepartmentViewModel>> LoadDepartmentList()
+    {
+        List<DepartmentViewModel> departmentList = [];
+
+        var departments = await _departmentService.FindAllAsync(1, 50);
+
+        if (departments.IsSuccess && departments.Data != null)
+        {
+            departmentList = departments.Data
+                .Select(e => e.MapToViewModel())
+                .ToList();
+        }
+        else
+        {
+            ModelState.AddModelError(string.Empty, "No Department exist.");
+        }
+        return departmentList;
+    }
+
+    private async Task<KpiPeriodViewModel?> LoadKpiPeriod(string periodName)
+    {
+        KpiPeriodViewModel? kpiPeriodModel = null;
+
+        if (string.IsNullOrEmpty(periodName))
+        {
+            ModelState.AddModelError(string.Empty, "Period Name is required.");
+        }
+        else
+        {
+            var kpiPeriod = await _kpiSubmissionPeriodService.FindByKpiPeriodNameAsync(periodName);
+            if (kpiPeriod != null)
+            {
+                kpiPeriodModel = new KpiPeriodViewModel() // ---- do we need entire KPI Period object??
+                {
+                    Id = kpiPeriod.Id,
+                    PeriodName = kpiPeriod.PeriodName,
+                    SubmissionStartDate = kpiPeriod.SubmissionStartDate,
+                    SubmissionEndDate = kpiPeriod.SubmissionEndDate
+                };
+            }
+            else
+            {
+                ModelState.AddModelError(string.Empty, $"Period {periodName} not found.");
+            }
+        }
+
+        return kpiPeriodModel;
+    }
 }
 
 

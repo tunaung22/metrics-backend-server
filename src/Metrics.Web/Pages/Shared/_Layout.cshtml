@@ -89,19 +89,19 @@
                                 <a asp-page="/Dashboard/Index"
                                     asp-area=""
                                     class="nav-link @(currentUrl.StartsWithSegments("/dashboard") ? "activeLink" : "")">
-                                        <i class="bi bi-speedometer"></i> Dashboard</a>
+                                        <i class="bi bi-bar-chart-fill"></i> Dashboard</a>
                             </li>
                             <li class="nav-item">
                                 <a asp-page="/Manage/Index"
                                     asp-area=""
                                     class="nav-link @(currentUrl.StartsWithSegments("/manage") ? "activeLink" : "")">
-                                        <i class="bi bi-sliders"></i> Manage</a>
+                                        <i class="bi bi-ui-radios-grid"></i> Manage</a>
                             </li>
                             <li class="nav-item">
                                 <a asp-page="/Reports/Submissions/Index"
                                     asp-area=""
                                     class="nav-link @(currentUrl.StartsWithSegments("/reports") ? "activeLink" : "")">
-                                        <i class="bi bi-bar-chart-fill"></i> Reports</a>
+                                        <i class="bi bi-clipboard-check-fill"></i> Reports</a>
                             </li>
                         }
                         @* ================================================================= *@

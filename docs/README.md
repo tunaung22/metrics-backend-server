@@ -4,25 +4,6 @@ Internal application for KPI score submission, calculating, reporting.
 
 ## Definition
 
-### User Group
-
-User group to identify user types:
-
-- Staff
-- HOD
-- Management
-
-### User Role
-
-Currently, there are only 2 user roles:
-
-- Admin
-- Staff
-
-### Department
-
-a department
-
 ### Score Submission Period
 
 For representing the period for the score submission start date and end date with period name. Period name have the following format `{yyyy-mm}`: `2025-01`.
