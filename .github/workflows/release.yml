@@ -199,7 +199,9 @@ jobs:
             Automated release for version ${{  steps.get_version.outputs.VERSION }}
             - Commit: ${{ github.sha }}
             - Build: ${{ github.run_number }}
-          files: ${{ env.RELEASE_BASE_DIR }}/**/*
+          files: |
+            ${{ env.RELEASE_BASE_DIR }}/metrics-all-${{ steps.get_version.outputs.VERSION }}.zip
+            ${{ env.RELEASE_BASE_DIR }}/metrics-win-x64-${{ steps.get_version.outputs.VERSION }}.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
