@@ -125,14 +125,14 @@ jobs:
 
       # FILE_VERSION=$(echo "${{ steps.get_version.outputs.VERSION}}" | sed 's/[^0-9.]//g' | awk -F. '{printf "%d.%d.%d.%d", $1,$2,$3,$4}')
 
-      - name: Publish *
+      - name: Publish all
         run: |
           cd src/Metrics.Web/ &&
           dotnet publish --configuration ${{ env.CONFIGURATION }} \
             --self-contained false \
             --output $GITHUB_WORKSPACE/${{ env.RELEASE_BASE_DIR }}/all-${{ steps.get_version.outputs.VERSION }} \
             -p:Version=${{ steps.get_version.outputs.VERSION }} \
-            -p:FileVersion=${{ steps.versions.outputs.FILE_VERSION }}.${{ steps.build_number.outputs.BUILD_NUMBER }} \
+            -p:FileVersion=${{ steps.versions.outputs.FILE_VERSION }} \
             -p:InformationalVersion=${{ steps.versions.outputs.INFORMATIONAL_VERSION }} \
             -p:AssemblyVersion=${{ steps.versions.outputs.ASSEMBLY_VERSION }}
 
@@ -145,7 +145,7 @@ jobs:
             --self-contained false \
             --output $GITHUB_WORKSPACE/${{ env.RELEASE_BASE_DIR }}/win-x64-${{ steps.get_version.outputs.VERSION }} \
             -p:Version=${{ steps.get_version.outputs.VERSION }} \
-            -p:FileVersion=${{ steps.versions.outputs.FILE_VERSION }}.${{ steps.build_number.outputs.BUILD_NUMBER }} \
+            -p:FileVersion=${{ steps.versions.outputs.FILE_VERSION }} \
             -p:InformationalVersion=${{ steps.versions.outputs.INFORMATIONAL_VERSION }} \
             -p:AssemblyVersion=${{ steps.versions.outputs.ASSEMBLY_VERSION }}
 
