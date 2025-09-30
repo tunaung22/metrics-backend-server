@@ -13,7 +13,7 @@ public static class DepartmentMapper
             Id = e.Id,
             DepartmentCode = e.DepartmentCode,
             DepartmentName = e.DepartmentName,
-            DepartmentStaffs = e.ApplicationUsers.Select(u => u.MapToDto(false)).ToList(),
+            // DepartmentStaffs = e.ApplicationUsers.Select(u => u.MapToDto(false)).ToList(),
             StaffCount = e.ApplicationUsers.Count,
         };
     }

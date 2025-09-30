@@ -10,7 +10,7 @@ public class UserViewModel
     public string? ContactAddress { get; set; } = string.Empty;
     public required long DepartmentId { get; set; }
     // public long UserTitleId { get; set; }
-    public DepartmentViewModel? Department { get; set; }
+    public DepartmentViewModel Department { get; set; } = null!;
     public UserGroupViewModel UserGroup { get; set; } = null!;
     public bool LockoutEnabled { get; set; }
     public DateTimeOffset? LockoutEnd { get; set; }

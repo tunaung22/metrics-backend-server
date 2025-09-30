@@ -35,7 +35,7 @@ public static class UserMapper
             PhoneNumber = dto.PhoneNumber,
             ContactAddress = dto.ContactAddress,
             DepartmentId = dto.DepartmentId,
-            Department = includeDepartment ? dto.Department.MapToViewModel() : null,
+            Department = dto.Department.MapToViewModel(),
             UserGroup = dto.UserGroup.MapToViewModel(),
             LockoutEnabled = dto.LockoutEnabled,
             LockoutEnd = dto.LockoutEnd

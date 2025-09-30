@@ -14,6 +14,6 @@ public class DepartmentViewModel
     public required string DepartmentName { get; set; }
 
     // public required long NumberOfUsers { get; set; }
-    public List<UserViewModel> DepartmentStaffs { get; set; } = [];
+    // public List<UserViewModel> DepartmentStaffs { get; set; } = [];
     public int StaffCount { get; set; }
 }

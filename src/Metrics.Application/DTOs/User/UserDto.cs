@@ -12,7 +12,7 @@ public record UserDto(
     string ContactAddress,
     long DepartmentId,
     UserGroupDto UserGroup,
-    DepartmentDto? Department,
+    DepartmentDto Department,
     bool LockoutEnabled,
     DateTimeOffset? LockoutEnd
 )
