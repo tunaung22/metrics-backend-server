@@ -96,7 +96,7 @@ jobs:
           PATCH=${PARTS[2]:-0}
           BUILD=${PARTS[3]:-0}
 
-          FILE_VERSION="$MAJOR.$MINOR.$PATCH.${{ steps.build_number.outputs.BUILD_NUMBER }}""
+          FILE_VERSION="$MAJOR.$MINOR.$PATCH.${{ steps.build_number.outputs.BUILD_NUMBER }}"
           # FILE_VERSION="$MAJOR.$MINOR.$PATCH.$BUILD"
 
           ASSEMBLY_VERSION="$MAJOR.$MINOR.${PATCH-0}.${BUILD-0}"
