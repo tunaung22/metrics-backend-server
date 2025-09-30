@@ -182,13 +182,13 @@ jobs:
           name: release-metrics-winx64-${{ steps.get_version.outputs.VERSION }}
           path: ${{ env.RELEASE_BASE_DIR }}/win-x64-${{ steps.get_version.outputs.VERSION }}
 
-      # - name: Create GitHub Release
-      #   uses: softprops/action-gh-release@v2
-      #   with:
-      #     tag_name: ${{ github.ref }}
-      #     name: Release ${{ steps.get_version.outputs.VERSION }}
-      #     body: Release ${{ steps.get_version.outputs.VERSION }}
-      #     files: publish-${{ steps.get_version.outputs.VERSION }}.zip
+      - name: Create zip archives
+        run: |
+          cd ${{ env.RELEASE_BASE_DIR }}
+          zip -r "metrics-all-${{ steps.get_version.outputs.VERSION }}.zip" "all-${{ steps.get_version.outputs.VERSION }}/"
+          zip -r "metrics-win-x64-${{ steps.get_version.outputs.VERSION }}.zip" "win-x64-${{ steps.get_version.outputs.VERSION }}/"
+          echo "Created zip files:"
+          ls -la *.zip
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
