@@ -101,7 +101,7 @@ jobs:
           PATCH=$((10#$PATCH))
           BUILD_NUMBER=$((10#${{ steps.build_number.outputs.BUILD_NUMBER }}))
 
-          FILE_VERSION="$MAJOR.$MINOR.$PATCH.${{ steps.build_number.outputs.BUILD_NUMBER }}"
+          FILE_VERSION="$MAJOR.$MINOR.$PATCH.${{ github.run_number}}"
           # FILE_VERSION="$MAJOR.$MINOR.$PATCH.$BUILD"
 
           ASSEMBLY_VERSION="$MAJOR.$MINOR.${PATCH-0}.${BUILD-0}"
