@@ -75,65 +75,66 @@ jobs:
 
       - name: Get version from tag
         id: get_version
-        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+        run: |
+          echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+          echo "Version: ${GITHUB_REF#refs/tags/v}"
 
       - name: Set build number
         id: build_number
         run: |
-          BUILD_DATE=$(date +%Y%m%d)
+          #BUILD_DATE=$(date +%Y%m%d)
+          #echo "BUILD_DATE=$BUILD_DATE" >> $GITHUB_OUTPUT
           # BUILD_NUMBER=$(date +%H%M%S)
-          # BUILD_NUMBER=$(%H%M%S)
-          BUILD_NUMBER=$(( $(date +'%H') * 60 + $(date +'%M') ))
-          echo "BUILD_DATE=$BUILD_DATE" >> $GITHUB_OUTPUT
+          # Total number of minutes since midnight CALCULATION: hour*60+minutes 14:30 => 14*60 + 30 == 870
+
+          BUILD_NUMBER=$(( $(date +'%H') * 60 + $(date +'%M') )) 
+          echo "Github run_number: ${{ github.run_number}}"
+          echo "Build number: $BUILD_NUMBER"
+
           echo "BUILD_NUMBER=$BUILD_NUMBER" >> $GITHUB_OUTPUT
 
       - name: Refine Version
         id: versions
         run: |
           CLEAN_VERSION=$(echo "${{ steps.get_version.outputs.VERSION}}" | sed 's/^v//' | sed 's/[^0-9.]//g')
+          # FILE_VERSION=$(echo "${{ steps.get_version.outputs.VERSION}}" | sed 's/[^0-9.]//g' | awk -F. '{printf "%d.%d.%d.%d", $1,$2,$3,$4}')
 
+          # 1.0.2-beta -> 1 0 2-beta
           IFS='.' read -ra PARTS <<< "$CLEAN_VERSION"
           MAJOR=${PARTS[0]:-0}
           MINOR=${PARTS[1]:-0}
           PATCH=${PARTS[2]:-0}
-          BUILD=${PARTS[3]:-0}
+          # Convert to base-10 integer (ignores any loading zeros) 
+          MAJOR=$((10#$MAJOR)) 
+          MINOR=$((10#$MINOR))  
+          PATCH=$((10#$PATCH))
 
-          # MAJOR=$((10#$MAJOR))
-          # MINOR=$((10#$MINOR))
-          # PATCH=$((10#$PATCH))
-          # BUILD_NUMBER=$((10#${{ steps.build_number.outputs.BUILD_NUMBER }}))
-
+          # 0.1.0.870
           FILE_VERSION="$MAJOR.$MINOR.$PATCH.${{ steps.build_number.outputs.BUILD_NUMBER }}"
-          # FILE_VERSION="$MAJOR.$MINOR.$PATCH.${{ github.run_number}}"
-          # FILE_VERSION="$MAJOR.$MINOR.$PATCH.$BUILD"
+          # 0.1.0.0
+          ASSEMBLY_VERSION="$MAJOR.$MINOR.$PATCH.0"
+          # v0.1.0-beta2 -> 0.1.0+123456
+          FULL_SHA="${{ github.sha }}"
+          SHORT_SHA="${FULL_SHA}:0:7"
+          INFORMATIONAL_VERSION="$(echo "${{ steps.get_version.outputs.VERSION}}" | sed 's/^v//')+${SHORT_SHA}" 
 
-          ASSEMBLY_VERSION="$MAJOR.$MINOR.${PATCH-0}.${BUILD-0}"
+          echo "FILE_VERSION: $FILE_VERSION"
+          echo "ASSEMBLY_VERSION: $ASSEMBLY_VERSION"
+          echo "INFORMATIONAL_VERSION: $INFORMATIONAL_VERSION"
 
+          # OUTPUT
           echo "FILE_VERSION=$FILE_VERSION" >> $GITHUB_OUTPUT
           echo "ASSEMBLY_VERSION=$ASSEMBLY_VERSION" >> $GITHUB_OUTPUT
-          echo "INFORMATIONAL_VERSION=${{ steps.get_version.outputs.VERSION}}+${{ github.sha }}" >> $GITHUB_OUTPUT
+          echo "INFORMATIONAL_VERSION=$INFORMATIONAL_VERSION" >> $GITHUB_OUTPUT
 
-      # - name: Set Release Directory
-      #   id: set_release_dir
-      #   run: |
-      #     RELEASE_DIR="release/publish-${{ steps.get_version.outputs.VERSION }}"
-      #     echo "RELEASE_DIR=$RELEASE_DIR" >> $GITHUB_OUTPUT
-
-      - name: Print the Working Directory
+      - name: Print the Working Directory 1
         run: |
           pwd && ls -l
-
-      # - name: Clean Release Directories
-      #   run: |
-      #     rm -rf ${{ env.RELEASE_BASE_DIR }}/all-*
-      #     rm -rf ${{ env.RELEASE_BASE_DIR }}/win-x64-*
 
       - name: Clean Previous Releases
         run: rm -rf ${{ env.RELEASE_BASE_DIR }}/*
 
-      # FILE_VERSION=$(echo "${{ steps.get_version.outputs.VERSION}}" | sed 's/[^0-9.]//g' | awk -F. '{printf "%d.%d.%d.%d", $1,$2,$3,$4}')
-
-      - name: Publish all
+      - name: Publish [all]
         run: |
           cd src/Metrics.Web/ &&
           dotnet publish --configuration ${{ env.CONFIGURATION }} \
@@ -145,7 +146,7 @@ jobs:
             -p:AssemblyVersion=${{ steps.versions.outputs.ASSEMBLY_VERSION }}
 
       # FILE_VERSION=$(echo "${{ steps.get_version.outputs.VERSION}}" | sed 's/[^0-9.]//g' | awk -F. '{printf "%d.%d.%d.%d", $1,$2,$3,$4}')
-      - name: Publish win-x64
+      - name: Publish [win-x64]
         run: |
           cd src/Metrics.Web/ &&
           dotnet publish --configuration ${{ env.CONFIGURATION }} \
@@ -157,11 +158,11 @@ jobs:
             -p:InformationalVersion=${{ steps.versions.outputs.INFORMATIONAL_VERSION }} \
             -p:AssemblyVersion=${{ steps.versions.outputs.ASSEMBLY_VERSION }}
 
-      - name: Print  Working Directory
+      - name: Print the Working Directory 2
         run: |
           pwd && ls -l
 
-      - name: Create sql directory
+      - name: Create SQL Directory
         run: |
           mkdir -p ${{ env.RELEASE_BASE_DIR }}/all-${{ steps.get_version.outputs.VERSION }}/sql &&
           mkdir -p ${{ env.RELEASE_BASE_DIR }}/win-x64-${{ steps.get_version.outputs.VERSION }}/sql
@@ -171,7 +172,7 @@ jobs:
           cp src/Metrics.Web/Migrations/*.sql ${{ env.RELEASE_BASE_DIR }}/all-${{ steps.get_version.outputs.VERSION }}/sql &&
           cp src/Metrics.Web/Migrations/*.sql ${{ env.RELEASE_BASE_DIR }}/win-x64-${{ steps.get_version.outputs.VERSION }}/sql
 
-      - name: Print Current Working Directory
+      - name: Print the Working Directory 3
         run: pwd && ls -l
 
       - name: Print Release Directory

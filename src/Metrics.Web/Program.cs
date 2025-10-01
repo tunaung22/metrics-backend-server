@@ -60,10 +60,8 @@ var builder = WebApplication.CreateBuilder(args);
     var versionInfo = new VersionInfo
     {
         AssemblyVersion = assembly.GetName().Version,
-        FileVersion = FileVersionInfo.GetVersionInfo(assembly.Location).ToString(),
-        InformationalVersion = assembly
-            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
-            .InformationalVersion
+        FileVersion = FileVersionInfo.GetVersionInfo(assembly.Location).FileVersion,
+        InformationalVersion = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
     };
     builder.Services.AddSingleton(versionInfo);
 
