@@ -1,49 +1,31 @@
 name: Release Build
-
 on:
   push:
     tags:
       - "v*"
-  pull_request:
-    branches:
-      - "release"
-
 env:
   DOTNET_VERSION: "9.0.x"
   CONFIGURATION: "Release"
   APP_DIR: "src/Metrics.Web"
   RELEASE_BASE_DIR: "release"
   RELEASE_BUILD_DIR: "src/Metrics.Web/bin/Release/net9.0"
-
 jobs:
   build-test:
     name: Build and Test
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
-
       - name: Restore dependencies
         run: dotnet restore
-
       - name: Build
         run: dotnet build --configuration ${{ env.CONFIGURATION}} --no-restore
-
       - name: Test
         run: dotnet test --configuration ${{ env.CONFIGURATION}} --no-build
-
-      # - name: Upload Build Artifacts
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: build-output
-      #     path: bin/${{ env.CONFIGURATION }}
-
   release:
     name: Create Release
     needs: build-test
@@ -52,16 +34,13 @@ jobs:
       contents: write
       packages: write
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
-
       - name: Create necessary directories
         run: |
           pwd &&
@@ -72,13 +51,11 @@ jobs:
       #   with:
       #     name: build-output
       #     path: bin/${{ env.CONFIGURATION }}
-
       - name: Get version from tag
         id: get_version
         run: |
           echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
           echo "Version: ${GITHUB_REF#refs/tags/v}"
-
       - name: Set build number
         id: build_number
         run: |
@@ -92,7 +69,6 @@ jobs:
           echo "Build number: $BUILD_NUMBER"
 
           echo "BUILD_NUMBER=$BUILD_NUMBER" >> $GITHUB_OUTPUT
-
       - name: Refine Version
         id: versions
         run: |
@@ -115,7 +91,7 @@ jobs:
           ASSEMBLY_VERSION="$MAJOR.$MINOR.$PATCH.0"
           # v0.1.0-beta2 -> 0.1.0+123456
           FULL_SHA="${{ github.sha }}"
-          SHORT_SHA="${FULL_SHA}:0:7"
+          SHORT_SHA="${FULL_SHA:0:7}"
           INFORMATIONAL_VERSION="$(echo "${{ steps.get_version.outputs.VERSION}}" | sed 's/^v//')+${SHORT_SHA}" 
 
           echo "FILE_VERSION: $FILE_VERSION"
@@ -126,14 +102,11 @@ jobs:
           echo "FILE_VERSION=$FILE_VERSION" >> $GITHUB_OUTPUT
           echo "ASSEMBLY_VERSION=$ASSEMBLY_VERSION" >> $GITHUB_OUTPUT
           echo "INFORMATIONAL_VERSION=$INFORMATIONAL_VERSION" >> $GITHUB_OUTPUT
-
       - name: Print the Working Directory 1
         run: |
           pwd && ls -l
-
       - name: Clean Previous Releases
         run: rm -rf ${{ env.RELEASE_BASE_DIR }}/*
-
       - name: Publish [all]
         run: |
           cd src/Metrics.Web/ &&
@@ -144,7 +117,6 @@ jobs:
             -p:FileVersion=${{ steps.versions.outputs.FILE_VERSION }} \
             -p:InformationalVersion=${{ steps.versions.outputs.INFORMATIONAL_VERSION }} \
             -p:AssemblyVersion=${{ steps.versions.outputs.ASSEMBLY_VERSION }}
-
       # FILE_VERSION=$(echo "${{ steps.get_version.outputs.VERSION}}" | sed 's/[^0-9.]//g' | awk -F. '{printf "%d.%d.%d.%d", $1,$2,$3,$4}')
       - name: Publish [win-x64]
         run: |
@@ -157,45 +129,36 @@ jobs:
             -p:FileVersion=${{ steps.versions.outputs.FILE_VERSION }} \
             -p:InformationalVersion=${{ steps.versions.outputs.INFORMATIONAL_VERSION }} \
             -p:AssemblyVersion=${{ steps.versions.outputs.ASSEMBLY_VERSION }}
-
       - name: Print the Working Directory 2
         run: |
           pwd && ls -l
-
       - name: Create SQL Directory
         run: |
           mkdir -p ${{ env.RELEASE_BASE_DIR }}/all-${{ steps.get_version.outputs.VERSION }}/sql &&
           mkdir -p ${{ env.RELEASE_BASE_DIR }}/win-x64-${{ steps.get_version.outputs.VERSION }}/sql
-
       - name: Copy SQL files
         run: |
           cp src/Metrics.Web/Migrations/*.sql ${{ env.RELEASE_BASE_DIR }}/all-${{ steps.get_version.outputs.VERSION }}/sql &&
           cp src/Metrics.Web/Migrations/*.sql ${{ env.RELEASE_BASE_DIR }}/win-x64-${{ steps.get_version.outputs.VERSION }}/sql
-
       - name: Print the Working Directory 3
         run: pwd && ls -l
-
       - name: Print Release Directory
         run: ls -R ${{ env.RELEASE_BASE_DIR }}/
-
       # - name: Create zip
       #   run: |
       #     cd ${{ steps.set_release_dir.outputs.RELEASE_DIR }} && \
       #     # Create zip archive for release (zip contents only, not the folder)
       #     zip -r ${{ steps.set_release_dir.outputs.RELEASE_DIR }}.zip .
-
       - name: Upload Release Artifact for *
         uses: actions/upload-artifact@v4
         with:
           name: release-metrics-all-${{ steps.get_version.outputs.VERSION }}
           path: ${{ env.RELEASE_BASE_DIR }}/all-${{ steps.get_version.outputs.VERSION }}
-
       - name: Upload Release Artifact for win-x64
         uses: actions/upload-artifact@v4
         with:
           name: release-metrics-winx64-${{ steps.get_version.outputs.VERSION }}
           path: ${{ env.RELEASE_BASE_DIR }}/win-x64-${{ steps.get_version.outputs.VERSION }}
-
       - name: Create zip archives
         run: |
           cd ${{ env.RELEASE_BASE_DIR }}
@@ -203,7 +166,6 @@ jobs:
           zip -r "metrics-win-x64-${{ steps.get_version.outputs.VERSION }}.zip" "win-x64-${{ steps.get_version.outputs.VERSION }}/"
           echo "Created zip files:"
           ls -la *.zip
-
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
@@ -218,6 +180,5 @@ jobs:
             ${{ env.RELEASE_BASE_DIR }}/metrics-win-x64-${{ steps.get_version.outputs.VERSION }}.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Clean Runner (Optional)
         run: rm -rf publish-* # Clean up release directory
