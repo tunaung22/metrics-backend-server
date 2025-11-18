@@ -1046,8 +1046,7 @@ public class ViewModel : PageModel
         {
             return userGroups
                 // filter user without staff
-                .Where(g => !g.TitleName.Equals("staff", StringComparison.OrdinalIgnoreCase)
-                    && !g.TitleName.Equals("sysadmin", StringComparison.OrdinalIgnoreCase))
+                .Where(g => !g.TitleName.Equals("sysadmin", StringComparison.OrdinalIgnoreCase))
                 .Select(g => new UserGroupViewModel
                 {
                     Id = g.Id,

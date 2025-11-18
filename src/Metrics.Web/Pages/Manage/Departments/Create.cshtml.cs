@@ -1,4 +1,5 @@
 using Metrics.Application.Domains;
+using Metrics.Application.DTOs.Department;
 using Metrics.Application.Exceptions;
 using Metrics.Application.Interfaces.IServices;
 using Microsoft.AspNetCore.Mvc;
@@ -7,18 +8,12 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Metrics.Web.Pages.Manage.Departments;
 
-public class CreateModel : PageModel
+public class CreateModel(IDepartmentService departmentService) : PageModel
 {
-    private readonly IDepartmentService _departmentService;
-
-    public CreateModel(IDepartmentService departmentService)
-    {
-        _departmentService = departmentService;
-        Input = new InputModel();
-    }
+    private readonly IDepartmentService _departmentService = departmentService;
 
     [BindProperty]
-    public InputModel Input { get; set; }
+    public InputModel Input { get; set; } = new InputModel();
 
     public string? ReturnUrl { get; set; } = string.Empty;
 
@@ -39,12 +34,17 @@ public class CreateModel : PageModel
 
         try
         {
-            var entity = new Department
+            var createDto = new DepartmentCreateDto
             {
                 DepartmentName = Input.DepartmentName.Trim()
             };
 
-            var created = await _departmentService.CreateAsync(entity);
+            var created = await _departmentService.CreateAsync(createDto);
+            if (!created.IsSuccess)
+            {
+                ModelState.AddModelError("Input.DepartmentName", "Failed to create department.");
+                return Page();
+            }
 
         }
         catch (DuplicateContentException ex)

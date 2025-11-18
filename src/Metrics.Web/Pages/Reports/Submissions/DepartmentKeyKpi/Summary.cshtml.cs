@@ -5,13 +5,10 @@ using Metrics.Web.Models.DepartmentKeyMetric;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.VisualBasic;
 using MiniExcelLibs;
 using MiniExcelLibs.Attributes;
 using MiniExcelLibs.OpenXml;
 using System.ComponentModel.DataAnnotations;
-using System.Reflection.Metadata.Ecma335;
-using System.Runtime.CompilerServices;
 
 namespace Metrics.Web.Pages.Reports.Submissions.DepartmentKeyKpi;
 
@@ -51,6 +48,7 @@ public class SummaryModel(
         public int TotalSubmissions { get; set; }
         public int TotalKeys { get; set; }
         public decimal TotalScore { get; set; }
+        public decimal NetScore { get; set; }
         public decimal KpiScore { get; set; }
         public List<SummaryReport_UserGroupDetail_ViewModel> SummaryReport_UserGroupDetails { get; set; } = [];
     }
@@ -266,6 +264,7 @@ public class SummaryModel(
             var colTotalKey = "Total Keys";
             var colTotalSubmission = "Total Submissions";
             var colTotalScore = "Total Score";
+            var colNetScore = "Score / Submitter";
             var colKpiScore = "KPI Score";
 
             // ----------Dynamic Columns----------
@@ -285,6 +284,7 @@ public class SummaryModel(
             {
                 new(colTotalSubmission) { Width = 20 },
                 new(colTotalScore) { Width = 20 },
+                new(colNetScore) { Width = 20 },
                 new(colKpiScore) { Width = 20 },
             })
             .ToList();
@@ -303,8 +303,8 @@ public class SummaryModel(
                     foreach (var group in UserGroupList)
                     {
                         var detail = e.SummaryReport_UserGroupDetails
-                                                    .Where(d => d.UserGroupName.Equals(group.GroupName, StringComparison.OrdinalIgnoreCase))
-                                                    .FirstOrDefault();
+                            .Where(d => d.UserGroupName.Equals(group.GroupName, StringComparison.OrdinalIgnoreCase))
+                            .FirstOrDefault();
                         if (detail != null)
                         {
                             dict[$"{group.GroupName}_Name"] = group.GroupName;
@@ -321,6 +321,7 @@ public class SummaryModel(
 
                     dict[colTotalSubmission] = e.TotalSubmissions;
                     dict[colTotalScore] = Convert.ToDecimal(e.TotalScore.ToString("0.00"));
+                    dict[colNetScore] = Convert.ToDecimal(e.NetScore.ToString("0.00"));
                     dict[colKpiScore] = Convert.ToDecimal(e.KpiScore.ToString("0.00"));
 
                     return dict;
@@ -532,9 +533,16 @@ public class SummaryModel(
             var keysCount = DepartmentKeyMetrics.Where(dkm => dkm.KeyIssueDepartmentId == department.Id).Count();
 
             var submissionFilteredByDepartment = submissionsByPeriod_ByAllUserGroup.Where(s => s.DepartmentKeyMetric.KeyIssueDepartmentId == department.Id).ToList();
+
+            var submissionFilteredByUser = submissionFilteredByDepartment
+                .DistinctBy(s => s.SubmitterId).Count();
+
+
             var submissionCount = submissionFilteredByDepartment.Count();
             decimal totalScore = submissionFilteredByDepartment.Sum(s => s.ScoreValue);
-            decimal totalKPI = totalScore > 0 ? (totalScore / submissionCount) : 0;
+            // decimal totalKPI = totalScore > 0 ? (totalScore / submissionCount) : 0;
+            decimal netKPI = totalScore > 0 ? (totalScore / submissionFilteredByUser) : 0;
+            decimal totalKPI = netKPI > 0 ? (netKPI / keysCount) : 0;
 
             // if All Group
             if (IsAllGroup)
@@ -565,6 +573,7 @@ public class SummaryModel(
                     TotalKeys = keysCount,
                     TotalSubmissions = submissionCount,
                     TotalScore = totalScore,
+                    NetScore = netKPI,
                     KpiScore = totalKPI,
                     SummaryReport_UserGroupDetails = groupDetails
                 };

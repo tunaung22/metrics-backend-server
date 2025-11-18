@@ -51,7 +51,7 @@ public class KeyKpiSubmissionService(
         catch (DbUpdateException ex)
         {
             _logger.LogError(ex, "DB Update error while creating submission. {e}", ex.Message);
-            return Result.Fail("Failed to submit key kpi submissions.", ErrorType.UnexpectedError);
+            return Result.Fail("Failed to submit key kpi submissions.", ErrorType.DatabaseError);
         }
         catch (Exception ex)
         {

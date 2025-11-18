@@ -93,6 +93,7 @@
                                 }
                                 <th rowspan="2">Total Submissions</th>
                                 <th rowspan="2">Total Score</th>
+                                <th rowspan="2">Score/Submitter</th>
                                 <th rowspan="2">KPI Score</th>
                             </tr>
                             <tr>
@@ -124,6 +125,9 @@
                                     }
                                     <td>@submission.TotalSubmissions.ToString("0")</td>
                                     <td>@submission.TotalScore.ToString("0.00")</td>
+                                    <td>
+                                        @submission.NetScore.ToString("0.00")
+                                    </td>
                                     <td>
                                         <strong>
                                             @submission.KpiScore.ToString("0.00")
