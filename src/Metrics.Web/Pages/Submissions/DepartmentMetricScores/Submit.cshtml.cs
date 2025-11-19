@@ -323,11 +323,11 @@ public class SubmitModel(ILogger<SubmitModel> logger,
                         return new CreateKeyKpiSubmissionDto
                         {
                             PeriodId = TargetKpiPeriod.Id,
-                            SubmitterId = Submitter.Id,
-                            // SubmittedAt = DateTimeOffset.UtcNow,
                             DepartmentKeyMetricId = detail.DepartmentKeyMetricsId,
                             ScoreValue = detail.ScoreValue,
                             Comments = detail.Comments,
+                            SubmitterId = Submitter.Id,
+                            SubmittedAt = DateTimeOffset.UtcNow,
                         };
                     }).ToList();
                 }).ToList();

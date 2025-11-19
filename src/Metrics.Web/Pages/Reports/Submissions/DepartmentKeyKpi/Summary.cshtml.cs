@@ -448,9 +448,13 @@ public class SummaryModel(
         if (userGroups.Any())
         {
             return userGroups
-                // filter user without staff
-                .Where(g => !g.TitleName.Equals("staff", StringComparison.OrdinalIgnoreCase)
-                    && !g.TitleName.Equals("sysadmin", StringComparison.OrdinalIgnoreCase))
+                // filter out "sysadmin" user
+                // filter out "staff" user group
+                // filter out "management" user group
+                .Where(g =>
+                    !g.TitleName.Equals("sysadmin", StringComparison.OrdinalIgnoreCase)
+                    && !g.TitleName.Equals("staff", StringComparison.OrdinalIgnoreCase)
+                    && !g.TitleName.Equals("management", StringComparison.OrdinalIgnoreCase))
                 .Select(g => new UserGroupViewModel
                 {
                     Id = g.Id,
@@ -541,8 +545,8 @@ public class SummaryModel(
             var submissionCount = submissionFilteredByDepartment.Count();
             decimal totalScore = submissionFilteredByDepartment.Sum(s => s.ScoreValue);
             // decimal totalKPI = totalScore > 0 ? (totalScore / submissionCount) : 0;
-            decimal netKPI = totalScore > 0 ? (totalScore / submissionFilteredByUser) : 0;
-            decimal totalKPI = netKPI > 0 ? (netKPI / keysCount) : 0;
+            decimal netKPIScore = totalScore > 0 ? (totalScore / submissionFilteredByUser) : 0;
+            decimal totalKPIScore = netKPIScore > 0 ? (netKPIScore / keysCount) : 0;
 
             // if All Group
             if (IsAllGroup)
@@ -573,8 +577,8 @@ public class SummaryModel(
                     TotalKeys = keysCount,
                     TotalSubmissions = submissionCount,
                     TotalScore = totalScore,
-                    NetScore = netKPI,
-                    KpiScore = totalKPI,
+                    NetScore = netKPIScore,
+                    KpiScore = totalKPIScore,
                     SummaryReport_UserGroupDetails = groupDetails
                 };
                 return departmentInfo;
@@ -588,7 +592,7 @@ public class SummaryModel(
                     TotalKeys = keysCount,
                     TotalSubmissions = submissionCount,
                     TotalScore = totalScore,
-                    KpiScore = totalKPI
+                    KpiScore = totalKPIScore
                 };
                 return departmentInfo;
             }

@@ -9,10 +9,11 @@ public static class KeyKpiSubmissionMapper
     {
         return new KeyKpiSubmission
         {
-            SubmitterId = createDto.SubmitterId,
             DepartmentKeyMetricId = createDto.DepartmentKeyMetricId,
             ScoreValue = createDto.ScoreValue,
-            Comments = createDto.Comments
+            Comments = createDto.Comments,
+            SubmitterId = createDto.SubmitterId,
+            SubmittedAt = createDto.SubmittedAt,
         };
     }
 

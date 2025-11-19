@@ -80,7 +80,7 @@ public static class DependencyInjection
                 {
                     // UserGroups.Staff, // staff not allowed
                     UserGroups.HOD,
-                    UserGroups.Management
+                    // UserGroups.Management
                 }));
             });
 

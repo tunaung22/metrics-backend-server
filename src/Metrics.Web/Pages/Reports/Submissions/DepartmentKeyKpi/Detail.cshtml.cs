@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using MiniExcelLibs;
 using MiniExcelLibs.Attributes;
 using MiniExcelLibs.OpenXml;
-using System.Security.Cryptography.X509Certificates;
 
 namespace Metrics.Web.Pages.Reports.Submissions.DepartmentKeyKpi;
 
@@ -17,7 +16,7 @@ public class DetailModel(
     IKpiSubmissionPeriodService kpiPeriodService,
     IUserService userService,
     IUserTitleService userGroupService,
-    IDepartmentService departmentService,
+    // IDepartmentService departmentService,
     IKeyKpiSubmissionService keyKpiSubmissionService,
     IKeyKpiSubmissionConstraintService submissionConstraintService,
     IDepartmentKeyMetricService departmentKeyMetricService) : PageModel
@@ -25,7 +24,7 @@ public class DetailModel(
     private readonly IKpiSubmissionPeriodService _kpiPeriodService = kpiPeriodService;
     private readonly IUserService _userService = userService;
     private readonly IUserTitleService _userGroupService = userGroupService;
-    private readonly IDepartmentService _departmentService = departmentService;
+    // private readonly IDepartmentService _departmentService = departmentService;
     private readonly IKeyKpiSubmissionService _keyKpiSubmissionService = keyKpiSubmissionService;
     private readonly IKeyKpiSubmissionConstraintService _submissionConstraintService = submissionConstraintService;
     public readonly IDepartmentKeyMetricService _departmentKeyMetricService = departmentKeyMetricService;
@@ -466,9 +465,13 @@ public class DetailModel(
         if (userGroups.Any())
         {
             return userGroups
-                // filter user without staff
-                .Where(g => !g.TitleName.Equals("staff", StringComparison.OrdinalIgnoreCase)
-                    && !g.TitleName.Equals("sysadmin", StringComparison.OrdinalIgnoreCase))
+                // filter out "sysadmin" user
+                // filter out "staff" user group
+                // filter out "management" user group
+                .Where(g =>
+                    !g.TitleName.Equals("sysadmin", StringComparison.OrdinalIgnoreCase)
+                    && !g.TitleName.Equals("staff", StringComparison.OrdinalIgnoreCase)
+                    && !g.TitleName.Equals("management", StringComparison.OrdinalIgnoreCase))
                 .Select(g => new UserGroupViewModel
                 {
                     Id = g.Id,
@@ -554,8 +557,11 @@ public class DetailModel(
         if (users.Any())
         {
             return users
-                .Where(user => !user.UserTitle.TitleName // remove users with user title "Staff" 
-                    .Equals("staff", StringComparison.OrdinalIgnoreCase))
+                .Where(user =>
+                    // remove users with user title "Staff" 
+                    !user.UserTitle.TitleName.Equals("sysadmin", StringComparison.OrdinalIgnoreCase)
+                    && !user.UserTitle.TitleName.Equals("staff", StringComparison.OrdinalIgnoreCase)
+                    && !user.UserTitle.TitleName.Equals("management", StringComparison.OrdinalIgnoreCase))
                 .Select(user => new UserViewModel
                 {
                     Id = user.Id,
