@@ -22,8 +22,8 @@ class KpiSubmissionPeriodConfig : IEntityTypeConfiguration<KpiSubmissionPeriod>
         // .UseHiLo();
         builder.Property(e => e.PeriodName)
             .HasColumnName("period_name")
-            .HasColumnType("varchar(20)")
-            .HasMaxLength(20)
+            .HasColumnType("citext")
+            .HasMaxLength(50)
             .IsRequired();
         builder.Property(e => e.SubmissionStartDate)
             .HasColumnName("submission_start_date")
