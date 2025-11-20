@@ -1,4 +1,5 @@
 using Metrics.Application.Domains;
+using Metrics.Application.DTOs.KpiPeriod;
 using Metrics.Application.Exceptions;
 using Metrics.Application.Interfaces.IServices;
 using Microsoft.AspNetCore.Mvc;
@@ -21,8 +22,8 @@ public class EditModel : PageModel
     public class KpiPeriodFormInputModel
     {
         [Required(ErrorMessage = "Period Name is required.")]
-        [StringLength(7, MinimumLength = 7, ErrorMessage = "Invalid name pattern. Period name must be 4 numbers + - + 2 numbers.")]
-        [RegularExpression(@"^\d{4}-\d{2}$", ErrorMessage = "The date must be in the format YYYY-MM.")]
+        // [StringLength(7, MinimumLength = 7, ErrorMessage = "Invalid name pattern. Period name must be 4 numbers + - + 2 numbers.")]
+        // [RegularExpression(@"^\d{4}-\d{2}$", ErrorMessage = "The date must be in the format YYYY-MM.")]
         public string PeriodName { get; set; } = null!;
 
         [DisplayFormat(ApplyFormatInEditMode = true, DataFormatString = "{0:dd/MMM/yyyy}")]
@@ -69,13 +70,19 @@ public class EditModel : PageModel
 
         try
         {
-            var entity = new KpiSubmissionPeriod
+            var updateDto = new KpiPeriodUpdateDto
             {
-                PeriodName = PeriodName,
+                PeriodName = FormInput.PeriodName.Trim(),
                 SubmissionStartDate = FormInput.SubmissionStartDate.UtcDateTime,
                 SubmissionEndDate = FormInput.SubmissionEndDate.UtcDateTime
             };
-            await _kpiPeriodService.UpdateAsync(PeriodName, entity);
+
+            var result = await _kpiPeriodService.UpdateAsync(PeriodName, updateDto);
+            if (!result.IsSuccess)
+            {
+                ModelState.AddModelError(string.Empty, "Failed to update kpi period.");
+                return Page();
+            }
         }
         catch (DuplicateContentException)
         {
@@ -89,9 +96,8 @@ public class EditModel : PageModel
         }
 
         if (!string.IsNullOrEmpty(ReturnUrl))
-        {
             return LocalRedirect(ReturnUrl);
-        }
+
         return RedirectToPage("./Index");
     }
 

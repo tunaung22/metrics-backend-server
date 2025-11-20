@@ -1,4 +1,5 @@
 using Metrics.Application.Domains;
+using Metrics.Application.DTOs.KpiPeriod;
 using Metrics.Application.Exceptions;
 using Metrics.Application.Interfaces.IServices;
 using Microsoft.AspNetCore.Mvc;
@@ -22,8 +23,8 @@ public class CreateModel : PageModel
     public class FormInputModel
     {
         [Required(ErrorMessage = "Period Name is required.")]
-        [StringLength(7, MinimumLength = 7, ErrorMessage = "Invalid name pattern. Period name must be 4 numbers + - + 2 numbers.")]
-        [RegularExpression(@"^\d{4}-\d{2}$", ErrorMessage = "The date must be in the format YYYY-MM.")]
+        // [StringLength(7, MinimumLength = 7, ErrorMessage = "Invalid name pattern. Period name must be 4 numbers + - + 2 numbers.")]
+        // [RegularExpression(@"^\d{4}-\d{2}$", ErrorMessage = "The date must be in the format YYYY-MM.")]
         public string PeriodName { get; set; } = null!;
 
         [DisplayFormat(ApplyFormatInEditMode = true, DataFormatString = "{0:dd/MMM/yyyy HH:mm}")]
@@ -53,15 +54,10 @@ public class CreateModel : PageModel
 
         try
         {
-            // var createDto = new KpiPeriodCreateDto
-            // {
-            //     PeriodName = FormInput.PeriodName,
-            //     SubmissionStartDate = FormInput.SubmissionStartDate,
-            //     SubmissionEndDate = FormInput.SubmissionEndDate
-            // };
-            // await _kpiPeriodService.Create_Async(createDto);
-            var startDate = new DateTimeOffset(FormInput.SubmissionStartDate.Date.AddHours(6));
-            var endDate = new DateTimeOffset(FormInput.SubmissionEndDate.Date.AddDays(1).AddSeconds(-1));
+            // var startDate = new DateTimeOffset(FormInput.SubmissionStartDate.Date.AddHours(6));
+            // var endDate = new DateTimeOffset(FormInput.SubmissionEndDate.Date.AddDays(1).AddSeconds(-1));
+            var startDate = new DateTimeOffset(FormInput.SubmissionStartDate.Date);
+            var endDate = new DateTimeOffset(FormInput.SubmissionEndDate.Date.AddDays(1).AddSeconds(-1)); // end of the day
 
             if (startDate > endDate)
             {
@@ -69,15 +65,20 @@ public class CreateModel : PageModel
                 return Page();
             }
 
-            var entity = new KpiSubmissionPeriod
+            var createDto = new KpiPeriodCreateDto
             {
                 PeriodName = FormInput.PeriodName,
-                SubmissionStartDate = startDate.UtcDateTime,
-                SubmissionEndDate = endDate.UtcDateTime
+                SubmissionStartDate = startDate,
+                SubmissionEndDate = endDate
             };
-            await _kpiPeriodService.CreateAsync(entity);
-            return RedirectToPage("Index");
+            var result = await _kpiPeriodService.CreateAsync(createDto);
+            if (!result.IsSuccess)
+            {
+                ModelState.AddModelError(string.Empty, "Failed to create kpi period.");
+                return Page();
+            }
 
+            return RedirectToPage("Index");
         }
         catch (DuplicateContentException)
         {

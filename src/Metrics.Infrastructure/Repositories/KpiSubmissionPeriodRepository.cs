@@ -22,7 +22,7 @@ public class KpiSubmissionPeriodRepository : IKpiSubmissionPeriodRepository
     public void Update(KpiSubmissionPeriod enitiy)
     {
         _context.Entry(enitiy).State = EntityState.Modified;
-        _context.KpiSubmissionPeriods.Update(enitiy);
+        // _context.KpiSubmissionPeriods.Update(enitiy);
     }
 
     public void Delete(KpiSubmissionPeriod entity)

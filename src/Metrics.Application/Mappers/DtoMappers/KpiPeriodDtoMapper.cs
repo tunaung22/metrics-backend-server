@@ -35,8 +35,8 @@ public static class KpiPeriodDtoMapper
         return new KpiSubmissionPeriod
         {
             PeriodName = dto.PeriodName,
-            SubmissionStartDate = dto.SubmissionStartDate,
-            SubmissionEndDate = dto.SubmissionEndDate
+            SubmissionStartDate = dto.SubmissionStartDate.UtcDateTime,
+            SubmissionEndDate = dto.SubmissionEndDate.UtcDateTime
         };
     }
 
