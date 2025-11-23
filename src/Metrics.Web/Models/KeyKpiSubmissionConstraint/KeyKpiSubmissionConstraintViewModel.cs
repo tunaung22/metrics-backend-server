@@ -1,6 +1,6 @@
 using Metrics.Web.Models.DepartmentKeyMetric;
 
-namespace Metrics.Web.Models;
+namespace Metrics.Web.Models.KeyKpiSubmissionConstraint;
 
 public class KeyKpiSubmissionConstraintViewModel
 {

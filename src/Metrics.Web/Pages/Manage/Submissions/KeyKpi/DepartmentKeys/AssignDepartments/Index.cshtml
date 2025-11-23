@@ -1,6 +1,6 @@
-﻿@page "/Manage/Submissions/Department-Key-Metrics/{periodName}/Submission-Assignment"
+﻿@page "/Manage/Submissions/Key-Kpi/Department-Keys/Assign-Departments/{periodName}"
 @*           /manage/submissions/department-keys/set-submission-rules (set submission rules) *@
-@model Metrics.Web.Pages.Manage.Submissions.DepartmentKeyMetrics.SubmissionAssignmentModel
+@model Metrics.Web.Pages.Manage.Submissions.KeyKpi.DepartmentKeys.AssignDepartments.IndexModel
 @* @using System.Text.Json.Serialization; *@
 @using System.Text.Json;
 
@@ -21,43 +21,66 @@
     <div class="d-flex align-items-center my-2">
         <span class="d-flex align-items-center gap-2 ">
             <h4 class="flex-grow-1"><i class="bi bi-ui-checks"></i> Submission Assignment for @Model.SelectedPeriodName</h4>
+        <i>(assign departments with department keys for Key KPI Submissions)</i>
         </span>
     </div>
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a asp-page="/Dashboard/Index">Dashboard</a></li>
-            <li class="breadcrumb-item"><a asp-page="/Manage/Submissions/DepartmentKeyMetrics/Index">Department Key Metrics (periods)</a></li>
+            <li class="breadcrumb-item"><a asp-page="/Manage/Submissions/KeyKpi/DepartmentKeys/Index">Department Key Metrics (periods)</a></li>
             <li class="breadcrumb-item active">Submissions Assignment</li>
         </ol>
     </nav>
 </div>
 
 <div class="container-fluid">
-    
+
+    <div class="filter-toolbar mb-4 d-flex align-items-center justify-content-between">
+        <span class="d-flex flex-grow-1 align-items-center">
+            @{ var infoDesc = "<div><strong>Import</strong> <br/>Import department assignments from other period.</div>"; }
+            <a asp-page="Import"
+                asp-route-periodName="@Uri.EscapeDataString(Model.SelectedPeriodName ?? string.Empty)"
+                asp-route-returnUrl="@HttpContext.Request.Path"
+                data-bs-toggle="tooltip" 
+                data-bs-html="true"
+                data-bs-title="@infoDesc"
+                data-bs-placement="right"
+                class="btn btn-success me-4">
+                <i class="bi bi-file-earmark-arrow-down"></i> Import</a>
+        </span>
+        <span>
+            <button type="button" class="btn btn-primary" id="saveButton" onclick="updateKeyMetric()">
+                <i class="bi bi-check-circle"></i> Save
+            </button>
+        </span>
+    </div>
+
+
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-    <div class="p-4 rounded-2">
-        @if(!String.IsNullOrEmpty(Model.StatusMessage)) {
-            var statusMessageClass = Model.StatusSuccess ? "success" : "danger"; 
-            <div class="status-message row mb-3 d-flex justify-content-center align-items-center">
-                <div class="col-12 col-md-10">
-                    <div class="alert alert-@statusMessageClass alert-dismissible fade show" role="alert">
-                        @Model.StatusMessage
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
+    <div id="loadingScreen" class="d-flex justify-content-center mb-4">
+        <strong role="status" class="me-3">Loading...</strong>
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
+
+    @if(!String.IsNullOrEmpty(Model.StatusMessage)) {
+        var statusMessageClass = Model.StatusSuccess ? "success" : "danger"; 
+        <div class="status-message row mb-3 d-flex justify-content-center align-items-center">
+            <div class="col-12 col-md-10">
+                <div class="alert alert-@statusMessageClass alert-dismissible fade show" role="alert">
+                    @Model.StatusMessage
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             </div>
-        } 
-
-
-        <div class="row mb-3">
-            <div class="d-flex justify-content-end">
-                <button type="button" class="btn btn-primary" id="saveButton" onclick="updateKeyMetric()">
-                    <i class="bi bi-check-circle"></i> Save
-                </button>
-            </div>
         </div>
-        <div class="row mb-3">
+    } 
+
+
+    <div id="mainContent" class="visually-hidden table-responsive p-0 px-2 mb-3 rounded-2">
+        <div class="row m-3">
             <div class="col-auto">
                 <form id="form__departmentSelection" method="get">
                     <h5 class="pe-4">Department (Submitter)</h5>
@@ -72,107 +95,129 @@
                 </form>
             </div>
             <div class="col">
-                @if (Model.CurrentDepartmentCode != null)
+                @if(Model.DepartmentListItems.Count > 0)
                 {
-                    currentDepartmentCode = Model.CurrentDepartmentCode.ToString();
-                    var currentDepartmentName = Model.DepartmentListItems
-                        .Where(item => item.Value == currentDepartmentCode)
-                        .Select(item => item.Text)
-                        .FirstOrDefault();
-                    @if(Model.DepartmentKeyMetrics.Count > 0)
+
+                    @if (Model.CurrentDepartmentCode != null)
                     {
-                        @* var activeKeys = Model.DepartmentKeyMetrics.Where(k=> k.IsDeleted==false).Count(); *@
+                        currentDepartmentCode = Model.CurrentDepartmentCode.ToString();
+                        var currentDepartmentName = Model.DepartmentListItems
+                            .Where(item => item.Value == currentDepartmentCode)
+                            .Select(item => item.Text)
+                            .FirstOrDefault();
+                        @if(Model.DepartmentKeyMetrics.Count > 0)
+                        {
+                            @* var activeKeys = Model.DepartmentKeyMetrics.Where(k=> k.IsDeleted==false).Count(); *@
 
-                        <span class="d-flex">
-                            <h5 class="pe-4">Avaiable Department Key Metrics</h5>
-                            @* <p>Assigned:<strong> @activeKeys</strong></p> *@
-                        </span>
-                        <div class="table-container row border rounded-2">
-                            <table id="departmentKeyMetricTable" class="table table-bordered table-hover" style="width:100%">
-                                <thead>
-                                    <tr>
-                                        <th>No.</th>
-                                        <th>Department (issuer)</th>
-                                        <th>Title</th>
-                                        <th>Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @if(Model.DepartmentKeyMetrics.Count > 0)
-                                    {
-                                        var rowCount = 0;
-                                        foreach(var dkm in Model.DepartmentKeyMetrics)
+                            <span class="d-flex">
+                                <h5 class="pe-4">Avaiable Department Key Metrics</h5>
+                                @* <p>Assigned:<strong> @activeKeys</strong></p> *@
+                            </span>
+                            <div class="table-container row border rounded-2">
+                                <table id="departmentKeyMetricTable" class="table table-bordered table-hover" style="width:100%">
+                                    <thead>
+                                        <tr>
+                                            <th>No.</th>
+                                            <th>Department (issuer)</th>
+                                            <th>Title</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @if(Model.DepartmentKeyMetrics.Count > 0)
                                         {
-                                            rowCount += 1;
-                                            var lineNumber = rowCount.ToString("000");
-                                            
-                                            // KeyKpiSubmissionConstraint
-                                            // if DepartmentKeyMetric in KeyKpiSubmissionConstraint
-                                            // loop DepartmentKeyMetric
-                                            bool toAssign = false;
-                                            
-                                            var isExist = Model.KeyKpiSubmissionConstraints
-                                                .Any(i => i.DepartmentKeyMetricId == dkm.Id);
-                                            if (isExist) 
+                                            var rowCount = 0;
+                                            foreach(var dkm in Model.DepartmentKeyMetrics)
                                             {
-                                                var existingRecord = Model.KeyKpiSubmissionConstraints
-                                                    .Where(i => i.DepartmentKeyMetricId == dkm.Id).First();
+                                                rowCount += 1;
+                                                var lineNumber = rowCount.ToString("000");
                                                 
-                                                if (existingRecord.IsDeleted) { toAssign = true; }
-                                                else { toAssign = false; }
-                                            } 
-                                            else {
-                                                toAssign = true;
-                                            }
-                                        
-
-                                            <tr id="tableRow">
-                                                <td class="text-center @(toAssign ? "" : "row-metric-checked")">@lineNumber</td>
-                                                <td class="@(toAssign ? "" : "row-metric-checked")">
-                                                    @Html.Raw(dkm.KeyIssueDepartment.DepartmentName)
-                                                </td>
-                                                <td class="@(toAssign ? "" : "row-metric-checked")">
-                                                    @Html.Raw(dkm.KeyMetric.MetricTitle)
-                                                </td>
-
-                                                @if(toAssign == true) {
-                                                    <td class="text-center checkbox-table-cell @(toAssign ? "" : "row-metric-checked")">
-                                                        <text style="display: none;">unchecked</text> @* ****for sorting**** *@
-                                                        <label for="@dkm.Id" class="label_checkbox">
-                                                            <input id="@dkm.Id" class="form-check-input"
-                                                                    type="checkbox" 
-                                                                    value="@dkm.LookupId"
-                                                                    onclick="toggleCheckbox(event)" />
-                                                        </label>
-                                                    </td>
+                                                // KeyKpiSubmissionConstraint
+                                                // if DepartmentKeyMetric in KeyKpiSubmissionConstraint
+                                                // loop DepartmentKeyMetric
+                                                bool toAssign = false;
+                                                
+                                                var isExist = Model.KeyKpiSubmissionConstraints
+                                                    .Any(i => i.DepartmentKeyMetricId == dkm.Id);
+                                                if (isExist) 
+                                                {
+                                                    var existingRecord = Model.KeyKpiSubmissionConstraints
+                                                        .Where(i => i.DepartmentKeyMetricId == dkm.Id).First();
+                                                    
+                                                    if (existingRecord.IsDeleted) { toAssign = true; }
+                                                    else { toAssign = false; }
                                                 } 
                                                 else {
-                                                    <td class="text-center checkbox-table-cell @(toAssign ? "" : "row-metric-checked")">
-                                                        <label for="@dkm.Id" class="label_checkbox">
-                                                            <input id="@dkm.Id" class="form-check-input"
-                                                                    type="checkbox" 
-                                                                    value="@dkm.LookupId"
-                                                                    checked
-                                                                    onclick="toggleCheckbox(event)" />
-                                                        </label>
-                                                    </td>
+                                                    toAssign = true;
                                                 }
-                                            </tr>
+                                            
+
+                                                <tr id="tableRow">
+                                                    <td class="text-center @(toAssign ? "" : "row-metric-checked")">@lineNumber</td>
+                                                    <td class="@(toAssign ? "" : "row-metric-checked")">
+                                                        @Html.Raw(dkm.KeyIssueDepartment.DepartmentName)
+                                                    </td>
+                                                    <td class="@(toAssign ? "" : "row-metric-checked")">
+                                                        @Html.Raw(dkm.KeyMetric.MetricTitle)
+                                                    </td>
+
+                                                    @if(toAssign == true) {
+                                                        <td class="text-center checkbox-table-cell @(toAssign ? "" : "row-metric-checked")">
+                                                            <text style="display: none;">unchecked</text> @* ****for sorting**** *@
+                                                            <label for="@dkm.Id" class="label_checkbox">
+                                                                <input id="@dkm.Id" class="form-check-input"
+                                                                        type="checkbox" 
+                                                                        value="@dkm.LookupId"
+                                                                        onclick="toggleCheckbox(event)" />
+                                                            </label>
+                                                        </td>
+                                                    } 
+                                                    else {
+                                                        <td class="text-center checkbox-table-cell @(toAssign ? "" : "row-metric-checked")">
+                                                            <label for="@dkm.Id" class="label_checkbox">
+                                                                <input id="@dkm.Id" class="form-check-input"
+                                                                        type="checkbox" 
+                                                                        value="@dkm.LookupId"
+                                                                        checked
+                                                                        onclick="toggleCheckbox(event)" />
+                                                            </label>
+                                                        </td>
+                                                    }
+                                                </tr>
+                                            }
                                         }
+                                    </tbody>
+                                </table>
+                            </div>
+                    
+                        }
+                        else
+                        {
+                            <div class="alert alert-warning">
+                                <h5 class="">No department keys found for @currentDepartmentName</h5>
+                                <p class="lead">
+                                    <i class="bi bi-check-square-fill"></i> Issue department keys from 
+                                    @if (!string.IsNullOrEmpty(Model.SelectedPeriodName))
+                                    {
+                                        <a asp-page="../IssueKeys/Index" 
+                                            asp-route-periodName="@Uri.EscapeDataString(Model.SelectedPeriodName)"
+                                            class="btn btn-sm btn-link my-2 my-lg-0 me-2">
+                                            <strong>STEP 1</strong></a>
                                     }
-                                </tbody>
-                            </table>
-                        </div>
-                
+                                    first and try again.
+                                </p>
+                            </div>
+                        }
                     }
+                    @* NO DEPARTMENT SELECTED *@
                     else
                     {
-                        <h4 class="text-danger">No department key metrics found for @currentDepartmentName!, Please assign department key metircs and try again.</h4>
+                        <h4 class="text-danger">No Department selected. Please choose a department from the list.</h4>
                     }
                 }
                 else
                 {
-                    <h4 class="text-danger">Invalid Department!, Please choose a department from the list.</h4>
+                    <h4 class="text-danger">No Department.</h4>
                 }
             </div>
         </div>

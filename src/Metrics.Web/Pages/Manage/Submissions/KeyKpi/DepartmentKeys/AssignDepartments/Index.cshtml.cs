@@ -3,21 +3,22 @@ using Metrics.Application.Interfaces.IServices;
 using Metrics.Web.Common.Mappers;
 using Metrics.Web.Models;
 using Metrics.Web.Models.DepartmentKeyMetric;
+using Metrics.Web.Models.KeyKpiSubmissionConstraint;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
-namespace Metrics.Web.Pages.Manage.Submissions.DepartmentKeyMetrics;
+namespace Metrics.Web.Pages.Manage.Submissions.KeyKpi.DepartmentKeys.AssignDepartments;
 
-public class SubmissionAssignmentModel(
-    ILogger<SubmissionAssignmentModel> logger,
+public class IndexModel(
+    ILogger<IndexModel> logger,
     IDepartmentService departmentService,
     IKpiSubmissionPeriodService kpiSubmissionPeriodService,
     IKeyMetricService keyMetricService,
     IDepartmentKeyMetricService departmentKeyMetricService,
     IKeyKpiSubmissionConstraintService keyKpiSubmissionConstraintService) : PageModel
 {
-    private readonly ILogger<SubmissionAssignmentModel> _logger = logger;
+    private readonly ILogger<IndexModel> _logger = logger;
     private readonly IDepartmentService _departmentService = departmentService;
     private readonly IKpiSubmissionPeriodService _kpiSubmissionPeriodService = kpiSubmissionPeriodService; // Period
     private readonly IKeyMetricService _keyMetricService = keyMetricService; // Key Metric
@@ -68,19 +69,19 @@ public class SubmissionAssignmentModel(
     public async Task<IActionResult> OnGetAsync([FromRoute] string periodName)
     {
         // Selected Period
-        if (string.IsNullOrEmpty(periodName))
+        if (string.IsNullOrEmpty(Uri.UnescapeDataString(periodName)))
         {
             ModelState.AddModelError(string.Empty, "A valid Period Name is required.");
             return Page();
         }
 
         // ----------KPI PERIOD-------------------------------------------------
-        var selectedPeriod = await LoadKpiPeriod(periodName);
+        var selectedPeriod = await LoadKpiPeriod(Uri.UnescapeDataString(periodName));
         if (selectedPeriod == null)
             return Page();
 
         SelectedPeriod = selectedPeriod;
-        SelectedPeriodName = selectedPeriod.PeriodName;
+        SelectedPeriodName = Uri.UnescapeDataString(selectedPeriod.PeriodName);
 
         // ----------DEPARTMENTS------------------------------------------------
         Departments = await LoadDepartmentList();
@@ -160,14 +161,15 @@ public class SubmissionAssignmentModel(
         [FromQuery] string department, // submitter department
         [FromBody] UserSelectionViewModel requestBody)
     {
+        // NOTE: periodName may contains %20 for space values
         // Selected Period
-        if (string.IsNullOrEmpty(periodName))
+        if (string.IsNullOrEmpty(Uri.UnescapeDataString(periodName)))
         {
             ModelState.AddModelError(string.Empty, "A valid Period Name is required.");
             return Page();
         }
         // ----------KPI PERIOD-------------------------------------------------
-        var selectedPeriod = await LoadKpiPeriod(periodName);
+        var selectedPeriod = await LoadKpiPeriod(Uri.UnescapeDataString(periodName));
         if (selectedPeriod == null)
             return Page();
 
@@ -357,7 +359,7 @@ public class SubmissionAssignmentModel(
     {
         List<DepartmentViewModel> departmentList = [];
 
-        var departments = await _departmentService.FindAllAsync(1, 50);
+        var departments = await _departmentService.FindAll_R_Async();
 
         if (departments.IsSuccess && departments.Data != null)
         {

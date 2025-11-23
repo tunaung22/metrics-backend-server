@@ -1,5 +1,6 @@
 using Metrics.Application.DTOs.KeyKpiSubmissionConstraints;
 using Metrics.Web.Models;
+using Metrics.Web.Models.KeyKpiSubmissionConstraint;
 
 namespace Metrics.Web.Common.Mappers;
 

@@ -1,9 +1,9 @@
-﻿@page "/Manage/Submissions/Department-Key-Metrics/{periodName}/Assign"
+﻿@page "/Manage/Submissions/Key-Kpi/Department-Keys/Issue-Keys/{periodName}"
 @*           /manage/submissions/department-keys/issue-keys (assign key to department) *@
-@model Metrics.Web.Pages.Manage.Submissions.DepartmentKeyMetrics.AssignModel
+@model Metrics.Web.Pages.Manage.Submissions.KeyKpi.DepartmentKeys.IssueKeys.IndexModel
 @using System.Text.Json;
 @{
-    ViewData["Title"] = $"Key Metrics for {Model.CurrentPeriodName}";
+    ViewData["Title"] = $"Keys for {Model.CurrentPeriodName}";
     var currentDepartmentCode = string.Empty;
 
     // Serialize constratins to json fro JavaScript
@@ -16,14 +16,15 @@
 
 <div class="sectionTitle">
     <div class="d-flex align-items-center my-2">
-        <h4 class="flex-grow-1">Issue Department Key Metrics for @Model.CurrentPeriodName</h4>
+        <h4 class="flex-grow-1"><i class="bi bi-ui-checks"></i> Issue Department Keys for @Model.CurrentPeriodName</h4>
         <span class="justify-content-end gap-2"></span>
     </div>
 
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a asp-page="/Dashboard/Index">Dashboard</a></li>
-            <li class="breadcrumb-item"><a asp-page="/Manage/Submissions/DepartmentKeyMetrics/Index">Department Key Metrics (periods)</a></li>
+            <li class="breadcrumb-item"><a asp-page="/">Home</a></li>
+            <li class="breadcrumb-item"><a asp-page="/Manage/Index">Manage</a></li>
+            <li class="breadcrumb-item"><a asp-page="/Manage/Submissions/KeyKpi/DepartmentKeys/Index">Department Key Metrics (periods)</a></li>
             <li class="breadcrumb-item active">Assign</li>
         </ol>
     </nav>
@@ -33,20 +34,34 @@
 
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-    <div class="p-4 rounded-2">
-        <div class="row mb-3">
+    <div class="p-0 rounded-2">
+        <div class="row mb-3 border-bottom pb-2">
             <div class="col d-flex">
                 <span class="d-flex flex-grow-1 align-items-center">
+                    @{ var infoDesc = "<div><strong>Import</strong> <br/>Import department assignments from other period.</div>"; }
+                    <a asp-page="Import"
+                        asp-route-periodName="@Uri.EscapeDataString(Model.CurrentPeriodName ?? string.Empty)"
+                        asp-route-returnUrl="@HttpContext.Request.Path"
+                        data-bs-toggle="tooltip" 
+                        data-bs-html="true"
+                        data-bs-title="@infoDesc"
+                        data-bs-placement="right"
+                        class="btn btn-success me-4">
+                        <i class="bi bi-file-earmark-arrow-down"></i> Import</a>
                     @* <p class="mb-0">Chooose a department (on the left) then select issuing keys (on the right)</p> *@
+                    @* <a asp-page="Import"
+                        asp-route-periodName="@Uri.EscapeDataString(Model.CurrentPeriodName ?? string.Empty)"
+                        class="btn btn-sm btn-outline-success me-4">
+                        <i class="bi bi-file-earmark-arrow-down"></i> Import</a> *@
                 </span>
                 <span class="d-flex justify-content-end">
-                    <button type="button" class="btn btn-primary" id="saveButton" onclick="updateKeyMetric()">
+                    <button type="button" class="btn btn btn-primary" id="saveButton" onclick="updateKeyMetric()">
                         <i class="bi bi-check-circle"></i> Save
                     </button>
                 </span>
             </div>
         </div>
-        <div class="row mb-3">
+        <div class="row px-4 mb-3">
             <div class="col-auto">
                 <form id="form__departmentSelection" method="get">
                     <h5 class="pe-4">Departments (issuers)</h5>
@@ -168,6 +183,7 @@
         </div>
     </div>
 </div>
+
 
 
 @section Styles {

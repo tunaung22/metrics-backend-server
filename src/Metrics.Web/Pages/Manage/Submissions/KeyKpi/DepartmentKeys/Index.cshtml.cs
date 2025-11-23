@@ -1,10 +1,9 @@
 using Metrics.Application.Interfaces.IServices;
 using Metrics.Web.Models;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace Metrics.Web.Pages.Manage.Submissions.DepartmentKeyMetrics;
+namespace Metrics.Web.Pages.Manage.Submissions.KeyKpi.DepartmentKeys;
 
 
 public class IndexModel : PageModel

@@ -5,26 +5,18 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
-namespace Metrics.Web.Pages.Manage.Submissions.DepartmentKeyMetrics;
+namespace Metrics.Web.Pages.Manage.Submissions.KeyKpi.DepartmentKeys.IssueKeys;
 
-public class AssignModel : PageModel
+public class IndexModel(
+    IDepartmentService departmentService,
+    IKpiSubmissionPeriodService kpiSubmissionPeriodService,
+    IKeyMetricService keyMetricService,
+    IDepartmentKeyMetricService departmentKeyMetricService) : PageModel
 {
-    private readonly IDepartmentService _departmentService;
-    private readonly IKpiSubmissionPeriodService _kpiSubmissionPeriodService; // Period
-    private readonly IKeyMetricService _keyMetricService; // Key Metric
-    private readonly IDepartmentKeyMetricService _departmentKeyMetricService;
-
-    public AssignModel(
-        IDepartmentService departmentService,
-        IKpiSubmissionPeriodService kpiSubmissionPeriodService,
-        IKeyMetricService keyMetricService,
-        IDepartmentKeyMetricService departmentKeyMetricService)
-    {
-        _departmentService = departmentService;
-        _kpiSubmissionPeriodService = kpiSubmissionPeriodService;
-        _keyMetricService = keyMetricService;
-        _departmentKeyMetricService = departmentKeyMetricService;
-    }
+    private readonly IDepartmentService _departmentService = departmentService;
+    private readonly IKpiSubmissionPeriodService _kpiSubmissionPeriodService = kpiSubmissionPeriodService; // Period
+    private readonly IKeyMetricService _keyMetricService = keyMetricService; // Key Metric
+    private readonly IDepartmentKeyMetricService _departmentKeyMetricService = departmentKeyMetricService;
 
     // =============== MODELS ==================================================
     public class KeyMetricViewModel
@@ -70,7 +62,7 @@ public class AssignModel : PageModel
             ModelState.AddModelError(string.Empty, "A valid Period Name is required.");
             return Page();
         }
-        CurrentPeriodName = periodName;
+        CurrentPeriodName = Uri.UnescapeDataString(periodName);
 
         // Department List Items
         var departments = await _departmentService.FindAllAsync();
@@ -189,7 +181,7 @@ public class AssignModel : PageModel
             ModelState.AddModelError(string.Empty, "A valid Period Name is required.");
             return Page();
         }
-        CurrentPeriodName = periodName;
+        CurrentPeriodName = Uri.UnescapeDataString(periodName);
 
 
         // Department List Items

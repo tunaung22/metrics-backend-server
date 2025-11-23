@@ -7,6 +7,7 @@ namespace Metrics.Application.Interfaces.IServices;
 public interface IDepartmentService
 {
     Task<ResultT<List<DepartmentDto>>> FindAllAsync(int pageNumber = 1, int pageSize = 50);
+    Task<ResultT<List<DepartmentDto>>> FindAll_R_Async();
     Task<Result> CreateAsync(DepartmentCreateDto createDto);
     Task<ResultT<DepartmentDto>> FindByCodeAsync(string departmentCode);
 

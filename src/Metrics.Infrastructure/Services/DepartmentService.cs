@@ -4,7 +4,6 @@ using Metrics.Application.DTOs.Department;
 using Metrics.Application.Exceptions;
 using Metrics.Application.Interfaces.IRepositories;
 using Metrics.Application.Interfaces.IServices;
-using Metrics.Application.Mappers.DtoMappers;
 using Metrics.Application.Results;
 using Metrics.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -62,7 +61,7 @@ public class DepartmentService(
     {
         try
         {
-            _departmentRepository.Create(createDto.ToEntity());
+            _departmentRepository.Create(createDto.MapToEntity());
             await _context.SaveChangesAsync();
 
             return Result.Success();
@@ -87,7 +86,6 @@ public class DepartmentService(
             return Result.Fail("Failed to create new department.", ErrorType.UnexpectedError);
         }
     }
-
 
     public async Task<Department> UpdateAsync(string departmentCode, Department department)
     {
@@ -219,6 +217,22 @@ public class DepartmentService(
         {
             _logger.LogError(ex, "Unexpected error while querying departments.");
             throw new Exception("An unexpected error occurred. Please try again later.");
+        }
+    }
+
+    public async Task<ResultT<List<DepartmentDto>>> FindAll_R_Async()
+    {
+        try
+        {
+            var data = await _departmentRepository.FindAllAsync();
+            var result = data.Select(e => e.MapToDto()).ToList();
+
+            return ResultT<List<DepartmentDto>>.Success(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error occured while fetching all departments. {msg}", ex.Message);
+            return ResultT<List<DepartmentDto>>.Fail("Failed to fetch departments.", ErrorType.UnexpectedError);
         }
     }
 

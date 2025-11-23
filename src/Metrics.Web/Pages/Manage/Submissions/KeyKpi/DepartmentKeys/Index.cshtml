@@ -1,12 +1,12 @@
-﻿@page "/Manage/Submissions/Department-Key-Metrics"
-@model Metrics.Web.Pages.Manage.Submissions.DepartmentKeyMetrics.IndexModel
+﻿@page "/Manage/Submissions/Key-Kpi/Department-Keys"
+@model Metrics.Web.Pages.Manage.Submissions.KeyKpi.DepartmentKeys.IndexModel
 @{
     ViewData["Title"] = "Department Key Metrics for Key KPI";
 }
 
 <div class="sectionTitle">
     <div class="d-flex align-items-center my-2">
-        <h4 class="flex-grow-1"><i class="bi bi-ui-checks-grid"></i> Department Keys for Key KPI</h4>
+        <h4 class="flex-grow-1"><i class="bi bi-ui-checks-grid"></i> Key KPI :: Department Keys</h4>
         <span class="justify-content-end gap-2">
             @* <a class="btn btn-success" 
                 asp-page="Create"
@@ -19,12 +19,12 @@
             <li class="breadcrumb-item"><a asp-page="/Index">Home</a></li>
             <li class="breadcrumb-item"><a asp-page="/Manage/Index">Manage</a></li>
             @* <li class="breadcrumb-item"><a asp-page="/Manage/Submissions/Index">Submissions</a></li> *@
-            <li class="breadcrumb-item active">Department Key Metrics</li>
+            <li class="breadcrumb-item active">Department Keys</li>
         </ol>
     </nav>
 </div>
 
-<div class="container">
+<div class="container-fluid">
     <div class="bg-light p-4 rounded-2">
         
         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
@@ -91,40 +91,31 @@
                                                 link-underline-opacity-100-hover">
                                         <strong>@p.PeriodName</strong></a> *@
                                 </td>
-                                @* <td>@p.SubmissionStartDate.ToLocalTime().UtcDateTime.ToString("MMM dd, yyyy hh:mm:ss tt")</td>
-                                <td>@p.SubmissionEndDate.ToLocalTime().UtcDateTime.ToString("MMM dd, yyyy hh:mm:ss tt")</td> *@
                                 <td class="text-center mono-text">
                                     @p.SubmissionStartDate.ToLocalTime().ToString("MMM dd, yyyy") - 
                                     @p.SubmissionEndDate.ToLocalTime().ToString("MMM dd, yyyy")
                                 </td>
-                                @* <td class="text-center">000</td> *@
-                                @{
-                                    @* var pillColor = "success"; *@
-                                }
-                                @* <td class="text-center">
-                                    <span class="badge rounded-2 rounded-pill text-bg-@pillColor">
-                                        New
-                                    </span>
-                                </td> *@
                                 <td class="text-center">
-                                    <a asp-page="Assign" 
-                                        asp-route-periodName="@p.PeriodName"
+                                    <a asp-page="IssueKeys/Index" 
+                                        asp-route-periodName="@Uri.EscapeDataString(@p.PeriodName)"
                                         class="btn btn-sm btn-outline-primary my-2 my-lg-0 me-2">
                                         <strong><i class="bi bi-ui-checks"></i> Issue Keys</strong></a>
-                                    @* <a asp-page="View" 
-                                        asp-route-periodName="@p.PeriodName"
+                                    &nbsp;
+                                    <a asp-page="IssueKeys/View" 
+                                        asp-route-periodName="@Uri.EscapeDataString(@p.PeriodName)"
                                         class="btn btn-sm btn-outline-primary my-2 my-lg-0 me-2">
-                                        <strong><i class="bi bi-clipboard2-data"> </i>View</strong></a>
-                                    <a asp-page="Copy" 
-                                        asp-route-periodName="@p.PeriodName"
-                                        class="btn btn-sm btn-outline-primary my-2 my-lg-0 me-2">
-                                        <strong><i class="bi bi-clipboard2-data"> </i>Copy</strong></a> *@
+                                        <strong><i class="bi bi-card-checklist"></i> View</strong></a>
                                 </td>
                                 <td class="text-center">
+                                    <a asp-page="AssignDepartments/Index" 
+                                        asp-route-periodName="@Uri.EscapeDataString(@p.PeriodName)"
+                                        class="btn btn-sm btn-outline-primary my-2 my-lg-0 me-2">
+                                        <strong><i class="bi bi-check-circle-fill"></i> Assign Departments</strong></a>
+                                    @* or &nbsp;
                                     <a asp-page="SubmissionAssignment" 
                                         asp-route-periodName="@p.PeriodName"
                                         class="btn btn-sm btn-outline-primary my-2 my-lg-0 me-2">
-                                        <strong><i class="bi bi-check-circle-fill"></i> Assign Keys</strong></a>
+                                        <strong><i class="bi bi-check-circle-fill"></i> Copy Assign Keys</strong></a> *@
                                 </td>
                             </tr>
                         }
@@ -180,7 +171,7 @@
                 searching: false,
                 autoWidth: true,
                 columnDefs: [
-                    { width: '35%', targets: [1] },
+                    @* { width: '35%', targets: [1] }, *@
 
                 ],
                 initComplete: function() {

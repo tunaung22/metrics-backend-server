@@ -8,7 +8,7 @@ using Metrics.Application.Domains;
 using Metrics.Application.Exceptions;
 using Metrics.Application.Results;
 using Metrics.Application.DTOs.KpiPeriod;
-using Metrics.Application.Mappers.DtoMappers;
+using Metrics.Application.Common.Mappers;
 
 namespace Metrics.Infrastructure.Services;
 
@@ -263,7 +263,7 @@ public class KpiSubmissionPeriodService : IKpiSubmissionPeriodService
     {
         try
         {
-            _kpiSubmissionPeriodRepository.Create(createDto.ToEntity());
+            _kpiSubmissionPeriodRepository.Create(createDto.MapToEntity());
             await _context.SaveChangesAsync();
 
             return Result.Success();
@@ -335,6 +335,22 @@ public class KpiSubmissionPeriodService : IKpiSubmissionPeriodService
         {
             _logger.LogError("Unexpected error while deleting KPI Period. {e}", ex);
             return Result.Fail("An unexpected error occurred deleting Kpi Period.", ErrorType.UnexpectedError);
+        }
+    }
+
+    public async Task<ResultT<List<KpiPeriodDto>>> FindAll_Async()
+    {
+        try
+        {
+            var data = await _kpiSubmissionPeriodRepository.FindAllAsync();
+            var result = data.Select(e => e.MapToDto()).ToList();
+
+            return ResultT<List<KpiPeriodDto>>.Success(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("Unexpected error while fetching all KPI Period. {e}", ex);
+            return ResultT<List<KpiPeriodDto>>.Fail("An unexpected error occurred fetching all Kpi Periods.", ErrorType.UnexpectedError);
         }
     }
 }

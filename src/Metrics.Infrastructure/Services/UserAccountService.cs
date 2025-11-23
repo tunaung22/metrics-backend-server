@@ -2,7 +2,6 @@ using Metrics.Application.DTOs.User;
 using Metrics.Application.Domains;
 using Metrics.Application.Interfaces.IRepositories;
 using Metrics.Application.Interfaces.IServices;
-using Metrics.Application.Mappers.DtoMappers;
 using Metrics.Infrastructure.Data;
 using Microsoft.AspNetCore.Identity;
 using Metrics.Application.Exceptions;

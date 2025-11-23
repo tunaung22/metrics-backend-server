@@ -1,9 +1,133 @@
-﻿@page "/Manage/Submissions/Department-Key-Metrics/{periodName}/View"
-@model Metrics.Web.Pages.Manage.Submissions.DepartmentKeyMetrics.ViewModel
+﻿@page "/Manage/Submissions/Key-Kpi/Department-Keys/Issue-Keys/{periodName}/View"
+@model Metrics.Web.Pages.Manage.Submissions.KeyKpi.DepartmentKeys.IssueKeys.ViewModel
 @{
-    ViewData["Title"] = $"Key Metrics for {Model.CurrentPeriodName}";
+    ViewData["Title"] = $"Key Metrics for {Model.SelectedPeriodName}";
 }
 
+<div class="sectionTitle">
+    <div class="d-flex align-items-center my-2">
+        <h4 class="flex-grow-1"><i class="bi bi-ui-checks"></i> Issued keys for @Model.SelectedPeriodName</h4>
+        <span class="justify-content-end gap-2"></span>
+    </div>
+
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-page="/">Home</a></li>
+            <li class="breadcrumb-item"><a asp-page="/Manage/Index">Manage</a></li>
+            <li class="breadcrumb-item"><a asp-page="/Manage/Submissions/KeyKpi/DepartmentKeys/Index">Department Key Metrics (periods)</a></li>
+            <li class="breadcrumb-item active">View</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="container-fluid">
+
+    <div class="filter-toolbar mb-4 d-flex align-items-center justify-content-between">
+        <span class="d-flex flex-grow-1 align-items-center"></span>
+        <span>
+            @{ var infoDesc = "<div><strong>Import</strong> <br/>Select source period to copy from.<br/></div>";
+            }
+            <i class="bi bi-info-circle-fill"
+                data-bs-toggle="tooltip" 
+                data-bs-html="true"
+                data-bs-title="@infoDesc"
+                data-bs-placement="left"></i> Import from other Period
+            <a asp-page="Import"
+                asp-route-periodName="@Uri.EscapeDataString(Model.SelectedPeriodName ?? string.Empty)"
+                asp-route-returnUrl="@HttpContext.Request.Path"
+                class="btn btn-success me-4">
+                <i class="bi bi-file-earmark-arrow-down"></i> Import</a>
+        </span>
+    </div>
+
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div id="loadingScreen" class="d-flex justify-content-center mb-4">
+        <strong role="status" class="me-3">Loading...</strong>
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
+    @* table... *@
+    <div id="mainContent" class="visually-hidden table-responsive p-0 px-2 mb-3 border rounded-2">
+        <table id="keyMetricTable" class="table table-bordered table-striped" style="width:100%">
+            <thead>
+                <tr>
+                    <th>No.</th>
+                    <th>Issue Department</th>
+                    <th class="">Key Title</th>
+                    @* <th>Deleted</th> *@
+                </tr>
+            </thead>
+            <tbody>
+                @if(Model.SelectedDKMs.Count > 0)
+                {
+                    var rowCount = 0;
+                    @foreach(var k in Model.SelectedDKMs)
+                    {
+                        rowCount += 1;
+                        var lineNumber = rowCount.ToString("0000");
+
+                        <tr id="tableRow" class="row-@k.Id">
+                            <td class="text-center">@lineNumber</td>
+                            <td>
+                                @k.KeyIssueDepartment.DepartmentName
+                            </td>
+                            <td class="">
+                                @Html.Raw(k.KeyMetric.MetricTitle)
+                            </td>
+                            @* <td>
+                                @k.IsDeleted
+                            </td> *@
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+
+
+</div>
+
+
+
+
+@section Scripts {
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        window.addEventListener('load', function() {
+            document.getElementById('loadingScreen').classList.add('visually-hidden');
+            document.getElementById('mainContent').classList.remove('visually-hidden');
+        });
+    });
+    
+    $(function() {
+        new DataTable('#keyMetricTable', {
+            paging: false,
+            info: false,
+            searching: true,
+            autoWidth: true,
+            columnDefs: [
+            
+            ],
+            initComplete: function() {
+                $('#keyMetricTable thead th')
+                    .addClass('text-center text-white bg-brand-color');
+            }
+        });
+    });
+</script>
+}
+
+
+
+
+
+
+
+
+@* 
 <div class="sectionTitle">
     <div class="d-flex align-items-center my-2">
         <h4 class="flex-grow-1">Key Metrics for @Model.CurrentPeriodName</h4>
@@ -24,8 +148,8 @@
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
     <div class=" p-4 rounded-2">
-        @* <div class="filter-toolbar mb-4 d-flex justify-content-between">
-        </div> *@
+        <div class="filter-toolbar mb-4 d-flex justify-content-between">
+        </div>
 
         <div class="col">
             <div class="row mb-3">
@@ -126,76 +250,22 @@
                             </div>
                         }
                     }
-
                 </div>
-                @* <div class="d-flex align-items-center gap-4"> *@
-                    @* <span class="col-sm-12 col-md-4"> *@
-                        
-                        @* <span class="mx-4"> *@
-                        @* </span> *@
-                    @* </span> *@
-                    @* <span class="justify-content-end gap-2">
-                        <button type="submit" class="btn btn-primary me-2">
-                            <i class="bi bi-check-circle"></i> Save</button>
-                    </span> *@
-                @* </div> *@
             </div>
-
-            @* @if(Model.CurrentDepartmentCode != null)
-            {
-                <div class="row mb-3">
-                    <form method="get">
-                        <label for="">Key Metrics</label>
-                       <select asp-for="CurrentDepartmentCode"
-                                    asp-items="Model.DepartmentListItems"
-                                    name="department"
-                                    onchange="this.form.submit()"
-                                    size="10"
-                                    class="form-select p-2" 
-                                    aria-label="Select Department">
-                            </select>
-                    </form>
-                </div>
-            } *@
-
-            @* @if(Model.DepartmentKeyMetrics.Any()) *@
-                    @* <div class="row mb-3" style="max-height: 40vh; overflow-y: auto;">
-                        @foreach(var key in Model.KeyMetrics)
-                        {
-                            <div class="form-check mb-2">
-                                <input class="form-check-input" 
-                                        type="checkbox" 
-                                        id="@key.MetricCode"
-                                        value="@key.MetricCode">
-                                <label class="form-check-label" for="@key.MetricCode">
-                                    @key.MetricTitle
-                                </label>
-                            </div>
-                        }
-                    </div> *@
-            
         </div>
     </div>
-</div>
+</div> *@
 
 
-@section Styles {
+@* @section Styles {
     <style>
         .btn__actionButtons {
             width: 8em;
         }
         .table-container {
-            max-height: 60vh; /* Set the desired height */
-            overflow-y: auto;  /* Enable vertical scrolling */
-            @* position: relative; *@
+            max-height: 60vh;
+            overflow-y: auto;
         }
-        @* thead {
-            position: sticky; /* Make the header sticky */
-            top: 0; /* Position it at the top of the scrolling container */
-            background-color: white; /* Background color for the header */
-            z-index: 10; /* Ensure it stays above the table body */
-        } *@
-        
         option[selected] {
             background: var(--primary-color);
             color: white;
@@ -225,11 +295,8 @@
                 initComplete: function() {
                     $('#departmentKeyMetricTable thead th')
                         .addClass('text-center text-white bg-brand-color');
-                    // Center align the header cells
-                    @* $('#reportTable thead th').addClass('text-light text-center ');
-                    $('#reportTable tbody td').addClass('valign-middle'); *@
                 }
             });
         });
     </script>
-}
+} *@
