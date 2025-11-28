@@ -58,6 +58,6 @@ public interface IDepartmentKeyMetricService
     Task<long> FindCountAsync();
 
     Task<ResultT<List<DepartmentKeyMetricDto>>> FindByPeriodNameAsync(string periodName);
-
+    Task<ResultT<long>> FindCountByPeriodAsync(long periodId);
     Task<ResultT<Dictionary<long, int>>> FindCountsByPeriodAsync(List<long> periodIds);
 }

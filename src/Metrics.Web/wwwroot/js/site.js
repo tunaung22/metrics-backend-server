@@ -3,8 +3,11 @@
 // Write your JavaScript code.
 document.addEventListener("DOMContentLoaded", function () {
   window.addEventListener("load", function () {
-    document.getElementById("loadingScreen").classList.add("visually-hidden");
-    document.getElementById("mainContent").classList.remove("visually-hidden");
+    const loadingScreen = document.getElementById("loadingScreen");
+    if (loadingScreen) loadingScreen.classList.add("visually-hidden");
+
+    const mainContent = document.getElementById("mainContent");
+    if (mainContent) mainContent.classList.remove("visually-hidden");
   });
   /**
   on scroll ->

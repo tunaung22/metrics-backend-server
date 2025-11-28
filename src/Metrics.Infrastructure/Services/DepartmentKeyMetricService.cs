@@ -223,7 +223,7 @@ public class DepartmentKeyMetricService : IDepartmentKeyMetricService
                 .Include(k => k.KeyIssueDepartment.ApplicationUsers)
                     .ThenInclude(g => g.UserTitle)
                 .OrderBy(k => k.KeyIssueDepartment.DepartmentName)
-                .Where(k => k.KpiSubmissionPeriodId == periodId)
+                .Where(k => k.KpiSubmissionPeriodId == periodId && k.IsDeleted == false)
                 .ToListAsync();
 
             var result = data.Select(e => e.MapToDto()).ToList();
@@ -439,6 +439,23 @@ public class DepartmentKeyMetricService : IDepartmentKeyMetricService
         }
     }
 
+    public async Task<ResultT<long>> FindCountByPeriodAsync(long periodId)
+    {
+        try
+        {
+            var countResult = await _context.DepartmentKeyMetrics
+                .Where(e => e.KpiSubmissionPeriodId == periodId)
+                // .GroupBy(e => e.KpiSubmissionPeriodId)
+                .CountAsync();
+
+            return ResultT<long>.Success(countResult);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to get department key metric count by Periods.");
+            return ResultT<long>.Fail("Failed to get department key metric count by Periods.", ErrorType.UnexpectedError);
+        }
+    }
 
     public async Task<ResultT<Dictionary<long, int>>> FindCountsByPeriodAsync(List<long> periodIds)
     {

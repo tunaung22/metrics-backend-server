@@ -1,0 +1,178 @@
+﻿@page "/Manage/Submission-Periods"
+@model Metrics.Web.Pages.Manage.SubmissionPeriods.IndexModel
+@{
+    ViewData["Title"] = "KPI Periods";
+}
+
+
+<div class="sectionTitle">
+    <div class="d-flex align-items-center">
+        <h4 class="flex-grow-1"><i class="bi bi-calendar2-week-fill"></i> Score Submission Periods</h4>
+        <span class="justify-content-end gap-2">
+            
+        </span>
+    </div>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-page="/Index">Home</a></li>
+            <li class="breadcrumb-item"><a asp-page="/Manage/Index">Manage</a></li>
+            <li class="breadcrumb-item active">Submission Periods</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="container-fluid">
+
+    @if (!ModelState.IsValid)
+    {
+        <div class="form bg-light p-4">
+            <div class="alert alert-danger">
+                <h4>There were some errors:</h4>
+                <ul>
+                    @foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
+                    {
+                        <li>@error.ErrorMessage</li>
+                    }
+                </ul>
+            </div>
+        </div>
+    }
+
+    <div class="p-4 rounded-2">
+        @* <div asp-validation-summary="ModelOnly" class="text-danger"></div> *@
+
+        @* =============== Action Bar =============================================== *@
+        <div class="d-flex align-items-center px-4 pt-4">
+            <div class="d-flex flex-grow-1"></div>
+            <div class="justify-content-end">
+                <span class="d-flex gap-4">
+                    <a class="btn btn-success" 
+                        asp-page="Create"
+                        asp-route-returnUrl="@Url.Page("Index")"><i class="bi bi-plus"> </i>New</a>
+                </span>
+            </div>
+        </div>
+
+        @* =============== Filter Bar =============================================== *@
+        @* <div id="filter-bar" class="d-flex bg-light p-4 mt-2"> *@
+        @* <div class="col-sm-4 mx-2">
+            <input class="form-control" placeholder="Filter..." />
+        </div> *@
+            @* <div class="col-auto mx-2">
+                <select id="myDropdown" class="form-control">
+                    <option value=""></option>
+                    <option value="5">5</option>
+                    <option value="10">10</option>
+                    <option value="20">20</option>
+                </select>
+            </div>
+        </div> *@
+
+        
+        @* =============== Table ==================================================== *@
+        <div class="px-4 pb-4">
+            <table id="kpiPeriodTable" class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th>Periods Name</th>
+                        <th>Submission Start Date</th>
+                        <th>Submission End Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.KpiPeriods != null)
+                    {
+
+                        @foreach (var period in Model.KpiPeriods)
+                        {
+                            <tr class="align-middle">
+                                <td class="mono-text">@period.PeriodName</td>
+                                <td class="text-center mono-text">@period.SubmissionStartDate.LocalDateTime.ToString("MMM dd, yyyy")</td>
+                                <td class="text-center mono-text">@period.SubmissionEndDate.LocalDateTime.Date.ToString("MMM dd, yyyy")</td>
+                                <td class="text-center">
+                                    @* <button class="btn btn-success">
+                                        Edit
+                                    </button> *@
+                                    <form method="post" style="display:inline;">
+                                        <input type="hidden" name="periodName" value="@period.PeriodName" />
+                                        <a class="btn__actionButtons btn btn-sm btn-outline-primary my-2 my-lg-0 me-2"
+                                            asp-page="Edit"
+                                            asp-route-periodName="@period.PeriodName" 
+                                            asp-route-returnUrl="@HttpContext.Request.Path">
+                                            <i class="bi bi-pencil-square"> </i>Edit
+                                        </a>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        @if(Model.TotalPages > 0)
+        {
+            <div class="p-4">
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center">
+
+                        <li class="page-item @(!Model.ShowPrevious? "disabled":"")">
+                            <a class="page-link"
+                                asp-page="./Index"
+                                asp-route-currentPage="@(Model.CurrentPage -1)">Previous</a>
+                        </li>
+
+                        @for(int i = 1; i <= Model.TotalPages; i++)
+                        {
+                            <li class="page-item">
+                                <a class="page-link"
+                                    asp-page="./Index"
+                                    asp-route-currentPage="@i"
+                                    >@i</a>
+                            </li>
+                        }
+
+                        <li class="page-item @(!Model.ShowNext? "disabled":"")">
+                            <a class="page-link" 
+                                asp-page="./Index"
+                                asp-route-currentPage="@(Model.CurrentPage + 1)">Next</a>
+                        </li>
+
+                    </ul>
+                </nav>
+            </div>
+        }
+    </div>
+</div>
+
+
+@section Scripts {
+    <script>
+        $(function() {
+            new DataTable('#kpiPeriodTable', {
+                paging: false,
+                info: false,
+                searching: true,
+                @* columnDefs: [
+                    { width: '20%', targets: 3 },
+                ], *@
+                initComplete: function() {
+                    // Center align the header cells
+                    $('#kpiPeriodTable thead th').addClass('text-light text-center ');
+                    $('#kpiPeriodTable thead th').addClass('bg-brand-color');
+                }
+            });
+
+            // update QueryString On Selection Changed
+            $('#myDropdown').on('change', function() {
+                var selectedValue = $(this).val();
+                var currentUrl = window.location.href.split('?')[0]; // Get the base URL without query string
+                var newUrl = currentUrl + '?display=' + selectedValue; // Construct new URL with query string
+                // Update the URL in the browser without reloading the page
+                @* window.history.pushState({ path: newUrl }, '', newUrl); *@
+                window.location.href = newUrl;
+            });
+        });
+    </script>
+}

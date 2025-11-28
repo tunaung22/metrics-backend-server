@@ -215,8 +215,7 @@ public class KeyKpiSubmissionConstraintService(
         {
             var data = await _context.KeyKpiSubmissionConstraints
                 .AsNoTracking()
-                .Where(c => c.DepartmentKeyMetric.KpiSubmissionPeriod.PeriodName == sourcePeriodName)
-                .Include(c => c.DepartmentKeyMetric)
+                .Where(c => c.DepartmentKeyMetric.KpiSubmissionPeriod.PeriodName == sourcePeriodName && c.IsDeleted == false)
                 .Include(c => c.DepartmentKeyMetric).ThenInclude(dkm => dkm.KpiSubmissionPeriod)
                 .Include(c => c.DepartmentKeyMetric).ThenInclude(dkm => dkm.KeyIssueDepartment)
                 .Include(c => c.DepartmentKeyMetric).ThenInclude(dkm => dkm.KeyMetric)

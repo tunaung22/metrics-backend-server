@@ -1,0 +1,397 @@
+﻿@page "/Manage/Key-Kpi/Issued-Keys/{periodName}/Issue"
+@model Metrics.Web.Pages.Manage.KeyKpi.IssuedKeys.IssueModel
+@using System.Text.Json;
+@using Microsoft.VisualBasic
+@{
+    ViewData["Title"] = $"Keys for {Model.CurrentPeriodName}";
+    var currentDepartmentCode = string.Empty;
+
+    // Serialize constratins to json fro JavaScript
+    var departmentKeyMetrics = 
+        Model.DepartmentKeyMetrics
+            .Where(e=> e.IsDeleted == false);
+    var jsonString = JsonSerializer.Serialize(departmentKeyMetrics);
+}
+
+
+<div class="sectionTitle">
+    <div class="d-flex align-items-center my-2">
+        <h4 class="flex-grow-1"><i class="bi bi-ui-checks"></i> Issue Department Keys for @Model.CurrentPeriodName</h4>
+        <span class="justify-content-end gap-2"></span>
+    </div>
+
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-page="/Dashboard/Index">Dashboard</a></li>
+            <li class="breadcrumb-item"><a asp-page="/Manage/Index">Manage</a></li>
+            <li class="breadcrumb-item"><a asp-page="/Manage/KeyKpi/Index">Key KPI</a></li>
+            <li class="breadcrumb-item active">Issue Keys</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="container-fluid">
+
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="p-0 rounded-2">
+        <div class="row mb-3 border-bottom pb-2">
+            <div class="col d-flex">
+                <span class="d-flex flex-grow-1 align-items-center">
+                    @* asp-route-returnUrl="@HttpContext.Request.Path" *@
+                    @{ var infoDesc = "<div><strong>Import</strong> <br/>Import department assignments from other period.</div>"; }
+                    <a asp-page="Import"
+                        asp-route-periodName="@Uri.EscapeDataString(Model.CurrentPeriodName ?? string.Empty)"
+                        data-bs-toggle="tooltip" 
+                        data-bs-html="true"
+                        data-bs-title="@infoDesc"
+                        data-bs-placement="right"
+                        class="btn btn-success me-4">
+                        <i class="bi bi-file-earmark-arrow-down"></i> Import</a>
+                    @* <p class="mb-0">Chooose a department (on the left) then select issuing keys (on the right)</p> *@
+                    @* <a asp-page="Import"
+                        asp-route-periodName="@Uri.EscapeDataString(Model.CurrentPeriodName ?? string.Empty)"
+                        class="btn btn-sm btn-outline-success me-4">
+                        <i class="bi bi-file-earmark-arrow-down"></i> Import</a> *@
+                </span>
+                <span class="d-flex justify-content-end">
+                    <button type="button" class="btn btn btn-primary" id="saveButton" onclick="updateKeyMetric()">
+                        <i class="bi bi-check-circle"></i> Save
+                    </button>
+                </span>
+            </div>
+        </div>
+        
+        <div class="row px-4 mb-3">
+            <div class="col-auto">
+                <form id="form__departmentSelection" method="get">
+                    <h5 class="pe-4">Departments (issuers)</h5>
+                    <select asp-for="CurrentDepartmentCode"
+                            asp-items="Model.DepartmentListItems"
+                            name="department"
+                            onchange="this.form.submit()"
+                            class="form-select p-2" 
+                            size="18"
+                            aria-label="Select Department">
+                    </select>
+                </form>
+                
+            </div>
+            <div class="col">
+                @if (Model.CurrentDepartmentCode != null)
+                {
+                    currentDepartmentCode = Model.CurrentDepartmentCode.ToString();
+                    @if(Model.KeyMetrics.Any())
+                    {
+                        var activeKeys = Model.DepartmentKeyMetrics.Where(k=> k.IsDeleted==false).Count();
+
+                        <span class="d-flex">
+                            @{
+                                var departmentName = Model.DepartmentListItems
+                                    .Where(item => item.Value == currentDepartmentCode)
+                                    .Select(item => item.Text)
+                                    .FirstOrDefault();
+                            }
+                            <h5 class="pe-4">Key Metrics issued by: <i>@departmentName</i></h5>
+                            <p>Assigned:<strong> @activeKeys</strong></p>
+                        </span>
+                        <div class="table-container row border rounded-2">
+                            <table id="keyMetricTable" class="table table-bordered" style="width:100%">
+                                <thead>
+                                    <tr>
+                                        <th>No.</th>
+                                        <th class="">Title (@Model.KeyMetrics.Count())</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if(Model.KeyMetrics.Any())
+                                    {
+                                        var count = 0;
+                                        @foreach(var k in Model.KeyMetrics)
+                                        {
+                                            count += 1;
+                                            var lineNumber = count.ToString("000");
+                                            // find KeyMetric included in DepartmentKeyMetrics
+                                            // Null === true       -> "SET"
+                                            // Null === false
+                                            // ...isDeleted === true  -> "SET"
+                                            // ...isDeleted === false -> "UNSET"
+                                            bool toAssign = false;
+
+                                            var isExist= Model.DepartmentKeyMetrics
+                                                .Any(i => i.KeyMetricId == k.Id);
+                                            if (isExist) {
+                                                // check IS DELETED?
+                                                // show TO UNSET
+                                                var existingRecord = Model.DepartmentKeyMetrics
+                                                    .Where(i => i.KeyMetricId == k.Id).First();
+
+                                                if(existingRecord.IsDeleted) {
+                                                    toAssign = true;
+                                                } else {
+                                                    toAssign = false;
+                                                }
+                                            } else {
+                                                // show TO SET
+                                                toAssign = true;
+                                            }
+
+                                            <tr class="row-@k.Id">
+                                                <td class="text-center @(toAssign ? "" : "row-metric-checked")">@lineNumber</td>
+                                                <td class="@(toAssign ? "" : "row-metric-checked")">
+                                                    @Html.Raw(k.MetricTitle)
+                                                </td>
+
+                                                @if(toAssign) {
+                                                    <td class="text-center checkbox-table-cell">
+                                                        <text style="display: none;">unchecked</text> @* ****for sorting**** *@
+                                                        <label for="@k.Id" class="label_checkbox">
+                                                            <input id="@k.Id" class="form-check-input"
+                                                                    type="checkbox" 
+                                                                    value="@k.MetricCode"
+                                                                    onclick="toggleCheckbox(event, '@k.MetricTitle')" />
+                                                        </label>
+                                                    </td>
+                                                }
+                                                else {
+                                                    <td class="text-center checkbox-table-cell row-metric-checked">
+                                                        <label for="@k.Id" class="label_checkbox">
+                                                            <input id="@k.Id" class="form-check-input"
+                                                                    type="checkbox" 
+                                                                    value="@k.MetricCode" 
+                                                                    checked
+                                                                    onclick="toggleCheckbox(event, '@k.MetricTitle')" />
+                                                        </label>
+                                                    </td>
+                                                }
+                                            </tr>
+                                        }
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <h4 class="text-danger">No key metrics found!, Please add key metircs and try again.</h4>
+                    }
+                }
+                else
+                {
+                    <h4 class="text-danger">Invalid Department!, Please choose a department from the list.</h4>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+@section Styles {
+    <style>
+        .btn__actionButtons {
+            width: 8em;
+        }
+        .table-container {
+            max-height: 60vh; /* Set the desired height */
+            overflow-y: auto;  /* Enable vertical scrolling */
+            @* position: relative; *@
+        }
+        @* thead {
+            position: sticky; /* Make the header sticky */
+            top: 0; /* Position it at the top of the scrolling container */
+            background-color: white; /* Background color for the header */
+            z-index: 10; /* Ensure it stays above the table body */
+        } *@
+        
+        option[selected] {
+            background: var(--primary-color);
+            color: white;
+        }
+        option:focus,
+        option:active,
+        option:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        td.checkbox-table-cell {
+            padding: .3em .2em;
+        }
+        .label_checkbox {
+            cursor: pointer;
+        }
+        input.form-check-input {
+            border: .25em solid var(--primary-color);
+            margin: .1em 2em;
+            padding: .6em .6em;
+            cursor: pointer;
+        }
+        input.form-check-input:checked {
+            @* border: .25em solid var(--primary-color); *@
+            border: .25em solid var(--light-color);
+        }
+        input.form-check-input:hover {
+            @* border: .25em solid var(--brand-color-hover); *@
+            border: .25em solid var(--brand-color-hover);
+            @* background: var(--brand-color-hover); *@
+        }
+
+        td.row-metric-checked {
+            background-color: #2a7500 !important;
+            color: var(--light-color);
+        }
+    </style>
+}
+
+@* const inputObj = [
+{
+    department: {
+        departmentCode: "123-456-789",
+        departmentName: "Admin Department",
+    },
+    keyMetrics: [
+        {
+            ["abc123"]: {
+                title: "service must be as fast as possible"
+            }
+        }
+    ]
+}]; *@
+
+
+@section Scripts {
+    <script>
+        let inputValues = {
+            departmentCode: "@Model.CurrentDepartmentCode?.ToString()",
+            keyMetrics: []
+        };
+
+        var existingItems = @Html.Raw(jsonString);
+        if(Array.isArray(existingItems) && existingItems.length > 0) {
+            const keyMetrics = [];
+            existingItems.forEach(function(item) {
+                keyMetrics.push({
+                    metricCode: item.KeyMetric.MetricCode,
+                    metricTitle: item.KeyMetric.MetricTitle
+                });
+            });
+            inputValues.keyMetrics = keyMetrics;
+        }
+
+        function toggleCheckbox(e, title) {
+            @* =====set style for selected cells========= *@
+            var checkbox = e.target;
+            var checkBoxCell = checkbox.closest("td");
+            var titleCell = checkBoxCell.previousElementSibling;
+            var rowNoCell = titleCell.previousElementSibling;
+            if (titleCell) {
+                if (checkbox.checked) {
+                    const activeColor = "#2A7500";
+                    rowNoCell.style.backgroundColor = activeColor;
+                    titleCell.style.backgroundColor = activeColor;
+                    checkBoxCell.style.backgroundColor = activeColor;
+                    rowNoCell.style.color = "var(--light-color)";
+                    titleCell.style.color = "var(--light-color)";
+                    checkBoxCell.style.color = "var(--light-color)";
+                } else {
+                    rowNoCell.style.backgroundColor = "";
+                    titleCell.style.backgroundColor = "";
+                    checkBoxCell.style.backgroundColor = "";
+                    rowNoCell.style.color = "";
+                    titleCell.style.color = "";
+                    checkBoxCell.style.color = "";
+                    @* ===== remove initial css class when unchecked ===== *@
+                    rowNoCell.classList.remove('row-metric-checked');
+                    titleCell.classList.remove('row-metric-checked');
+                    checkBoxCell.classList.remove('row-metric-checked');
+                }
+            }
+            @* ======================================== *@
+
+
+            @* ===== sample js object =========
+                {
+                    departmentCode: "123-456-789",
+                    departmentName: "Admin Department",
+                    keyMetrics: [
+                        {
+                            metricCode: "abc123",
+                            metricTitle: "service must be as fast as possible"
+                        }
+                    ]
+                }
+            =================================== *@
+
+            const checkboxValue = e.target.value;
+            if(checkboxValue !== undefined && checkboxValue !== null) {
+
+                const foundMetric = inputValues.keyMetrics
+                    .find(metric => metric.metricCode === checkboxValue);
+
+                if (foundMetric !== undefined && foundMetric !== null) {
+                    @* ===== REMOVE ===== *@
+                    inputValues.keyMetrics = inputValues.keyMetrics
+                        .filter(item => item.metricCode !== foundMetric.metricCode);
+                    console.log("REMOVED>> inputValues: ", inputValues);
+                } else {
+                    @* ===== ADD ===== *@
+                    inputValues.keyMetrics.push({
+                        metricCode: checkboxValue,
+                        metricTitle: title
+                    }); 
+                    console.log("ADDED>> inputValues: ", inputValues);
+                }
+            } 
+            @* else {
+                // remove unselected item from inpuValues
+                inputValues.keyMetric = inputValues.keyMetric
+                    .filter(k => k.metricCode === )
+            } *@
+        }
+
+
+        async function updateKeyMetric() {
+            const url = "@Url.Page("./Issue", "Update")&department=@currentDepartmentCode";
+            const res = await postRequest(url);
+            location.reload(true);
+        }
+
+        async function postRequest(url) {
+            const res = await fetch(url, {
+                method: 'post',
+                headers: {
+                    'Content-Type': "application/json",
+                    "RequestVerificationToken": $('input[name="__RequestVerificationToken"]').val()
+                },
+                body: JSON.stringify(inputValues)
+            })
+                .then((res) => { return res; })
+                .catch((err) => { console.log(err); });
+        }
+        
+        $(function() {
+            new DataTable('#keyMetricTable', {
+                paging: false,
+                pageLength: 50,
+                info: false,
+                searching: true,
+                autoWidth: true,
+                columnDefs: [
+                    { width: "5%", targets: [0] },
+                    { width: "10%", targets: [2] },
+                    @* { orderable: true, targets: [0, 1] }, *@
+                    @* { targets: 1, orderData: 1, type: 'checkbox-state' } *@
+                ],
+                initComplete: function() {
+                    $('#keyMetricTable thead th')
+                        .addClass('text-center text-white bg-brand-color');
+                    // Center align the header cells
+                    @* $('#reportTable thead th').addClass('text-light text-center ');
+                    $('#reportTable tbody td').addClass('valign-middle'); *@
+                }
+            });
+        });
+    </script>
+}

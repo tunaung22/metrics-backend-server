@@ -161,7 +161,7 @@ public class DetailModel(
         // ----------SUBMITTER DEPARTMENTS--------------------------------------
         var submitterDepartments = SubmissionConstraints
             .DistinctBy(c => c.SubmitterDepartmentId)
-            .Select(c => c.SubmitterDepartment).ToList();
+            .Select(c => c.CandidateDepartment).ToList();
         if (submitterDepartments.Count == 0)
         {
             ModelState.AddModelError(string.Empty, "Submitter department is empty");
@@ -275,7 +275,7 @@ public class DetailModel(
         // ----------SUBMITTER DEPARTMENTS--------------------------------------
         var submitterDepartments = SubmissionConstraints
             .DistinctBy(c => c.SubmitterDepartmentId)
-            .Select(c => c.SubmitterDepartment).ToList();
+            .Select(c => c.CandidateDepartment).ToList();
         if (submitterDepartments.Count == 0)
         {
             ModelState.AddModelError(string.Empty, "Submitter department is empty");

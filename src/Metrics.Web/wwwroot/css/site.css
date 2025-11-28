@@ -67,6 +67,7 @@ body {
   transition: background 0.3s, backdrop-filter 0.3s; */
   backdrop-filter: blur(4px);
 }
+
 .app-header {
   background: none;
   z-index: 100;
@@ -82,9 +83,11 @@ div .sectionTitle {
   transition: background 0.3s, backdrop-filter 0.3s;
   backdrop-filter: blur(4px);
 }
+
 div .filter-toolbar {
   z-index: 199;
 }
+
 #appFooter {
   z-index: 100;
   /* background-color: rgba(255, 255, 255, 0.1) !important; */
@@ -141,11 +144,13 @@ a:hover {
   border-color: var(--brand-color);
   color: #ffffff;
 }
+
 .btn-primary:hover {
   /* background: var(--brand-color); */
   background: var(--brand-color-hover);
   border-color: var(--brand-color);
 }
+
 .btn-primary:focus,
 .btn-primary:active {
   box-shadow: 0 0 0 0.2rem rgba(52, 101, 164, 0.5);
@@ -157,6 +162,7 @@ a:hover {
   border-color: var(--brand-color);
   color: var(--brand-color);
 }
+
 .btn-outline-primary:focus,
 .btn-outline-primary:active,
 .btn-outline-primary:hover {
@@ -165,6 +171,7 @@ a:hover {
   border-color: var(--brand-color);
   /* box-shadow: 0 0 0 0.2rem rgba(52, 101, 164, 0.5); */
 }
+
 .btn-outline-primary:first-child:focus,
 .btn-outline-primary:first-child:active,
 .btn-outline-primary:first-child:hover {
@@ -172,6 +179,7 @@ a:hover {
   border-color: var(--brand-color);
   /* box-shadow: 0 0 0 0.2rem rgba(52, 101, 164, 0.5); */
 }
+
 /* .btn-outline:active {
   background: var(--brand-color);
   border-color: var(--brand-color);
@@ -179,6 +187,7 @@ a:hover {
 .btn-link {
   color: var(--brand-color);
 }
+
 .btn-link:hover {
   color: var(--brand-color-hover);
 }
@@ -186,6 +195,7 @@ a:hover {
 .nav-item .nav-link {
   color: var(--brand-color);
 }
+
 .nav-item .nav-link:hover {
   color: var(--brand-color-hover);
   /* color: var(--metric-blue-color); */
@@ -194,6 +204,7 @@ a:hover {
 a.link-primary {
   color: var(--brand-color) !important;
 }
+
 a.link-primary:hover {
   color: var(--brand-color-hover) !important;
 }
@@ -201,6 +212,7 @@ a.link-primary:hover {
 #metrics__main-navbar .nav-item {
   font-weight: 600 !important;
 }
+
 /* ul#metrics__main-navbar .nav-item .nav-link {
   color: var(--brand-color);
 }
@@ -209,14 +221,14 @@ ul#metrics__main-navbar .nav-item .nav-link:hover {
   color: #1980ff;
 } */
 
-.form-floating > .form-control-plaintext::placeholder,
-.form-floating > .form-control::placeholder {
+.form-floating>.form-control-plaintext::placeholder,
+.form-floating>.form-control::placeholder {
   color: var(--bs-secondary-color);
   text-align: end;
 }
 
-.form-floating > .form-control-plaintext:focus::placeholder,
-.form-floating > .form-control:focus::placeholder {
+.form-floating>.form-control-plaintext:focus::placeholder,
+.form-floating>.form-control:focus::placeholder {
   text-align: start;
 }
 
@@ -225,6 +237,7 @@ ul#metrics__main-navbar .nav-item .nav-link:hover {
   font-weight: 900;
   color: var(--brand-color);
 }
+
 /* -----DATATABLES custom setting----- */
 .dt-column-title {
   /* add more to padding right for table title */
@@ -247,6 +260,7 @@ ul#metrics__main-navbar .nav-item .nav-link:hover {
 .btn__actionButtons {
   width: 6em;
 }
+
 /* -----BUTTON (go to top)----- */
 button#goToTop {
   display: none;
@@ -270,21 +284,26 @@ button#goToTop {
 }
 
 .no-select {
-  user-select: none; /* For modern browsers */
-  -webkit-user-select: none; /* For Safari */
-  -moz-user-select: none; /* For Firefox */
-  -ms-user-select: none; /* For Internet Explorer/Edge */
+  user-select: none;
+  /* For modern browsers */
+  -webkit-user-select: none;
+  /* For Safari */
+  -moz-user-select: none;
+  /* For Firefox */
+  -ms-user-select: none;
+  /* For Internet Explorer/Edge */
 }
 
 /* -----CARD----- */
-.card .list-group-item > a {
+.card .list-group-item>a {
   color: var(--brand-color);
   /* color: #003e84; */
   /* @* color: #0057ba; *@ */
   margin: 0.4em 0.4em;
   padding: 0.4em 0.4em;
 }
-.card .list-group-item > a:hover {
+
+.card .list-group-item>a:hover {
   color: var(--brand-color-hover);
   /* 1e70da */
   /* @* background: #3465a443; *@ */
@@ -295,6 +314,7 @@ button#goToTop {
 a.activeLink {
   color: var(--metric-deepblue-color) !important;
 }
+
 a.activeLink:hover {
   color: var(--metric-blue-color) !important;
 }
@@ -318,6 +338,7 @@ a.activeLink:hover {
   /* color: var(--metric-blue-color); */
   /* background: var(--primary-color) !important; */
 }
+
 .pagination .page-item a.page-link:active {
   /* background: var(--primary-color); */
 }
@@ -325,11 +346,16 @@ a.activeLink:hover {
 .pagination .page-item .page-link {
   color: var(--metric-blue-color);
 }
+
 .pagination .page-item.active .page-link {
-  color: #ffffff; /* active text color */
-  background-color: var(--metric-blue-color); /* active background color */
-  border-color: var(--metric-blue-color); /* active border color */
+  color: #ffffff;
+  /* active text color */
+  background-color: var(--metric-blue-color);
+  /* active background color */
+  border-color: var(--metric-blue-color);
+  /* active border color */
 }
+
 .pagination .page-link:hover,
 .pagination .page-link:focus {
   color: #ffffff;
@@ -349,9 +375,11 @@ table thead th {
   background: var(--metric-blue-color) !important;
   color: var(--light-color) !important;
 }
+
 html[data-bs-theme="dark"] thead th {
   background: var(--metric-lightblue-color) !important;
 }
+
 html[data-bs-theme="dark"] .bg-brand-color {
   background: #0f386f !important;
 }
@@ -384,13 +412,14 @@ html[data-bs-theme="dark"] .bg-light {
 }
 
 /* ========== DARK: Card List =============================================== */
-html[data-bs-theme="dark"] .card .list-group-item > a {
+html[data-bs-theme="dark"] .card .list-group-item>a {
   color: var(--brand-color-dark);
   /* @* color: #0057ba; *@ */
   margin: 0.4em 0.4em;
   padding: 0.4em 0.4em;
 }
-html[data-bs-theme="dark"] .card .list-group-item > a:hover {
+
+html[data-bs-theme="dark"] .card .list-group-item>a:hover {
   color: #0099ff;
   /* @* background: #3465a443; *@ */
   /* @* color: #3465a4; *@ */
@@ -399,22 +428,27 @@ html[data-bs-theme="dark"] .card .list-group-item > a:hover {
 
 /* Style the toggle button */
 #theme-toggle {
-  cursor: pointer; /* Change cursor to pointer */
-  font-size: 1.5rem; /* Adjust icon size */
+  cursor: pointer;
+  /* Change cursor to pointer */
+  font-size: 1.5rem;
+  /* Adjust icon size */
 }
 
 /* Hide the moon icon by default */
 #theme-toggle .bi-moon-stars-fill {
-  display: none; /* Hide moon icon initially */
+  display: none;
+  /* Hide moon icon initially */
 }
 
 /* Show the appropriate icon based on the theme */
 html[data-bs-theme="dark"] #theme-toggle .bi-sun-fill {
-  display: none; /* Hide sun icon in dark mode */
+  display: none;
+  /* Hide sun icon in dark mode */
 }
 
 html[data-bs-theme="dark"] #theme-toggle .bi-moon-stars-fill {
-  display: inline; /* Show moon icon in dark mode */
+  display: inline;
+  /* Show moon icon in dark mode */
 }
 
 a#loginPartial__userInfo,
