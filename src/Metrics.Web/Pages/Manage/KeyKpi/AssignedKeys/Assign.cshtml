@@ -37,8 +37,8 @@
 
     <div class="filter-toolbar mb-4 d-flex align-items-center justify-content-between">
         <span class="d-flex flex-grow-1 align-items-center">
-            @{ var infoDesc = "<div><strong>Import</strong> <br/>Import department assignments from other period.</div>"; }
-            <a asp-page="Import"
+            @* @{ var infoDesc = "<div><strong>Import</strong> <br/>Import department assignments from other period.</div>"; } *@
+            @* <a asp-page="Import"
                 asp-route-periodName="@Uri.EscapeDataString(Model.SelectedPeriodName ?? string.Empty)"
                 asp-route-returnUrl="@HttpContext.Request.Path"
                 data-bs-toggle="tooltip" 
@@ -46,7 +46,7 @@
                 data-bs-title="@infoDesc"
                 data-bs-placement="right"
                 class="btn btn-success me-4">
-                <i class="bi bi-file-earmark-arrow-down"></i> Import</a>
+                <i class="bi bi-file-earmark-arrow-down"></i> Import</a> *@
         </span>
         <span>
             <button type="button" class="btn btn-primary" id="saveButton" onclick="updateKeyAssignment()">
