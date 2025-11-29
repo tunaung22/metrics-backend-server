@@ -34,4 +34,13 @@ public static class DepartmentMapper
             DepartmentName = dto.DepartmentName,
         };
     }
+
+    public static Department MapToEntity(this DepartmentUpdateDto dto)
+    {
+        return new Department
+        {
+            // DepartmentCode = dto.DepartmentCode,
+            DepartmentName = dto.DepartmentName,
+        };
+    }
 }
