@@ -11,7 +11,6 @@ public interface IDepartmentKeyMetricRepository
 
     void Create(DepartmentKeyMetric entity);
     void Update(DepartmentKeyMetric entity);
-    // void Delete(DepartmentKeyMetric entity);
     Task<IEnumerable<DepartmentKeyMetric>> FindAllAsync();
     Task<IEnumerable<DepartmentKeyMetric>> FindAllAsync(int pageNumber, int pageSize);
     Task<DepartmentKeyMetric?> FindByIdAsync(long id);

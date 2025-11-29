@@ -16,4 +16,15 @@ public static class KeyMetricMapper
             IsDeleted = e.IsDeleted,
         };
     }
+
+    public static KeyMetric MapToEntity(this KeyMetricDto dto)
+    {
+        return new KeyMetric
+        {
+            MetricCode = dto.MetricCode,
+            MetricTitle = dto.MetricTitle,
+            Description = dto.Description,
+            IsDeleted = dto.IsDeleted
+        };
+    }
 }

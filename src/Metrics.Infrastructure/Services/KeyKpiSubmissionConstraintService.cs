@@ -1,7 +1,6 @@
 using Metrics.Application.Common.Mappers;
 using Metrics.Application.Domains;
 using Metrics.Application.DTOs.KeyKpiSubmissionConstraints;
-using Metrics.Application.Exceptions;
 using Metrics.Application.Interfaces.IRepositories;
 using Metrics.Application.Interfaces.IServices;
 using Metrics.Application.Results;
@@ -205,8 +204,116 @@ public class KeyKpiSubmissionConstraintService(
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to get submission constraint count by periods by submitter department.");
-            return ResultT<Dictionary<long, int>>.Fail("Failed to get submission constraint count by periods by submitter department.", ErrorType.UnexpectedError);
+            _logger.LogError("Failed to count submission constraint by periods by submitter department. {msg}", ex.Message);
+            return ResultT<Dictionary<long, int>>.Fail("Failed to count submission constraint by periods by submitter department.", ErrorType.UnexpectedError);
+        }
+    }
+
+    public async Task<ResultT<List<KeyKpiSubmissionConstraintDto>>> FindByPeriodNameAsync(string sourcePeriodName)
+    {
+        try
+        {
+            var data = await _context.KeyKpiSubmissionConstraints
+                .AsNoTracking()
+                .Where(c => c.DepartmentKeyMetric.KpiSubmissionPeriod.PeriodName == sourcePeriodName && c.IsDeleted == false)
+                .Include(c => c.DepartmentKeyMetric).ThenInclude(dkm => dkm.KpiSubmissionPeriod)
+                .Include(c => c.DepartmentKeyMetric).ThenInclude(dkm => dkm.KeyIssueDepartment)
+                .Include(c => c.DepartmentKeyMetric).ThenInclude(dkm => dkm.KeyMetric)
+                .Include(c => c.SubmitterDepartment)
+                .OrderBy(c => c.SubmitterDepartment.DepartmentName)
+                .ToListAsync();
+
+            return ResultT<List<KeyKpiSubmissionConstraintDto>>.Success(data.Select(d => d.MapToDto()).ToList());
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("Failed to fetch submission constraint by period name. {msg}", ex.Message);
+            return ResultT<List<KeyKpiSubmissionConstraintDto>>.Fail("Failed to fetch submission constraint by period name.", ErrorType.UnexpectedError);
+        }
+    }
+
+    public async Task<Result> CopyAsync(long sourcePeriodId, long targetPeriodId)
+    {
+        // =====TO INSERT=====
+        // 1. take out non existing entries -> insert
+        // =====TO UPDATE=====
+        // 2. take out deleted      entries -> do undelete
+        // 3. take out undeleted    entries -> do delete
+        try
+        {
+            var sourceData = await _context.KeyKpiSubmissionConstraints
+                .Where(s => s.DepartmentKeyMetric.KpiSubmissionPeriodId == sourcePeriodId
+                    && s.IsDeleted == false)
+                .ToListAsync();
+            var targetData = await _context.KeyKpiSubmissionConstraints
+                .Where(t => t.DepartmentKeyMetric.KpiSubmissionPeriodId == targetPeriodId)
+                .ToListAsync();
+
+            var sourceIDs = new HashSet<Guid>(sourceData.Select(s => s.LookupId));
+            var targetIDs = new HashSet<Guid>(targetData.Select(t => t.LookupId));
+
+            if (sourceData == null)
+                return Result.Fail("Source period not found.", ErrorType.NotFound);
+
+            // ==========to INSERT========================================
+            var sourceToInsert = sourceData
+                .Where(source =>
+                    !targetData.Any(target =>
+                        target.DepartmentId == source.DepartmentId && // submitter
+                        target.DepartmentKeyMetricId == source.DepartmentKeyMetricId)
+                // **note: sourceData has includes/filtered by Period
+                // target.DepartmentKeyMetric.KpiSubmissionPeriodId == source.DepartmentKeyMetric.KpiSubmissionPeriodId)
+                ).ToList();
+
+            var entitiesToInsert = sourceToInsert
+               .Select(e => new KeyKpiSubmissionConstraint
+               {
+                   DepartmentId = e.DepartmentId,
+                   //    DepartmentKeyMetricId = e.DepartmentKeyMetricId,
+                   //    dkm with target period
+                   IsDeleted = false,
+               }).ToList();
+
+            if (entitiesToInsert.Count > 0) _context.AddRange(entitiesToInsert);
+
+            // ==========to UPDATE========================================
+            // DELETE records from target not found in source
+            var targetToDelete = targetData
+                .Where(target =>
+                    !sourceData.Any(source =>
+                        source.DepartmentId == target.DepartmentId &&
+                        source.DepartmentKeyMetricId == target.DepartmentKeyMetricId &&
+                        source.IsDeleted == false
+                )).ToList();
+
+            foreach (var entry in targetToDelete)
+            {
+                entry.IsDeleted = true;
+            }
+
+            // Un-DELETE the deleted records from target found in source
+            var targetToUpdate = targetData
+                .Where(target =>
+                    sourceData.Any(source =>
+                        source.DepartmentId == target.DepartmentId &&
+                        source.DepartmentKeyMetricId == target.DepartmentKeyMetricId &&
+                        target.IsDeleted == true
+                )).ToList();
+
+            foreach (var entry in targetToUpdate)
+            {
+                entry.IsDeleted = false;
+            }
+
+            // SAVE
+            await _context.SaveChangesAsync();
+
+            return Result.Success();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("Unexpected error while replicating Key KPI Submission Constraints. {msg}", ex.Message);
+            return Result.Fail("An unexpected error while replicating key kpi submission constraints. Please try again later.", ErrorType.UnexpectedError);
         }
     }
 

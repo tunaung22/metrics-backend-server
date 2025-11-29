@@ -25,6 +25,7 @@ public interface IKpiSubmissionPeriodService
     Task<Result> CreateAsync(KpiPeriodCreateDto createDto);
     Task<Result> UpdateAsync(string periodName, KpiPeriodUpdateDto updateDto);
     Task<Result> DeleteAsync(string periodName);
+    Task<ResultT<List<KpiPeriodDto>>> FindAll_Async();
 
     // TODO: Migration to Result Pattern
     // Task<ResultT<KpiPeriodDto>> FindByIdAsync(long id);

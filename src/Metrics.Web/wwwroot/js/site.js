@@ -2,6 +2,13 @@
 // for details on configuring this project to bundle and minify static web assets.
 // Write your JavaScript code.
 document.addEventListener("DOMContentLoaded", function () {
+  window.addEventListener("load", function () {
+    const loadingScreen = document.getElementById("loadingScreen");
+    if (loadingScreen) loadingScreen.classList.add("visually-hidden");
+
+    const mainContent = document.getElementById("mainContent");
+    if (mainContent) mainContent.classList.remove("visually-hidden");
+  });
   /**
   on scroll ->
     if title  ->

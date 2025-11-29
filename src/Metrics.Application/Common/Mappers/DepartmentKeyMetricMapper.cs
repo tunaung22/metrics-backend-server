@@ -20,4 +20,42 @@ public static class DepartmentKeyMetricMapper
             KeyMetric = e.KeyMetric.MapToDto(),
         };
     }
+
+    public static DepartmentKeyMetric MapToEntity(this DepartmentKeyMetricCreateDto createDto)
+    {
+        return new DepartmentKeyMetric
+        {
+            // LookupId = createDto.DepartmentKeyMetricCode,
+            IsDeleted = createDto.IsDeleted,
+
+            KpiSubmissionPeriodId = createDto.SubmissionPeriodId,
+            // KpiSubmissionPeriod = createDto.SubmissionPeriod.MapToEntity(),
+
+            DepartmentId = createDto.KeyIssueDepartmentId,
+            // KeyIssueDepartment = createDto.KeyIssueDepartment.MapToEntity(),
+
+            KeyMetricId = createDto.KeyMetricId,
+            // KeyMetric = createDto.KeyMetric.MapToEntity(),
+        };
+    }
+
+    public static DepartmentKeyMetric MapToEntity(this DepartmentKeyMetricDto dto)
+    {
+        return new DepartmentKeyMetric
+        {
+            // LookupId = createDto.DepartmentKeyMetricCode,
+            IsDeleted = dto.IsDeleted,
+
+            KpiSubmissionPeriodId = dto.SubmissionPeriodId,
+            // KpiSubmissionPeriod = dto.SubmissionPeriod.MapToEntity(),
+
+            DepartmentId = dto.KeyIssueDepartmentId,
+            // KeyIssueDepartment = dto.KeyIssueDepartment.MapToEntity(),
+
+            KeyMetricId = dto.KeyMetricId,
+            // KeyMetric = dto.KeyMetric.MapToEntity(),
+
+        };
+    }
+
 }

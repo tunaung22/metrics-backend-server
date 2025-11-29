@@ -1,0 +1,206 @@
+﻿@page "/Manage/Submission-Periods/Create"
+@model Metrics.Web.Pages.Manage.SubmissionPeriods.CreateModel
+@{
+    ViewData["Title"] = "Add New KPI Period";
+    var currentYear = DateTime.Now.ToString("yyyy");
+    var currentMonth = DateTime.Now.ToString("MM");
+}
+
+
+<div class="sectionTitle">
+    <div class="d-flex align-items-center">
+        <h4 class="flex-grow-1">New KPI Period</h4>
+        <span class="justify-content-end gap-2"></span>
+    </div>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-page="/Dashboard/Index">Dashboard</a></li>
+            <li class="breadcrumb-item"><a asp-page="/Manage/SubmissionPeriods/Index">Submission Periods</a></li>
+            <li class="breadcrumb-item active">Add</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="container">
+    @* ========================================================================== *@
+    @if (!ModelState.IsValid)
+    {
+        <div class="form bg-light p-4">
+            <div class="alert alert-danger">
+                <h4>There were some errors:</h4>
+                <ul>
+                    @foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
+                    {
+                        <li>@error.ErrorMessage</li>
+                    }
+                </ul>
+            </div>
+        </div>
+    }
+
+    @* =============== Form ===================================================== *@
+    <div class="col-sm-12 col-lg-8 me-auto border px-4 py-4">
+    @* <div class="col-5 border px-4 py-2 me-auto"> *@
+        <form method="post" asp-route-returnUrl="">
+            <div class="row">
+                <div class="col-sm-12 col-md-6">
+                    <div class="form-group">
+                        <label asp-for="FormInput.PeriodName" class="form-label">
+                            Period Name
+                            @* <small>
+                                (example: @currentYear-@currentMonth)
+                            </small> *@
+                        </label>
+                        <input asp-for="FormInput.PeriodName" class="form-control" autocomplete="off" tabindex="1" />
+                        <p id="textMessage__periodNameInput"></p>
+                        <div id="feedback__periodNameInput"></div>
+                        <div><span asp-validation-for="FormInput.PeriodName" class="text-danger"></span></div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-12 col-md-6 col-xl-6">
+                    <div class="form-group">
+                        <label asp-for="FormInput.SubmissionStartDate" class="form-label">Start Date</label>
+                        <input id="startDate__datePicker" class="form-control"
+                                asp-for="FormInput.SubmissionStartDate" 
+                                type="text" tabindex="2" />
+                        <div><span asp-validation-for="FormInput.SubmissionStartDate" class="text-danger"></span></div>
+                    </div>
+                </div>
+                <div class="col col-sm-12 col-md-6 col-xl-6">
+                    <div class="form-group">
+                        <label asp-for="FormInput.SubmissionEndDate" class="form-label">End Date</label>
+                        <input id="endDate__datePicker" class="form-control"
+                                asp-for="FormInput.SubmissionEndDate"
+                                type="text" tabindex="3" />
+                        <div><span asp-validation-for="FormInput.SubmissionEndDate" class="text-danger"></span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-4">
+                <div class="form-group col d-flex justify-content-end gap-2">
+
+                    <button type="submit" class="btn btn-warning mx-2" tabindex="5"
+                        asp-page-handler="Cancel" formnovalidate>
+                        <i class="bi bi-x-circle"> </i>Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary me-2" tabindex="4"
+                            id="btnSave">
+                        <i class="bi bi-check-circle"> </i>Save
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+@section Scripts {
+    @* <partial name="_ValidationScriptsPartial" /> *@
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+
+    <script>
+        $(function() {
+            $("#FormInput_PeriodName").focus();
+
+            // ----- Check Period Name conflict -----
+            $('#FormInput_PeriodName').on('input', function() {
+                var inputVal = $(this).val();
+                $.ajax({
+                    url: "@Url.Page("Create", "CheckKpiName")",
+                    type: "GET",
+                    data: { value: inputVal },
+                    success: function(response) {
+                        $("#feedback__periodNameInput")
+                            .text("");
+                        $("#feedback__periodNameInput")
+                            .removeClass("text-danger")
+                            .addClass("text-success");
+                        $("#btnSave").prop("disabled", false);
+                    },
+                    error: function(jqXHR) {
+                        if (jqXHR.status === 409) {
+                            //$("#textMessage__periodNameInput").text("Conflict: The period name is already in use.");
+                            //$("#textMessage__periodNameInput").text(response.message);
+                            var errorMessage = jqXHR.responseJSON.message;
+                            $("#feedback__periodNameInput").text(errorMessage);
+                            $("#feedback__periodNameInput")
+                                .removeClass("text-success")
+                                .addClass("text-danger");
+                            $("#btnSave").prop("disabled", true);
+                            }
+                        else {
+                            $("#feedback__periodNameInput").text("Error checking period name avaibility.");
+                        }
+                    }
+                });
+            });
+
+            // ----- Date Picker -----
+            var dateFormat = "MM d, yy"; // Format matching jQuery UI's default
+
+            // Initialize From datepicker
+            var startDate = $("#startDate__datePicker").datepicker({
+                // defaultDate: "+1w",
+                changeMonth: true, 
+                changeYear: true,
+                showAnim: "slideDown", // Animation when showing the datepicker
+                numberOfMonths: 1,
+                dateFormat: dateFormat,
+                onSelect: function(selectedDate) {
+                    // Set To datepicker's minDate to the selected From date
+                    endDate.datepicker("option", "minDate", selectedDate);
+                    // If To date is earlier than From date, update it
+                    var fromDate = $(this).datepicker("getDate");
+                    var toDate = endDate.datepicker("getDate");
+                    if (fromDate && toDate && fromDate > toDate) {
+                        endDate.datepicker("setDate", fromDate);
+                    }
+                }
+            });
+
+            // Initialize To datepicker
+            var endDate = $("#endDate__datePicker").datepicker({
+                // defaultDate: "+1w",
+                changeMonth: true,
+                changeYear: true,
+                showAnim: "slideDown", // Animation when showing the datepicker
+                numberOfMonths: 1,
+                dateFormat: dateFormat,
+                onSelect: function(selectedDate) {
+                    // Set From datepicker's maxDate to the selected To date
+                    startDate.datepicker("option", "maxDate", selectedDate);
+                    // If From date is later than To date, update it
+                    var fromDate = startDate.datepicker("getDate");
+                    var toDate = $(this).datepicker("getDate");
+                    if (fromDate && toDate && fromDate > toDate) {
+                        startDate.datepicker("setDate", toDate);
+                    }
+                }
+            });
+            var today = new Date();
+            startDate.datepicker("setDate", today);
+            endDate.datepicker("setDate", today);
+            // Set initial constraints
+            startDate.datepicker("option", "maxDate", endDate.datepicker("getDate"));
+            endDate.datepicker("option", "minDate", startDate.datepicker("getDate"));
+        });
+    </script>
+
+}
+
+
+@section Styles {
+    <style>
+        .ui-datepicker .ui-datepicker-week-end a {
+            background-color: #f2dede; /* Light red background */
+            color: #ee3734; /* Dark red text */
+        }
+        .ui-datepicker .ui-datepicker-today .ui-state-highlight {
+            background-color: rgb(93, 201, 118);
+            color: #0b480b;
+        }
+    </style>
+}

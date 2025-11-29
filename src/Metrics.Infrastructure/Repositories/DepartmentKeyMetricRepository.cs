@@ -1,6 +1,5 @@
 using Metrics.Application.Domains;
 using Metrics.Application.Interfaces.IRepositories;
-using Metrics.Application.Results;
 using Metrics.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -162,5 +161,6 @@ public class DepartmentKeyMetricRepository(MetricsDbContext context) : IDepartme
             .Select(e => new { PeriodId = e.Key, Count = e.Count() })
             .ToDictionaryAsync(e => e.PeriodId, e => e.Count);
     }
+
 
 }

@@ -5,14 +5,25 @@ namespace Metrics.Application.Common.Mappers;
 
 public static class KpiPeriodMapper
 {
+    public static KpiSubmissionPeriod MapToEntity(this KpiPeriodDto dto)
+    {
+        // TODO: Use factory method
+        return new KpiSubmissionPeriod
+        {
+            PeriodName = dto.PeriodName,
+            SubmissionStartDate = dto.SubmissionStartDate.UtcDateTime,
+            SubmissionEndDate = dto.SubmissionEndDate.UtcDateTime
+        };
+    }
+
     public static KpiSubmissionPeriod MapToEntity(this KpiPeriodCreateDto createDto)
     {
         // TODO: Use factory method
         return new KpiSubmissionPeriod
         {
             PeriodName = createDto.PeriodName,
-            SubmissionStartDate = createDto.SubmissionStartDate,
-            SubmissionEndDate = createDto.SubmissionEndDate
+            SubmissionStartDate = createDto.SubmissionStartDate.UtcDateTime,
+            SubmissionEndDate = createDto.SubmissionEndDate.UtcDateTime
         };
     }
 

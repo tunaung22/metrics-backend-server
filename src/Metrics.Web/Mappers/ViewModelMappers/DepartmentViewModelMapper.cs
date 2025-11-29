@@ -69,7 +69,7 @@ public static class DepartmentViewModelMapper
     // =========================================================================
 
     // ========== DTO to ViewModel ==========
-    public static IEnumerable<DepartmentGetViewModel>? ToViewModel(this IEnumerable<DepartmentGetDto>? dto)
+    public static IEnumerable<DepartmentGetViewModel>? ToViewModel(this IEnumerable<DepartmentDto>? dto)
     {
         if (dto == null)
             return null;
@@ -81,7 +81,7 @@ public static class DepartmentViewModelMapper
         });
     }
 
-    public static DepartmentUpdateViewModel? ToUpdateViewModel(this DepartmentGetDto dto)
+    public static DepartmentUpdateViewModel? ToUpdateViewModel(this DepartmentDto dto)
     {
         if (dto == null) return null;
 
@@ -92,7 +92,7 @@ public static class DepartmentViewModelMapper
         //return dto?.ToViewModel();
     }
 
-    public static DepartmentGetViewModel? ToViewModel(this DepartmentGetDto dto)
+    public static DepartmentGetViewModel? ToViewModel(this DepartmentDto dto)
     {
         return new DepartmentGetViewModel
         {
@@ -102,7 +102,7 @@ public static class DepartmentViewModelMapper
         //return dto?.ToViewModel();
     }
 
-    public static DepartmentFormViewModel? ToFormViewModel(this DepartmentGetDto dto)
+    public static DepartmentFormViewModel? ToFormViewModel(this DepartmentDto dto)
     {
         return new DepartmentFormViewModel
         {

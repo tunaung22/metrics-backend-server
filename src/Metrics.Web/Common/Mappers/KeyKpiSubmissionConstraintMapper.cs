@@ -1,5 +1,6 @@
 using Metrics.Application.DTOs.KeyKpiSubmissionConstraints;
 using Metrics.Web.Models;
+using Metrics.Web.Models.KeyKpiSubmissionConstraint;
 
 namespace Metrics.Web.Common.Mappers;
 
@@ -14,7 +15,7 @@ public static class KeyKpiSubmissionConstraintMapper
             LookupId = e.LookupId,
             IsDeleted = e.IsDeleted,
             SubmitterDepartmentId = e.SubmitterDepartmentId,
-            SubmitterDepartment = e.SubmitterDepartment.MapToViewModel(),
+            CandidateDepartment = e.SubmitterDepartment.MapToViewModel(),
             DepartmentKeyMetricId = e.DepartmentKeyMetricId,
             DepartmentKeyMetric = e.DepartmentKeyMetric.MapToViewModel(),
         };

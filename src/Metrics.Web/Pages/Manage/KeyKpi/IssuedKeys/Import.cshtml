@@ -1,0 +1,208 @@
+﻿@page "/Manage/Key-Kpi/Issue-Keys/{periodName}/Import"
+@using System.ComponentModel.DataAnnotations.Schema
+@using System.Text.Json
+@using Npgsql.PostgresTypes
+@model Metrics.Web.Pages.Manage.Submissions.KeyKpi.DepartmentKeys.IssueKeys.ImportModel
+@{
+    ViewData["Title"] = $"Import Department Keys for {Model.TargetPeriodName}";
+
+    @* var jsonString = Model.DepartmentKeys.Any() == true ? JsonSerializer.Serialize(Model.DepartmentKeys) : "[]"; *@
+}
+
+
+<div class="sectionTitle">
+    <div class="d-flex align-items-center my-2">
+        <h4 class="flex-grow-1"><i class="bi bi-ui-checks"></i> Import Department Keys for @Model.TargetPeriodName</h4>
+        <span class="justify-content-end gap-2"></span>
+    </div>
+
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-page="/Dashboard/Index">Dashboard</a></li>
+            <li class="breadcrumb-item"><a asp-page="/Manage/Index">Manage</a></li>
+            <li class="breadcrumb-item"><a asp-page="/Manage/KeyKpi/IssueKeys/Index">Periods</a></li>
+            <li class="breadcrumb-item">
+                @if(!string.IsNullOrEmpty(Model.TargetPeriodName))
+                {
+                    <a asp-page="/Manage/Submissions/KeyKpi/DepartmentKeys/IssueKeys/View"
+                        asp-route-periodName="@Uri.EscapeDataString(@Model.TargetPeriodName)">@Model.TargetPeriodName</a>
+                }
+            </li>
+            <li class="breadcrumb-item active">Import</li>
+        </ol>
+    </nav>
+</div>
+
+
+<div class="container-fluid p-4 rounded-2">
+
+    <div class="filter-toolbar mb-4 d-flex justify-content-between">
+        <span class="d-flex gap-4">
+            <form id="form__periodSelection" method="get">
+                <span class="d-flex align-items-center">
+                    <div class="col-auto me-4">Source KPI Period:</div>
+                    <div class="col-sm-8 me-4">
+                        @* <input type="hidden" asp-for="ReturnUrl" /> *@
+                        @* <input type="hidden" asp-for="SourcePeriodName" /> *@
+                        <select asp-for="SourcePeriodName"
+                            asp-items="Model.SourcePeriodListItems"
+                            name="sourcePeriod"
+                            onchange="this.form.submit()"
+                            class="form-select p-2"
+                            aria-label="Select Source Period">
+                        </select>
+                    </div>
+                    to
+                    <div class="col-sm-4 ms-4 border p-2 rounded-2">
+                        <strong>@(Model.TargetPeriodName ?? "Unknown")</strong>
+                    </div>
+                </span>
+            </form>
+        </span>
+        <div class="saveActions">
+            <form method="post" asp-route-returnUrl="@Model.ReturnUrl">
+                @* <input type="hidden" asp-for="Group" /> *@
+                <button asp-page-handler="Cancel" 
+                    type="submit" tabindex="3"
+                    class="btn btn-warning ms-2" formnovalidate><i class="bi bi-x-circle"> </i>Cancel</button>
+                <button type="button" class="btn btn btn-primary"
+                    @(Model.SourceDKMs.Count == 0 ? "disabled" : "") id="saveButton"
+                    data-bs-toggle="modal" 
+                    data-bs-target="#saveDialogBackdrop">
+                    <i class="bi bi-check-circle"></i> Save</button>
+
+                @* ---------- SUBMIT DIALOG ---------- *@
+                <div class="modal fade" id="saveDialogBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="saveDialogStaticBackdropLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h1 class="modal-title fs-5" id="saveDialogStaticBackdropLabel">Confirmation</h1>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <h2 class="fs-5">Confirm copy department keys?</h2>
+                                <p>This will overwrite department keys to target period.</p>
+
+                                <div class="row m-4 align-items-center">
+                                    <div class="col">From:</div>
+                                    <div class="col border p-2 rounded-2">
+                                        <strong>@Model.SourcePeriodName</strong>
+                                    </div>
+                                </div>
+                                <div class="row m-4 align-items-center">
+                                    <div class="col">To:</div>
+                                    <div class="col border p-2 rounded-2">
+                                        <strong>@Model.TargetPeriodName</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" 
+                                        class="btn btn-secondary"
+                                        data-bs-dismiss="modal">
+                                    <i class="bi bi-x-circle"> </i>No</button>
+                                <button type="submit"
+                                        class="btn btn-primary me-2">
+                                    <i class="bi bi-check-circle"> </i>Submit</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div id="loadingScreen" class="d-flex justify-content-center mb-4">
+        <strong role="status" class="me-3">Loading...</strong>
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
+    @* table... *@
+    <div id="mainContent" class="visually-hidden table-responsive p-0 px-2 mb-3 border rounded-2">
+        <table id="keyMetricTable" class="table table-bordered table-striped" style="width:100%">
+            <thead>
+                <tr>
+                    <th>No.</th>
+                    <th>Issue Department</th>
+                    <th class="">Key Title</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if(Model.SourceDKMs.Count > 0)
+                {
+                    var rowCount = 0;
+                    @foreach(var k in Model.SourceDKMs)
+                    {
+                        rowCount += 1;
+                        var lineNumber = rowCount.ToString("0");
+
+                        <tr id="tableRow" class="row-@k.Id">
+                            <td class="text-center">@lineNumber</td>
+                            <td>
+                                @k.KeyIssueDepartment.DepartmentName
+                            </td>
+                            <td class="">
+                                @Html.Raw(k.KeyMetric.MetricTitle)
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+@section Scripts {
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        window.addEventListener('load', function() {
+            document.getElementById('loadingScreen').classList.add('visually-hidden');
+            document.getElementById('mainContent').classList.remove('visually-hidden');
+        });
+    });
+    $(function() {
+        new DataTable('#keyMetricTable', {
+            paging: false,
+            info: false,
+            searching: true,
+            autoWidth: true,
+            columnDefs: [
+            
+            ],
+            initComplete: function() {
+                $('#keyMetricTable thead th')
+                    .addClass('text-center text-white bg-brand-color');
+            }
+        });
+    });
+
+
+@* 
+    let inputValues = {
+        targetPeriod: "@Model.TargetPeriodName?.ToString()",
+        departmentKeyMetrics: []
+    };
+    var dkms = @Html.Raw(jsonString);
+    if(Array.isArray(dkms) && dkms.length > 0) {
+            const keyMetrics = [];
+            dkms.forEach(function(item) {
+                keyMetrics.push({
+                    metricCode: item.KeyMetric.MetricCode,
+                    metricTitle: item.KeyMetric.MetricTitle
+                });
+            });
+            inputValues.keyMetrics = keyMetrics;
+        } *@
+
+    
+
+
+    
+
+</script>
+}
