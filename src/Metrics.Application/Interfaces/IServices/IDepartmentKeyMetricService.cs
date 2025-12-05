@@ -12,22 +12,6 @@ public interface IDepartmentKeyMetricService
         Guid keyIssueDepartmentCode);
     Task<Result> Create_Async(DepartmentKeyMetricCreateDto createDto);
     Task<Result> CreateAsync(List<DepartmentKeyMetricCreateDto> createDTOs);
-    /// <summary>
-    /// Copy Department Keys from Source List<DepartmentKeyMetricDto> to Target List<DepartmentKeyMetricDto>
-    /// </summary>
-    /// <param name="sourceDTOs">List<DepartmentKeyMetricDto></param>
-    /// <param name="targetDTOs">List<DepartmentKeyMetricDto></param>
-    /// <returns>Result</returns>
-    Task<Result> ReplicateAsync(List<DepartmentKeyMetricDto> sourceDTOs, List<DepartmentKeyMetricDto> targetDTOs);
-    /// <summary>
-    /// Copy Department Keys from Source Period to Target Period
-    /// </summary>
-    /// <param name="sourcePeriodID"></param>
-    /// <param name="targetPeriodID"></param>
-    /// <returns></returns>
-    Task<Result> CopyAsync(long sourcePeriodID, long targetPeriodID);
-
-
     Task<DepartmentKeyMetric> CreateAsync(DepartmentKeyMetric entity);
     Task<DepartmentKeyMetric> UpdateAsync(Guid code, DepartmentKeyMetric entity);
 
@@ -48,6 +32,10 @@ public interface IDepartmentKeyMetricService
         string periodName,
         Guid departmentCode,
         Guid keyMetricCode);
+    Task<DepartmentKeyMetric?> FindByPeriodAndIssuerAndKeyAsync(
+        long periodId,
+        long issuerId,
+        long keyId);
     Task<IEnumerable<DepartmentKeyMetric>> FindAllByPeriodIdAsync(long periodId);
     Task<IEnumerable<DepartmentKeyMetric>> FindAllByPeriodNameAsync(string periodName);
     Task<IEnumerable<DepartmentKeyMetric>> FindAllByPeriodAndDepartmentAsync(

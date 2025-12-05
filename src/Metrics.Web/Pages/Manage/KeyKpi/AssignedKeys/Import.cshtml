@@ -20,13 +20,13 @@
             <li class="breadcrumb-item"><a asp-page="/">Home</a></li>
             <li class="breadcrumb-item"><a asp-page="/Manage/Index">Manage</a></li>
             <li class="breadcrumb-item"><a asp-page="/Manage/KeyKpi/Index">Key KPI</a></li>
-            <li class="breadcrumb-item">
+            @* <li class="breadcrumb-item">
                 @if(!string.IsNullOrEmpty(Model.TargetPeriodName))
                 {
                     <a asp-page="/Manage/KeyKpi/AssignedKeys/View"
                         asp-route-periodName="@Uri.EscapeDataString(@Model.TargetPeriodName)">@Model.TargetPeriodName</a>
                 }
-            </li>
+            </li> *@
             <li class="breadcrumb-item active">Import</li>
         </ol>
     </nav>
@@ -34,38 +34,42 @@
 
 
 <div class="container-fluid px-4 rounded-2">
-
-    <div class="filter-toolbar mb-4 d-flex justify-content-between">
-        <span class="d-flex gap-4">
-            <form id="form__periodSelection" method="get">
-                <span class="d-flex align-items-center">
-                    <div class="col-auto me-4">Source KPI Period:</div>
-                    <div class="col-sm-8 me-4">
-                        <input type="hidden" asp-for="ReturnUrl" />
-                        <input type="hidden" asp-for="SourcePeriodName">
-                        <select asp-for="SourcePeriodName"
-                            asp-items="Model.SourcePeriodListItems"
-                            name="sourcePeriod"
-                            onchange="this.form.submit()"
-                            class="form-select p-2"
-                            aria-label="Select Period">
-                        </select>
-                    </div>
-                    to
-                    <div class="col-sm-4 ms-4 border p-2 rounded-2">
-                        <strong>@Model.TargetPeriodName</strong>
-                    </div>
-                </span>
+    <div class="filter-toolbar mb-4 d-flex align-items-center gap-3 flex-wrap">
+        <div class="d-flex gap-4 flex-grow-1">
+            <form id="form__periodSelection" method="get" class="d-flex align-items-center gap-3 flex-wrap">
+                <button type="button" class="btn btn-link"
+                        data-bs-toggle="modal" data-bs-target="#infomationDialog"><i class="bi bi-info-circle"></i> Info</button>
+                
+                <span>Source Period:</span>
+                <div>
+                    <select asp-for="SourcePeriodName"
+                        asp-items="Model.SourcePeriodListItems"
+                        onchange="this.form.submit()"
+                        class="form-select p-2"
+                        aria-label="Select Source Period">
+                    </select>
+                </div>
+                <i class="bi bi-chevron-double-right"></i>
+                <span>Target Period:</span>
+                <div class="border px-4 py-2 rounded-2">
+                    <strong>@(Model.TargetPeriodName ?? "Unknown")</strong>
+                </div>
             </form>
-        </span>
-        <div class="saveActions">
-            <form method="post" asp-route-returnUrl="@Model.ReturnUrl">
-                @* <input type="hidden" asp-for="Group" /> *@
-                <button asp-page-handler="Cancel" 
+        </div>
+        <div class="saveActions d-flex gap-2 flex-shrink-0">
+            <form method="post" class="d-flex gap-2">
+                <input type="hidden" asp-for="ReturnUrl" />
+                <input type="hidden" asp-for="SourcePeriodName" />
+            
+                <a asp-page="/Manage/KeyKpi/AssignedKeys/View" 
+                    asp-route-periodName="@Model.TargetPeriodName" tabindex="4" 
+                    class="btn btn-warning ms-2">
+                    <i class="bi bi-arrow-left"></i> Back</a>
+                @* <button asp-page-handler="Cancel" 
                     type="submit" tabindex="3"
-                    class="btn btn-warning ms-2" formnovalidate><i class="bi bi-x-circle"> </i>Cancel</button>
+                    class="btn btn-warning ms-2" formnovalidate><i class="bi bi-x-circle"> </i>Cancel</button> *@
                 <button type="button" class="btn btn btn-primary"
-                    @(Model.SourceSubmissionConstraints.Count == 0 ? "disabled" : "") id="saveButton"
+                    @(Model.SourceAssignments.Count == 0 ? "disabled" : "") id="saveButton"
                     data-bs-toggle="modal" 
                     data-bs-target="#saveDialogBackdrop">
                     <i class="bi bi-check-circle"></i> Save</button>
@@ -126,16 +130,31 @@
             <thead>
                 <tr>
                     <th>No.</th>
-                    <th>Key Issue Departments (Owner)</th>
+                    <th>Candidate Department</th>
                     <th class="">Key Title</th>
-                    <th>Candidate Departments</th>
+                    <th>Key Issue Department</th>
                 </tr>
             </thead>
             <tbody>
-                @if(Model.SourceSubmissionConstraints.Count > 0)
+                @if(Model.SourceAssignments.Count > 0)
                 {
                     var rowCount = 0;
-                    @foreach(var c in Model.SourceSubmissionConstraints)
+                    @foreach(var c in Model.SourceAssignments)
+                    {
+                        rowCount += 1;
+                        var lineNumber = rowCount.ToString("0");
+                        <tr id="tableRow" class="">
+                            <td>@lineNumber</td>
+                            <td>@c.CandidateDepartment?.DepartmentName</td>
+                            <td>@c.KeyMetric?.MetricTitle</td>
+                            <td>@c.KeyIssueDepartment?.DepartmentName</td>
+                        </tr>
+                    }
+                }
+                @* @if(Model.SourceDepartmentKeyAssignments.Count > 0)
+                {
+                    var rowCount = 0;
+                    @foreach(var c in Model.SourceDepartmentKeyAssignments)
                     {
                         rowCount += 1;
                         var lineNumber = rowCount.ToString("0");
@@ -153,12 +172,38 @@
                             </td>
                         </tr>
                     }
-                }
+                } *@
             </tbody>
         </table>
     </div>
 </div>
 
+
+
+
+
+<div class="modal modal-xl" id="infomationDialog" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+        <div class="modal-header"><h4 class="fs-2"><i class="bi bi-info-square"></i> How the importing works ?</h4></div>
+        <div class="modal-body lh-lg">
+            <p class="fs-5">Import the department assignments to 
+                the department keys from the selected period to target period, 
+                where key issue department and keys are matched.</p>
+            <hr />
+            <h6 class="fs-4">Note:</h6>
+            <ol class="fs-5">
+                <li>Make sure <strong>Department Keys</strong> are already <u>issued for target period</u>.</li>
+                <li>Import process will only import the <strong>Department Assignments</strong> <small>(department keys + candidate departments)</small>
+                    of the source period where the target period's department keys
+                    the <strong>Department Keys</strong> <small>(key issue departments + keys)</small> of the source period and target period are matched.</li>
+                <li>When assignments were imported, the manually assigned items will overriden.</li>
+            </ol>
+        </div>
+        <div class="modal-footer"><button type="button" class="btn btn-primary me-2" data-bs-dismiss="modal">Close</button></div>
+        </div>
+    </div>
+</div>
 
 @section Scripts {
 <script>

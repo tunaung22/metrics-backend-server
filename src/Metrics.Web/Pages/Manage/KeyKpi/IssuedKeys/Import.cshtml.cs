@@ -5,21 +5,23 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
-namespace Metrics.Web.Pages.Manage.Submissions.KeyKpi.DepartmentKeys.IssueKeys;
+namespace Metrics.Web.Pages.Manage.KeyKpi.IssuedKeys;
 
 public class ImportModel(
     IKpiSubmissionPeriodService kpiPeriodService,
+    IDepartmentKeyImportService dkmImportService,
     IDepartmentKeyMetricService dkmService) : PageModel
 {
     private readonly IKpiSubmissionPeriodService _kpiPeriodService = kpiPeriodService;
     private readonly IDepartmentKeyMetricService _dkmService = dkmService;
+    private readonly IDepartmentKeyImportService _dkmImportService = dkmImportService;
 
 
     // ============================================================
     [BindProperty]
-    public string? TargetPeriodName { get; set; }
+    public string? TargetPeriodName { get; set; } = string.Empty;
 
-    [BindProperty(Name = "sourcePeriod", SupportsGet = true)]
+    [BindProperty(SupportsGet = true)]
     public string? SourcePeriodName { get; set; }
 
     [BindProperty]
@@ -32,11 +34,8 @@ public class ImportModel(
 
 
     // ============================================================
-    public async Task<IActionResult> OnGetAsync(string periodName, string? returnUrl)
+    public async Task<IActionResult> OnGetAsync([FromRoute] string periodName)
     {
-        if (!string.IsNullOrEmpty(returnUrl))
-            ReturnUrl = returnUrl;
-
         if (string.IsNullOrEmpty(periodName))
         {
             ModelState.AddModelError(string.Empty, "A valid Period Name is required.");
@@ -50,15 +49,16 @@ public class ImportModel(
         else
             ModelState.AddModelError(string.Empty, "Unknown Target Period.");
 
-        var allPeriodsResult = await _kpiPeriodService.FindAll_Async();
-        if (!allPeriodsResult.IsSuccess || allPeriodsResult.Data == null)
+        var periods = await _kpiPeriodService.FindAll_Async();
+        if (!periods.IsSuccess || periods.Data == null)
         {
             ModelState.AddModelError(string.Empty, "Failed to load KPI periods.");
             return Page();
         }
 
-        SourcePeriodListItems = allPeriodsResult.Data
-            .Where(p => p.PeriodName != TargetPeriodName)
+        // Load periods for source period dropdown **excluding target period
+        SourcePeriodListItems = periods.Data
+            .Where(p => p.PeriodName != TargetPeriodName) // filter out Target Period
             .Select((p, index) => new SelectListItem
             {
                 Value = p.PeriodName,
@@ -67,7 +67,8 @@ public class ImportModel(
 
         if (string.IsNullOrEmpty(SourcePeriodName))
         {
-            SourcePeriodName = allPeriodsResult.Data.First().PeriodName;
+            SourcePeriodName = Uri.EscapeDataString(periods.Data.First().PeriodName);
+            // SourcePeriodName = allPeriodsResult.Data.First().PeriodName;
             // TempData["CurrentDepartmentCode"] = SourcePeriodName;
         }
 
@@ -78,10 +79,7 @@ public class ImportModel(
         return Page();
     }
 
-    public async Task<IActionResult> OnPostAsync(
-        [FromRoute] string periodName,
-        [FromQuery] string sourcePeriod)
-    //, string? returnUrl)
+    public async Task<IActionResult> OnPostAsync([FromRoute] string periodName)
     {
         // if (!string.IsNullOrEmpty(returnUrl))
         //     ReturnUrl = returnUrl;
@@ -99,14 +97,14 @@ public class ImportModel(
         else
             ModelState.AddModelError(string.Empty, "Unknown Target Period.");
 
-        var allPeriodsResult = await _kpiPeriodService.FindAll_Async();
-        if (!allPeriodsResult.IsSuccess || allPeriodsResult.Data == null)
+        var periods = await _kpiPeriodService.FindAll_Async();
+        if (!periods.IsSuccess || periods.Data == null)
         {
             ModelState.AddModelError(string.Empty, "Failed to load KPI periods.");
             return Page();
         }
 
-        SourcePeriodListItems = allPeriodsResult.Data
+        SourcePeriodListItems = periods.Data
             .Where(p => p.PeriodName != TargetPeriodName) // filter out Target Period
             .Select((p, index) => new SelectListItem
             {
@@ -116,46 +114,44 @@ public class ImportModel(
 
         if (string.IsNullOrEmpty(SourcePeriodName))
         {
-            SourcePeriodName = sourcePeriod;
-            // var sourceName = TempData["CurrentDepartmentCode"]?.ToString();
-            // if (!string.IsNullOrEmpty(sourceName))
-            // SourcePeriodName = sourceName;
-            // else
-            // SourcePeriodName = allPeriodsResult.Data.First().PeriodName;
+            ModelState.AddModelError(string.Empty, "Source period is required.");
+            return Page();
         }
 
         // load key metircs data by selected source period
         SourceDKMs = await LoadDepartmentKeysByPeriod(SourcePeriodName);
 
-        var sourceId = allPeriodsResult.Data.Where(s => s.PeriodName == SourcePeriodName).Select(s => s.Id).FirstOrDefault();
-        var targetId = allPeriodsResult.Data.Where(t => t.PeriodName == TargetPeriodName).Select(t => t.Id).FirstOrDefault();
-        var result = await _dkmService.CopyAsync(sourceId, targetId);
+        var sourceId = periods.Data.Where(s => s.PeriodName == SourcePeriodName).Select(s => s.Id).FirstOrDefault();
+        var targetId = periods.Data.Where(t => t.PeriodName == TargetPeriodName).Select(t => t.Id).FirstOrDefault();
+        var result = await _dkmImportService.CopyAsync(sourceId, targetId);
 
-        // if (result.IsSuccess)
-        // {
-        //     if (!string.IsNullOrEmpty(ReturnUrl))
-        //         return LocalRedirect(ReturnUrl);
-
-        //     return RedirectToPage("/Manage/KeyKpi/IssuedKeys/Index");
-        // }
+        if (result.IsSuccess)
+        {
+            if (!string.IsNullOrEmpty(ReturnUrl))
+                return LocalRedirect(ReturnUrl);
+            if (!string.IsNullOrEmpty(TargetPeriodName))
+                return RedirectToPage("View", new { periodName = Uri.EscapeDataString(TargetPeriodName) });
+            return RedirectToPage("/Manage/Index");
+        }
 
         ModelState.AddModelError(string.Empty, "Failed to import department keys from source period.");
 
         return Page();
     }
 
-    public IActionResult OnPostCancel()
-    {
-        if (!string.IsNullOrEmpty(ReturnUrl))
-        {
-            return LocalRedirect(ReturnUrl);
-        }
-        return RedirectToPage("Index");
-    }
+    // public IActionResult OnPostCancel()
+    // {
+    //     if (!string.IsNullOrEmpty(ReturnUrl))
+    //     {
+    //         return LocalRedirect(ReturnUrl);
+    //     }
+    //     // return RedirectToPage("View", new { periodName = TargetPeriodName });
+    //     return RedirectToRoute("/Manage/KeyKpi/IssuedKeys/View", new { periodName = TargetPeriodName });
+    // }
 
     private async Task<List<DepartmentKeyMetricViewModel>> LoadDepartmentKeysByPeriod(string sourcePeriodName)
     {
-        var dkms = await _dkmService.FindByPeriodNameAsync(sourcePeriodName);
+        var dkms = await _dkmService.FindByPeriodNameAsync(Uri.UnescapeDataString(sourcePeriodName));
         if (!dkms.IsSuccess || dkms.Data == null)
         {
             ModelState.AddModelError(string.Empty, "Failed to fetch department keys by source period.");

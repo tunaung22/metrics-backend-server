@@ -306,7 +306,7 @@ public class AssignModel(
                         {
                             var entity = new KeyKpiSubmissionConstraint
                             {
-                                DepartmentId = submitterDepartment.Id,
+                                CandidateDepartmentId = submitterDepartment.Id,
                                 DepartmentKeyMetricId = c.Id
                             };
                             await _keyKpiSubmissionConstraintService.CreateAsync(entity);

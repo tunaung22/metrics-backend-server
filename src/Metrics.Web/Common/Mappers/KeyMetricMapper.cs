@@ -1,5 +1,5 @@
 using Metrics.Application.DTOs.KeyMetric;
-using Metrics.Web.Models;
+using Metrics.Web.Models.KeyMetric;
 
 namespace Metrics.Web.Common.Mappers;
 

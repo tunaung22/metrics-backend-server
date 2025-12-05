@@ -10,8 +10,8 @@ public record KeyKpiSubmissionConstraintDto
     public bool IsDeleted { get; init; }
     // public DateTimeOffset CreatedAt { get; init; }
     // public DateTimeOffset ModifiedAt { get; init; }
-    public long SubmitterDepartmentId { get; init; }
-    public DepartmentDto SubmitterDepartment { get; init; } = null!;
+    public long CandidateDepartmentId { get; init; }
+    public DepartmentDto CandidateDepartment { get; init; } = null!;
     public long DepartmentKeyMetricId { get; init; }
     public DepartmentKeyMetricDto DepartmentKeyMetric { get; init; } = null!;
 }

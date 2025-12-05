@@ -13,8 +13,7 @@
 
     @RenderSection("Styles", required: false)
 </head>
-<body>
-
+<body class="d-flex flex-column min-vh-100">
     @* <header>
         <nav class="navbar navbar-expand-md navbar-toggleable-lg navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container">
@@ -36,7 +35,7 @@
         </nav>
     </header> *@
 
-    <div id="main-content" class="container" style="padding-top: 4em; min-height: 90vh;">
+    <div id="main-content" class="container" style="padding-top: 20vh;">
         <main role="main" class="pb-3">
             @RenderBody()
         </main>

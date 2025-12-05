@@ -14,6 +14,7 @@ public interface IDepartmentKeyMetricRepository
     Task<IEnumerable<DepartmentKeyMetric>> FindAllAsync();
     Task<IEnumerable<DepartmentKeyMetric>> FindAllAsync(int pageNumber, int pageSize);
     Task<DepartmentKeyMetric?> FindByIdAsync(long id);
+    Task<List<DepartmentKeyMetric>> FindByPeriodAsync(long periodId);
     Task<DepartmentKeyMetric?> FindByCodeAsync(Guid departmentKeyMetricCode);
     // Task<DepartmentKeyMetric?> FindByMetricTitleAsync(string metricTitle);
     Task<DepartmentKeyMetric?> FindByPeriodAndDepartmentAndKeyMetricAsync(

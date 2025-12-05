@@ -754,7 +754,7 @@ public class DetailModel(
                         {
                             DepartmentKeyMetric = dkm, //submission.DepartmentKeyMetric,
                             ScoreValue = submission.ScoreValue,
-                            Comments = submission.Comments
+                            Comments = submission.Comments ?? string.Empty,
                         };
                     }
                     else

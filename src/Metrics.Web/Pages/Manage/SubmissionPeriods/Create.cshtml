@@ -108,6 +108,13 @@
             // ----- Check Period Name conflict -----
             $('#FormInput_PeriodName').on('input', function() {
                 var inputVal = $(this).val();
+
+                // Replace spaces with hyphens and remove invalid characters
+                inputVal = inputVal.replace(/\s+/g, '-'); // Replace spaces with hyphens
+                inputVal = inputVal.replace(/[^a-zA-Z0-9_-]/g, ''); // Remove other invalid characters
+                $(this).val(inputVal); // Update the input field
+
+                // query
                 $.ajax({
                     url: "@Url.Page("Create", "CheckKpiName")",
                     type: "GET",

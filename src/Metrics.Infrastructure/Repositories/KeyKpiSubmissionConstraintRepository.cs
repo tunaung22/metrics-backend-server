@@ -33,16 +33,36 @@ public class KeyKpiSubmissionConstraintRepository(
            .FirstOrDefaultAsync();
     }
 
+    /// <summary>
+    /// Find all active by period id
+    /// </summary>
+    /// <param name="sourcePeriodId"></param>
+    /// <returns></returns>
+    public async Task<List<KeyKpiSubmissionConstraint>> FindByPeriodAsync(long sourcePeriodId)
+    {
+        return await _context.KeyKpiSubmissionConstraints
+            .AsNoTracking()
+            .Where(c =>
+                c.IsDeleted == false &&
+                c.DepartmentKeyMetric.KpiSubmissionPeriodId == sourcePeriodId)
+            .Include(c => c.DepartmentKeyMetric).ThenInclude(dkm => dkm.KpiSubmissionPeriod)
+            .Include(c => c.DepartmentKeyMetric).ThenInclude(dkm => dkm.KeyIssueDepartment)
+            .Include(c => c.DepartmentKeyMetric).ThenInclude(dkm => dkm.KeyMetric)
+            .Include(c => c.CandidateDepartment)
+            .OrderBy(c => c.CandidateDepartment.DepartmentName)
+            .ToListAsync();
+    }
+
     public async Task<IEnumerable<KeyKpiSubmissionConstraint>> FindBySubmitterDepartmentAsync(Guid departmentCode)
     {
         return await _context.KeyKpiSubmissionConstraints
-            .Where(k => k.SubmitterDepartment.DepartmentCode == departmentCode)
-            .Include(k => k.SubmitterDepartment)
+            .AsNoTracking()
+            .Where(k => k.CandidateDepartment.DepartmentCode == departmentCode)
+            .Include(k => k.CandidateDepartment)
             .Include(k => k.DepartmentKeyMetric).ThenInclude(dkm => dkm.KpiSubmissionPeriod)
             .Include(k => k.DepartmentKeyMetric).ThenInclude(dkm => dkm.KeyMetric)
             .Include(k => k.DepartmentKeyMetric).ThenInclude(dkm => dkm.KeyIssueDepartment)
-            .OrderBy(k => k.SubmitterDepartment.DepartmentName)
-            .AsNoTracking()
+            .OrderBy(k => k.CandidateDepartment.DepartmentName)
             .ToListAsync();
     }
 
@@ -50,12 +70,12 @@ public class KeyKpiSubmissionConstraintRepository(
     {
         return await _context.KeyKpiSubmissionConstraints
             .Where(k => k.DepartmentKeyMetric.KpiSubmissionPeriod.Id == periodId
-                && k.SubmitterDepartment.DepartmentCode == departmentCode)
-            .Include(k => k.SubmitterDepartment)
+                && k.CandidateDepartment.DepartmentCode == departmentCode)
+            .Include(k => k.CandidateDepartment)
             .Include(k => k.DepartmentKeyMetric).ThenInclude(dkm => dkm.KpiSubmissionPeriod)
             .Include(k => k.DepartmentKeyMetric).ThenInclude(dkm => dkm.KeyMetric)
             .Include(k => k.DepartmentKeyMetric).ThenInclude(dkm => dkm.KeyIssueDepartment)
-            .OrderBy(k => k.SubmitterDepartment.DepartmentName)
+            .OrderBy(k => k.CandidateDepartment.DepartmentName)
             .AsNoTracking()
             .ToListAsync();
     }
@@ -64,12 +84,12 @@ public class KeyKpiSubmissionConstraintRepository(
     {
         return await _context.KeyKpiSubmissionConstraints
             .Where(k => k.DepartmentKeyMetric.KpiSubmissionPeriod.PeriodName == periodName
-                && k.SubmitterDepartment.DepartmentCode == departmentCode)
-            .Include(k => k.SubmitterDepartment)
+                && k.CandidateDepartment.DepartmentCode == departmentCode)
+            .Include(k => k.CandidateDepartment)
             .Include(k => k.DepartmentKeyMetric).ThenInclude(dkm => dkm.KpiSubmissionPeriod)
             .Include(k => k.DepartmentKeyMetric).ThenInclude(dkm => dkm.KeyMetric)
             .Include(k => k.DepartmentKeyMetric).ThenInclude(dkm => dkm.KeyIssueDepartment)
-            .OrderBy(k => k.SubmitterDepartment.DepartmentName)
+            .OrderBy(k => k.CandidateDepartment.DepartmentName)
             .AsNoTracking()
             .ToListAsync();
     }
@@ -78,11 +98,11 @@ public class KeyKpiSubmissionConstraintRepository(
     {
         return await _context.KeyKpiSubmissionConstraints
             .Where(k => departmentKeyMetricIDs.Contains(k.DepartmentKeyMetricId))
-            .Include(k => k.SubmitterDepartment)
+            .Include(k => k.CandidateDepartment)
             .Include(k => k.DepartmentKeyMetric).ThenInclude(dkm => dkm.KpiSubmissionPeriod)
             .Include(k => k.DepartmentKeyMetric).ThenInclude(dkm => dkm.KeyMetric)
             .Include(k => k.DepartmentKeyMetric).ThenInclude(dkm => dkm.KeyIssueDepartment)
-            .OrderBy(k => k.SubmitterDepartment.DepartmentName)
+            .OrderBy(k => k.CandidateDepartment.DepartmentName)
             .AsNoTracking()
             .ToListAsync();
     }
@@ -90,7 +110,7 @@ public class KeyKpiSubmissionConstraintRepository(
     public IQueryable<KeyKpiSubmissionConstraint> FindAllAsQueryable()
     {
         return _context.KeyKpiSubmissionConstraints
-            .OrderBy(k => k.SubmitterDepartment.DepartmentName)
+            .OrderBy(k => k.CandidateDepartment.DepartmentName)
                 .ThenBy(k => k.DepartmentKeyMetric.KeyMetric.MetricTitle);
     }
 
@@ -98,10 +118,11 @@ public class KeyKpiSubmissionConstraintRepository(
     {
         return await _context.KeyKpiSubmissionConstraints
             .Where(e => periodIds.Contains(e.DepartmentKeyMetric.KpiSubmissionPeriodId)
-                && e.SubmitterDepartment.Id == submitterDepartmentId)
+                && e.CandidateDepartment.Id == submitterDepartmentId)
             .GroupBy(e => e.DepartmentKeyMetric.KpiSubmissionPeriodId)
             .Select(e => new { PeriodId = e.Key, Count = e.Count() })
             .ToDictionaryAsync(e => e.PeriodId, e => e.Count);
     }
+
 
 }

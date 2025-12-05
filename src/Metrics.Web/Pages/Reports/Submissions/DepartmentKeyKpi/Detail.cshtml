@@ -164,10 +164,10 @@
                                                     <td class="@submissionTextColor">@item.DepartmentKeyMetric.KeyMetric.MetricTitle</td>
                                                     <td class="@submissionTextColor">@item.ScoreValue.ToString("0.00")</td>
                                                     <td class="@submissionTextColor">
-                                                        @if(@item.Comments != null && @item.Comments.Any()) {
-                                                            var comments = @item.Comments.Substring(0, 25) + "...";
+                                                        @if(!string.IsNullOrEmpty(@item.Comments)) {
                                                             @if(@item.Comments.Length > 25) 
                                                             {
+                                                                var comments = @item.Comments.Substring(0, 25) + "...";
                                                                 @comments <button data-details="@item.Comments" data-label="Positive Aspects" class="moreButton_positiveAspects btn btn-link p-0 pb-2">More</button>
                                                             }
                                                             else
