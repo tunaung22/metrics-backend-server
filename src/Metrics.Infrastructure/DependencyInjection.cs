@@ -49,6 +49,9 @@ public static class DependencyInjection
             .AddScoped<ICaseFeedbackService, CaseFeedbackService>()
             .AddScoped<ICaseFeedbackScoreSubmissionService, CaseFeedbackScoreSubmissionService>()
             .AddScoped<IIdentityService, IdentityService>()
+            //
+            .AddScoped<IDepartmentKeyImportService, DepartmentKeyImportService>()
+            .AddScoped<IKeyKpiAssignmentImportService, KeyKpiAssignmentImportService>()
         ;
 
         return services;

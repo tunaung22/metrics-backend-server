@@ -12,8 +12,8 @@ public static class KeyKpiSubmissionConstraintMapper
             Id = e.Id,
             LookupId = e.LookupId,
             IsDeleted = e.IsDeleted,
-            SubmitterDepartmentId = e.DepartmentId,
-            SubmitterDepartment = e.SubmitterDepartment.MapToDto(),
+            CandidateDepartmentId = e.CandidateDepartmentId,
+            CandidateDepartment = e.CandidateDepartment.MapToDto(),
             DepartmentKeyMetricId = e.DepartmentKeyMetricId,
             DepartmentKeyMetric = e.DepartmentKeyMetric.MapToDto(),
         };

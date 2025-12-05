@@ -1,12 +1,12 @@
-﻿@page "/Manage/Key-Kpi/Issued-Keys/{periodName}/View"
-@model Metrics.Web.Pages.Manage.KeyKpi.IssuedKeys.ViewModel
+﻿@page "/Manage/Key-Kpi/Assigned-Keys/{periodName}/View"
+@model Metrics.Web.Pages.Manage.KeyKpi.AssignedKeys.ViewModel
 @{
     ViewData["Title"] = $"Key Metrics for {Model.SelectedPeriodName}";
 }
 
 <div class="sectionTitle">
     <div class="d-flex align-items-center my-2">
-        <h4 class="flex-grow-1"><i class="bi bi-ui-checks"></i> Issued keys for @Model.SelectedPeriodName</h4>
+        <h4 class="flex-grow-1"><i class="bi bi-ui-checks"></i> Assigned Department Keys for @Model.SelectedPeriodName</h4>
         <span class="justify-content-end gap-2"></span>
     </div>
 
@@ -27,7 +27,6 @@
         <span>
             @{ var infoDesc = "<div><strong>Import</strong> <br/>Select source period to copy from.<br/></div>";
             }
-            @* asp-route-returnUrl="@HttpContext.Request.Path" *@
             <i class="bi bi-info-circle-fill"
                 data-bs-toggle="tooltip" 
                 data-bs-html="true"
@@ -51,20 +50,21 @@
 
     @* table... *@
     <div id="mainContent" class="visually-hidden table-responsive p-0 px-2 mb-3 border rounded-2">
-        <table id="keyMetricTable" class="table table-bordered table-striped" style="width:100%">
+        <table id="keyMetricTable" class="table table-bordered table-striped table-hover" style="width:100%">
             <thead>
                 <tr>
                     <th>No.</th>
-                    <th>Issue Department</th>
+                    <th>Candidate Department</th>
                     <th class="">Key Title</th>
+                    <th>Key Issue Department</th>
                     @* <th>Deleted</th> *@
                 </tr>
             </thead>
             <tbody>
-                @if(Model.SelectedDKMs.Count > 0)
+                @if(Model.SelectedKeyAssignments.Count > 0)
                 {
                     var rowCount = 0;
-                    @foreach(var k in Model.SelectedDKMs)
+                    @foreach(var k in Model.SelectedKeyAssignments)
                     {
                         rowCount += 1;
                         var lineNumber = rowCount.ToString("0");
@@ -72,10 +72,13 @@
                         <tr id="tableRow" class="row-@k.Id">
                             <td class="text-center">@lineNumber</td>
                             <td>
-                                @k.KeyIssueDepartment.DepartmentName
+                                @k.CandidateDepartment.DepartmentName
                             </td>
                             <td class="">
-                                @Html.Raw(k.KeyMetric.MetricTitle)
+                                @Html.Raw(k.DepartmentKeyMetric.KeyMetric.MetricTitle)
+                            </td>
+                            <td>
+                                @k.DepartmentKeyMetric.KeyIssueDepartment.DepartmentName
                             </td>
                             @* <td>
                                 @k.IsDeleted

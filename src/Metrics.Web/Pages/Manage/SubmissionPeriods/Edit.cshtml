@@ -104,48 +104,42 @@
             // ----- Check Period Name conflict -----
             $('#FormInput_PeriodName').on('input', function() {
                 var inputVal = $(this).val();
+
+                // Replace spaces with hyphens and remove invalid characters
+                inputVal = inputVal.replace(/\s+/g, '-'); // Replace spaces with hyphens
+                inputVal = inputVal.replace(/[^a-zA-Z0-9_-]/g, ''); // Remove other invalid characters
+                $(this).val(inputVal); // Update the input field
+
                 var currentPeriodName = @Html.Raw(Json.Serialize(Model.PeriodName));
 
                 if (currentPeriodName.trim().toLowerCase() !== inputVal.trim().toLowerCase()) 
                 {
-                    console.log("currentPeriodName != inputVal");
+                    @* console.log("currentPeriodName != inputVal"); *@
                     $.ajax({
                         url: "@Url.Page("Edit", "CheckDuplicateName")",
                         type: "GET",
                         data: { value: inputVal },
                         success: function(response) {
+                            $("#feedback__periodNameInput").text("");
                             $("#feedback__periodNameInput")
-                                .text("");
-                            $("#feedback__periodNameInput")
-                                .removeClass("text-danger")
-                                .addClass("text-success");
+                                .removeClass("text-danger").addClass("text-success");
                             $("#btnUpdate").prop("disabled", false);
                         },
                         error: function(jqXHR) {
-                            $("#feedback__periodNameInput").removeClass("text-success").addClass("text-danger");     
                             var errorMessage = jqXHR.responseJSON.message;
                             $("#feedback__periodNameInput").text(errorMessage);
+                            $("#feedback__periodNameInput")
+                                .removeClass("text-success").addClass("text-danger");     
                             $("#btnUpdate").prop("disabled", true);
-                            //if (jqXHR.status === 409) {
-                                //$("#textMessage__periodNameInput").text("Conflict: The period name is already in use.");
-                                //$("#textMessage__periodNameInput").text(response.message);
-                                // $("#feedback__periodNameInput").text(errorMessage);
-                                // $("#btnUpdate").prop("disabled", true);
-                            //}
-                            //else {
-                            //    $("#feedback__periodNameInput").text("Error checking period name avaibility.");
-                            //}
                         }
                     });
                 }
                 else
                 {
                     console.log("currentPeriodName == inputVal");
+                    $("#feedback__periodNameInput").text("");
                     $("#feedback__periodNameInput")
-                        .text("");
-                    $("#feedback__periodNameInput")
-                        .removeClass("text-danger")
-                        .addClass("text-success");
+                        .removeClass("text-danger").addClass("text-success");
                     $("#btnUpdate").prop("disabled", false);
                 }
             });

@@ -1,4 +1,4 @@
-namespace Metrics.Web.Models;
+namespace Metrics.Web.Models.KeyMetric;
 
 public class KeyMetricViewModel
 {

@@ -11,8 +11,8 @@ public class KeyKpiSubmissionConstraint : IAuditColumn, ISoftDelete
     public DateTimeOffset ModifiedAt { get; set; }
 
     // Foreign Keys
-    public long DepartmentId { get; set; }
-    public Department SubmitterDepartment { get; set; } = null!;
+    public long CandidateDepartmentId { get; set; }
+    public Department CandidateDepartment { get; set; } = null!;
     public long DepartmentKeyMetricId { get; set; }
     public DepartmentKeyMetric DepartmentKeyMetric { get; set; } = null!;
 }

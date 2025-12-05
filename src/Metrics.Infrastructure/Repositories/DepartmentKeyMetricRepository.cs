@@ -162,5 +162,13 @@ public class DepartmentKeyMetricRepository(MetricsDbContext context) : IDepartme
             .ToDictionaryAsync(e => e.PeriodId, e => e.Count);
     }
 
-
+    public async Task<List<DepartmentKeyMetric>> FindByPeriodAsync(long periodId)
+    {
+        return await _context.DepartmentKeyMetrics
+            .AsNoTracking()
+            .Where(dkm =>
+                dkm.IsDeleted == false &&
+                dkm.KpiSubmissionPeriodId == periodId)
+            .ToListAsync();
+    }
 }

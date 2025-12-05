@@ -4,6 +4,7 @@ using Metrics.Web.Common.Mappers;
 using Metrics.Web.Models;
 using Metrics.Web.Models.DepartmentKeyMetric;
 using Metrics.Web.Models.KeyKpiSubmissionConstraint;
+using Metrics.Web.Models.KeyMetric;
 using Metrics.Web.Models.ReportViewModels.KeyKpi;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;

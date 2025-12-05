@@ -9,6 +9,8 @@ public interface IKeyKpiSubmissionConstraintRepository
     Task<KeyKpiSubmissionConstraint?> FindByLookupIdAsync(
         Guid lookupId);
 
+    Task<List<KeyKpiSubmissionConstraint>> FindByPeriodAsync(long sourcePeriodId);
+
     Task<IEnumerable<KeyKpiSubmissionConstraint>> FindBySubmitterDepartmentAsync(
         Guid departmentCode);
     Task<IEnumerable<KeyKpiSubmissionConstraint>> FindByPeriodAndSubmitterDepartmentAsync(

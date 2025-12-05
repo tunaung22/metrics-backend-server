@@ -17,7 +17,7 @@ public class KeyKpiSubmissionConstraintConfig : IEntityTypeConfiguration<KeyKpiS
         builder
             .HasIndex(e => new
             {
-                e.DepartmentId,
+                e.CandidateDepartmentId,
                 e.DepartmentKeyMetricId
             })
             .HasDatabaseName("ix_key_kpi_submission_constraints_dpt_id_dkm_id")
@@ -45,10 +45,18 @@ public class KeyKpiSubmissionConstraintConfig : IEntityTypeConfiguration<KeyKpiS
             .HasColumnType("timestamp with time zone");
 
         // ===== Relationships =====
-        builder.HasOne(e => e.SubmitterDepartment)
+        builder.Property(e => e.CandidateDepartmentId)
+            .HasColumnName("department_id")
+            .HasColumnType("long")
+            .IsRequired();
+        builder.HasOne(e => e.CandidateDepartment)
             .WithMany(e => e.KeyKpiSubmissionConstraints)
-            .HasForeignKey(e => e.DepartmentId)
+            .HasForeignKey(e => e.CandidateDepartmentId)
             .OnDelete(DeleteBehavior.Restrict)
+            .IsRequired();
+        builder.Property(e => e.DepartmentKeyMetricId)
+            .HasColumnName("department_key_metric_id")
+            .HasColumnType("long")
             .IsRequired();
         builder.HasOne(e => e.DepartmentKeyMetric)
             .WithMany(e => e.KeyKpiSubmissionConstraints)

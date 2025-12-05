@@ -16,10 +16,10 @@
     </div>
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a asp-page="/Index">Home</a></li>
+            <li class="breadcrumb-item"><a asp-page="/Dashboard/Index">Dashboard</a></li>
             <li class="breadcrumb-item"><a asp-page="/Manage/Index">Manage</a></li>
             @* <li class="breadcrumb-item"><a asp-page="/Manage/Submissions/Index">Submissions</a></li> *@
-            <li class="breadcrumb-item active">Department Keys</li>
+            <li class="breadcrumb-item active">Key KPI</li>
         </ol>
     </nav>
 </div>
@@ -70,7 +70,7 @@
 
         @* ================ Table =================================================== *@
         <div class="px-4 pb-4">
-            <table id="kpiPeriodTable" class="table table-bordered table-striped">
+            <table id="kpiPeriodTable" class="table table-bordered table-striped table-hover">
                 <thead class="mono-text">
                     <tr>
                         <th>Period Name</th>
@@ -98,21 +98,33 @@
                                         class="btn btn-sm btn-outline-primary my-2 my-lg-0 me-2">
                                         <strong><i class="bi bi-ui-checks"></i> Issue Keys</strong></a>
                                     @* &nbsp;
+                                    <a asp-page="IssuedKeys/Import"
+                                        asp-route-periodName="@Uri.EscapeDataString(@p.PeriodName)"
+                                        asp-route-returnUrl="@HttpContext.Request.Path"
+                                        class="btn btn-sm btn-outline-primary my-2 my-lg-0 me-2">
+                                        <strong><i class="bi bi-card-checklist"></i> Import</strong></a> *@
+                                    &nbsp;
                                     <a asp-page="IssuedKeys/View" 
                                         asp-route-periodName="@Uri.EscapeDataString(@p.PeriodName)"
                                         class="btn btn-sm btn-outline-primary my-2 my-lg-0 me-2">
-                                        <strong><i class="bi bi-card-checklist"></i> View</strong></a> *@
+                                        <strong><i class="bi bi-card-checklist"></i> View</strong></a>
                                 </td>
                                 <td class="text-center">
                                     <a asp-page="AssignedKeys/Assign" 
                                         asp-route-periodName="@Uri.EscapeDataString(@p.PeriodName)"
                                         class="btn btn-sm btn-outline-primary my-2 my-lg-0 me-2">
                                         <strong><i class="bi bi-check-circle-fill"></i> Assign Candidates</strong></a>
+                                    @* &nbsp;
+                                    <a asp-page="AssignedKeys/Import"
+                                        asp-route-periodName="@Uri.EscapeDataString(@p.PeriodName)"
+                                        asp-route-returnUrl="@HttpContext.Request.Path"
+                                        class="btn btn-sm btn-outline-primary my-2 my-lg-0 me-2">
+                                        <strong><i class="bi bi-card-checklist"></i> Import</strong></a> *@
                                     &nbsp;
-                                    @* <a asp-page="AssignedKeys/View" 
+                                    <a asp-page="AssignedKeys/View" 
                                         asp-route-periodName="@Uri.EscapeDataString(@p.PeriodName)"
                                         class="btn btn-sm btn-outline-primary my-2 my-lg-0 me-2">
-                                        <strong><i class="bi bi-card-checklist"></i> View</strong></a> *@
+                                        <strong><i class="bi bi-card-checklist"></i> View</strong></a>
                                 </td>
                             </tr>
                         }

@@ -1,8 +1,7 @@
-﻿@page "/Manage/Key-Kpi/Issue-Keys/{periodName}/Import"
+﻿@page "/Manage/Key-Kpi/Issued-Keys/{periodName}/Import"
 @using System.ComponentModel.DataAnnotations.Schema
 @using System.Text.Json
-@using Npgsql.PostgresTypes
-@model Metrics.Web.Pages.Manage.Submissions.KeyKpi.DepartmentKeys.IssueKeys.ImportModel
+@model Metrics.Web.Pages.Manage.KeyKpi.IssuedKeys.ImportModel
 @{
     ViewData["Title"] = $"Import Department Keys for {Model.TargetPeriodName}";
 
@@ -20,14 +19,14 @@
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a asp-page="/Dashboard/Index">Dashboard</a></li>
             <li class="breadcrumb-item"><a asp-page="/Manage/Index">Manage</a></li>
-            <li class="breadcrumb-item"><a asp-page="/Manage/KeyKpi/IssueKeys/Index">Periods</a></li>
-            <li class="breadcrumb-item">
+            <li class="breadcrumb-item"><a asp-page="/Manage/KeyKpi/Index">Key KPI</a></li>
+            @* <li class="breadcrumb-item">
                 @if(!string.IsNullOrEmpty(Model.TargetPeriodName))
                 {
                     <a asp-page="/Manage/Submissions/KeyKpi/DepartmentKeys/IssueKeys/View"
                         asp-route-periodName="@Uri.EscapeDataString(@Model.TargetPeriodName)">@Model.TargetPeriodName</a>
                 }
-            </li>
+            </li> *@
             <li class="breadcrumb-item active">Import</li>
         </ol>
     </nav>
@@ -36,35 +35,37 @@
 
 <div class="container-fluid p-4 rounded-2">
 
-    <div class="filter-toolbar mb-4 d-flex justify-content-between">
-        <span class="d-flex gap-4">
-            <form id="form__periodSelection" method="get">
-                <span class="d-flex align-items-center">
-                    <div class="col-auto me-4">Source KPI Period:</div>
-                    <div class="col-sm-8 me-4">
-                        @* <input type="hidden" asp-for="ReturnUrl" /> *@
-                        @* <input type="hidden" asp-for="SourcePeriodName" /> *@
-                        <select asp-for="SourcePeriodName"
-                            asp-items="Model.SourcePeriodListItems"
-                            name="sourcePeriod"
-                            onchange="this.form.submit()"
-                            class="form-select p-2"
-                            aria-label="Select Source Period">
-                        </select>
-                    </div>
-                    to
-                    <div class="col-sm-4 ms-4 border p-2 rounded-2">
-                        <strong>@(Model.TargetPeriodName ?? "Unknown")</strong>
-                    </div>
-                </span>
+    <div class="filter-toolbar mb-4 d-flex align-items-center gap-3 flex-wrap">
+        <div class="d-flex gap-4 flex-grow-1">
+            <form id="form__periodSelection" method="get" class="d-flex align-items-center gap-3 flex-wrap">
+
+                <span>Source KPI Period:</span>
+                <div>
+                    <select asp-for="SourcePeriodName"
+                        asp-items="Model.SourcePeriodListItems"
+                        onchange="this.form.submit()"
+                        class="form-select py-2"
+                        aria-label="Select Source Period">
+                    </select>
+                </div>
+                <span>to</span>
+                <div class="border p-2 rounded-2">
+                    <strong>@(Model.TargetPeriodName ?? "Unknown")</strong>
+                </div>
             </form>
-        </span>
-        <div class="saveActions">
-            <form method="post" asp-route-returnUrl="@Model.ReturnUrl">
-                @* <input type="hidden" asp-for="Group" /> *@
-                <button asp-page-handler="Cancel" 
+        </div>
+        <div class="saveActions d-flex gap-2 flex-shrink-0">
+            <form method="post" class="d-flex gap-2">
+                <input type="hidden" asp-for="ReturnUrl" />
+                <input type="hidden" asp-for="SourcePeriodName" />
+
+                <a asp-page="/Manage/KeyKpi/IssuedKeys/View" 
+                    asp-route-periodName="@Model.TargetPeriodName" tabindex="4" 
+                    class="btn btn-warning ms-2">
+                    <i class="bi bi-arrow-left"></i> Back</a>
+                @* <button asp-page-handler="Cancel" 
                     type="submit" tabindex="3"
-                    class="btn btn-warning ms-2" formnovalidate><i class="bi bi-x-circle"> </i>Cancel</button>
+                    class="btn btn-warning ms-2" formnovalidate><i class="bi bi-x-circle"> </i>Cancel</button> *@
                 <button type="button" class="btn btn btn-primary"
                     @(Model.SourceDKMs.Count == 0 ? "disabled" : "") id="saveButton"
                     data-bs-toggle="modal" 
@@ -80,8 +81,8 @@
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
-                                <h2 class="fs-5">Confirm copy department keys?</h2>
-                                <p>This will overwrite department keys to target period.</p>
+                                <h2 class="fs-5">Confirm import department keys?</h2>
+                                <p class="text-warning">**This will overwrite department keys to target period.</p>
 
                                 <div class="row m-4 align-items-center">
                                     <div class="col">From:</div>

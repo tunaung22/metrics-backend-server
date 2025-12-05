@@ -1,3 +1,5 @@
+using Metrics.Web.Models.KeyMetric;
+
 namespace Metrics.Web.Models.DepartmentKeyMetric;
 
 public class DepartmentKeyMetricViewModel

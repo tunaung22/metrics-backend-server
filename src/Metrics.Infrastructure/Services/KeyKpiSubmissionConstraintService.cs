@@ -219,8 +219,8 @@ public class KeyKpiSubmissionConstraintService(
                 .Include(c => c.DepartmentKeyMetric).ThenInclude(dkm => dkm.KpiSubmissionPeriod)
                 .Include(c => c.DepartmentKeyMetric).ThenInclude(dkm => dkm.KeyIssueDepartment)
                 .Include(c => c.DepartmentKeyMetric).ThenInclude(dkm => dkm.KeyMetric)
-                .Include(c => c.SubmitterDepartment)
-                .OrderBy(c => c.SubmitterDepartment.DepartmentName)
+                .Include(c => c.CandidateDepartment)
+                .OrderBy(c => c.CandidateDepartment.DepartmentName)
                 .ToListAsync();
 
             return ResultT<List<KeyKpiSubmissionConstraintDto>>.Success(data.Select(d => d.MapToDto()).ToList());
@@ -232,90 +232,6 @@ public class KeyKpiSubmissionConstraintService(
         }
     }
 
-    public async Task<Result> CopyAsync(long sourcePeriodId, long targetPeriodId)
-    {
-        // =====TO INSERT=====
-        // 1. take out non existing entries -> insert
-        // =====TO UPDATE=====
-        // 2. take out deleted      entries -> do undelete
-        // 3. take out undeleted    entries -> do delete
-        try
-        {
-            var sourceData = await _context.KeyKpiSubmissionConstraints
-                .Where(s => s.DepartmentKeyMetric.KpiSubmissionPeriodId == sourcePeriodId
-                    && s.IsDeleted == false)
-                .ToListAsync();
-            var targetData = await _context.KeyKpiSubmissionConstraints
-                .Where(t => t.DepartmentKeyMetric.KpiSubmissionPeriodId == targetPeriodId)
-                .ToListAsync();
-
-            var sourceIDs = new HashSet<Guid>(sourceData.Select(s => s.LookupId));
-            var targetIDs = new HashSet<Guid>(targetData.Select(t => t.LookupId));
-
-            if (sourceData == null)
-                return Result.Fail("Source period not found.", ErrorType.NotFound);
-
-            // ==========to INSERT========================================
-            var sourceToInsert = sourceData
-                .Where(source =>
-                    !targetData.Any(target =>
-                        target.DepartmentId == source.DepartmentId && // submitter
-                        target.DepartmentKeyMetricId == source.DepartmentKeyMetricId)
-                // **note: sourceData has includes/filtered by Period
-                // target.DepartmentKeyMetric.KpiSubmissionPeriodId == source.DepartmentKeyMetric.KpiSubmissionPeriodId)
-                ).ToList();
-
-            var entitiesToInsert = sourceToInsert
-               .Select(e => new KeyKpiSubmissionConstraint
-               {
-                   DepartmentId = e.DepartmentId,
-                   //    DepartmentKeyMetricId = e.DepartmentKeyMetricId,
-                   //    dkm with target period
-                   IsDeleted = false,
-               }).ToList();
-
-            if (entitiesToInsert.Count > 0) _context.AddRange(entitiesToInsert);
-
-            // ==========to UPDATE========================================
-            // DELETE records from target not found in source
-            var targetToDelete = targetData
-                .Where(target =>
-                    !sourceData.Any(source =>
-                        source.DepartmentId == target.DepartmentId &&
-                        source.DepartmentKeyMetricId == target.DepartmentKeyMetricId &&
-                        source.IsDeleted == false
-                )).ToList();
-
-            foreach (var entry in targetToDelete)
-            {
-                entry.IsDeleted = true;
-            }
-
-            // Un-DELETE the deleted records from target found in source
-            var targetToUpdate = targetData
-                .Where(target =>
-                    sourceData.Any(source =>
-                        source.DepartmentId == target.DepartmentId &&
-                        source.DepartmentKeyMetricId == target.DepartmentKeyMetricId &&
-                        target.IsDeleted == true
-                )).ToList();
-
-            foreach (var entry in targetToUpdate)
-            {
-                entry.IsDeleted = false;
-            }
-
-            // SAVE
-            await _context.SaveChangesAsync();
-
-            return Result.Success();
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError("Unexpected error while replicating Key KPI Submission Constraints. {msg}", ex.Message);
-            return Result.Fail("An unexpected error while replicating key kpi submission constraints. Please try again later.", ErrorType.UnexpectedError);
-        }
-    }
 
 
     // public async Task<IEnumerable<KeyKpiSubmissionConstraint>> FindByDepartmentAsync(

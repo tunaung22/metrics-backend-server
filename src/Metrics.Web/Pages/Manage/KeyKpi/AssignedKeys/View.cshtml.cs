@@ -1,28 +1,32 @@
 using Metrics.Application.Interfaces.IServices;
 using Metrics.Web.Common.Mappers;
+using Metrics.Web.Models;
 using Metrics.Web.Models.DepartmentKeyMetric;
+using Metrics.Web.Models.KeyKpiSubmissionConstraint;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace Metrics.Web.Pages.Manage.KeyKpi.IssuedKeys;
+namespace Metrics.Web.Pages.Manage.KeyKpi.AssignedKeys;
 
 public class ViewModel(
     IDepartmentService departmentService,
     IKpiSubmissionPeriodService kpiPeriodService,
     IKeyMetricService keyMetricService,
-    IDepartmentKeyMetricService dkmService) : PageModel
+    IDepartmentKeyMetricService dkmService,
+    IKeyKpiSubmissionConstraintService keyAssignentService) : PageModel
 {
     private readonly IDepartmentService _departmentService = departmentService;
     private readonly IKpiSubmissionPeriodService _kpiPeriodService = kpiPeriodService;
     private readonly IKeyMetricService _keyMetricService = keyMetricService;
     private readonly IDepartmentKeyMetricService _dkmService = dkmService;
+    private readonly IKeyKpiSubmissionConstraintService _keyAssignentService = keyAssignentService;
 
 
     // =============== MODELS ==================================================
+
     public string SelectedPeriodName { get; set; } = null!;
 
-    public List<DepartmentKeyMetricViewModel> SelectedDKMs { get; set; } = [];
-
+    public List<KeyKpiSubmissionConstraintViewModel> SelectedKeyAssignments { get; set; } = [];
 
     // =============== HANDLERS ================================================
     public async Task<IActionResult> OnGetAsync(string periodName)
@@ -34,25 +38,27 @@ public class ViewModel(
         }
         SelectedPeriodName = @Uri.UnescapeDataString(periodName);
 
-        SelectedDKMs = await LoadDepartmentKeysByPeriod(SelectedPeriodName);
+        // selected department keys assignments
+        SelectedKeyAssignments = await LoadDepartmentKeyAssignmentsByPeriod(SelectedPeriodName);
 
         return Page();
     }
 
-    private async Task<List<DepartmentKeyMetricViewModel>> LoadDepartmentKeysByPeriod(string sourcePeriodName)
+    private async Task<List<KeyKpiSubmissionConstraintViewModel>> LoadDepartmentKeyAssignmentsByPeriod(string sourcePeriodName)
     {
-        var dkms = await _dkmService.FindByPeriodNameAsync(sourcePeriodName);
-        if (!dkms.IsSuccess || dkms.Data == null)
+        var keyAssignments = await _keyAssignentService.FindByPeriodNameAsync(Uri.UnescapeDataString(sourcePeriodName));
+        if (!keyAssignments.IsSuccess || keyAssignments.Data == null)
         {
-            ModelState.AddModelError(string.Empty, "Failed to fetch department keys by source period.");
+            ModelState.AddModelError(string.Empty, "Failed to fetch department key assignements from source period.");
             return [];
         }
 
-        return dkms.Data
-            .Where(dkm => dkm.IsDeleted == false)
-            .OrderBy(dkm => dkm.KeyIssueDepartment.DepartmentName)
-                .ThenBy(dkm => dkm.KeyMetric.MetricTitle)
-            .Select(dkm => dkm.MapToViewModel())
+        return keyAssignments.Data
+            .Where(ka => ka.IsDeleted == false)
+            .OrderBy(ka => ka.CandidateDepartment.DepartmentName)
+                .ThenBy(ka => ka.DepartmentKeyMetric.KeyMetric.MetricTitle)
+                .ThenBy(ka => ka.DepartmentKeyMetric.KeyIssueDepartment.DepartmentName)
+            .Select(ka => ka.MapToViewModel())
             .ToList();
     }
 }
