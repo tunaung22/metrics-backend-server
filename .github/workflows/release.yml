@@ -20,6 +20,13 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
+      - name: Cache .NET dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
       - name: Restore dependencies
         run: dotnet restore
       - name: Build
@@ -41,114 +48,86 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
+      - name: Cache .NET dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
       - name: Create necessary directories
-        run: |
-          pwd &&
-          mkdir -p bin release &&
-          ls -l
-      # - name: Download Build Artifacts
-      #   uses: actions/download-artifact@v4
-      #   with:
-      #     name: build-output
-      #     path: bin/${{ env.CONFIGURATION }}
+        run: mkdir -p ${{ env.RELEASE_BASE_DIR }}
       - name: Get version from tag
         id: get_version
         run: |
           echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
-          echo "Version: ${GITHUB_REF#refs/tags/v}"
       - name: Set build number
         id: build_number
         run: |
-          #BUILD_DATE=$(date +%Y%m%d)
-          #echo "BUILD_DATE=$BUILD_DATE" >> $GITHUB_OUTPUT
-          # BUILD_NUMBER=$(date +%H%M%S)
-          # Total number of minutes since midnight CALCULATION: hour*60+minutes 14:30 => 14*60 + 30 == 870
-
-          BUILD_NUMBER=$(( $(date +'%H') * 60 + $(date +'%M') )) 
-          echo "Github run_number: ${{ github.run_number}}"
-          echo "Build number: $BUILD_NUMBER"
-
+          # Calculate total minutes since midnight (e.g., 14:30 => 14*60 + 30 = 870)
+          BUILD_NUMBER=$(( $(date +'%H') * 60 + $(date +'%M') ))
           echo "BUILD_NUMBER=$BUILD_NUMBER" >> $GITHUB_OUTPUT
       - name: Refine Version
         id: versions
         run: |
-          CLEAN_VERSION=$(echo "${{ steps.get_version.outputs.VERSION}}" | sed 's/^v//' | sed 's/[^0-9.]//g')
-          # FILE_VERSION=$(echo "${{ steps.get_version.outputs.VERSION}}" | sed 's/[^0-9.]//g' | awk -F. '{printf "%d.%d.%d.%d", $1,$2,$3,$4}')
+          # Extract version components more efficiently
+          VERSION_TAG="${{ steps.get_version.outputs.VERSION }}"
 
-          # 1.0.2-beta -> 1 0 2-beta
-          IFS='.' read -ra PARTS <<< "$CLEAN_VERSION"
+          # Extract just the numeric version part (e.g., "0.1.0" from "0.1.0-beta12")
+          NUMERIC_VERSION=$(echo "$VERSION_TAG" | sed 's/^v//' | sed 's/-.*//')
+
+          # Parse version components using parameter expansion
+          IFS='.' read -ra PARTS <<< "$NUMERIC_VERSION"
           MAJOR=${PARTS[0]:-0}
           MINOR=${PARTS[1]:-0}
           PATCH=${PARTS[2]:-0}
-          # Convert to base-10 integer (ignores any loading zeros) 
-          MAJOR=$((10#$MAJOR)) 
-          MINOR=$((10#$MINOR))  
+
+          # Convert to base-10 integer
+          MAJOR=$((10#$MAJOR))
+          MINOR=$((10#$MINOR))
           PATCH=$((10#$PATCH))
 
-          # 0.1.0.870
+          # Create version strings
           FILE_VERSION="$MAJOR.$MINOR.$PATCH.${{ steps.build_number.outputs.BUILD_NUMBER }}"
-          # 0.1.0.0
           ASSEMBLY_VERSION="$MAJOR.$MINOR.$PATCH.0"
-          # v0.1.0-beta2 -> 0.1.0+123456
-          FULL_SHA="${{ github.sha }}"
-          SHORT_SHA="${FULL_SHA:0:7}"
-          INFORMATIONAL_VERSION="$(echo "${{ steps.get_version.outputs.VERSION}}" | sed 's/^v//')+${SHORT_SHA}" 
+          SHORT_SHA="${{ github.sha }}"
+          SHORT_SHA="${SHORT_SHA:0:7}"
+          INFORMATIONAL_VERSION="$(echo "$VERSION_TAG" | sed 's/^v//')+${SHORT_SHA}"
 
-          echo "FILE_VERSION: $FILE_VERSION"
-          echo "ASSEMBLY_VERSION: $ASSEMBLY_VERSION"
-          echo "INFORMATIONAL_VERSION: $INFORMATIONAL_VERSION"
-
-          # OUTPUT
+          # Output version variables
           echo "FILE_VERSION=$FILE_VERSION" >> $GITHUB_OUTPUT
           echo "ASSEMBLY_VERSION=$ASSEMBLY_VERSION" >> $GITHUB_OUTPUT
           echo "INFORMATIONAL_VERSION=$INFORMATIONAL_VERSION" >> $GITHUB_OUTPUT
-      - name: Print the Working Directory 1
-        run: |
-          pwd && ls -l
       - name: Clean Previous Releases
-        run: rm -rf ${{ env.RELEASE_BASE_DIR }}/*
+        run: rm -rf ${{ env.RELEASE_BASE_DIR }}/* || true
       - name: Publish [all]
         run: |
           cd src/Metrics.Web/ &&
           dotnet publish --configuration ${{ env.CONFIGURATION }} \
-            --self-contained false \
+            --no-self-contained \
             --output $GITHUB_WORKSPACE/${{ env.RELEASE_BASE_DIR }}/all-${{ steps.get_version.outputs.VERSION }} \
             -p:Version=${{ steps.get_version.outputs.VERSION }} \
             -p:FileVersion=${{ steps.versions.outputs.FILE_VERSION }} \
             -p:InformationalVersion=${{ steps.versions.outputs.INFORMATIONAL_VERSION }} \
             -p:AssemblyVersion=${{ steps.versions.outputs.ASSEMBLY_VERSION }}
-      # FILE_VERSION=$(echo "${{ steps.get_version.outputs.VERSION}}" | sed 's/[^0-9.]//g' | awk -F. '{printf "%d.%d.%d.%d", $1,$2,$3,$4}')
       - name: Publish [win-x64]
         run: |
           cd src/Metrics.Web/ &&
           dotnet publish --configuration ${{ env.CONFIGURATION }} \
             -r win-x64 \
-            --self-contained false \
+            --self-contained true \
             --output $GITHUB_WORKSPACE/${{ env.RELEASE_BASE_DIR }}/win-x64-${{ steps.get_version.outputs.VERSION }} \
             -p:Version=${{ steps.get_version.outputs.VERSION }} \
             -p:FileVersion=${{ steps.versions.outputs.FILE_VERSION }} \
             -p:InformationalVersion=${{ steps.versions.outputs.INFORMATIONAL_VERSION }} \
             -p:AssemblyVersion=${{ steps.versions.outputs.ASSEMBLY_VERSION }}
-      - name: Print the Working Directory 2
+      - name: Create SQL Directory and Copy files
         run: |
-          pwd && ls -l
-      - name: Create SQL Directory
-        run: |
-          mkdir -p ${{ env.RELEASE_BASE_DIR }}/all-${{ steps.get_version.outputs.VERSION }}/sql &&
-          mkdir -p ${{ env.RELEASE_BASE_DIR }}/win-x64-${{ steps.get_version.outputs.VERSION }}/sql
-      - name: Copy SQL files
-        run: |
-          cp src/Metrics.Web/Migrations/*.sql ${{ env.RELEASE_BASE_DIR }}/all-${{ steps.get_version.outputs.VERSION }}/sql &&
-          cp src/Metrics.Web/Migrations/*.sql ${{ env.RELEASE_BASE_DIR }}/win-x64-${{ steps.get_version.outputs.VERSION }}/sql
-      - name: Print the Working Directory 3
-        run: pwd && ls -l
-      - name: Print Release Directory
-        run: ls -R ${{ env.RELEASE_BASE_DIR }}/
-      # - name: Create zip
-      #   run: |
-      #     cd ${{ steps.set_release_dir.outputs.RELEASE_DIR }} && \
-      #     # Create zip archive for release (zip contents only, not the folder)
-      #     zip -r ${{ steps.set_release_dir.outputs.RELEASE_DIR }}.zip .
+          ALL_SQL_DIR="${{ env.RELEASE_BASE_DIR }}/all-${{ steps.get_version.outputs.VERSION }}/sql"
+          WIN_SQL_DIR="${{ env.RELEASE_BASE_DIR }}/win-x64-${{ steps.get_version.outputs.VERSION }}/sql"
+          mkdir -p "$ALL_SQL_DIR" "$WIN_SQL_DIR"
+          cp src/Metrics.Web/Migrations/*.sql "$ALL_SQL_DIR"
+          cp src/Metrics.Web/Migrations/*.sql "$WIN_SQL_DIR"
       - name: Upload Release Artifact for *
         uses: actions/upload-artifact@v4
         with:
@@ -162,10 +141,11 @@ jobs:
       - name: Create zip archives
         run: |
           cd ${{ env.RELEASE_BASE_DIR }}
-          zip -r "metrics-all-${{ steps.get_version.outputs.VERSION }}.zip" "all-${{ steps.get_version.outputs.VERSION }}/"
-          zip -r "metrics-win-x64-${{ steps.get_version.outputs.VERSION }}.zip" "win-x64-${{ steps.get_version.outputs.VERSION }}/"
-          echo "Created zip files:"
-          ls -la *.zip
+          # Create zip with "release" prefix in folder names
+          mv "all-${{ steps.get_version.outputs.VERSION }}" "release-metrics-all-${{ steps.get_version.outputs.VERSION }}"
+          mv "win-x64-${{ steps.get_version.outputs.VERSION }}" "release-metrics-win-x64-${{ steps.get_version.outputs.VERSION }}"
+          zip -r "metrics-all-${{ steps.get_version.outputs.VERSION }}.zip" "release-metrics-all-${{ steps.get_version.outputs.VERSION }}/"
+          zip -r "metrics-win-x64-${{ steps.get_version.outputs.VERSION }}.zip" "release-metrics-win-x64-${{ steps.get_version.outputs.VERSION }}/"
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
@@ -181,4 +161,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Clean Runner (Optional)
-        run: rm -rf publish-* # Clean up release directory
+        run: rm -rf ${{ env.RELEASE_BASE_DIR }} || true
