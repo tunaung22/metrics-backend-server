@@ -52,6 +52,7 @@ public static class DependencyInjection
             //
             .AddScoped<IDepartmentKeyImportService, DepartmentKeyImportService>()
             .AddScoped<IKeyKpiAssignmentImportService, KeyKpiAssignmentImportService>()
+            .AddScoped<IAppPermissionService, AppPermissionService>()
         ;
 
         return services;
@@ -66,42 +67,16 @@ public static class DependencyInjection
                 .RequireAuthenticatedUser()
                 .Build();
 
-            // ADMIN FEATURES
-            options.AddPolicy(ApplicationPolicies.CanAccessAdminFeaturesPolicy, policy =>
+            // ==========ADMIN FEATURES========================================
+            options.AddPolicy(ApplicationPolicies.CanAccess_AdminFeatures_Policy, policy =>
             {
                 // policy.RequireRole("Admin");
                 policy.AddRequirements(new AdminRoleRequirement());
                 policy.AddRequirements(new AccessAdminFeaturesRequirement());
             });
 
-            // SCORE KEY KPI
-            options.AddPolicy(ApplicationPolicies.CanSubmitKeyKpiScorePolicy, policy =>
-            {
-                // policy.RequireRole("Staff");
-                policy.AddRequirements(new StaffRoleRequirement());
-                policy.AddRequirements(new SubmitKeyKpiScoreRequirement(new List<string>
-                {
-                    // UserGroups.Staff, // staff not allowed
-                    UserGroups.HOD,
-                    // UserGroups.Management
-                }));
-            });
-
-            // SCORE FEEDBACK
-            options.AddPolicy(ApplicationPolicies.CanSubmitFeedbackScorePolicy, policy =>
-            {
-                // policy.RequireRole("Staff");
-                policy.AddRequirements(new StaffRoleRequirement());
-                policy.AddRequirements(new SubmitFeedbackScoreRequirement(new List<string>
-                {
-                    // UserGroups.Staff, // allows management only
-                    // UserGroups.HOD, // allows management only
-                    UserGroups.Management
-                }));
-            });
-
-            // SCORE KPI
-            options.AddPolicy(ApplicationPolicies.CanSubmitKpiScorePolicy, policy =>
+            // ==========KPI========================================
+            options.AddPolicy(ApplicationPolicies.CanSubmit_KpiScore_Policy, policy =>
             {
                 // policy.RequireRole("Staff");
                 policy.AddRequirements(new StaffRoleRequirement());
@@ -113,8 +88,35 @@ public static class DependencyInjection
                 }));
             });
 
+            // ==========KEY KPI========================================
+            options.AddPolicy(ApplicationPolicies.CanSubmit_KeyKpiScore_Policy, policy =>
+            {
+                // policy.RequireRole("Staff");
+                policy.AddRequirements(new StaffRoleRequirement());
+                policy.AddRequirements(new SubmitKeyKpiScoreRequirement(new List<string>
+                {
+                    // UserGroups.Staff, // staff not allowed
+                    UserGroups.HOD,
+                    UserGroups.Management,
+                    UserGroups.CCA,
+                }));
+            });
+
+            // ==========FEEDBACK========================================
+            options.AddPolicy(ApplicationPolicies.CanSubmit_FeedbackScore_Policy, policy =>
+            {
+                // policy.RequireRole("Staff");
+                policy.AddRequirements(new StaffRoleRequirement());
+                policy.AddRequirements(new SubmitFeedbackScoreRequirement(new List<string>
+                {
+                    // UserGroups.Staff, // allows management only
+                    // UserGroups.HOD, // allows management only
+                    UserGroups.Management
+                }));
+            });
+
             // GIVE FEEDBACK
-            options.AddPolicy(ApplicationPolicies.CanGiveFeedbackPolicy, policy =>
+            options.AddPolicy(ApplicationPolicies.CanGive_Feedback_Policy, policy =>
             {
                 // policy.RequireRole("Staff");
                 policy.AddRequirements(new StaffRoleRequirement());

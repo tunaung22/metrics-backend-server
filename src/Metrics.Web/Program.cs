@@ -169,8 +169,8 @@ var builder = WebApplication.CreateBuilder(args);
     builder.Services.AddRazorPages(options =>
     {
         options.Conventions
-            .AuthorizeFolder("/Manage", ApplicationPolicies.CanAccessAdminFeaturesPolicy)
-            .AuthorizeFolder("/Reports", ApplicationPolicies.CanAccessAdminFeaturesPolicy)
+            .AuthorizeFolder("/Manage", ApplicationPolicies.CanAccess_AdminFeatures_Policy)
+            .AuthorizeFolder("/Reports", ApplicationPolicies.CanAccess_AdminFeatures_Policy)
         // .AuthorizeFolder("/Submissions/DepartmentScores", ApplicationPolicies.CanSubmitKpiScorePolicy)
         // .AuthorizeFolder("/Submissions/DepartmentMetricScores", ApplicationPolicies.CanSubmitKeyKpiScorePolicy)
         // .AuthorizeFolder("/Submissions/DepartmentCaseFeedbackScores", ApplicationPolicies.CanSubmitFeedbackScorePolicy)

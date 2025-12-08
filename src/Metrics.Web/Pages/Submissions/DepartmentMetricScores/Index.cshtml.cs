@@ -10,7 +10,7 @@ using System.Security.Claims;
 
 namespace Metrics.Web.Pages.Submissions.DepartmentMetricScores;
 
-[Authorize(Policy = ApplicationPolicies.CanSubmitKeyKpiScorePolicy)]
+[Authorize(Policy = ApplicationPolicies.CanSubmit_KeyKpiScore_Policy)]
 public class IndexModel(
     IUserService userService,
     // IDepartmentService departmentService,

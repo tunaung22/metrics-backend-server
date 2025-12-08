@@ -471,8 +471,8 @@ public class DetailModel(
                 // filter out "management" user group
                 .Where(g =>
                     !g.TitleName.Equals("sysadmin", StringComparison.OrdinalIgnoreCase)
-                    && !g.TitleName.Equals("staff", StringComparison.OrdinalIgnoreCase)
-                    && !g.TitleName.Equals("management", StringComparison.OrdinalIgnoreCase))
+                    && !g.TitleName.Equals("staff", StringComparison.OrdinalIgnoreCase))
+                // && !g.TitleName.Equals("management", StringComparison.OrdinalIgnoreCase))
                 .Select(g => new UserGroupViewModel
                 {
                     Id = g.Id,

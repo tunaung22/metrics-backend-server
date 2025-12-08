@@ -8,9 +8,9 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 
-namespace Metrics.Web.Pages.Submissions.Departments.Scores;
+namespace Metrics.Web.Pages.Submissions.DepartmentScores;
 
-[Authorize(Policy = ApplicationPolicies.CanSubmitKpiScorePolicy)]
+[Authorize(Policy = ApplicationPolicies.CanSubmit_KpiScore_Policy)]
 public class SubmitModel : PageModel
 {
     private readonly IKpiSubmissionService _kpiSubmissionService;

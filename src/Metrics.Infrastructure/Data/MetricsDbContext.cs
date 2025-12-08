@@ -24,6 +24,7 @@ public class MetricsDbContext : IdentityDbContext<ApplicationUser, ApplicationRo
     // ========== DbSet ========================================================
     // public DbSet<ApplicationUser> ApplicationUsers { get; set; }
     // public DbSet<ApplicationRole> ApplicationRoles { get; set; }
+    public DbSet<ApplicationPermission> ApplicationPermissions { get; set; }
     public DbSet<UserTitle> UserTitles { get; set; }
     public DbSet<Department> Departments { get; set; }
     public DbSet<KpiSubmissionPeriod> KpiSubmissionPeriods { get; set; }
@@ -141,6 +142,8 @@ public class MetricsDbContext : IdentityDbContext<ApplicationUser, ApplicationRo
         builder.ApplyConfiguration(new ApplicationUserConfig());
         builder.ApplyConfiguration(new ApplicationRoleConfig());
         builder.ApplyConfiguration(new UserTitleConfig()); // -------------- User Group
+
+        builder.ApplyConfiguration(new ApplicationPermissionConfig());
 
         builder.ApplyConfiguration(new DepartmentConfig());
         builder.ApplyConfiguration(new KpiSubmissionPeriodConfig()); // ---- KPI Period

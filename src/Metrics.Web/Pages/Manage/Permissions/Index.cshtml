@@ -1,0 +1,141 @@
+﻿@page
+@model Metrics.Web.Pages.Manage.Permissions.IndexModel
+@{
+    ViewData["Title"] = "Permissions";
+}
+
+
+<div class="sectionTitle">
+    <div class="d-flex align-items-center">
+        <h4 class="flex-grow-1">Permissions</h4>
+        <span class="justify-content-end gap-2"></span>
+    </div>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            @* <li class="breadcrumb-item"><a asp-page="/Index">Home</a></li> *@
+            @* <li class="breadcrumb-item active">/ Home</li> *@
+        </ol>
+    </nav>
+</div>
+
+<div class="container">
+    <div class="bg-light p-4 rounded-2">
+        
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+        @* =============== Filter Bar =============================================== *@
+        <div id="filter-bar" class="d-flex align-items-center px-4 pt-4">
+            <span class="d-flex flex-grow-1">
+                @* <ol class="mono-text">
+                    @{
+                        var step1Text = "<div><strong>Issuing Department Keys</strong> <br/>Issues the kpi keys for each department.<br/>(Key Owners)</div>";
+                        var step2Text = "<div><strong>Setup 2: Assigning Candidate Departments</strong> <br/>Assign the issued keys to candidate departments.<br/>(Candidates)</div>";
+                    }
+                    <li>
+                        Issue department keys. 
+                        <i class="bi bi-info-circle-fill"
+                            data-bs-toggle="tooltip" 
+                            data-bs-html="true"
+                            data-bs-title="@step1Text"
+                            data-bs-placement="right"></i>
+                    </li>
+                    <li>
+                        Assign candidate departments.
+                        <i class="bi bi-info-circle-fill" 
+                            data-bs-toggle="tooltip" 
+                            data-bs-html="true"
+                            data-bs-title="@step2Text"
+                            data-bs-placement="right"></i>
+                    </li>
+                </ol> *@
+                @* <text class="me-2">Departments: </text> <strong>@Model.TotalDepartments</strong> *@
+            </span>
+            <div class="d-flex align-items-center gap-4">
+                @* <input class="form-control" placeholder="Filter..." /> *@
+                @* <button type="button" class="btn btn-sm btn-outline-primary">Instruction</button> *@
+                <span class="d-flex gap-2"></span>
+                <span class="d-flex gap-2"></span>
+                <span class="d-flex gap-2"></span>
+            </div>
+        </div>
+
+        @* ================ Table =================================================== *@
+        <div class="px-4 pb-4">
+            <table id="permissionTable" class="table table-bordered table-striped table-hover">
+                <thead class="mono-text">
+                    <tr>
+                        <th>Task</th>
+                        @* <th>Action</th> *@
+                        <th>Department</th>
+                        <th>Group</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Permissions.Count > 0)
+                    {
+                        @foreach(var p in Model.Permissions)
+                        {
+                            <tr>
+                                <td>@p.TaskName</td>
+                                <td>@p.UserDepartment?.DepartmentName</td>
+                                <td>@p.UserGroup?.GroupName</td>
+                                    @* <a asp-page="IssuedKeys/Issue" 
+                                        asp-route-periodName="@Uri.EscapeDataString(@p.PeriodName)"
+                                        class="btn btn-sm btn-outline-primary my-2 my-lg-0 me-2">
+                                        <strong><i class="bi bi-ui-checks"></i> Issue Keys</strong></a> *@
+                                    @* &nbsp;
+                                    <a asp-page="IssuedKeys/Import"
+                                        asp-route-periodName="@Uri.EscapeDataString(@p.PeriodName)"
+                                        asp-route-returnUrl="@HttpContext.Request.Path"
+                                        class="btn btn-sm btn-outline-primary my-2 my-lg-0 me-2">
+                                        <strong><i class="bi bi-card-checklist"></i> Import</strong></a> *@
+                                    @* &nbsp;
+                                    <a asp-page="IssuedKeys/View" 
+                                        asp-route-periodName="@Uri.EscapeDataString(@p.PeriodName)"
+                                        class="btn btn-sm btn-outline-primary my-2 my-lg-0 me-2">
+                                        <strong><i class="bi bi-card-checklist"></i> View</strong></a> *@
+                                    @* <a asp-page="AssignedKeys/Assign" 
+                                        asp-route-periodName="@Uri.EscapeDataString(@p.PeriodName)"
+                                        class="btn btn-sm btn-outline-primary my-2 my-lg-0 me-2">
+                                        <strong><i class="bi bi-check-circle-fill"></i> Assign Candidates</strong></a> *@
+                                    @* &nbsp;
+                                    <a asp-page="AssignedKeys/Import"
+                                        asp-route-periodName="@Uri.EscapeDataString(@p.PeriodName)"
+                                        asp-route-returnUrl="@HttpContext.Request.Path"
+                                        class="btn btn-sm btn-outline-primary my-2 my-lg-0 me-2">
+                                        <strong><i class="bi bi-card-checklist"></i> Import</strong></a> *@
+                                    @* &nbsp;
+                                    <a asp-page="AssignedKeys/View" 
+                                        asp-route-periodName="@Uri.EscapeDataString(@p.PeriodName)"
+                                        class="btn btn-sm btn-outline-primary my-2 my-lg-0 me-2">
+                                        <strong><i class="bi bi-card-checklist"></i> View</strong></a> *@
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    <script>
+        $(function() {
+            new DataTable('#permissionTable', {
+                paging: false,
+                info: false,
+                searching: false,
+                autoWidth: true,
+                columnDefs: [
+                    @* { width: '35%', targets: [1] }, *@
+
+                ],
+                initComplete: function() {
+                    $('thead th').addClass('text-light text-center align-middle');
+                    $('thead th').addClass('bg-brand-color');
+                }
+            });
+        });
+    </script>
+}

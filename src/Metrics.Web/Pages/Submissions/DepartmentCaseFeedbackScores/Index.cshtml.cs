@@ -7,7 +7,7 @@ using System.Security.Claims;
 
 namespace Metrics.Web.Pages.Submissions.DepartmentCaseFeedbackScores;
 
-[Authorize(Policy = ApplicationPolicies.CanSubmitFeedbackScorePolicy)]
+[Authorize(Policy = ApplicationPolicies.CanSubmit_FeedbackScore_Policy)]
 public class IndexModel : PageModel
 {
     private readonly IKpiSubmissionPeriodService _kpiPeriodService;
