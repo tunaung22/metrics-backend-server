@@ -17,7 +17,6 @@ public class SummaryModel(
     IKpiSubmissionPeriodService kpiPeriodService,
     IUserService userService,
     IUserTitleService userGroupService,
-    IDepartmentService departmentService,
     IKeyKpiSubmissionService keyKpiSubmissionService,
     IKeyKpiSubmissionConstraintService submissionConstraintService,
     IDepartmentKeyMetricService departmentKeyMetricService) : PageModel
@@ -25,82 +24,10 @@ public class SummaryModel(
     private readonly IKpiSubmissionPeriodService _kpiPeriodService = kpiPeriodService;
     private readonly IUserService _userService = userService;
     private readonly IUserTitleService _userGroupService = userGroupService;
-    private readonly IDepartmentService _departmentService = departmentService;
     private readonly IKeyKpiSubmissionService _keyKpiSubmissionService = keyKpiSubmissionService;
     private readonly IKeyKpiSubmissionConstraintService _submissionConstraintService = submissionConstraintService;
     public readonly IDepartmentKeyMetricService _departmentKeyMetricService = departmentKeyMetricService;
 
-
-    // ========== MODELS =======================================================
-    // public class AllUserGroup_SummaryReport_ViewModel
-    // {
-    //     public string KpiPeriodName { get; set; } = null!;
-    //     public DepartmentViewModel KeyIssueDepartment { get; set; } = null!;
-    //     public int TotalSubmissions { get; set; }
-    //     public int TotalKeys { get; set; }
-    //     public decimal TotalScore { get; set; }
-    //     public decimal KpiScore { get; set; }
-    // }
-
-    public class SummaryReport_ViewModel
-    {
-        public string KpiPeriodName { get; set; } = null!;
-        public DepartmentViewModel KeyIssueDepartment { get; set; } = null!;
-        public int TotalSubmissions { get; set; }
-        public int TotalKeys { get; set; }
-        public decimal TotalScore { get; set; }
-        public decimal NetScore { get; set; }
-        public decimal KpiScore { get; set; }
-        public List<SummaryReport_UserGroupDetail_ViewModel> SummaryReport_UserGroupDetails { get; set; } = [];
-    }
-    public List<SummaryReport_ViewModel> SummaryReportList { get; set; } = [];
-
-    public class SummaryReport_UserGroupDetail_ViewModel
-    {
-        public required string UserGroupName { get; set; }
-        public int TotalSubmissions { get; set; }
-        public decimal TotalScore { get; set; }
-    }
-
-    // ----------Excel Models----------
-    public class SummaryReport_ExcelExport_ViewModel
-    {
-        [ExcelColumn(Name = "Key Departments")]
-        public string? KeyDepartment { get; set; }
-
-        [ExcelColumn(Name = "Total Keys")]
-        public int TotalKeys { get; set; }
-
-        [ExcelColumn(Name = "Total Submissions")]
-        public int TotalSubmissions { get; set; }
-
-        [ExcelColumn(Name = "Total Score")]
-        [DisplayFormat(DataFormatString = "0.00")]
-        public decimal TotalScore { get; set; }
-
-        [ExcelColumn(Name = "KPI Score")]
-        [DisplayFormat(DataFormatString = "0.00")]
-        public decimal KpiScore { get; set; }
-    }
-    public List<SummaryReport_ExcelExport_ViewModel> SummaryReportExcelData { get; set; } = [];
-
-
-    // ----------Select/Options Data----------
-    [BindProperty]
-    public List<SelectListItem> UserGroupListItems { get; set; } = []; // for select element
-
-    [BindProperty(SupportsGet = true)]
-    public required string Group { get; set; } // selected item (for filter select element)
-
-    public KpiPeriodViewModel SelectedPeriod { get; set; } = new();
-    public List<KeyKpiSubmissionConstraintViewModel> SubmissionConstraints { get; set; } = [];
-
-    public string SelectedPeriodName { get; set; } = null!;
-    public List<UserViewModel> SubmitterList { get; set; } = [];
-    public List<KeyKpiSubmissionViewModel> KeyKpiSubmissions { get; set; } = [];
-    public List<DepartmentKeyMetricViewModel> DepartmentKeyMetrics { get; set; } = [];
-    public List<UserGroupViewModel> UserGroupList { get; set; } = [];
-    public List<DepartmentViewModel> KeyIssueDepartmentList { get; set; } = [];
 
     public async Task<IActionResult> OnGetAsync(string periodName)
     {
@@ -454,8 +381,8 @@ public class SummaryModel(
                 // filter out "management" user group
                 .Where(g =>
                     !g.TitleName.Equals("sysadmin", StringComparison.OrdinalIgnoreCase)
-                    && !g.TitleName.Equals("staff", StringComparison.OrdinalIgnoreCase)
-                    && !g.TitleName.Equals("management", StringComparison.OrdinalIgnoreCase))
+                    && !g.TitleName.Equals("staff", StringComparison.OrdinalIgnoreCase))
+                // && !g.TitleName.Equals("management", StringComparison.OrdinalIgnoreCase))
                 .Select(g => new UserGroupViewModel
                 {
                     Id = g.Id,
@@ -560,7 +487,7 @@ public class SummaryModel(
                         var submissionsByGroup = submissionFilteredByDepartment
                             .Where(s => s.SubmittedBy.UserGroup.Id == group.Id)
                             .ToList();
-                        var submissionCount = submissionsByGroup.Count();
+                        var submissionCount = submissionsByGroup.Count;
                         var totalScore = submissionsByGroup.Sum(s => s.ScoreValue);
                         return new SummaryReport_UserGroupDetail_ViewModel
                         {
@@ -647,5 +574,71 @@ public class SummaryModel(
     }
 
 
+    // ========== MODELS =======================================================
+
+    public List<SummaryReport_ViewModel> SummaryReportList { get; set; } = [];
+    public List<SummaryReport_ExcelExport_ViewModel> SummaryReportExcelData { get; set; } = [];
+    // ----------Select/Options Data----------
+    [BindProperty]
+    public List<SelectListItem> UserGroupListItems { get; set; } = []; // for select element
+    [BindProperty(SupportsGet = true)]
+    public required string Group { get; set; } // selected item (for filter select element)
+    public KpiPeriodViewModel SelectedPeriod { get; set; } = new();
+    public List<KeyKpiSubmissionConstraintViewModel> SubmissionConstraints { get; set; } = [];
+    public string SelectedPeriodName { get; set; } = null!;
+    public List<UserViewModel> SubmitterList { get; set; } = [];
+    public List<KeyKpiSubmissionViewModel> KeyKpiSubmissions { get; set; } = [];
+    public List<DepartmentKeyMetricViewModel> DepartmentKeyMetrics { get; set; } = [];
+    public List<UserGroupViewModel> UserGroupList { get; set; } = [];
+    public List<DepartmentViewModel> KeyIssueDepartmentList { get; set; } = [];
+    // public class AllUserGroup_SummaryReport_ViewModel
+    // {
+    //     public string KpiPeriodName { get; set; } = null!;
+    //     public DepartmentViewModel KeyIssueDepartment { get; set; } = null!;
+    //     public int TotalSubmissions { get; set; }
+    //     public int TotalKeys { get; set; }
+    //     public decimal TotalScore { get; set; }
+    //     public decimal KpiScore { get; set; }
+    // }
+
+    public class SummaryReport_ViewModel
+    {
+        public string KpiPeriodName { get; set; } = null!;
+        public DepartmentViewModel KeyIssueDepartment { get; set; } = null!;
+        public int TotalSubmissions { get; set; }
+        public int TotalKeys { get; set; }
+        public decimal TotalScore { get; set; }
+        public decimal NetScore { get; set; }
+        public decimal KpiScore { get; set; }
+        public List<SummaryReport_UserGroupDetail_ViewModel> SummaryReport_UserGroupDetails { get; set; } = [];
+    }
+
+    public class SummaryReport_UserGroupDetail_ViewModel
+    {
+        public required string UserGroupName { get; set; }
+        public int TotalSubmissions { get; set; }
+        public decimal TotalScore { get; set; }
+    }
+
+    // ----------Excel Models----------
+    public class SummaryReport_ExcelExport_ViewModel
+    {
+        [ExcelColumn(Name = "Key Departments")]
+        public string? KeyDepartment { get; set; }
+
+        [ExcelColumn(Name = "Total Keys")]
+        public int TotalKeys { get; set; }
+
+        [ExcelColumn(Name = "Total Submissions")]
+        public int TotalSubmissions { get; set; }
+
+        [ExcelColumn(Name = "Total Score")]
+        [DisplayFormat(DataFormatString = "0.00")]
+        public decimal TotalScore { get; set; }
+
+        [ExcelColumn(Name = "KPI Score")]
+        [DisplayFormat(DataFormatString = "0.00")]
+        public decimal KpiScore { get; set; }
+    }
 
 }

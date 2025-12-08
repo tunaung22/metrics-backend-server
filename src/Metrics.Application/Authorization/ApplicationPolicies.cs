@@ -7,9 +7,9 @@ public class ApplicationPolicies
     // CanSubmitFeedbackScorePolicy
     // CanSubmitKpiScorePolicy
     // CanGiveFeedbackPolicy
-    public const string CanAccessAdminFeaturesPolicy = "CanAccessAdminFeaturesPolicy";
-    public const string CanSubmitKeyKpiScorePolicy = "CanSubmitKeyKpiScorePolicy";
-    public const string CanSubmitFeedbackScorePolicy = "CanSubmitFeedbackScorePolicy";
-    public const string CanSubmitKpiScorePolicy = "CanSubmitKpiScorePolicy";
-    public const string CanGiveFeedbackPolicy = "CanGiveFeedbackPolicy";
+    public const string CanAccess_AdminFeatures_Policy = "CanAccessAdminFeaturesPolicy";
+    public const string CanSubmit_KeyKpiScore_Policy = "CanSubmitKeyKpiScorePolicy";
+    public const string CanSubmit_KpiScore_Policy = "CanSubmitKpiScorePolicy";
+    public const string CanSubmit_FeedbackScore_Policy = "CanSubmitFeedbackScorePolicy";
+    public const string CanGive_Feedback_Policy = "CanGiveFeedbackPolicy";
 }

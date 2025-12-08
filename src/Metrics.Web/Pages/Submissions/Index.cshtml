@@ -8,13 +8,13 @@
 @{
     ViewData["Title"] = "Submissions";
     var canSubmitKpiScore = await AuthorizationService.AuthorizeAsync(
-        User, ApplicationPolicies.CanSubmitKpiScorePolicy);
+        User, ApplicationPolicies.CanSubmit_KpiScore_Policy);
 
     AuthorizationResult? canSubmitKeyKpiScore = await AuthorizationService.AuthorizeAsync(
-        User, ApplicationPolicies.CanSubmitKeyKpiScorePolicy);
+        User, ApplicationPolicies.CanSubmit_KeyKpiScore_Policy);
 
     var canSubmitFeedbackScore = await AuthorizationService.AuthorizeAsync(
-        User, ApplicationPolicies.CanSubmitFeedbackScorePolicy);
+        User, ApplicationPolicies.CanSubmit_FeedbackScore_Policy);
 }
 
 <div class="sectionTitle">

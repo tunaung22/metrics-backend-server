@@ -43,24 +43,26 @@ public class KeyKpiSubmissionConstraintConfig : IEntityTypeConfiguration<KeyKpiS
         builder.Property(e => e.ModifiedAt)
             .HasColumnName("modified_at")
             .HasColumnType("timestamp with time zone");
-
-        // ===== Relationships =====
         builder.Property(e => e.CandidateDepartmentId)
             .HasColumnName("department_id")
-            .HasColumnType("long")
-            .IsRequired();
-        builder.HasOne(e => e.CandidateDepartment)
-            .WithMany(e => e.KeyKpiSubmissionConstraints)
-            .HasForeignKey(e => e.CandidateDepartmentId)
-            .OnDelete(DeleteBehavior.Restrict)
+            .HasColumnType("bigint")
             .IsRequired();
         builder.Property(e => e.DepartmentKeyMetricId)
             .HasColumnName("department_key_metric_id")
-            .HasColumnType("long")
+            .HasColumnType("bigint")
+            .IsRequired();
+
+        // ===== Relationships =====
+        builder.HasOne(e => e.CandidateDepartment)
+            .WithMany(e => e.KeyKpiSubmissionConstraints)
+            .HasForeignKey(e => e.CandidateDepartmentId)
+            .HasConstraintName("fk_key_kpi_submission_constraints_candidate_dpt_id")
+            .OnDelete(DeleteBehavior.Restrict)
             .IsRequired();
         builder.HasOne(e => e.DepartmentKeyMetric)
             .WithMany(e => e.KeyKpiSubmissionConstraints)
             .HasForeignKey(e => e.DepartmentKeyMetricId)
+            .HasConstraintName("fk_key_kpi_submission_constraints_dkm_id")
             .OnDelete(DeleteBehavior.Restrict)
             .IsRequired();
 

@@ -11,7 +11,7 @@ using System.Security.Claims;
 
 namespace Metrics.Web.Pages.Submissions.DepartmentCaseFeedback;
 
-[Authorize(Policy = ApplicationPolicies.CanGiveFeedbackPolicy)]
+[Authorize(Policy = ApplicationPolicies.CanGive_Feedback_Policy)]
 public class EditModel : PageModel
 {
     private readonly IUserService _userService;

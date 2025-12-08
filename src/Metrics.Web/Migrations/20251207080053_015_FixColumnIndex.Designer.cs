@@ -3,6 +3,7 @@ using System;
 using Metrics.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Metrics.Web.Migrations
 {
     [DbContext(typeof(MetricsDbContext))]
-    partial class MetricsDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251207080053_015_FixColumnIndex")]
+    partial class _015_FixColumnIndex
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -23,9 +26,6 @@ namespace Metrics.Web.Migrations
 
             NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "citext");
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
-
-            modelBuilder.HasSequence("application_permissions_id_seq")
-                .IncrementsBy(10);
 
             modelBuilder.HasSequence("case_feedback_score_submissions_id_seq")
                 .IncrementsBy(10);
@@ -56,61 +56,6 @@ namespace Metrics.Web.Migrations
 
             modelBuilder.HasSequence("user_titles_id_seq")
                 .IncrementsBy(10);
-
-            modelBuilder.Entity("Metrics.Application.Domains.ApplicationPermission", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseHiLo(b.Property<long>("Id"), "application_permissions_id_seq");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<string>("LastModifiedById")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("last_modified_by_id");
-
-                    b.Property<DateTimeOffset>("ModifiedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("modified_at");
-
-                    b.Property<string>("TaskName")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("citext")
-                        .HasColumnName("task_name");
-
-                    b.Property<long?>("UserDepartmentId")
-                        .HasColumnType("bigint")
-                        .HasColumnName("user_department_id");
-
-                    b.Property<long?>("UserGroupId")
-                        .HasColumnType("bigint")
-                        .HasColumnName("user_group_id");
-
-                    b.HasKey("Id")
-                        .HasName("pk_application_permissions");
-
-                    b.HasIndex("LastModifiedById")
-                        .HasDatabaseName("ix_application_permissions_last_modified_by_id");
-
-                    b.HasIndex("UserDepartmentId")
-                        .HasDatabaseName("ix_application_permissions_user_department_id");
-
-                    b.HasIndex("UserGroupId")
-                        .HasDatabaseName("ix_application_permissions_user_group_id");
-
-                    b.HasIndex("TaskName", "UserDepartmentId", "UserGroupId")
-                        .IsUnique()
-                        .HasDatabaseName("ix_application_permissions_task_name_department_group_id");
-
-                    b.ToTable("application_permissions", "metrics");
-                });
 
             modelBuilder.Entity("Metrics.Application.Domains.ApplicationRole", b =>
                 {
@@ -1050,34 +995,6 @@ namespace Metrics.Web.Migrations
                         .HasName("pk_asp_net_user_tokens");
 
                     b.ToTable("asp_net_user_tokens", "metrics");
-                });
-
-            modelBuilder.Entity("Metrics.Application.Domains.ApplicationPermission", b =>
-                {
-                    b.HasOne("Metrics.Application.Domains.ApplicationUser", "LastModifiedBy")
-                        .WithMany()
-                        .HasForeignKey("LastModifiedById")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired()
-                        .HasConstraintName("fk_application_permissions_users_last_modified_by_id");
-
-                    b.HasOne("Metrics.Application.Domains.Department", "UserDepartment")
-                        .WithMany()
-                        .HasForeignKey("UserDepartmentId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .HasConstraintName("fk_application_permissions_departments_user_department_id");
-
-                    b.HasOne("Metrics.Application.Domains.UserTitle", "UserGroup")
-                        .WithMany()
-                        .HasForeignKey("UserGroupId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .HasConstraintName("fk_application_permissions_user_titles_user_group_id");
-
-                    b.Navigation("LastModifiedBy");
-
-                    b.Navigation("UserDepartment");
-
-                    b.Navigation("UserGroup");
                 });
 
             modelBuilder.Entity("Metrics.Application.Domains.ApplicationUser", b =>

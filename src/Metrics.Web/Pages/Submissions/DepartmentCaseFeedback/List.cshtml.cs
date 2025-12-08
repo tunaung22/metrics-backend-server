@@ -8,7 +8,7 @@ using System.Security.Claims;
 
 namespace Metrics.Web.Pages.Submissions.DepartmentCaseFeedback;
 
-[Authorize(Policy = ApplicationPolicies.CanGiveFeedbackPolicy)]
+[Authorize(Policy = ApplicationPolicies.CanGive_Feedback_Policy)]
 public class ListModel(
         IUserService userService,
         ICaseFeedbackService caseFeedbackService
