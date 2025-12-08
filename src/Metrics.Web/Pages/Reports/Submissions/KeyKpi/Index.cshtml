@@ -1,0 +1,44 @@
+﻿@page "/Reports/Submissions/Key-Kpi"
+@using Metrics.Web.Models.PartialViewModels
+@model Metrics.Web.Pages.Reports.Submissions.KeyKpi.IndexModel
+@{
+    ViewData["Title"] = "Department Key KPI Reports (Key KPI)";
+}
+
+
+<div class="sectionTitle">
+    <div class="d-flex align-items-center my-2">
+        <h4 class="flex-grow-1"><i class="bi bi-table"></i> Department Key KPI Reports (Key KPI)</h4>
+        <span class="justify-content-end gap-2"></span>
+    </div>
+
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-page="/Dashboard/Index">Dashboard</a></li>
+            <li class="breadcrumb-item"><a asp-page="/Reports/Submissions/Index">Reports</a></li>
+            <li class="breadcrumb-item active">Department Key KPI</li>
+        </ol>
+    </nav>
+</div>
+
+
+<div class="container">
+    <div class="bg-light p-4 rounded-2">
+        <partial name="./List/_PeriodList" model="@(new PeriodListPartialModel {
+            @* IncludeScripts = true, *@
+            TableId = "reportTable",
+            LinkBasePage = "/Reports/Submissions/KeyKpi",
+            Periods = Model.KpiPeriodList,
+            Buttons = new List<PeriodListButton> {
+                @* new PeriodListButton { Page = "Summary", Text = "Summary" },
+                new PeriodListButton { Page = "Detail", Text = "Details" }, *@
+                // summary:     bi bi-clipboard-data-fill
+                // detail:      bi bi-file-spreadsheet-fill
+                new PeriodListButton { Page = "Summary", Text = "Summary", IconClass = "bi bi-clipboard-data-fill" },
+                new PeriodListButton { Page = "View", Text = "View", IconClass = "bi bi-clipboard-data-fill" },
+                @* new PeriodListButton { Page = "Detail", Text = "Detail v2", IconClass = "bi bi-file-spreadsheet-fill" }, *@
+            },
+            @* Color = "red" *@
+        })" />
+    </div>  
+</div>

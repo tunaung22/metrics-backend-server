@@ -115,7 +115,7 @@ jobs:
           cd src/Metrics.Web/ &&
           dotnet publish --configuration ${{ env.CONFIGURATION }} \
             -r win-x64 \
-            --self-contained true \
+            --no-self-contained \
             --output $GITHUB_WORKSPACE/${{ env.RELEASE_BASE_DIR }}/win-x64-${{ steps.get_version.outputs.VERSION }} \
             -p:Version=${{ steps.get_version.outputs.VERSION }} \
             -p:FileVersion=${{ steps.versions.outputs.FILE_VERSION }} \
