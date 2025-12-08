@@ -1,7 +1,6 @@
 using Metrics.Application.Common.Mappers;
 using Metrics.Application.Domains;
 using Metrics.Application.DTOs.Department;
-using Metrics.Web.Mappers.ViewModelMappers;
 
 namespace Metrics.UnitTest.ApplicationCore.Mappers.DtoMappers;
 
