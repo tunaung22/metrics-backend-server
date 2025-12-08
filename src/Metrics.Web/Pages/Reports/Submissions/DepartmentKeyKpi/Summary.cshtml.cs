@@ -61,15 +61,15 @@ public class SummaryModel(
             .ToList();
 
         // ----------SUBMISSION CONSTRAINTS-------------------------------------
-        var dkmIDs = DepartmentKeyMetrics.Select(x => x.Id).ToList();
-        SubmissionConstraints = await LoadSubmissionConstraints(dkmIDs);
+        // var dkmIDs = DepartmentKeyMetrics.Select(x => x.Id).ToList();
+        // SubmissionConstraints = await LoadSubmissionConstraints(dkmIDs);
 
         // ----------SUBMITTERS-------------------------------------------------
         // Eligible Submitters
         // Users in Departments eligible to Score
-        var submitters = await LoadUserList(roleName: "staff");
-        var submitterDepartmentIDs = SubmissionConstraints.Select(c => c.SubmitterDepartmentId).ToList(); // Eligible Departments 
-        SubmitterList = submitters.Where(submitter => submitterDepartmentIDs.Contains(submitter.DepartmentId)).ToList();
+        // var submitters = await LoadUserList(roleName: "staff");
+        // var submitterDepartmentIDs = SubmissionConstraints.Select(c => c.SubmitterDepartmentId).ToList(); // Eligible Departments 
+        // SubmitterList = submitters.Where(submitter => submitterDepartmentIDs.Contains(submitter.DepartmentId)).ToList();
 
         // Eligible Key Issue Departments
         // var dkms = SubmissionConstraints.Select(e=> e.DepartmentKeyMetricId).ToList();
@@ -462,16 +462,25 @@ public class SummaryModel(
         //
         var data = DepartmentList.Select(department =>
         {
-            var keysCount = DepartmentKeyMetrics.Where(dkm => dkm.KeyIssueDepartmentId == department.Id).Count();
+            var keysCount = DepartmentKeyMetrics
+                .Where(dkm => dkm.KeyIssueDepartmentId == department.Id)
+                .Count();
 
-            var submissionFilteredByDepartment = submissionsByPeriod_ByAllUserGroup.Where(s => s.DepartmentKeyMetric.KeyIssueDepartmentId == department.Id).ToList();
+            // for each key issue department => get submissions
+            var submissionFilteredByKeyIssueDepartment = submissionsByPeriod_ByAllUserGroup
+                .Where(s => s.DepartmentKeyMetric.KeyIssueDepartmentId == department.Id)
+                .ToList();
 
-            var submissionFilteredByUser = submissionFilteredByDepartment
-                .DistinctBy(s => s.SubmitterId).Count();
+            var submissionFilteredByUser = submissionFilteredByKeyIssueDepartment
+                .DistinctBy(s => s.SubmitterId)
+                .Count();
 
 
-            var submissionCount = submissionFilteredByDepartment.Count();
-            decimal totalScore = submissionFilteredByDepartment.Sum(s => s.ScoreValue);
+            var submissionCount = submissionFilteredByKeyIssueDepartment.Count;
+            var candidateCount = submissionFilteredByKeyIssueDepartment
+                .DistinctBy(s => s.SubmitterId)
+                .Count();
+            decimal totalScore = submissionFilteredByKeyIssueDepartment.Sum(s => s.ScoreValue);
             // decimal totalKPI = totalScore > 0 ? (totalScore / submissionCount) : 0;
             decimal netKPIScore = totalScore > 0 ? (totalScore / submissionFilteredByUser) : 0;
             decimal totalKPIScore = netKPIScore > 0 ? (netKPIScore / keysCount) : 0;
@@ -484,7 +493,7 @@ public class SummaryModel(
                 var groupDetails = UserGroupList
                     .Select(group =>
                     {
-                        var submissionsByGroup = submissionFilteredByDepartment
+                        var submissionsByGroup = submissionFilteredByKeyIssueDepartment
                             .Where(s => s.SubmittedBy.UserGroup.Id == group.Id)
                             .ToList();
                         var submissionCount = submissionsByGroup.Count;
@@ -504,6 +513,7 @@ public class SummaryModel(
                     KeyIssueDepartment = department,
                     TotalKeys = keysCount,
                     TotalSubmissions = submissionCount,
+                    TotalCandidates = candidateCount,
                     TotalScore = totalScore,
                     NetScore = netKPIScore,
                     KpiScore = totalKPIScore,
@@ -519,6 +529,7 @@ public class SummaryModel(
                     KeyIssueDepartment = department,
                     TotalKeys = keysCount,
                     TotalSubmissions = submissionCount,
+                    TotalCandidates = candidateCount,
                     TotalScore = totalScore,
                     KpiScore = totalKPIScore
                 };
@@ -605,6 +616,7 @@ public class SummaryModel(
     {
         public string KpiPeriodName { get; set; } = null!;
         public DepartmentViewModel KeyIssueDepartment { get; set; } = null!;
+        public int TotalCandidates { get; set; }
         public int TotalSubmissions { get; set; }
         public int TotalKeys { get; set; }
         public decimal TotalScore { get; set; }

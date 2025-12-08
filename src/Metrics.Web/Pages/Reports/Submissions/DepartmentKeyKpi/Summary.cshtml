@@ -91,7 +91,8 @@
                                         <th colspan="2">@group.GroupName</th>
                                     }
                                 }
-                                <th rowspan="2">Total Submissions</th>
+                                @* <th rowspan="2">Total Submissions</th> *@
+                                <th rowspan="2">Candidates</th>
                                 <th rowspan="2">Total Score</th>
                                 <th rowspan="2">Score/Submitter</th>
                                 <th rowspan="2">KPI Score</th>
@@ -123,7 +124,8 @@
                                             <td>@item.TotalScore</td>
                                         }
                                     }
-                                    <td>@submission.TotalSubmissions.ToString("0")</td>
+                                    @* <td>@submission.TotalSubmissions.ToString("0")</td> *@
+                                    <td>@submission.TotalCandidates.ToString("0")</td>
                                     <td>@submission.TotalScore.ToString("0.00")</td>
                                     <td>
                                         @submission.NetScore.ToString("0.00")

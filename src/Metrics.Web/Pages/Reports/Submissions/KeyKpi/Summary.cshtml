@@ -1,0 +1,72 @@
+﻿@page "/Reports/Submissions/Key-Kpi/{periodName}/Summary"
+@model Metrics.Web.Pages.Reports.Submissions.KeyKpi.SummaryModel
+@{
+    ViewData["Title"] = "Department Key KPI Summary Report";
+}
+
+
+<div class="sectionTitle">
+    <div class="d-flex align-items-center my-2">
+        <span class="d-flex align-items-center flex-grow-1">
+            <h4><i class="bi bi-table"></i> Key KPI Summary Report for Period @Model.SelectedPeriodName</h4>
+            <span class="mx-4">
+                Period: <strong>@Model.SelectedPeriod.PeriodName</strong>
+                <small>(@Model.SelectedPeriod.SubmissionStartDate.ToString("MMM dd, yyyy") - @Model.SelectedPeriod.SubmissionEndDate.ToString("MMM dd, yyyy"))</small>
+            </span>
+        </span>
+        <span class="justify-content-end gap-2">
+        </span>
+    </div>
+
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-page="/Dashboard/Index">Dashboard</a></li>
+            <li class="breadcrumb-item"><a asp-page="/Reports/Submissions/Index">Reports</a></li>
+            <li class="breadcrumb-item"><a asp-page="/Reports/Submissions/DepartmentKeyKpi/Index">Department Key KPI</a></li>
+            <li class="breadcrumb-item active">Summary</li>
+        </ol>
+    </nav>
+</div>
+
+
+
+<div class="filter-toolbar mb-4 px-4 d-flex align-items-center justify-content-between">
+    <div class="d-flex align-items-center gap-2">
+        <form id="form__groupSelection" method="get" class="">
+            <span class="d-flex align-items-center">
+                <div class="col-auto me-2">
+                    <label for="Group" class="form-label m-0">
+                        <i class="bi bi-people-fill"></i> User Group</label>
+                </div>
+                <div class="col-auto me-4">
+                    <select 
+                        @* asp-for="Group" *@
+                        asp-items="Model.UserGroupListItems"
+                        onchange="this.form.submit()"
+                        class="form-select"
+                        aria-label="Select User Group">
+                    </select>
+                </div>
+            </span>
+        </form>
+        @* <button>Button</button> *@
+    </div>
+
+    <div class="exportData">
+        <form method="post" asp-page-handler="ExportExcel">
+            @* <input type="hidden" asp-for="Group"> *@
+@* 
+            @if(Model.SummaryReportList.Any())
+            {
+                <button type="submit" class="btn btn-success">
+                    <i class="bi bi-file-earmark-spreadsheet"></i> Export</button>
+            }
+            else
+            {
+                <button type="submit" 
+                    class="btn btn-success disabled">
+                <i class="bi bi-file-earmark-spreadsheet"></i> Export</button>
+            } *@
+        </form>
+    </div>
+</div>
