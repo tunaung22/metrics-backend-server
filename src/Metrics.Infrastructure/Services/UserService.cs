@@ -11,6 +11,7 @@ using Metrics.Infrastructure.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.VisualBasic;
 using Npgsql;
 using System.Security.Claims;
 
@@ -713,10 +714,63 @@ public class UserService : IUserService
     {
         return await _userManager.Users
             .Where(u =>
-                u.UserName != null
-                && !u.UserName.ToLower().Contains("sysadmin"))
+                u.UserName != null &&
+                u.LockoutEnabled == false &&
+                !u.UserName.Contains("sysadmin"))
             .CountAsync();
     }
+
+    public async Task<long> FindCountByDepartmentAsync(long departmentId)
+    {
+        return await _userManager.Users
+            .Where(u =>
+                u.UserName != null &&
+                //u.LockoutEnabled == false &&
+                !u.UserName.Contains("sysadmin") &&
+                u.DepartmentId == departmentId)
+            .CountAsync();
+    }
+
+    public async Task<ResultT<List<UserDto>>> FindByDepartmentAsync(long departmentId)
+    {
+        try
+        {
+            var users = await _userManager.Users
+                .Where(u =>
+                    u.UserName != null &&
+                    u.LockoutEnd == null &&
+                    !u.UserName.Contains("sysadmin") &&
+                    // !_userManager.IsLockedOutAsync(u).Result &&
+                    u.DepartmentId == departmentId)
+                .ToListAsync();
+            var result = users.Select(u => u.MapToDto()).ToList();
+
+            return ResultT<List<UserDto>>.Success(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("Failed to load Users by department. {msg}", ex.Message);
+            return ResultT<List<UserDto>>.Fail("Failed to load Users by department.", ErrorType.UnexpectedError);
+        }
+
+    }
+
+    // public async Task<long> FindCountByDepartmentExcludeGroupAsync(
+    //     long departmentId,
+    //     List<long> excludedGroupId)
+    // {
+    //     return await _userManager.Users
+    //         .Where(u =>
+    //             excludedGroupId.Any(gId => gId == u.UserTitleId) &&
+    //             u.UserName != null &&
+    //             u.LockoutEnd == null &&
+    //             !_userManager.IsLockedOutAsync(u).Result &&
+    //             u.DepartmentId == departmentId)
+    //         .CountAsync();
+    // }
+
+
+
 
 
 

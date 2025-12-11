@@ -19,6 +19,11 @@ public interface IUserService
     Task<ApplicationUser?> FindByIdAsync(string userId);
 
     Task<long> FindCountAsync();
+    Task<long> FindCountByDepartmentAsync(long departmentId);
+    // Task<long> FindCountByDepartmentExcludeGroupAsync(long departmentId, List<long> excludedGroupId);
+    Task<ResultT<List<UserDto>>> FindByDepartmentAsync(long departmentId);
+
+
     // TODOs
     // Task<long> FindByUserIdAsync(string userId);
     // lock user

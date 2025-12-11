@@ -55,9 +55,9 @@ public class ViewModel(
 
         return keyAssignments.Data
             .Where(ka => ka.IsDeleted == false)
-            .OrderBy(ka => ka.CandidateDepartment.DepartmentName)
+            .OrderBy(ka => ka.DepartmentKeyMetric.KeyIssueDepartment.DepartmentName)
                 .ThenBy(ka => ka.DepartmentKeyMetric.KeyMetric.MetricTitle)
-                .ThenBy(ka => ka.DepartmentKeyMetric.KeyIssueDepartment.DepartmentName)
+                .ThenBy(ka => ka.CandidateDepartment.DepartmentName)
             .Select(ka => ka.MapToViewModel())
             .ToList();
     }

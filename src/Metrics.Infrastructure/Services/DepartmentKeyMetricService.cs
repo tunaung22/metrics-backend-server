@@ -2,7 +2,6 @@ using Metrics.Application.Common.Mappers;
 using Metrics.Application.Domains;
 using Metrics.Application.DTOs.DepartmentKeyMetric;
 using Metrics.Application.Exceptions;
-using Metrics.Application.Interfaces;
 using Metrics.Application.Interfaces.IRepositories;
 using Metrics.Application.Interfaces.IServices;
 using Metrics.Application.Results;
@@ -554,6 +553,28 @@ public class DepartmentKeyMetricService : IDepartmentKeyMetricService
         {
             _logger.LogError(ex, "Unexpected error while creating Department Key.");
             return Result.Fail("An unexpected error occurred. Please try again later.", ErrorType.UnexpectedError);
+        }
+    }
+
+    public async Task<ResultT<List<DepartmentKeyMetricDto>>> FindByPeriodAndDepartmentAsync(
+        long periodId,
+        long keyIssueDepartmentId)
+    {
+        try
+        {
+            var dkms = await _context.DepartmentKeyMetrics
+                .Where(dkm => dkm.KpiSubmissionPeriodId == periodId &&
+                    dkm.DepartmentId == keyIssueDepartmentId &&
+                    dkm.IsDeleted == false)
+                .ToListAsync();
+            var data = dkms.Select(dkm => dkm.MapToDto()).ToList();
+
+            return ResultT<List<DepartmentKeyMetricDto>>.Success(data);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while fetching Department Key Metrics by perido id by department id.");
+            return ResultT<List<DepartmentKeyMetricDto>>.Fail("An unexpected error occurred. Please try again later.", ErrorType.UnexpectedError);
         }
     }
 }

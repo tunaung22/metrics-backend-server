@@ -1,9 +1,10 @@
+using Metrics.Application.Common.Mappers;
 using Metrics.Application.Interfaces.IServices;
 using Metrics.Web.Common.Mappers;
 using Metrics.Web.Models;
 using Metrics.Web.Models.DepartmentKeyMetric;
 using Metrics.Web.Models.KeyKpiSubmissionConstraint;
-using Metrics.Web.Models.ReportViewModels.KeyKpi;
+using Metrics.Web.Models.KeyMetric;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -31,204 +32,363 @@ public class ViewModel(
     public readonly IDepartmentKeyMetricService _departmentKeyMetricService = departmentKeyMetricService;
 
 
-    // ========== MODELS =======================================================
-    // -----model for Report Detail View for both All user group + single user group----
-    public List<KeyKpi_ReportDetail_ViewModel> KeyKpi_DetailReportList { get; set; } = [];
-    public class KeyKpi_ReportDetail_ViewModel
-    {
-        public string PeriodName { get; set; } = null!;
-        public UserViewModel SubmittedBy { get; set; } = null!;
-        public List<KeyKpi_ReportDetailItem_ViewModel> KeyKpi_DetailReportItems { get; set; } = [];
-    }
-    public class KeyKpi_ReportDetailItem_ViewModel
-    {
-        public required DepartmentKeyMetricViewModel DepartmentKeyMetric { get; set; }
-        public decimal ScoreValue { get; set; }
-        public string? Comments { get; set; } = string.Empty;
-    }
-    // -------------------------------------------------------------------------
-
-    public List<KeyKpi_AllUserGroup_ReportDetailViewModel> AllUserGroup_DetailList { get; set; } = [];
-    public List<KeyKpi_AllUserGroup_ReportSummaryViewModel> AllUserGroup_SummaryList { get; set; } = [];
-    public List<KeyKpi_SingleUserGroup_ReportSummaryViewModel> SingleUserGroup_SummaryList { get; set; } = [];
-    public List<KeyKpi_SingleUserGroup_ReportDetailViewModel> SingleUserGroup_DetailList { get; set; } = [];
-
-    public List<UserViewModel> SubmitterList { get; set; } = [];
-    public List<KeyKpiSubmissionViewModel> KeyKpiSubmissions { get; set; } = [];
-    public List<DepartmentKeyMetricViewModel> DepartmentKeyMetrics { get; set; } = [];
-    public List<KeyKpiSubmissionConstraintViewModel> SubmissionConstraints { get; set; } = [];
-    public KpiPeriodViewModel SelectedPeriod { get; set; } = new();
-
-    // public List<UserViewModel> EligibleSubmitters { get; set; } = [];
-    // public List<DepartmentViewModel> EligibleDepartments { get; set; } = [];
-
-    // ----------Excel Models----------
-    // public class KeyKpiSubmissionExportViewModel
-    // {
-    // }
-    // public List<KeyKpiSubmissionExportViewModel>
-    public string SelectedPeriodName { get; set; } = null!;
-
-    public class KeyIssueDepartmentViewModel
-    {
-        public long Id { get; set; }
-        public Guid DepartmentCode { get; set; }
-        public required string DepartmentName { get; set; }
-        public required List<DepartmentKeyMetricViewModel> DepartmentKeys { get; set; } = [];
-    }
-    public List<KeyIssueDepartmentViewModel> KeyIssueDepartmentList2 { get; set; } = [];
-    public List<DepartmentViewModel> KeyIssueDepartmentList { get; set; } = [];
-    public List<UserGroupViewModel> UserGroupList { get; set; } = [];
-
-    // ----------Select/Options Data----------
-    [BindProperty]
-    public List<SelectListItem> UserGroupListItems { get; set; } = []; // for select element
-    [BindProperty]
-    public List<SelectListItem> SubmitterDepartmentListItems { get; set; } = [];
-
-    [BindProperty(SupportsGet = true)]
-    public required string Group { get; set; } // selected item (for filter select element)
-
-    [BindProperty(SupportsGet = true)]
-    public required string Department { get; set; } // keep to value of selected item
-
-    [BindProperty]
-    public List<SelectListItem> ReportViewModeListItems { get; set; } = [];
-
-    [BindProperty(SupportsGet = true)]
-    public string? ViewMode { get; set; } // selected item (for filter select element)
-
-
     // ========== HANDLERS =====================================================
     public async Task<IActionResult> OnGetAsync(string periodName)
     {
+        // ----------PERIOD-----------------------------------------------------
         if (string.IsNullOrEmpty(periodName))
         {
             ModelState.AddModelError(string.Empty, "A valid Period Name is require.");
             return Page();
         }
-
-        // ----------PERIOD-----------------------------------------------------
         var period = await LoadKpiPeriod(periodName);
         if (period == null)
         {
             ModelState.AddModelError("", $"Period {periodName} not found.");
             return Page();
         }
-        SelectedPeriod = period;
-        SelectedPeriodName = period.PeriodName;
+        else
+        {
+            SelectedPeriod = period;
+            SelectedPeriodName = period.PeriodName;
+        }
 
         // ----------USER GROUPS------------------------------------------------
         UserGroupList = await LoadUserGroups();
         if (UserGroupList.Count == 0)
         {
-            ModelState.AddModelError(string.Empty, "User Group is empty");
+            ModelState.AddModelError(string.Empty, "No Candidate Group.");
             return Page();
         }
-        UserGroupListItems = LoadUserGroupListItems(UserGroupList);
-        if (string.IsNullOrEmpty(Group)) { Group = UserGroupListItems[0].Value; }
+        UserGroupSelectItems = LoadUserGroupListItems(UserGroupList);
+        if (string.IsNullOrEmpty(Group))
+            Group = UserGroupSelectItems[0].Value.ToLower();
 
-        // ----------DEPARTMENT KEY METRICS-------------------------------------
-        DepartmentKeyMetrics = await LoadDepartmentKeyMetrics(SelectedPeriod.Id); // key departments + keys
-
-        // ----------Key Issue Departments List (Dinstinct)---------------------
-        KeyIssueDepartmentList = DepartmentKeyMetrics
-            .DistinctBy(x => x.KeyIssueDepartmentId)
-            .OrderBy(x => x.KeyIssueDepartment.DepartmentName)
-            .Select(x => x.KeyIssueDepartment)
-            .ToList();
-
-
-
-        foreach (var keyDepartment in KeyIssueDepartmentList)
+        // ---------CANDIDATE DEPARTMENT------------------------------------------------
+        CandidateDepartmentList = await LoadCandidateDepartmentFromConstraints(SelectedPeriod.Id);
+        if (CandidateDepartmentList.Count == 0)
         {
-            var keysOfDepartment = DepartmentKeyMetrics
-                .Where(dkm => dkm.KeyIssueDepartmentId == keyDepartment.Id)
-                .ToList();
-            KeyIssueDepartmentList2.Add(new KeyIssueDepartmentViewModel
-            {
-                Id = keyDepartment.Id,
-                DepartmentCode = keyDepartment.DepartmentCode,
-                DepartmentName = keyDepartment.DepartmentName,
-                DepartmentKeys = keysOfDepartment
-            });
+            ModelState.AddModelError(string.Empty, "No Candidate Department.");
+            return Page();
         }
+        CandidateDepartmentSelectItems = LoadCandidateDepartmentListItems(CandidateDepartmentList);
+        if (string.IsNullOrEmpty(CandidateDepartment))
+        {
+            CandidateDepartment = CandidateDepartmentSelectItems[0].Value;
+            SelectedCandidateDepartment = null;
+        }
+
+        // ----------KEY ISSUE DEPARTMENT---------------------------------------
+        KeyIssueDepartmentList = await LoadKeyIssueDepartmentFromConstraints(SelectedPeriod.Id);
+        if (KeyIssueDepartmentList.Count == 0)
+        {
+            ModelState.AddModelError(string.Empty, "No Key Issue Department..");
+            return Page();
+        }
+        KeyIssueDepartmentSelectItems = LoadKeyIssueDepartmentListItems(KeyIssueDepartmentList);
+        if (string.IsNullOrEmpty(KeyDepartment))
+        {
+            KeyDepartment = KeyIssueDepartmentSelectItems[0].Value;
+            SelectedKeyDepartment = null;
+        }
+        var KEY_DEPARTMENT__ALL = KeyDepartment.Equals("all", StringComparison.OrdinalIgnoreCase);
 
         // ----------SUBMISSION CONSTRAINTS-------------------------------------
-        var dkmIDs = DepartmentKeyMetrics.Select(x => x.Id).ToList();
-        SubmissionConstraints = await LoadSubmissionConstraints(dkmIDs);
+        // SubmissionConstraints = await LoadSubmissionConstraintByPeriod(SelectedPeriod.Id);
+        var allSubmissionConstraints = await LoadSubmissionConstraintByPeriod(SelectedPeriod.Id);
+        // ----------DEPARTMENT KEY METRICS-------------------------------------
+        DepartmentKeyMetrics = await LoadDepartmentKeyMetricByPeriod(SelectedPeriod.Id);
 
-        // ----------SUBMITTER DEPARTMENTS--------------------------------------
-        var submitterDepartments = SubmissionConstraints
-            .DistinctBy(c => c.SubmitterDepartmentId)
-            .Select(c => c.CandidateDepartment).ToList();
-        if (submitterDepartments.Count == 0)
+        // ----------SUBMISSIONS-------------------------------------------------
+        var allSubmissions = await _keyKpiSubmissionService.FindByPeriodAsync(SelectedPeriod.Id);
+        if (!allSubmissions.IsSuccess || allSubmissions.Data == null)
         {
-            ModelState.AddModelError(string.Empty, "Submitter department is empty");
+            ModelState.AddModelError(string.Empty, "No submissions found.");
             return Page();
         }
-        SubmitterDepartmentListItems = LoadSubmitterDepartmentListItems(submitterDepartments);
-        if (string.IsNullOrEmpty(Department)) { Department = SubmitterDepartmentListItems[0].Value; }
-
-        // ----------SUBMITTERS-------------------------------------------------
-        // Eligible Submitters
-        // Users in Departments eligible to Score
-        var submitters = await LoadUserList(roleName: "staff");
-        var submitterDepartmentIDs = SubmissionConstraints.Select(c => c.SubmitterDepartmentId).ToList(); // Eligible Departments 
-        SubmitterList = submitters.Where(submitter => submitterDepartmentIDs.Contains(submitter.DepartmentId)).ToList();
-
-        // Eligible Key Issue Departments
-        // var dkms = SubmissionConstraints.Select(e=> e.DepartmentKeyMetricId).ToList();
-        // KeyIssueDepartmentList = KeyIssueDepartmentList.Where(e => keyIssueDepartmentIDs.Contains(e.Id)).ToList();
-        // var keyIssueDepartmentIDs = DepartmentKeyMetrics.Select(e => e.KeyIssueDepartmentId).ToList();
+        KeyKpiSubmissions = allSubmissions.Data.Select(s => s.MapToViewModel()).ToList();
 
 
-        // ==========FILTERS====================================================
-        var GROUP_ALL = Group.Equals("all", StringComparison.OrdinalIgnoreCase);
-
-        // -----FILTER----- by [Period]
-        var submissionsResult = await _keyKpiSubmissionService.FindByPeriodAsync(SelectedPeriod.Id);
-        if (!submissionsResult.IsSuccess || submissionsResult.Data == null)
+        // ----------FILTER BY KEY ISSUE DEPARTMENT------------------------------
+        if (KEY_DEPARTMENT__ALL)
         {
-            ModelState.AddModelError(string.Empty, "Failed fetching submissions. Please try again.");
-            return Page();
-        }
-        var submissions = submissionsResult.Data.Select(e => e.MapToViewModel()).ToList();
+            // get submission of each key department 
+            foreach (var keyDpt in KeyIssueDepartmentList)
+            {
+                var submissionsPerKeyDepartment = allSubmissions.Data
+                   .Where(s => s.DepartmentKeyMetric.KeyIssueDepartmentId == keyDpt.Id)
+                   .ToList();
+                var constraintsPerKeyDepartment = allSubmissionConstraints
+                    .Where(c => c.DepartmentKeyMetric.KeyIssueDepartmentId == keyDpt.Id)
+                    .ToList();
 
-        // -----FILTER----- by [Submitter Department]
-        var ALL_DEPARTMENT = Department.Equals("all", StringComparison.OrdinalIgnoreCase);
-        if (!ALL_DEPARTMENT)  // Filter submissions by single submitter department
+                // BASED ON CONSTRAINTS DEFINED
+                var keyMetrics = constraintsPerKeyDepartment
+                    .DistinctBy(c => c.DepartmentKeyMetric.KeyMetricId)
+                    .OrderBy(s => s.DepartmentKeyMetric.KeyMetric.MetricTitle)
+                    .Select(c => c.DepartmentKeyMetric.KeyMetric)
+                    .ToList();
+
+                foreach (var keyMetric in keyMetrics)
+                {
+                    //----------EXPECTED SUBMISSIONS-----------------------------
+                    // **Not working
+                    /*
+                    var constraintsOnKey = constraintsPerKeyDepartment
+                        .Where(c => c.DepartmentKeyMetric.KeyMetricId == keyMetric.Id)
+                        .ToList();
+                    var totalUsersInDepartment = 0L;
+                    foreach (var c in constraintsOnKey)
+                    {
+                        var userCount = 0;
+                        var users = await _userService.FindByDepartmentAsync(c.CandidateDepartment.Id);
+                        if (users.IsSuccess && users.Data != null)
+                        {
+                            userCount = users.Data
+                                .Where(u => !u.UserGroup.GroupName.Equals("staff", StringComparison.OrdinalIgnoreCase))
+                                .Count();
+                        }
+
+                        totalUsersInDepartment += userCount; // users to submit key1 of departmentx
+                    }
+                    var expectedSubmissionOnKey = totalUsersInDepartment;//constraintsOnKey.Count; 
+                    // expected submissions = number of user in department expected to submit score  
+                    */
+
+                    //------------------------------------------------------------
+                    var submissionsOnKey = submissionsPerKeyDepartment
+                        .Where(s => s.DepartmentKeyMetric.KeyMetricId == keyMetric.Id)
+                        .ToList();
+                    var scoreTotalPerKey = submissionsOnKey.Sum(s => s.ScoreValue);
+                    var submissionCountPerKey = submissionsOnKey.Count;
+
+                    var summaryReport = new SummaryReport_ViewModel
+                    {
+                        KpiPeriodName = SelectedPeriodName,
+                        KeyIssueDepartment = keyDpt,
+                        KeyMetric = keyMetric,
+                        //ExpectedSubmission = -1, // expectedSubmissionOnKey, // not working
+                        SubmissionReceived = submissionCountPerKey, // submission count on each key
+                        ReceivedScore = scoreTotalPerKey,
+                    };
+                    SummaryReportList.Add(summaryReport);
+                }
+
+                // BASED ON SUBMITTED DATA
+                /*
+                var submissionsPerKeyDepartment = allSubmissions.Data
+                    .Where(s => s.DepartmentKeyMetric.KeyIssueDepartmentId == keyDpt.Id)
+                    .ToList();
+                // total score on key department keys // var totalScorePerKeyDepartment = submissionsPerKeyDepartment.Sum(s=>s.ScoreValue);
+                // filter total score on each key (single) -> extract keys from submissionsPerKeyDepartment
+                var keyMetrics = submissionsPerKeyDepartment
+                    .DistinctBy(s => s.DepartmentKeyMetric.KeyMetricId)
+                    .OrderBy(s => s.DepartmentKeyMetric.KeyMetric.MetricTitle)
+                    .Select(s => s.DepartmentKeyMetric.KeyMetric)
+                    .ToList();
+                // get total score on each key
+                foreach (var keyMetric in keyMetrics)
+                {
+                    // score total of each key
+                    var scoreTotalPerKey = submissionsPerKeyDepartment
+                        .Where(s => s.DepartmentKeyMetric.KeyMetricId == keyMetric.Id)
+                        .Sum(s => s.ScoreValue);
+
+                    var dataRow = new SummaryReport_ViewModel
+                    {
+                        KpiPeriodName = SelectedPeriodName,
+                        KeyIssueDepartment = keyDpt,
+                        KeyMetric = keyMetric.MapToViewModel(),
+                        TotalExpectedSubmission = 0,
+                        TotalSubmissionsReceived = 0,
+                        TotalReceivedScore = scoreTotalPerKey,
+                    };
+                    SummaryReportList.Add(dataRow);
+                }
+                */
+
+            }
+        }
+        else // SINGLE KEY DEPARTMENT
         {
-            submissions = submissions
-                .Where(s => s.SubmittedBy.Department.DepartmentName.Equals(Department, StringComparison.OrdinalIgnoreCase))
-                .ToList();
-            SubmitterList = SubmitterList
-                .Where(submitter => submitter.Department.DepartmentName.Equals(Department, StringComparison.OrdinalIgnoreCase))
-                .ToList();
+            // -----Parse String to GUID for Selected Department-----
+            if (Guid.TryParse(KeyDepartment, out Guid departmentCode))
+                SelectedKeyDepartment = KeyIssueDepartmentList
+                    .FirstOrDefault(d => d.DepartmentCode == departmentCode);
+            else
+            {
+                ModelState.AddModelError(string.Empty, "Invalid Department Code.");
+                return Page();
+            }
+
+            // ------------------------------------------------------
+            if (SelectedKeyDepartment != null)
+            {
+                var submissionsPerKeyDepartment = allSubmissions.Data
+                        .Where(s => s.DepartmentKeyMetric.KeyIssueDepartment.DepartmentCode == SelectedKeyDepartment.DepartmentCode)
+                        .ToList();
+                var constraintsPerKeyDepartment = allSubmissionConstraints
+                    .Where(c => c.DepartmentKeyMetric.KeyIssueDepartment.DepartmentCode == SelectedKeyDepartment.DepartmentCode)
+                    .ToList();
+
+                // // BASED ON CONSTRAINTS DEFINED
+                // var keyMetricsAvaiable = constraintsPerKeyDepartment
+                //     .DistinctBy(s => s.DepartmentKeyMetric.KeyMetricId)
+                //     .OrderBy(s => s.DepartmentKeyMetric.KeyMetric.MetricTitle)
+                //     .Select(s => s.DepartmentKeyMetric.KeyMetric)
+                //     .ToList();
+                // foreach(var keyMetric in keyMetricsAvaiable)
+                // {
+                //     var submissionsOnKey = submissionsPerKeyDepartment
+                //         .Where(s => s.DepartmentKeyMetric.KeyMetricId == keyMetric.Id)
+                //         .ToList();
+                //     var scoreTotalPerKey = submissionsOnKey.Sum(s => s.ScoreValue);
+                //     var submissionCountPerKey = submissionsOnKey.Count;
+
+                //     var summaryReport = new SummaryReport_ViewModel
+                //     {
+                //         KpiPeriodName = SelectedPeriodName,
+                //         KeyIssueDepartment = SelectedKeyDepartment,
+                //         KeyMetric = keyMetric,
+                //         //ExpectedSubmission = -1, // expectedSubmissionOnKey, // not working
+                //         SubmissionReceived = submissionCountPerKey, // submission count on each key
+                //         ReceivedScore = scoreTotalPerKey,
+                //     };
+                //     SummaryReportList.Add(summaryReport);
+                // }
+
+                // BASED ON SUBMISSIONS RECEIVED
+                var keyMetrics = submissionsPerKeyDepartment
+                    .DistinctBy(s => s.DepartmentKeyMetric.KeyMetricId)
+                    .OrderBy(s => s.DepartmentKeyMetric.KeyMetric.MetricTitle)
+                    .Select(s => s.DepartmentKeyMetric.KeyMetric)
+                    .ToList();
+                foreach (var keyMetric in keyMetrics) // keys
+                {
+                    // score total of each key
+                    var submissionsOnKey = submissionsPerKeyDepartment
+                        .Where(s => s.DepartmentKeyMetric.KeyMetricId == keyMetric.Id)
+                        .ToList();
+                    var scoreTotalPerKey = submissionsOnKey.Sum(s => s.ScoreValue);
+                    var submissionCountPerKey = submissionsOnKey.Count;
+
+                    var summaryReportRow = new SummaryReport_ViewModel
+                    {
+                        KpiPeriodName = SelectedPeriodName,
+                        KeyIssueDepartment = SelectedKeyDepartment,
+                        KeyMetric = keyMetric.MapToViewModel(),
+                        //ExpectedSubmission = -1, //count
+                        SubmissionReceived = submissionCountPerKey, //count
+                        ReceivedScore = scoreTotalPerKey //sum
+                    };
+                    SummaryReportList.Add(summaryReportRow);
+                }
+            }
+            else
+            {
+                ModelState.AddModelError(string.Empty, "Unknown selected key issue department.");
+            }
         }
 
-        // -----FILTER----- by [Single Group]
-        if (!GROUP_ALL)
+
+
+
+
+
+
+        /*
+      
+        foreach (var keyDepartment in KeyIssueDepartmentList)
         {
-            submissions = submissions
-                .Where(s => s.SubmittedBy.UserGroup.GroupName.Equals(Group, StringComparison.OrdinalIgnoreCase))
+            // for each KeyDepartment -> get its DKMs
+            var dkms = await _departmentKeyMetricService.FindByPeriodAndDepartmentAsync(
+                SelectedPeriod.Id,
+                keyDepartment.Id);
+            if (!dkms.IsSuccess || dkms.Data == null)
+            {
+                ModelState.AddModelError(string.Empty, "Failed to fetch Department keys by key issue department: " + keyDepartment.DepartmentName);
+                return Page();
+            }
+            var keyDepartmentDKMs = dkms.Data
+                .OrderBy(dkm => dkm.KeyMetric.MetricTitle)
+                .Select(dkm => dkm.MapToViewModel())
                 .ToList();
-            SubmitterList = SubmitterList
-                .Where(submitter => submitter.UserGroup.GroupName.Equals(Group, StringComparison.OrdinalIgnoreCase))
+
+            // get key list
+            var keysOfDepartment = keyDepartmentDKMs
+                .Select(dkm => dkm.KeyMetric)
                 .ToList();
+            // for each key -> find submission
+            // OR
+            // get submissions by DKMs
+            var dkmIDs = keyDepartmentDKMs.Select(x => x.Id).ToList();
+            var submissionOnKeyDepartment = await _keyKpiSubmissionService.FindByDepartmentKeyMetricsAsync(dkmIDs);
+            // get total score from submissions containing dkm of key issue department
+            if (!submissionOnKeyDepartment.IsSuccess || submissionOnKeyDepartment.Data == null)
+            {
+                ModelState.AddModelError(string.Empty, "Failed to fetch submissions.");
+                return Page();
+            }
+
+            foreach (var key in keysOfDepartment)
+            {
+
+                var r = submissionOnKeyDepartment.Data
+                    .Where(s => s.DepartmentKeyMetric.KeyMetricId == key.Id)
+                    .FirstOrDefault();
+                if (r != null)
+                {
+                    SummaryReportList.Add(new SummaryReport_ViewModel
+                    {
+                        KpiPeriodName = SelectedPeriodName,
+                        KeyIssueDepartment = r.DepartmentKeyMetric.KeyIssueDepartment.MapToViewModel(),
+                        KeyMetric = r.DepartmentKeyMetric.KeyIssueDepartment.MapToViewModel(),
+                        TotalScore =
+                    });
+
+                }
+
+            }
         }
-
-
 
         // Load Submissions
-        KeyKpi_DetailReportList = Load_DetailReportList(
-            allSubmissionsByPeriod: submissions,
+        SummaryReportList = Load_SummaryReport_List(
+            allSubmissionsByPeriod: allSubmissions,
             submitterList: SubmitterList,
             keyIssueDepartmentList: KeyIssueDepartmentList,
             keyIssueDepartmentList2: KeyIssueDepartmentList2);
-
+        */
         return Page();
     }
+
+
+
+    // private List<> Load_SummaryReport_List(
+    //     List<DepartmentViewModel> DepartmentList,
+    //     List<KeyKpiSubmissionViewModel> submissionsByPeriod_ByAllUserGroup,
+    //     bool IsAllGroup,
+    //     string? groupName)
+    // {
+    //     throw new NotImplementedException();
+    // }
+
+    private async Task<List<KeyKpiSubmissionConstraintViewModel>> LoadSubmissionConstraintByPeriod(long periodId)
+    {
+        var constraints = await _submissionConstraintService.FindByPeriodAsync(periodId);
+        if (constraints.IsSuccess && constraints.Data != null)
+        {
+            return constraints.Data
+                .Select(c => c.MapToViewModel())
+                .ToList();
+        }
+        ModelState.AddModelError(string.Empty, "Failed to fetch Department Key Assignments. Please try agian later or contact administrator if problem persist.");
+        return [];
+    }
+
+    // private async Task<List<KeyKpiSubmissionConstraintViewModel>> LoadSubmissionConstraintByKeyIssueDepartment(long id)
+    // {
+    //     // await _submissionConstraintService.findby
+    // }
 
     public async Task<IActionResult> OnPostExportExcelAsync(string periodName)
     {
@@ -255,11 +415,11 @@ public class ViewModel(
             ModelState.AddModelError(string.Empty, "User Group is empty");
             return Page();
         }
-        UserGroupListItems = LoadUserGroupListItems(UserGroupList);
-        if (string.IsNullOrEmpty(Group)) { Group = UserGroupListItems[0].Value; }
+        UserGroupSelectItems = LoadUserGroupListItems(UserGroupList);
+        if (string.IsNullOrEmpty(Group)) { Group = UserGroupSelectItems[0].Value; }
 
         // ----------DEPARTMENT KEY METRICS-------------------------------------
-        DepartmentKeyMetrics = await LoadDepartmentKeyMetrics(SelectedPeriod.Id); // key departments + keys
+        DepartmentKeyMetrics = await LoadDepartmentKeyMetricByPeriod(SelectedPeriod.Id); // key departments + keys
 
         // ----------Key Issue Departments List (Dinstinct)---------------------
         KeyIssueDepartmentList = DepartmentKeyMetrics
@@ -270,7 +430,7 @@ public class ViewModel(
 
         // ----------SUBMISSION CONSTRAINTS-------------------------------------
         var dkmIDs = DepartmentKeyMetrics.Select(x => x.Id).ToList();
-        SubmissionConstraints = await LoadSubmissionConstraints(dkmIDs);
+        SubmissionConstraints = await LoadSubmissionConstraintsByDkmIDs(dkmIDs);
 
         // ----------SUBMITTER DEPARTMENTS--------------------------------------
         var submitterDepartments = SubmissionConstraints
@@ -281,8 +441,8 @@ public class ViewModel(
             ModelState.AddModelError(string.Empty, "Submitter department is empty");
             return Page();
         }
-        SubmitterDepartmentListItems = LoadSubmitterDepartmentListItems(submitterDepartments);
-        if (string.IsNullOrEmpty(Department)) { Department = SubmitterDepartmentListItems[0].Value; }
+        CandidateDepartmentSelectItems = LoadSubmitterDepartmentListItems(submitterDepartments);
+        if (string.IsNullOrEmpty(CandidateDepartment)) { CandidateDepartment = CandidateDepartmentSelectItems[0].Value; }
 
         // ----------SUBMITTERS-------------------------------------------------
         // Eligible Submitters
@@ -310,14 +470,14 @@ public class ViewModel(
         var submissions = submissionsResult.Data.Select(e => e.MapToViewModel()).ToList();
 
         // -----FILTER----- by [Submitter Department]
-        var ALL_DEPARTMENT = Department.Equals("all", StringComparison.OrdinalIgnoreCase);
+        var ALL_DEPARTMENT = CandidateDepartment.Equals("all", StringComparison.OrdinalIgnoreCase);
         if (!ALL_DEPARTMENT)  // Filter submissions by single submitter department
         {
             submissions = submissions
-                .Where(s => s.SubmittedBy.Department.DepartmentName.Equals(Department, StringComparison.OrdinalIgnoreCase))
+                .Where(s => s.SubmittedBy.Department.DepartmentName.Equals(CandidateDepartment, StringComparison.OrdinalIgnoreCase))
                 .ToList();
             SubmitterList = SubmitterList
-                .Where(submitter => submitter.Department.DepartmentName.Equals(Department, StringComparison.OrdinalIgnoreCase))
+                .Where(submitter => submitter.Department.DepartmentName.Equals(CandidateDepartment, StringComparison.OrdinalIgnoreCase))
                 .ToList();
         }
 
@@ -333,11 +493,11 @@ public class ViewModel(
         }
 
         // Load Submissions
-        KeyKpi_DetailReportList = Load_DetailReportList(
-            allSubmissionsByPeriod: submissions,
-            submitterList: SubmitterList,
-            keyIssueDepartmentList: KeyIssueDepartmentList,
-            keyIssueDepartmentList2: KeyIssueDepartmentList2);
+        // KeyKpi_DetailReportList = Load_DetailReportList(
+        //     allSubmissionsByPeriod: submissions,
+        //     submitterList: SubmitterList,
+        //     keyIssueDepartmentList: KeyIssueDepartmentList,
+        //     keyIssueDepartmentList2: KeyIssueDepartmentList2);
 
 
         // ----------Dynamic Columns----------
@@ -414,74 +574,112 @@ public class ViewModel(
         );
     }
 
-
-    // period
-    // candidate id
-    // candidate name
-    // candidate department
-    // candidate group
-    // List of DepartmentDetail
-    //              name
-    //              key
-    //              score
-    //              comment
-
-    public class DetailReport_ViewModel
-    {
-
-    }
-    public class DetailReport_DepartmentDetail_ViewModel
-    {
-
-    }
-
-
     // ========== Methods ==================================================
     private async Task<KpiPeriodViewModel?> LoadKpiPeriod(string periodName)
     {
         var kpiPeriod = await _kpiPeriodService
             .FindByKpiPeriodNameAsync(periodName);
 
+        // TODO: kpi period service return result<dto>
         if (kpiPeriod != null)
-        {
-            return new KpiPeriodViewModel()
-            {
-                Id = kpiPeriod.Id,
-                PeriodName = kpiPeriod.PeriodName,
-                SubmissionStartDate = kpiPeriod.SubmissionStartDate,
-                SubmissionEndDate = kpiPeriod.SubmissionEndDate
-            };
-        }
-
+            return kpiPeriod.MapToDto().MapToViewModel();
         return null;
+    }
+
+    private async Task<List<DepartmentViewModel>> LoadKeyIssueDepartmentFromConstraints(long periodId)
+    {
+        var constraints = await _submissionConstraintService.FindByPeriodAsync(periodId);
+        if (constraints.IsSuccess && constraints.Data != null)
+        {
+            return constraints.Data
+                .DistinctBy(c => c.DepartmentKeyMetric.KeyIssueDepartmentId)
+                .OrderBy(c => c.DepartmentKeyMetric.KeyIssueDepartment.DepartmentName)
+                .Select(c => c.DepartmentKeyMetric.KeyIssueDepartment.MapToViewModel())
+                .ToList();
+        }
+        return [];
     }
 
     private async Task<List<UserGroupViewModel>> LoadUserGroups()
     {
-        var userGroups = (await _userGroupService.FindAllAsync())
-            // sort by name
-            .OrderBy(g => g.TitleName);
-
-
-        if (userGroups.Any())
+        // TODO: FindAll_Async method with accepting list of excluded username parameter.
+        // var userGroups = await _userGroupService.FindAll_Async(["sysadmin", "staff"]);
+        var userGroups = await _userGroupService.FindAll_Async();
+        if (userGroups.IsSuccess && userGroups.Data != null)
         {
-            return userGroups
-                // filter out "sysadmin" user
-                // filter out "staff" user group
-                // filter out "management" user group
+            return userGroups.Data
                 .Where(g =>
-                    !g.TitleName.Equals("sysadmin", StringComparison.OrdinalIgnoreCase)
-                    && !g.TitleName.Equals("staff", StringComparison.OrdinalIgnoreCase))
-                // && !g.TitleName.Equals("management", StringComparison.OrdinalIgnoreCase))
-                .Select(g => new UserGroupViewModel
+                    !g.GroupName.Equals("sysadmin", StringComparison.OrdinalIgnoreCase) &&
+                    !g.GroupName.Equals("staff", StringComparison.OrdinalIgnoreCase))
+                .OrderBy(g => g.GroupName)
+                .Select(g => g.MapToViewModel())
+                .ToList();
+        }
+        return [];
+    }
+
+    private async Task<List<DepartmentViewModel>> LoadCandidateDepartmentFromConstraints(long periodId)
+    {
+        var constraints = await _submissionConstraintService.FindByPeriodAsync(periodId);
+        if (constraints.IsSuccess && constraints.Data != null)
+        {
+            return constraints.Data
+                .DistinctBy(c => c.CandidateDepartmentId)
+                .OrderBy(c => c.CandidateDepartment.DepartmentName)
+                .Select(c => c.CandidateDepartment.MapToViewModel())
+                .ToList();
+        }
+        return [];
+    }
+
+
+    //----------LOADING LIST ITEMS-----------------------------------------------
+    private List<SelectListItem> LoadKeyIssueDepartmentListItems(List<DepartmentViewModel> keyIssueDepartmentList)
+    {
+        if (keyIssueDepartmentList.Count > 0)
+        {
+            // add All item before user group items
+            var items = new List<SelectListItem>()
+            {
+                new() { Value = "all", Text = "All" }
+            };
+
+            foreach (var department in keyIssueDepartmentList)
+            {
+                items.Add(new SelectListItem
                 {
-                    Id = g.Id,
-                    GroupCode = g.TitleCode,
-                    GroupName = g.TitleName,
-                    Description = g.Description
-                }).ToList();
+                    Value = department.DepartmentCode.ToString(),
+                    Text = department.DepartmentName,
+                });
+            }
+            return items;
         }
 
+        ModelState.AddModelError(string.Empty, "Key Issue Department does not exist.");
+        return [];
+    }
+
+    private List<SelectListItem> LoadCandidateDepartmentListItems(List<DepartmentViewModel> candidateDepartmentList)
+    {
+        if (candidateDepartmentList.Count > 0)
+        {
+            // add All item before user group items
+            var items = new List<SelectListItem>()
+            {
+                new() { Value = "all", Text = "All" }
+            };
+
+            foreach (var department in candidateDepartmentList)
+            {
+                items.Add(new SelectListItem
+                {
+                    Value = department.DepartmentCode.ToString(),
+                    Text = department.DepartmentName,
+                });
+            }
+            return items;
+        }
+        ModelState.AddModelError(string.Empty, "Candidate Department does not exist.");
         return [];
     }
 
@@ -504,7 +702,7 @@ public class ViewModel(
             {
                 items.Add(new SelectListItem
                 {
-                    Value = group.GroupName,
+                    Value = group.GroupCode.ToString(),
                     Text = group.GroupName,
                 });
             }
@@ -515,6 +713,13 @@ public class ViewModel(
         ModelState.AddModelError("", "User group does not exist. Try to add group and continue.");
         return [];
     }
+
+
+
+
+
+
+
 
     /// <summary>
     /// Load submitter departments for SelectListItem
@@ -591,23 +796,12 @@ public class ViewModel(
         return [];
     }
 
-
-    // private async Task<List<DepartmentKeyMetricViewModel>> LoadDepartmentKeyMetrics(
-    //     string periodName,
-    //     Guid departmentCode)
-    // {
-    //     var dkms = await _departmentKeyMetricService
-    //         .FindAllByPeriodAndDepartmentAsync(periodName, departmentCode);
-
-    //     return dkms.Select(dkm => MapEntityToViewModel(dkm)).ToList();
-    // }
-
     /// <summary>
     /// Load Department Key Metrics by Period
     /// </summary>
     /// <param name="periodId"></param>
     /// <returns></returns>
-    private async Task<List<DepartmentKeyMetricViewModel>> LoadDepartmentKeyMetrics(long periodId)
+    private async Task<List<DepartmentKeyMetricViewModel>> LoadDepartmentKeyMetricByPeriod(long periodId)
     {
         var dkmResult = await _departmentKeyMetricService.FindByPeriodIdAsync(periodId);
 
@@ -624,7 +818,7 @@ public class ViewModel(
     /// </summary>
     /// <param name="dkmIDs"></param>
     /// <returns></returns>
-    private async Task<List<KeyKpiSubmissionConstraintViewModel>> LoadSubmissionConstraints(List<long> dkmIDs)
+    private async Task<List<KeyKpiSubmissionConstraintViewModel>> LoadSubmissionConstraintsByDkmIDs(List<long> dkmIDs)
     {
         var constraintsByDKMResult = await _submissionConstraintService.FindByDepartmentKeyMetricsAsync(dkmIDs);
         if (constraintsByDKMResult.IsSuccess && constraintsByDKMResult.Data != null)
@@ -636,347 +830,93 @@ public class ViewModel(
         return [];
     }
 
-    private List<KeyKpi_AllUserGroup_ReportSummaryViewModel> Load_AllUserGroup_SummaryList(
-        List<DepartmentViewModel> DepartmentList,
-        List<KeyKpiSubmissionViewModel> allSubmissionsByPeriod)
+
+    // ========== MODELS ========================================================
+    // ----------SELECT items----------------------------------------------------
+    [BindProperty]
+    public List<SelectListItem> KeyIssueDepartmentSelectItems { get; set; } = [];
+    [BindProperty]
+    public List<SelectListItem> UserGroupSelectItems { get; set; } = [];
+    [BindProperty]
+    public List<SelectListItem> CandidateDepartmentSelectItems { get; set; } = [];
+    // ----------SELECTION VALUE--------------------------
+    // **Property name will display in Query String
+    [BindProperty(SupportsGet = true)]
+    public required string KeyDepartment { get; set; }
+    [BindProperty(SupportsGet = true)]
+    public required string CandidateDepartment { get; set; }
+    [BindProperty(SupportsGet = true)]
+    public required string Group { get; set; }
+    // --------------------------------------------------------------------------
+    public string SelectedPeriodName { get; set; } = null!;
+    public KpiPeriodViewModel SelectedPeriod { get; set; } = new();
+    // -----------KEY DEPARTMENT & CANDIDATE DEPARTMENT--------------------------
+    public List<DepartmentViewModel> KeyIssueDepartmentList { get; set; } = []; // key department list (distinct)
+    public DepartmentViewModel? SelectedKeyDepartment { get; set; } = null;
+    public List<DepartmentViewModel> CandidateDepartmentList { get; set; } = []; // candidate department list (distinct)
+    public DepartmentViewModel? SelectedCandidateDepartment { get; set; } = null;
+
+
+
+    public List<DepartmentKeyAssignmentViewModel> DepartmentKeyAssignments { get; set; } = [];
+    public List<KeyKpiSubmissionConstraintViewModel> SubmissionConstraints { get; set; } = [];
+    public List<SummaryReport_ViewModel> SummaryReportList { get; set; } = [];
+    public List<DepartmentKeyMetricViewModel> DepartmentKeyMetrics { get; set; } = [];
+
+
+
+    // [BindProperty]
+    // public List<SelectListItem> ReportViewModeListItems { get; set; } = [];
+
+    // [BindProperty(SupportsGet = true)]
+    // public string? ViewMode { get; set; } // selected item (for filter select element)
+    public List<UserGroupViewModel> UserGroupList { get; set; } = [];
+
+    // -------------------------------------------------------------------------
+    public List<KeyIssueDepartmentViewModel> KeyIssueDepartmentList2 { get; set; } = [];
+    public List<UserViewModel> SubmitterList { get; set; } = [];
+    public List<KeyKpiSubmissionViewModel> KeyKpiSubmissions { get; set; } = [];
+    // -----model for Report Detail View for both All user group + single user group----
+    public List<KeyKpi_ReportDetail_ViewModel> KeyKpi_DetailReportList { get; set; } = [];
+
+    // ========== MODELS CLASSES ===============================================
+    public class DepartmentKeyAssignmentViewModel
     {
-        var data = DepartmentList.Select(department =>
-        {
-            // await service.FindByKpiPeriodAndDepartmentAndUserGroupAsync(SelectedPeriodId, departmentId, usertitle);
-            // Submission to Department by Period
-            var submissionToDepartment = allSubmissionsByPeriod
-                .Where(s => s.DepartmentKeyMetric.KeyIssueDepartmentId == department.Id)
-                .ToList();
-
-            // User Group Submission Info (group name, count, total score)
-            var groupScores = UserGroupList.Select(group =>
-            {
-                // Submission by User Group to Department by Period
-                var submittedByGroup = submissionToDepartment
-                    .Where(s => s.SubmittedBy.UserGroup.Id == group.Id)
-                    .ToList();
-
-                // var totalKeysSubmitted_ByGroup = submittedByGroup.Select(s =>
-                //     s.KeyKpiSubmissionItems.DistinctBy(item =>
-                //         item.DepartmentKeyMetricId)).Count();
-                var totalKeysSubmitted_ByGroup = -1;
-                // var totalSubmission_ByGroup = submittedByGroup
-                //     .Select(s => s.KeyKpiSubmissionItems).Count();
-                var totalSubmission_ByGroup = -1;
-                // var totalScore_ByGroup = submittedByGroup
-                //     .SelectMany(s => s.KeyKpiSubmissionItems
-                //         .Select(item => item.ScoreValue)).Sum();
-                var totalScore_ByGroup = -1;
-
-                return new KeyKpi_UserGroup_SubmissionInfo
-                {
-                    // summary by user group
-                    GroupName = group.GroupName,
-                    Keys = totalKeysSubmitted_ByGroup,
-                    TotalSubmissions = totalSubmission_ByGroup,
-                    TotalScore = totalScore_ByGroup
-                };
-            }).ToList();
-
-            var totalKeys = -1;
-            var totalSubmissions = submissionToDepartment.Count;
-            var totalScore = -1;
-            // var totalScore = submissionToDepartment
-            //     .Select(s => s.KeyKpiSubmissionItems).Count();
-            var kpiScore = -1;
-
-            // Return the Result for each Department
-            return new KeyKpi_AllUserGroup_ReportSummaryViewModel
-            {
-                PeriodName = SelectedPeriod.PeriodName,
-                DepartmentName = department.DepartmentName,
-                UserGroupSubmissionInfo = groupScores,
-                TotalKeys = totalKeys,
-                TotalSubmissions = totalSubmissions,
-                TotalScore = totalScore,
-                KpiScore = kpiScore
-            };
-        }).ToList();
-
-        return data;
+        public long Id { get; set; }
+        public required string KeyIssueDepartmentName { get; set; }
+        public List<DepartmentKeyMetricViewModel> DepartmentKeys { get; set; } = [];
     }
 
-
-
-
-
-
-    /// <summary>
-    /// Load AllUserGroup_DetailList
-    /// Takes submitterList to include all submitter (sorting)
-    /// Taks keyIssueDepartmentList to include all Key Issue Department (sorting)
-    /// </summary>
-    /// <param name="allSubmissionsByPeriod"></param>
-    /// <param name="submitterList"></param>
-    /// <param name="keyIssueDepartmentList"></param>
-    /// <returns></returns>
-    private List<KeyKpi_ReportDetail_ViewModel> Load_DetailReportList(
-        List<KeyKpiSubmissionViewModel> allSubmissionsByPeriod,
-        List<UserViewModel> submitterList, // eligible users
-        List<DepartmentViewModel> keyIssueDepartmentList, // departments who issue keys
-        List<KeyIssueDepartmentViewModel> keyIssueDepartmentList2)
+    public class SummaryReport_ViewModel
     {
-        // NOTE: need to fetch for all submitter (including not submitted user's submission that score will be set to 0.00)
-        // 1. need all Submitters
-        // 2. need all Keys of Departments
-
-        // // find eligible department, get eligible users
-        // var dkmIds = DepartmentKeyMetrics.Select(x => x.Id).ToList();
-        // var eligibleDepartments = submissionConstrains.Select(c => c.SubmitterDepartmentId).ToList();
-        // var eligibleUsers = submitterList.Where(submitter => eligibleDepartments.Contains(submitter.DepartmentId)).ToList();
-
-        // each Submitter -> List<departments> -> each department -> List<DKM> -> each DKM -> List<MODLE>
-        List<KeyKpi_ReportDetail_ViewModel> data = submitterList
-            // .Where(submitter => submitter.DepartmentId)
-            .Select(submitter =>
-        {
-            // for each Submitter, get Key Issue Departments
-            // for each Key Issue Department, get Keys
-            var items = keyIssueDepartmentList.SelectMany(department =>
-            {
-                var dkms = DepartmentKeyMetrics.OrderBy(dkm => dkm.KeyMetric.MetricTitle).Where(dkm => dkm.KeyIssueDepartmentId == department.Id).ToList();
-
-                return dkms.Select(dkm =>
-                {
-                    // for each Keys, get Submission
-                    var submission = allSubmissionsByPeriod
-                        .Where(submission => submission.DepartmentKeyMetricId == dkm.Id
-                            && submission.SubmitterId == submitter.Id)
-                        .FirstOrDefault();
-                    if (submission != null)
-                    {
-                        return new KeyKpi_ReportDetailItem_ViewModel
-                        {
-                            DepartmentKeyMetric = dkm, //submission.DepartmentKeyMetric,
-                            ScoreValue = submission.ScoreValue,
-                            Comments = submission.Comments ?? string.Empty,
-                        };
-                    }
-                    else
-                    {
-                        return new KeyKpi_ReportDetailItem_ViewModel
-                        {
-                            DepartmentKeyMetric = dkm,
-                            ScoreValue = 0.00M,
-                            Comments = string.Empty
-                        };
-                    }
-                }).ToList();
-            }).ToList();
-
-            return new KeyKpi_ReportDetail_ViewModel
-            {
-                PeriodName = SelectedPeriod.PeriodName,
-                SubmittedBy = submitter,
-                KeyKpi_DetailReportItems = items
-            };
-
-
-
-            // // Each user's submissions (for single row data)
-            // var items = allSubmissionsByPeriod
-            //     .OrderBy(submission => submission.DepartmentKeyMetric.KeyIssueDepartment.DepartmentName)
-            //     .Select(submission =>
-            // {
-            //     return new KeyKpi_AllUserGroup_ReportDetailItem_ViewModel2
-            //     {
-            //         DepartmentKeyMetric = submission.DepartmentKeyMetric,
-            //         ScoreValue = submission.ScoreValue,
-            //         Comments = submission.Comments
-            //     };
-            // })
-            // .ToList();
-
-            // return new KeyKpi_AllUserGroup_ReportDetail_ViewModel2
-            // {
-            //     PeriodName = SelectedPeriod.PeriodName,
-            //     SubmittedBy = submitter,
-            //     KeyKpi_AllUserGroup_ReportDetailItem = items
-            // };
-        })
-        .ToList();
-
-        return data;
+        public string KpiPeriodName { get; set; } = null!;
+        public DepartmentViewModel KeyIssueDepartment { get; set; } = null!;
+        public KeyMetricViewModel KeyMetric { get; set; } = null!;
+        public long SubmissionReceived { get; set; }
+        // public long ExpectedSubmission { get; set; }
+        public decimal ReceivedScore { get; set; } // total score received on each department's key
     }
 
-    private List<KeyKpi_ReportDetail_ViewModel> Load_ReportDetailList(
-        List<KeyKpiSubmissionViewModel> submissions,
-        List<UserViewModel> submitterList, // eligible users
-        List<DepartmentViewModel> keyIssueDepartmentList) // departments who issue keys
+    public class KeyKpi_ReportDetail_ViewModel
     {
-        List<KeyKpi_ReportDetail_ViewModel> data = submitterList.Select(submitter =>
-        {
-            // for each Submitter, get Key Issue Departments
-            // for each Key Issue Department, get Keys
-            var items = keyIssueDepartmentList.SelectMany(keyDepartment =>
-            {
-                // for each Department's Key Metrics -> get Keys
-                var departmentKeys = DepartmentKeyMetrics
-                    .OrderBy(dkm => dkm.KeyMetric.MetricTitle)
-                    .Where(dkm => dkm.KeyIssueDepartmentId == keyDepartment.Id)
-                    .ToList();
-
-                return departmentKeys.Select(dkm =>
-                {
-                    // for each Key, get submitter's Submission data
-                    // **submission by Submitter + by DKM 
-                    //      => will get unique one submission
-                    var submission = submissions
-                        .Where(submission => submission.DepartmentKeyMetricId == dkm.Id
-                            && submission.SubmitterId == submitter.Id)
-                        .FirstOrDefault();
-                    if (submission != null)
-                    {
-                        return new KeyKpi_ReportDetailItem_ViewModel
-                        {
-                            DepartmentKeyMetric = dkm,
-                            ScoreValue = submission.ScoreValue,
-                            Comments = submission.Comments
-                        };
-                    }
-                    else
-                    {
-                        return new KeyKpi_ReportDetailItem_ViewModel
-                        {
-                            DepartmentKeyMetric = dkm,
-                            ScoreValue = 0.00M,
-                            Comments = string.Empty
-                        };
-                    }
-                }).ToList();
-            }).ToList();
-
-            return new KeyKpi_ReportDetail_ViewModel
-            {
-                PeriodName = SelectedPeriod.PeriodName,
-                SubmittedBy = submitter,
-                KeyKpi_DetailReportItems = items
-            };
-        }).ToList();
-
-        return data;
+        public string PeriodName { get; set; } = null!;
+        public UserViewModel SubmittedBy { get; set; } = null!;
+        public List<KeyKpi_ReportDetailItem_ViewModel> KeyKpi_DetailReportItems { get; set; } = [];
     }
 
-    // 2.0 for each DEPARTMENT (of a user), 
-    // 2.1 -> filter the SUBMISSIONS by USER and by DEPARTMENT
-    // TODO: We could just call service method directly as: _keyKpiSubmissionService.FindAsync(SelectedPeriod.Id, user.Id, department.Id);
-    // var submissionByPeriodByUserByDepartment = allSubmissionsByPeriod
-    //     .Where(s => s.ApplicationUserId == user.Id && s.DepartmentId == department.Id)
-    //     .FirstOrDefault();
-    // var submissionByPeriodByUserByDepartment = allSubmissionsByPeriod
-    //     .Where(s => s.SubmitterId == user.Id && s.DepartmentKeyMetric.KeyIssueDepartmentId == department.Id)
-    //     .FirstOrDefault();
-
-    // **အမှတ်မပေးရသေးတဲ့ စာရင်းလည်း ပါချင်တာဆိုတော့ submission ကိုနေယူလို့မရဘူး
-    // submission ကနေယူရင် အမှတ်ပေးထားတဲ့စာရင်းပဲ ပါလာမယ်။
-    // DepartmentKeyMetric ကနေပြန်ဆွဲထုတ်ရင် အမှတ်မပေးထားတဲ့ key တွေလည်းရမယ်
-    // NOTE: SELECT Submissions.Items WHERE Submission.Items.DepartmentKeyMetricId == DepartmentKeyMetric.Id
-    // for each DKMs, -> get SUBMISSIONS :: WHERE DKM.Id == SUBMISSION's dkmId
-    // filter the DKMs by DEPARTMENT (which contains non-duplicated KEYS)
-    // var details = DepartmentKeyMetrics
-    //     .Where(dkm => dkm.KeyIssueDepartmentId == department.Id)
-    //     .OrderBy(dkm => dkm.KeyIssueDepartment.DepartmentName)
-    //     .Select(dkm =>
-    //     {
-
-    //         // 3.0 for each DEPARTMENT KEY METRIC list (DKMs)
-    //         // 3.1 -> filter SubmissionItem by DKM.Id
-    //         // LoadSubmissionItemByDkm(submission, dkm.Id);
-    //         var submissionItem = submissionByPeriodByUserByDepartment;
-    //         // var submissionItem = submissionByPeriodByUserByDepartment?.KeyKpiSubmissionItems
-    //         //     .Where(i => i.DepartmentKeyMetricId == dkm.Id)
-    //         //     .FirstOrDefault();
-
-    //         // return DepartmentScoreDetail regardless of submission data
-    //         if (submissionItem != null)
-    //         {
-    //             return new KeyKpi_DepartmentScoreDetail
-    //             {
-    //                 DepartmentKeyMetric = dkm, //
-    //                 DKMId = dkm.Id,
-    //                 KeyId = dkm.KeyMetricId,
-    //                 KeyIssueDepartmentName = department.DepartmentName, //
-    //                 KeyTitle = dkm.KeyMetric.MetricTitle,
-    //                 ScoreValue = submissionItem.ScoreValue, //
-    //                 Comments = submissionItem.Comments ?? string.Empty, //
-    //             };
-    //         }
-    //         // submissionByPeriodByUserByDepartment == null || 
-    //         // submissionByPeriodByUserByDepartment.KeyKpiSubmissionItems == null)
-    //         return new KeyKpi_DepartmentScoreDetail
-    //         {
-    //             DepartmentKeyMetric = null,
-    //             KeyIssueDepartmentName = dkm.KeyIssueDepartment.DepartmentName,
-    //             KeyTitle = dkm.KeyMetric.MetricTitle,
-    //             KeyId = dkm.KeyMetricId,
-    //             DKMId = dkm.Id,
-    //             ScoreValue = 0,
-    //             Comments = string.Empty,
-    //         };
-    //     }).ToList();
-    // return details;
-    // })
-    // .ToList();
-
-
-
-
-    // TODO: Should we combine Load_AllUserGroup_DetailList and Load_SingleUserGroup_DetailList?? 
-    private List<KeyKpi_SingleUserGroup_ReportDetailViewModel> Load_SingleUserGroup_DetailList(
-        List<KeyKpiSubmissionViewModel> allSubmissionsByPeriod,
-        List<UserViewModel> userList,
-        List<DepartmentViewModel> departmentList,
-        string groupName)
+    public class KeyKpi_ReportDetailItem_ViewModel
     {
-        // var submissionByGroup = allSubmissionsByPeriod
-        //     .Where(s => s.SubmittedBy.UserTitle.TitleName.Equals(groupName, StringComparison.OrdinalIgnoreCase))
-        //     .ToList();
+        public required DepartmentKeyMetricViewModel DepartmentKeyMetric { get; set; }
+        public decimal ScoreValue { get; set; }
+        public string? Comments { get; set; } = string.Empty;
+    }
 
-        // 0. filter user by group
-        // 1. loop users
-        var resultDataList = userList
-            .Where(user => user.UserGroup.GroupName.Equals(groupName, StringComparison.OrdinalIgnoreCase))
-            .Select(user =>
-            {
-                // 2. filter submissions by user
-                var submisionByUser = allSubmissionsByPeriod
-                    .Where(s => s.SubmitterId == user.Id)
-                    .OrderBy(s => s.DepartmentKeyMetric.KeyIssueDepartment.DepartmentName)
-                    .ToList() ?? [];
-                // Loop department list to include non submitted departments
-                // 3. loop department list
-                var departmentScoreSummary = departmentList
-                    .Select(department =>
-                    {
-                        var submission = submisionByUser
-                            .Where(submission => submission.DepartmentKeyMetric.KeyIssueDepartmentId == department.Id)
-                            .FirstOrDefault();
-                        return new KeyKpi_DepartmentScoreSummary
-                        {
-                            DepartmentName = department.DepartmentName,
-                            // TotalKey = submission != null ? submission.KeyKpiSubmissionItems.Count : 0,
-                            // TotalScore = submission != null ? submission.KeyKpiSubmissionItems.Sum(i => i.ScoreValue) : 0
-                            TotalKey = -1,
-                            TotalScore = -1
-                        };
-                    })
-                    .OrderBy(department => department.DepartmentName)
-                    .ToList();
-
-                return new KeyKpi_SingleUserGroup_ReportDetailViewModel
-                {
-                    PeriodName = SelectedPeriod.PeriodName,
-                    SubmittedBy = user,
-                    KeyKpi_DepartmentScoreSummary = departmentScoreSummary
-                };
-            }).ToList();
-
-        return resultDataList;
+    public class KeyIssueDepartmentViewModel
+    {
+        public long Id { get; set; }
+        public Guid DepartmentCode { get; set; }
+        public required string DepartmentName { get; set; }
+        public required List<DepartmentKeyMetricViewModel> DepartmentKeys { get; set; } = [];
     }
 
 }

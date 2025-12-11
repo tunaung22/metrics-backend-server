@@ -1,7 +1,10 @@
+using Metrics.Application.Common.Mappers;
 using Metrics.Application.Domains;
+using Metrics.Application.DTOs.UserGroup;
 using Metrics.Application.Exceptions;
 using Metrics.Application.Interfaces.IRepositories;
 using Metrics.Application.Interfaces.IServices;
+using Metrics.Application.Results;
 using Metrics.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -67,6 +70,21 @@ public class UserTitleService : IUserTitleService
         // return query
         // .Where(t => t.TitleName != "Admin");
         return query ?? [];
+    }
+
+    public async Task<ResultT<List<UserGroupDto>>> FindAll_Async()
+    {
+        try
+        {
+            var groups = await _userTitleRepository.FindAllAsync();
+            var data = groups.Select(g => g.MapToDto()).ToList();
+            return ResultT<List<UserGroupDto>>.Success(data);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("Unexpected error occured at fetching user groups. {msg}", ex.Message);
+            return ResultT<List<UserGroupDto>>.Fail("Failed to load user groups.", ErrorType.UnexpectedError);
+        }
     }
 
     public async Task<UserTitle?> FindByIdAsync(long id)

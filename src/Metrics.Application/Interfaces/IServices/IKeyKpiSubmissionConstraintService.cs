@@ -23,5 +23,6 @@ public interface IKeyKpiSubmissionConstraintService
     Task<ResultT<Dictionary<long, int>>> FindCountsByPeriodBySubmitterDepartmentAsync(
         List<long> periodIds, long submitterDepartmentId);
     Task<ResultT<List<KeyKpiSubmissionConstraintDto>>> FindByPeriodNameAsync(string sourcePeriodName);
+    Task<ResultT<List<KeyKpiSubmissionConstraintDto>>> FindByPeriodAsync(long periodId);
 
 }

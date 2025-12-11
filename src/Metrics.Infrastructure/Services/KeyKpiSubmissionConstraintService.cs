@@ -232,6 +232,29 @@ public class KeyKpiSubmissionConstraintService(
         }
     }
 
+    public async Task<ResultT<List<KeyKpiSubmissionConstraintDto>>> FindByPeriodAsync(long periodId)
+    {
+        try
+        {
+            var data = await _context.KeyKpiSubmissionConstraints
+                .AsNoTracking()
+                .Where(c => c.DepartmentKeyMetric.KpiSubmissionPeriod.Id == periodId && c.IsDeleted == false)
+                .Include(c => c.DepartmentKeyMetric).ThenInclude(dkm => dkm.KpiSubmissionPeriod)
+                .Include(c => c.DepartmentKeyMetric).ThenInclude(dkm => dkm.KeyIssueDepartment)
+                .Include(c => c.DepartmentKeyMetric).ThenInclude(dkm => dkm.KeyMetric)
+                .Include(c => c.CandidateDepartment)
+                .OrderBy(c => c.CandidateDepartment.DepartmentName)
+                .ToListAsync();
+
+            return ResultT<List<KeyKpiSubmissionConstraintDto>>.Success(data.Select(d => d.MapToDto()).ToList());
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("Failed to fetch submission constraint by period. {msg}", ex.Message);
+            return ResultT<List<KeyKpiSubmissionConstraintDto>>.Fail("Failed to fetch submission constraint by period.", ErrorType.UnexpectedError);
+        }
+    }
+
 
 
     // public async Task<IEnumerable<KeyKpiSubmissionConstraint>> FindByDepartmentAsync(
