@@ -19,6 +19,11 @@ public interface IUserService
     Task<ApplicationUser?> FindByIdAsync(string userId);
 
     Task<long> FindCountAsync();
+    Task<long> FindCountByDepartmentAsync(long departmentId);
+    // Task<long> FindCountByDepartmentExcludeGroupAsync(long departmentId, List<long> excludedGroupId);
+    Task<ResultT<List<UserDto>>> FindByDepartmentAsync(long departmentId);
+
+
     // TODOs
     // Task<long> FindByUserIdAsync(string userId);
     // lock user
@@ -34,7 +39,8 @@ public interface IUserService
     Task<ResultT<List<UserDto>>> FindAllAsync(
         string? searchTerm,
         int pageNumber = 1,
-        int pageSize = 50);
+        int pageSize = 50,
+        bool includeLockedUser = false);
     Task<ResultT<List<UserClaimDto>>> GetUserClaimsAsync(List<string> userIDs);
     // Task<ResultT<List<UserClaimDto>>> GetUserClaimsAsync(string userId);
 

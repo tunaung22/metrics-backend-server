@@ -30,14 +30,14 @@
 
 <div class="container-fluid">
 
-    @if (!string.IsNullOrEmpty(Model.StatusMessage))
+    @* @if (!string.IsNullOrEmpty(Model.StatusMessage))
     {
         var color = Model.StatusMessage.StartsWith("Error") ? "danger" : "info";
         <div id="alert__actionFeedback" class="alert alert-@color alert-dismissible fade show mt-4 m-2" role="alert">
             @Html.Raw(Model.StatusMessage)
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
-    }
+    } *@
 
     @* <partial name="~/Shared/_StatusMessage" for="StatusMessage" /> *@
 
@@ -117,7 +117,16 @@
         }
     </div>
 
-    <div class="mt-4">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div id="loadingScreen" class="d-flex justify-content-center mb-4">
+        <strong role="status" class="me-3">Loading...</strong>
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
+    <div id="mainContent" class="mt-4 visually-hidden">
         <table id="userTable" class="table table-bordered table-striped">
             <thead>
                 <tr>

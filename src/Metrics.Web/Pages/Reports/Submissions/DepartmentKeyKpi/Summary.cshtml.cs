@@ -49,7 +49,8 @@ public class SummaryModel(
         }
         UserGroupListItems = LoadUserGroupListItems(UserGroupList);
 
-        if (string.IsNullOrEmpty(Group)) { Group = UserGroupListItems[0].Value.ToLower(); }
+        if (string.IsNullOrEmpty(Group))
+            Group = UserGroupListItems[0].Value.ToLower();
         // ----------DEPARTMENT KEY METRICS-------------------------------------
         DepartmentKeyMetrics = await LoadDepartmentKeyMetrics(SelectedPeriod.Id); // key departments + keys
 
@@ -96,7 +97,8 @@ public class SummaryModel(
             SummaryReportList = Load_SummaryReportList(
                 KeyIssueDepartmentList,
                 submissionsByPeriod_ByAllUserGroup,
-                true);
+                true,
+                null);
         }
         else // SINGLE GROUP
         {
@@ -108,7 +110,8 @@ public class SummaryModel(
             SummaryReportList = Load_SummaryReportList(
                 KeyIssueDepartmentList,
                 submissionsByPeriod_BySingleUserGroup,
-                false);
+                false,
+                Group);
         }
 
         return Page();
@@ -176,7 +179,8 @@ public class SummaryModel(
             SummaryReportList = Load_SummaryReportList(
                 KeyIssueDepartmentList,
                 submissionsByPeriod_ByAllUserGroup,
-                true);
+                true,
+                null);
 
             // SummaryReportExcelData = SummaryReportList
             //     .Select(e => new SummaryReport_ExcelExport_ViewModel
@@ -191,6 +195,7 @@ public class SummaryModel(
             var colKeyDepartment = "Key Departments";
             var colTotalKey = "Total Keys";
             var colTotalSubmission = "Total Submissions";
+            var colTotalCandidate = "Total Candidates";
             var colTotalScore = "Total Score";
             var colNetScore = "Score / Submitter";
             var colKpiScore = "KPI Score";
@@ -211,6 +216,7 @@ public class SummaryModel(
             .Concat(new DynamicExcelColumn[]
             {
                 new(colTotalSubmission) { Width = 20 },
+                new(colTotalCandidate) { Width = 20 },
                 new(colTotalScore) { Width = 20 },
                 new(colNetScore) { Width = 20 },
                 new(colKpiScore) { Width = 20 },
@@ -248,6 +254,7 @@ public class SummaryModel(
                     }
 
                     dict[colTotalSubmission] = e.TotalSubmissions;
+                    dict[colTotalCandidate] = e.TotalCandidates;
                     dict[colTotalScore] = Convert.ToDecimal(e.TotalScore.ToString("0.00"));
                     dict[colNetScore] = Convert.ToDecimal(e.NetScore.ToString("0.00"));
                     dict[colKpiScore] = Convert.ToDecimal(e.KpiScore.ToString("0.00"));
@@ -286,12 +293,14 @@ public class SummaryModel(
             SummaryReportList = Load_SummaryReportList(
                 KeyIssueDepartmentList,
                 submissionsByPeriod_BySingleUserGroup,
-                false);
+                false,
+                Group);
 
             var colPeriod = "KPI Period";
             var colKeyDepartment = "Key Departments";
             var colTotalKey = "Total Keys";
             var colTotalSubmission = "Total Submissions";
+            var colTotalCandidate = "Total Candidates";
             var colTotalScore = "Total Score";
             var colKpiScore = "KPI Score";
             var colGroup = "Group";
@@ -302,6 +311,7 @@ public class SummaryModel(
                 new(colKeyDepartment) { Width = 25 },
                 new(colTotalKey) { Width = 20 },
                 new(colTotalSubmission) { Width = 20 },
+                new(colTotalCandidate) { Width = 20 },
                 new(colTotalScore) { Width = 20 },
                 new(colKpiScore) { Width = 20 },
                 new(colGroup) {Width = 14 },
@@ -320,6 +330,7 @@ public class SummaryModel(
                     // add group name
                     dict[colGroup] = Group.ToUpper();
                     dict[colTotalSubmission] = e.TotalSubmissions;
+                    dict[colTotalCandidate] = e.TotalCandidates;
                     dict[colTotalScore] = Convert.ToDecimal(e.TotalScore.ToString("0.00"));
                     dict[colKpiScore] = Convert.ToDecimal(e.KpiScore.ToString("0.00"));
                     return dict;
@@ -457,7 +468,8 @@ public class SummaryModel(
     private List<SummaryReport_ViewModel> Load_SummaryReportList(
         List<DepartmentViewModel> DepartmentList,
         List<KeyKpiSubmissionViewModel> submissionsByPeriod_ByAllUserGroup,
-        bool IsAllGroup)
+        bool IsAllGroup,
+        string? groupName)
     {
         //
         var data = DepartmentList.Select(department =>
@@ -477,9 +489,6 @@ public class SummaryModel(
 
 
             var submissionCount = submissionFilteredByKeyIssueDepartment.Count;
-            var candidateCount = submissionFilteredByKeyIssueDepartment
-                .DistinctBy(s => s.SubmitterId)
-                .Count();
             decimal totalScore = submissionFilteredByKeyIssueDepartment.Sum(s => s.ScoreValue);
             // decimal totalKPI = totalScore > 0 ? (totalScore / submissionCount) : 0;
             decimal netKPIScore = totalScore > 0 ? (totalScore / submissionFilteredByUser) : 0;
@@ -488,6 +497,8 @@ public class SummaryModel(
             // if All Group
             if (IsAllGroup)
             {
+                var candidateCount = submissionFilteredByKeyIssueDepartment
+                    .DistinctBy(s => s.SubmitterId).Count();
                 // get data for each user group details: SummaryReport_UserGroupDetails
                 // SummaryReport_UserGroupDetail_ViewModel
                 var groupDetails = UserGroupList
@@ -523,6 +534,15 @@ public class SummaryModel(
             }
             else
             {
+                var candidateCount = submissionFilteredByKeyIssueDepartment
+                    .Where(s =>
+                        s.DepartmentKeyMetric.KeyIssueDepartmentId == department.Id &&
+                        s.SubmittedBy.UserGroup.GroupName
+                            .Equals(groupName, StringComparison.OrdinalIgnoreCase))
+                    .DistinctBy(s => s.SubmitterId)
+                    .Count();
+
+
                 var departmentInfo = new SummaryReport_ViewModel
                 {
                     KpiPeriodName = SelectedPeriodName,
@@ -588,7 +608,7 @@ public class SummaryModel(
     // ========== MODELS =======================================================
 
     public List<SummaryReport_ViewModel> SummaryReportList { get; set; } = [];
-    public List<SummaryReport_ExcelExport_ViewModel> SummaryReportExcelData { get; set; } = [];
+    // public List<SummaryReport_ExcelExport_ViewModel> SummaryReportExcelData { get; set; } = [];
     // ----------Select/Options Data----------
     [BindProperty]
     public List<SelectListItem> UserGroupListItems { get; set; } = []; // for select element
@@ -643,6 +663,9 @@ public class SummaryModel(
 
         [ExcelColumn(Name = "Total Submissions")]
         public int TotalSubmissions { get; set; }
+
+        [ExcelColumn(Name = "Total Candidates")]
+        public int TotalCandidates { get; set; }
 
         [ExcelColumn(Name = "Total Score")]
         [DisplayFormat(DataFormatString = "0.00")]

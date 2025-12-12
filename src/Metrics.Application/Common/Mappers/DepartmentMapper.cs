@@ -13,7 +13,9 @@ public static class DepartmentMapper
             DepartmentCode = e.DepartmentCode,
             DepartmentName = e.DepartmentName,
             // DepartmentStaffs = e.ApplicationUsers.Select(u => u.MapToDto(false)).ToList(),
-            StaffCount = e.ApplicationUsers.Count,
+            StaffCount = e.ApplicationUsers
+                .Count(u => u.UserName?.ToLower() != "sysadmin"),
+            // StaffCount = e.ApplicationUsers.Count,
         };
     }
 

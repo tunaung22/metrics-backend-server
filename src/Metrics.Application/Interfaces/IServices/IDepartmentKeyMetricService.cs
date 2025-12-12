@@ -41,6 +41,9 @@ public interface IDepartmentKeyMetricService
     Task<IEnumerable<DepartmentKeyMetric>> FindAllByPeriodAndDepartmentAsync(
         string CurrentPeriodName,
         Guid CurrentDepartmentCode);
+    Task<ResultT<List<DepartmentKeyMetricDto>>> FindByPeriodAndDepartmentAsync(
+        long periodId,
+        long keyIssueDepartmentId);
     Task<IEnumerable<DepartmentKeyMetric>> FindAllAsync();
     Task<IEnumerable<DepartmentKeyMetric>> FindAllAsync(int pageNumber = 1, int pageSize = 20);
     Task<long> FindCountAsync();

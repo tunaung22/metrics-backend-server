@@ -54,9 +54,9 @@
             <thead>
                 <tr>
                     <th>No.</th>
-                    <th>Candidate Department</th>
-                    <th class="">Key Title</th>
                     <th>Key Issue Department</th>
+                    <th class="">Key Title</th>
+                    <th>Candidate Department</th>
                     @* <th>Deleted</th> *@
                 </tr>
             </thead>
@@ -71,26 +71,15 @@
 
                         <tr id="tableRow" class="row-@k.Id">
                             <td class="text-center">@lineNumber</td>
-                            <td>
-                                @k.CandidateDepartment.DepartmentName
-                            </td>
-                            <td class="">
-                                @Html.Raw(k.DepartmentKeyMetric.KeyMetric.MetricTitle)
-                            </td>
-                            <td>
-                                @k.DepartmentKeyMetric.KeyIssueDepartment.DepartmentName
-                            </td>
-                            @* <td>
-                                @k.IsDeleted
-                            </td> *@
+                            <td class="fst-italic">@k.DepartmentKeyMetric.KeyIssueDepartment.DepartmentName</td>
+                            <td class="fst-italic">@k.DepartmentKeyMetric.KeyMetric.MetricTitle</td>
+                            <td class="text-primary fw-bold">@k.CandidateDepartment.DepartmentName</td>
                         </tr>
                     }
                 }
             </tbody>
         </table>
     </div>
-
-
 </div>
 
 

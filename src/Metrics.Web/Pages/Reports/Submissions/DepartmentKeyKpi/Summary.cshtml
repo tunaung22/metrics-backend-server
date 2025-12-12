@@ -83,7 +83,7 @@
                     <table id="summaryReportTable" class="table table-bordered table-striped">
                         <thead>
                             <tr>
-                                <th colspan="2">Key Departments</th>
+                                <th colspan="2">Key Issue Departments</th>
                                 @if(Model.UserGroupList.Count > 0)
                                 {
                                     foreach(var group in Model.UserGroupList)
@@ -94,7 +94,7 @@
                                 @* <th rowspan="2">Total Submissions</th> *@
                                 <th rowspan="2">Candidates</th>
                                 <th rowspan="2">Total Score</th>
-                                <th rowspan="2">Score/Submitter</th>
+                                <th rowspan="2">Total Score/Candidates</th>
                                 <th rowspan="2">KPI Score</th>
                             </tr>
                             <tr>
@@ -150,7 +150,8 @@
                                 <th><strong>Key Departments</strong></th>
                                 <th>Total Keys</th>
                                 <th>Group</th>
-                                <th>Total Submissions</th>
+                                @* <th>Total Submissions</th> *@
+                                <th>Candidates</th>
                                 <th>Total Score</th>
                                 <th>KPI Score</th>
                             </tr>
@@ -162,7 +163,8 @@
                                     <td><strong>@submission.KeyIssueDepartment.DepartmentName</strong></td>
                                     <td>@submission.TotalKeys</td>
                                     <td>@Model.Group.ToUpper()</td>
-                                    <td>@submission.TotalSubmissions.ToString("0")</td>
+                                    @* <td>@submission.TotalSubmissions.ToString("0")</td> *@
+                                    <td>@submission.TotalCandidates.ToString("0")</td>
                                     <td>@submission.TotalScore.ToString("0.00")</td>
                                     <td>
                                         <strong>

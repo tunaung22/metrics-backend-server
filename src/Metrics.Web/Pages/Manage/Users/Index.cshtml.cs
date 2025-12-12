@@ -88,23 +88,32 @@ public class IndexModel(
 
 
         // ===== Query ============================================
-        if (!string.IsNullOrEmpty(searchQuery))
-        {
-            // search view
+        if (string.IsNullOrEmpty(searchQuery))
             Search = searchQuery;
-            users = await _userService.FindAllAsync(
-               searchTerm: Search,
-               pageNumber: currentPage,
-               pageSize: show);
-        }
-        else
-        {
-            // non search view
-            PageSize = _config.GetValue<int>("Pagination:PageSize");
-            users = await _userService.FindAllAsync(
-               pageNumber: currentPage,
-               pageSize: show);
-        }
+
+
+        users = await _userService.FindAllAsync(
+            searchTerm: Search,
+            pageNumber: currentPage,
+            pageSize: show,
+            includeLockedUser: true);
+        // if (!string.IsNullOrEmpty(searchQuery))
+        // {
+        //     // search view
+        //     Search = searchQuery;
+        //     users = await _userService.FindAllAsync(
+        //        searchTerm: Search,
+        //        pageNumber: currentPage,
+        //        pageSize: show);
+        // }
+        // else
+        // {
+        //     // non search view
+        //     PageSize = _config.GetValue<int>("Pagination:PageSize");
+        //     users = await _userService.FindAllAsync(
+        //        pageNumber: currentPage,
+        //        pageSize: show);
+        // }
 
         if (!users.IsSuccess || users.Data == null)
         {

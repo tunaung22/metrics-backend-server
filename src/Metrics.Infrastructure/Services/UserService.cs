@@ -11,6 +11,7 @@ using Metrics.Infrastructure.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.VisualBasic;
 using Npgsql;
 using System.Security.Claims;
 
@@ -598,45 +599,79 @@ public class UserService : IUserService
     public async Task<ResultT<List<UserDto>>> FindAllAsync(
         string? searchTerm,
         int pageNumber,
-        int pageSize)
+        int pageSize,
+        bool includeLockedUser)
     {
         try
         {
             List<UserDto> userData = [];
-
-
             List<ApplicationUser>? usersList = [];
+
             if (string.IsNullOrEmpty(searchTerm))
             {
-                usersList = await _userManager.Users
-                    .Include(u => u.Department)
-                    .Include(u => u.UserTitle)
-                    .Where(u => u.UserName != "sysadmin")
-                    .OrderBy(u => u.UserName)
-                    .Skip((pageNumber - 1) * pageSize)
-                    .Take(pageSize)
-                    .AsNoTracking()
-                    .ToListAsync();
+                if (includeLockedUser)
+                {
+                    usersList = await _userManager.Users
+                        .Where(u => u.UserName != "sysadmin")
+                        .Include(u => u.Department)
+                        .Include(u => u.UserTitle)
+                        .OrderBy(u => u.UserName)
+                        .Skip((pageNumber - 1) * pageSize)
+                        .Take(pageSize)
+                        .AsNoTracking()
+                        .ToListAsync();
+                }
+                else
+                {
+                    usersList = await _userManager.Users
+                        .Where(u => u.UserName != "sysadmin" &&
+                            (u.LockoutEnd == null || u.LockoutEnd <= DateTime.UtcNow))
+                        .Include(u => u.Department)
+                        .Include(u => u.UserTitle)
+                        .OrderBy(u => u.UserName)
+                        .Skip((pageNumber - 1) * pageSize)
+                        .Take(pageSize)
+                        .AsNoTracking()
+                        .ToListAsync();
+                }
             }
             else
             {
                 var searchWords = searchTerm.Split(' ');
-                usersList = await _userManager.Users
-                    .Include(u => u.Department)
-                    .Include(u => u.UserTitle)
-                    .Where(u => u.UserName != "sysadmin" &&
-                        (
-                            searchWords.Any(word =>
+
+                if (includeLockedUser)
+                {
+                    usersList = await _userManager.Users
+                        .Where(u => u.UserName != "sysadmin"
+                            && searchWords.Any(word =>
                                 u.UserCode.Contains(word) ||
                                 u.UserName!.Contains(word) ||
                                 u.FullName.Contains(word) ||
                                 u.Department.DepartmentName.Contains(word)
-                            )
-                        )
-                    )
-                    .OrderBy(u => u.UserName)
-                    .AsNoTracking()
-                    .ToListAsync();
+                                ))
+                        .Include(u => u.Department)
+                        .Include(u => u.UserTitle)
+                        .OrderBy(u => u.UserName)
+                        .AsNoTracking()
+                        .ToListAsync();
+                }
+                else
+                {
+                    usersList = await _userManager.Users
+                        .Where(u => u.UserName != "sysadmin"
+                            && (u.LockoutEnd == null || u.LockoutEnd <= DateTime.UtcNow)
+                            && searchWords.Any(word =>
+                                    u.UserCode.Contains(word) ||
+                                    u.UserName!.Contains(word) ||
+                                    u.FullName.Contains(word) ||
+                                    u.Department.DepartmentName.Contains(word)
+                            ))
+                        .Include(u => u.Department)
+                        .Include(u => u.UserTitle)
+                        .OrderBy(u => u.UserName)
+                        .AsNoTracking()
+                        .ToListAsync();
+                }
             }
             if (usersList != null)
             {
@@ -713,10 +748,63 @@ public class UserService : IUserService
     {
         return await _userManager.Users
             .Where(u =>
-                u.UserName != null
-                && !u.UserName.ToLower().Contains("sysadmin"))
+                u.UserName != null &&
+                u.LockoutEnabled == false &&
+                !u.UserName.Contains("sysadmin"))
             .CountAsync();
     }
+
+    public async Task<long> FindCountByDepartmentAsync(long departmentId)
+    {
+        return await _userManager.Users
+            .Where(u =>
+                u.UserName != null &&
+                //u.LockoutEnabled == false &&
+                !u.UserName.Contains("sysadmin") &&
+                u.DepartmentId == departmentId)
+            .CountAsync();
+    }
+
+    public async Task<ResultT<List<UserDto>>> FindByDepartmentAsync(long departmentId)
+    {
+        try
+        {
+            var users = await _userManager.Users
+                .Where(u =>
+                    u.UserName != null &&
+                    u.LockoutEnd == null &&
+                    !u.UserName.Contains("sysadmin") &&
+                    // !_userManager.IsLockedOutAsync(u).Result &&
+                    u.DepartmentId == departmentId)
+                .ToListAsync();
+            var result = users.Select(u => u.MapToDto()).ToList();
+
+            return ResultT<List<UserDto>>.Success(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("Failed to load Users by department. {msg}", ex.Message);
+            return ResultT<List<UserDto>>.Fail("Failed to load Users by department.", ErrorType.UnexpectedError);
+        }
+
+    }
+
+    // public async Task<long> FindCountByDepartmentExcludeGroupAsync(
+    //     long departmentId,
+    //     List<long> excludedGroupId)
+    // {
+    //     return await _userManager.Users
+    //         .Where(u =>
+    //             excludedGroupId.Any(gId => gId == u.UserTitleId) &&
+    //             u.UserName != null &&
+    //             u.LockoutEnd == null &&
+    //             !_userManager.IsLockedOutAsync(u).Result &&
+    //             u.DepartmentId == departmentId)
+    //         .CountAsync();
+    // }
+
+
+
 
 
 

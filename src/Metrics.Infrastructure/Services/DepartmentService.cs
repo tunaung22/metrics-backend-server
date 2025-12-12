@@ -29,7 +29,11 @@ public class DepartmentService(
         try
         {
             var data = await _departmentRepository.FindAllAsync(pageNumber, pageSize);
-            var result = data.Select(e => e.MapToDto()).ToList();
+            var result = data
+                .Where(e =>
+                    //e.ApplicationUsers.All(u => u.UserName?.ToLower() != "sysadmin") &&
+                    e.IsDeleted == false)
+                .Select(e => e.MapToDto()).ToList();
 
             return ResultT<List<DepartmentDto>>.Success(result);
         }

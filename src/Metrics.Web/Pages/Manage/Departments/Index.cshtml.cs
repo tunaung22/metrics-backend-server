@@ -104,8 +104,11 @@ public class IndexModel : PageModel
             if (departments.Data != null)
             {
                 return departments.Data
-                    .Where(e =>
-                        e.DepartmentStaffs.All(user => !user.UserName.Equals("sysadmin", StringComparison.OrdinalIgnoreCase)))
+                    // .Where(d => d.DepartmentStaffs.All(u => !u.UserName.Equals("sysadmin", StringComparison.OrdinalIgnoreCase)))
+                    // .Where(d => d.DepartmentStaffs.All(u => u.UserName.ToLower().Equals("sysadmin")))
+                    // .Where(d => d.DepartmentStaffs.Any(staff => staff.UserCode == "mrt-101"))
+                    // .Where(e =>
+                    //     e.DepartmentStaffs.All(user => user.UserName.Equals("sysadmin", StringComparison.OrdinalIgnoreCase)))
                     .Select(e => e.MapToViewModel())
                     .ToList();
             }
