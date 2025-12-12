@@ -130,9 +130,9 @@
             <thead>
                 <tr>
                     <th>No.</th>
-                    <th>Candidate Department</th>
-                    <th class="">Key Title</th>
                     <th>Key Issue Department</th>
+                    <th>Key Title</th>
+                    <th>Candidate Department</th>
                 </tr>
             </thead>
             <tbody>
@@ -145,9 +145,9 @@
                         var lineNumber = rowCount.ToString("0");
                         <tr id="tableRow" class="">
                             <td>@lineNumber</td>
-                            <td>@c.CandidateDepartment?.DepartmentName</td>
-                            <td>@c.KeyMetric?.MetricTitle</td>
-                            <td>@c.KeyIssueDepartment?.DepartmentName</td>
+                            <td class="fst-italic">@c.KeyIssueDepartment?.DepartmentName</td>
+                            <td class="fst-italic">@c.KeyMetric?.MetricTitle</td>
+                            <td class="text-primary fw-bold">@c.CandidateDepartment?.DepartmentName</td>
                         </tr>
                     }
                 }

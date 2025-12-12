@@ -1,4 +1,5 @@
 ﻿@page "/Reports/Submissions/Key-Kpi/{periodName}/Summary"
+@using System.Text.Json
 @model Metrics.Web.Pages.Reports.Submissions.KeyKpi.SummaryModel
 @{
     ViewData["Title"] = "Key KPI Summary Report";
@@ -34,7 +35,7 @@
             <span class="d-flex align-items-center">
                 <div class="col-auto me-2">
                     <label asp-for="KeyDepartment" class="form-label m-0">
-                        <i class="bi bi-people-fill"></i> Key Issue Departments</label>
+                        <i class="bi bi-building-fill"></i> Key Issue Departments</label>
                 </div>
                 <div class="col-auto me-4">
                     <select 
@@ -51,6 +52,19 @@
 
     <div class="exportData">
         <form method="post" asp-page-handler="ExportExcel">
+
+            @* @if(Model.SummaryReport_Single!= null  || Model.SummaryReport_Multiple.Count > 0) *@
+            @if(Model.SummaryReport_Multiple.Count > 0)
+            {
+                <button type="submit" class="btn btn-success">
+                    <i class="bi bi-file-earmark-spreadsheet"></i> Export</button>
+            }
+            else
+            {
+                <button type="submit" 
+                    class="btn btn-success disabled">
+                <i class="bi bi-file-earmark-spreadsheet"></i> Export</button>
+            }
         </form>
     </div>
 </div>
@@ -59,145 +73,226 @@
 <div class="container-fluid">
     <div class="bg-light p-4 rounded-2">
         <div asp-validation-summary="ModelOnly" class="alert alert-danger text-danger" role="alert"></div>
+
+        <div id="loadingScreen" class="d-flex justify-content-center mb-4">
+            <strong role="status" class="me-3">Loading...</strong>
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+        
         <div class="table-responsive">
-
-            @* <p class="alert alert-danger text-danger text-center">No Data</p> *@
-
-            @* ---ALL--- *@
-            @if(Model.SelectedKeyDepartment == null)
+            @if(Model.KeyKpiSubmissions.Count > 0)
             {
-                <table class="reportTable table table-bordered table-striped">
-                    <thead>
-                        <tr>
-                            <th>Key Issue Department</th>
-                            <th>Key Metrics</th>
-                            @* @{
-                                var maxDpt = Model.SummaryReport_Row?.SummaryReportRow_Details
-                                    .Select(d=>d.CandidateDepartmentScoreDetails.Count).Max();
-                                for(int i=0; i<maxDpt; i++)
+            
+                @* <p class="alert alert-danger text-danger text-center">No Data</p> *@
+
+                @* ---ALL--- *@
+                @if(Model.SelectedKeyDepartment == null)
+                {
+                    <table id="summaryReportTable_allKeyDepartment" class="table table-bordered table-striped">
+                        <thead>
+                            <tr>
+                                <th colspan="2">Key Issue Department</th>
+                                <th colspan="@Model.UserGroupList.Count">User Group</th> 
+                                <th rowspan="2">Departments</th>
+                                <th rowspan="2">Submissions Received</th>
+                                <th rowspan="2">Score Received</th>
+                                @* <th rowspan="2">Total <small>(Score Received / No. of Candidate Department)</small></th> *@
+                                <th rowspan="2">Total Score</th>
+                                <th rowspan="2">Final Score</th>
+                            </tr>
+                            <tr>
+                                <th>Department</th>
+                                <th>Key</th>
+
+                                @foreach(var g in Model.UserGroupList.OrderBy(u=>u.GroupName))
                                 {
-                                    <th>Candidate @(i+1)</th>
+                                    <th>@g.GroupName</th>
                                 }
-                            } *@
-                            <th>Submissions Received</th>
-                            <th>Score Received</th>
-                            <th>Total Score</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @if(Model.SummaryReport_Multiple != null)
-                        {
-                            @foreach(var parent in Model.SummaryReport_Multiple)
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if(Model.SummaryReport_Multiple != null)
                             {
-                                @* var a = Model.SummaryReport_Multiple
-                                    .OrderBy(r=>r.SummaryReportItems)
-                                    .ToList(); *@
-                                @foreach(var item in parent.SummaryReportItems)
+                                @foreach(var parent in Model.SummaryReport_Multiple)
                                 {
+                                    @* var a = Model.SummaryReport_Multiple
+                                        .OrderBy(r=>r.SummaryReportItems)
+                                        .ToList(); *@
+
+                                    bool finalScoreShown = false;
+                                    @foreach(var item in parent.SummaryReportItems)
+                                    {
+                                        var submissionDetailJson = JsonSerializer.Serialize(item.SummaryReport_CandidateDepartmentScoreList);
+
+                                        <tr>
+                                            <td>@item.KeyIssueDepartment.DepartmentName</td>
+                                            <td>@item.KeyMetric.MetricTitle</td>
+                                            @* loop user group here *@
+                                            @foreach(var g in Model.UserGroupList)
+                                            {
+                                                var groupCount = item.SummaryReport_CandidateDepartmentScoreList
+                                                    .SelectMany(e => e.SummaryReport_SubmissionDetails)
+                                                    .Count(d => d.CandidateGroup.Equals(g.GroupName, StringComparison.OrdinalIgnoreCase));
+                                                <td class="font-monospace">@groupCount</td>
+                                            }
+                                            <td class="font-monospace">@item.SummaryReport_CandidateDepartmentScoreList.Count</td>
+                                            <td class="font-monospace">@item.ReceivedSubmissions</td>
+                                            <td class="font-monospace">
+                                                <button class="btn btn-link" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#singleKeyDepartmentDetailModal"
+                                                    data-submission-details="@submissionDetailJson"
+                                                    data-period-name="@item.PeriodName"
+                                                    data-key-department-name="@item.KeyIssueDepartment.DepartmentName" 
+                                                    data-key-title="@item.KeyMetric.MetricTitle">
+                                                @item.ReceivedScore.ToString("0.00")</button>
+                                            </td>
+
+                                            @* <td class="font-monospace">@item.AverageScore.ToString("0.00")</td> *@
+                                        
+                                            @if(finalScoreShown == false)
+                                            {
+                                                var rowsToSpan = @parent.SummaryReportItems.Count;
+                                                var averageTotal = parent.SummaryReportItems.Sum(i=>i.AverageScore);
+                                                @* var departmentCount = parent.SummaryReportItems.Count; *@
+                                                @* var totalScore = averageTotal / departmentCount; *@
+                                                <td class="text-center align-middle font-monospace"
+                                                    rowspan="@rowsToSpan">@averageTotal.ToString("0.00")</td>
+                                                <td class="text-center align-middle fw-bold font-monospace"
+                                                    rowspan="@parent.SummaryReportItems.Count">
+                                                    @parent.FinalScore.ToString("0.00")
+                                                </td>
+                                                finalScoreShown = true;
+                                            }
+                                            else
+                                            {
+                                                <td style="display: none;"></td>
+                                                <td style="display: none;"></td>
+                                            }
+                                        </tr>
+                                    }
+                                }
+                            }
+                        </tbody>
+                        <tfoot>
+                            @* <tr>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td style="text-align:right"><strong>Total Score</strong></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td style="text-align:right"><strong>Final Score</strong></td>
+                                <td></td>
+                            </tr> *@
+                        </tfoot>
+                    </table>
+                }
+
+                @* ---SELECTED--- *@
+                else
+                {
+                    <table id="summaryReportTable_singleKeyDepartment" class="table table-bordered table-striped"
+                            data-final-score="@Model.SummaryReport_Single?.FinalScore">
+                        <thead>
+                            <tr>
+                                <th colspan="2">Key Issue Department</th>
+                                <th colspan="@Model.UserGroupList.Count">User Group</th> 
+                                <th rowspan="2">Departments</th>
+                                <th rowspan="2">Submissions Received</th>
+                                <th rowspan="2">Score Received</th>
+                                <th rowspan="2">Total Score</th>
+                                <th rowspan="2">Final Score</th>
+                            </tr>
+                            <tr>
+                                <th>Department</th>
+                                <th>Key</th>
+                                @* loop user group columns here *@
+                                @foreach(var g in Model.UserGroupList.OrderBy(u=>u.GroupName))
+                                {
+                                    <th>@g.GroupName</th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if(Model.SummaryReport_Single != null)
+                            {
+                                bool finalScoreShown = false;
+                                @foreach(var item in Model.SummaryReport_Single.SummaryReportItems)
+                                {
+                                    var jsonObj = JsonSerializer.Serialize(item.SummaryReport_CandidateDepartmentScoreList);
                                     <tr>
-                                        <td>@item.KeyIssueDepartment.DepartmentName</td>
+                                        <td>@item.KeyIssueDepartment.DepartmentName @Model.SummaryReport_Single.SummaryReportItems.Count</td>
                                         <td>@item.KeyMetric.MetricTitle</td>
-                                        <td>@item.ReceivedSubmissions</td>
-                                        <td>@item.ReceivedScore.ToString("0.00")</td>
-                                        <td>@item.AverageScore.ToString("0.00")</td>
+                                        @* loop user group here *@
+                                        @foreach(var g in Model.UserGroupList.OrderBy(u=>u.GroupName))
+                                        {
+                                            var groupCount = item.SummaryReport_CandidateDepartmentScoreList
+                                                .SelectMany(e => e.SummaryReport_SubmissionDetails)
+                                                .Count(d => d.CandidateGroup.Equals(g.GroupName, StringComparison.OrdinalIgnoreCase));
+                                            <td class="font-monospace">@groupCount</td>
+                                        }
+                                        <td class="font-monospace">@item.SummaryReport_CandidateDepartmentScoreList.Count</td>
+                                        <td class="font-monospace">@item.ReceivedSubmissions</td>
+                                        <td class="font-monospace">
+                                            <button class="btn btn-link" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#singleKeyDepartmentDetailModal"
+                                                    data-submission-details="@jsonObj"
+                                                    data-period-name="@item.PeriodName"
+                                                    data-key-department-name="@item.KeyIssueDepartment.DepartmentName" 
+                                                    data-key-title="@item.KeyMetric.MetricTitle">
+                                                @item.ReceivedScore.ToString("0.00")</button></td>
+                                        <td class="font-monospace">@item.AverageScore.ToString("0.00")</td>
+                                        
+                                        @if(finalScoreShown == false)
+                                        {
+                                            <td class="text-center align-middle fw-bold font-monospace"
+                                                rowspan="@Model.SummaryReport_Single.SummaryReportItems.Count">
+                                                @Model.SummaryReport_Single.FinalScore.ToString("0.00")
+                                            </td>
+                                            finalScoreShown = true;
+                                        }
+                                        else
+                                        {
+                                            <td style="display: none;"></td>
+                                        }
                                     </tr>
                                 }
                             }
-                        }
-                                                        @* @* bool finalScoreShown = false;
-                                                            var activeKey = 0;
-                                                            @foreach(var item in Model.SummaryReport_Row.SummaryReportRow_Details)
-                                                            {
-                                                                if(activeKey != item.KeyMetric.Id)
-                                                                {
-                                                                    finalScoreShown = false;
-                                                                }
-
-                                                                <tr>
-                                                                    <td>@item.KeyIssueDepartment.DepartmentName</td>
-                                                                    <td>@item.KeyMetric.MetricTitle</td>
-                                                                    <td>@item.ReceivedSubmissions</td>
-                                                                    <td>@item.ReceivedScore.ToString("0.00")</td>
-                                                                    <td>@item.AverageScore.ToString("0.00")</td>
-                                                                    @if(!finalScoreShown)
-                                                                    {
-                                                                        <td rowspan="@Model.SummaryReport_Row.SummaryReportRow_Details.Count">-10</td>
-                                                                        finalScoreShown = true;
-                                                                    }
-                                                                </tr> *@
-                    </tbody>
-                    <tfoot>
-                        @* <tr>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td style="text-align:right"><strong>Total Score</strong></td>
-                            <td></td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td style="text-align:right"><strong>Final Score</strong></td>
-                            <td></td>
-                        </tr> *@
-                    </tfoot>
-                </table>
+                        </tbody>
+                        <tfoot>
+                            @* <tr>
+                                <td colspan="3"></td>
+                                <td class="text-end">Total Score</td>
+                                <td class="font-monospace" colspan="2"></td>
+                            </tr>
+                            <tr>
+                                <td colspan="3"></td>
+                                <td  class="text-end fw-bold">Final Score</td>
+                                <td class="font-monospace fw-bold" colspan="2"></td>
+                            </tr> *@
+                        </tfoot>
+                    </table>
+                }
             }
-
-            @* ---SELECTED--- *@
             else
             {
-                <table class="summaryReportTable table table-bordered table-striped">
-                    <thead>
-                        <tr>
-                            <th>Key Issue Department</th>
-                            <th>Key</th>
-                            <th>Submissions Received</th>
-                            <th>Score Received</th>
-                            <th>Total Score</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @if(Model.SummaryReport_Single != null)
-                        {
-                            @foreach(var item in Model.SummaryReport_Single.SummaryReportItems)
-                            {
-                                <tr>
-                                    <td>@item.KeyIssueDepartment.DepartmentName</td>
-                                    <td>@item.KeyMetric.MetricTitle</td>
-                                    <td>@item.ReceivedSubmissions</td>
-                                    <td>@item.ReceivedScore.ToString("0.00")</td>
-                                    <td>@item.AverageScore.ToString("0.00")</td>
-                                </tr>
-                            }
-                        }
-                    </tbody>
-                    <tfoot>
-                        <tr>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td style="text-align:right"><strong>Total Score</strong></td>
-                            <td></td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td style="text-align:right"><strong>Final Score</strong></td>
-                            <td></td>
-                        </tr>
-                    </tfoot>
-                </table>
+                <p class="alert alert-danger text-danger text-center">No Submissions yet.</p>
             }
         </div>
     </div>
 </div>
 
 @* ============================================================================================= *@
-<div class="modal fade" id="singleKeyDepartmentDetailModal" 
-        data-bs-backdrop="static" 
+<div class="modal modal-lg fade" id="singleKeyDepartmentDetailModal" 
+        @* data-bs-backdrop="static"  *@
         data-bs-keyboard="false" 
         tabindex="-1" 
         aria-labelledby="staticBackdropLabel" 
@@ -209,6 +304,8 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
+                <p class="key-title"></p>
+                <hr />
                 <div>
                     <table class="table table-striped">
                         <thead>
@@ -217,10 +314,8 @@
                                 <th>Score</th>
                             </tr>
                         </thead>
-                        <tbody id="modalTableBody">
-                            <tr>
-                               
-                            </tr>
+                        <tbody id="singleKeyDepartmentDetailModal_TableBody">
+                            <tr></tr>
                         </tbody>
                     </table>
                 </div>
@@ -234,22 +329,41 @@
 
 
 @section Scripts {
+    <script src="~/js/reports/key-kpi/summary.js" asp-append-version="true"></script>
+
     <script>
         $(document).ready(function() {
             // ------------------- DATATABLE -----------------------------------
-            if($(".summaryReportTable").length) {
-                new DataTable('.summaryReportTable', {
+            if($("#summaryReportTable_allKeyDepartment").length > 0) {
+                new DataTable('#summaryReportTable_allKeyDepartment', {
                     paging: false,
                     info: true,
                     searching: false,
                     autoWidth: true,
                     scroller: true,
                     initComplete: function() {
-                        $('.dataTable thead th').addClass('text-light text-center align-middle');
-                        $('.dataTable thead th').addClass('bg-brand-color');
-                        $('.dataTable tfoot th').addClass('bg-brand-color text-light');
+                        $('#summaryReportTable_allKeyDepartment thead th').addClass('text-light text-center align-middle');
+                        $('#summaryReportTable_allKeyDepartment thead th').addClass('bg-brand-color');
                     },
+                });
+            }
 
+
+
+            if($("#summaryReportTable_singleKeyDepartment").length) {
+                new DataTable('#summaryReportTable_singleKeyDepartment', {
+                    paging: false,
+                    info: true,
+                    searching: false,
+                    autoWidth: true,
+                    scroller: true,
+                    initComplete: function() {
+                        $('#summaryReportTable_singleKeyDepartment thead th').addClass('text-light text-center align-middle');
+                        $('#summaryReportTable_singleKeyDepartment thead th').addClass('bg-brand-color');
+                        //$('.dataTable tfoot th').addClass('bg-brand-color text-light');
+                    },
+                    
+                    /*
                     footerCallback: function (row, data, start, end, display) {
                         let api = this.api();
 
@@ -263,22 +377,17 @@
                         };
 
                         // Total over all pages (column 4 is "Received Score", index 4)
-                        var total = api
-                            .column(4)
-                            .data()
-                            .reduce(function (a, b) {
+                        var totalScore = api.column(4).data().reduce(function (a, b) {
                                 return floatVal(a) + floatVal(b);
-                            }, 0);
+                        }, 0);
 
                         // Update the Total Score cell (first footer row, last column)
-                        $(api.column(4).footer()).html(
-                            total.toFixed(2)
-                        );
+                        $(api.column(4).footer()).html(totalScore.toFixed(2));
 
                         // Calculate and update final score (first footer row, second to last column shows "Total Score")
                         // We need to update the second footer row's last column
-                        var finalScore = @Model.SummaryReport_Single?.FinalScore;
-                        @* var finalScore = total ; *@
+                        
+                        var finalScore = parseFloat($('.summaryReportTable').data('final-score'));
                         var footerRows = $(api.table().footer()).find('tr');
                         if (footerRows.length >= 2) {
                             // Update the Final Score cell (second footer row, last column)
@@ -287,6 +396,7 @@
                             );
                         }
                     }
+                    */
                 });
             }
 
@@ -296,15 +406,37 @@
             $('#singleKeyDepartmentDetailModal').on('show.bs.modal', function (event) {
                 var button = $(event.relatedTarget); // Button that triggered the modal
                 var keyId = button.data('keyid'); // Extract info from data-* attributes
-                var jsonData = button.data('json');
-                console.log("Key ID: ", keyId);
-                console.log("JsonData: ", jsonData);
 
-                var jsonString = button.attr('data-json'); 
-                console.log("jsonstring: ", jsonString);
-                @* $.each(data, function(i, item) {
-                    tableBody.append(`<tr><td>asss</td><td>dfd</td></tr>`);
-                }); *@
+                const periodName = button.data('period-name');
+                const keyDepartmentName = button.data('key-department-name');
+                const keyTitle = button.data('key-title');
+                var keyDepartment = button.data('key-department');
+                var keyId = button.data('key-id');
+                
+                $('.modal-title').empty();
+                $('.modal-title').append(`${keyDepartmentName} on Period ${periodName}`);
+                $('.key-title').empty();
+                $('.key-title').append(`${keyTitle}`);
+                
+                
+                var submissionDetails = button.data('submission-details');
+                console.log(submissionDetails);
+                var detailArr = typeof submissionDetails === 'string' ? JSON.parse(submissionDetails) : submissionDetails;
+                if (Array.isArray(detailArr)) {
+                    console.log("arr: ", detailArr);
+                    // Clear existing rows
+                    $('#singleKeyDepartmentDetailModal_TableBody').empty();
+                    detailArr.forEach(function(item) {
+                        console.log("item: ", item.TotalScoreByCandidateDepartment);
+                        var candidateScore = parseFloat(item.TotalScoreByCandidateDepartment) || 0.00;
+                        $('#singleKeyDepartmentDetailModal_TableBody').append(`
+                            <tr>
+                                <td>${item.CandidateDepartment.DepartmentName}</td>
+                                <td class="font-monospace text-end">${candidateScore.toFixed(2)}</td>
+                            </tr>
+                        `);
+                    });
+                }
             });
         });
     </script>

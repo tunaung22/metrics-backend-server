@@ -71,15 +71,9 @@
 
                         <tr id="tableRow" class="row-@k.Id">
                             <td class="text-center">@lineNumber</td>
-                            <td>
-                                @k.DepartmentKeyMetric.KeyIssueDepartment.DepartmentName
-                            </td>
-                            <td>
-                                @Html.Raw(k.DepartmentKeyMetric.KeyMetric.MetricTitle)
-                            </td>
-                            <td>
-                                @k.CandidateDepartment.DepartmentName
-                            </td>
+                            <td class="fst-italic">@k.DepartmentKeyMetric.KeyIssueDepartment.DepartmentName</td>
+                            <td class="fst-italic">@k.DepartmentKeyMetric.KeyMetric.MetricTitle</td>
+                            <td class="text-primary fw-bold">@k.CandidateDepartment.DepartmentName</td>
                         </tr>
                     }
                 }

@@ -87,9 +87,9 @@
                         @foreach (var period in Model.KpiPeriods)
                         {
                             <tr class="align-middle">
-                                <td class="mono-text">@period.PeriodName</td>
-                                <td class="text-center mono-text">@period.SubmissionStartDate.LocalDateTime.ToString("MMM dd, yyyy")</td>
-                                <td class="text-center mono-text">@period.SubmissionEndDate.LocalDateTime.Date.ToString("MMM dd, yyyy")</td>
+                                <td class="font-monospace">@period.PeriodName</td>
+                                <td class="text-center font-monospace">@period.SubmissionStartDate.LocalDateTime.ToString("MMM dd, yyyy")</td>
+                                <td class="text-center font-monospace">@period.SubmissionEndDate.LocalDateTime.Date.ToString("MMM dd, yyyy")</td>
                                 <td class="text-center">
                                     @* <button class="btn btn-success">
                                         Edit

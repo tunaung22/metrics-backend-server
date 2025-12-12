@@ -126,6 +126,9 @@ public class KeyKpiAssignmentImportService(
 
             // Target.DKM.DepartmentId == Source.DKM.DepartmentId
             var assignements = sourceAssignments
+                .OrderBy(source => source.DepartmentKeyMetric.KeyIssueDepartment.DepartmentName)
+                .ThenBy(source => source.CandidateDepartment.DepartmentName)
+                .ThenBy(source => source.DepartmentKeyMetric.KeyMetric.MetricTitle)
                 .Where(source => targetDkms.Any(target =>
                     target.DepartmentId == source.DepartmentKeyMetric.DepartmentId &&
                     target.KeyMetricId == source.DepartmentKeyMetric.KeyMetricId)

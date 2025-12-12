@@ -599,45 +599,79 @@ public class UserService : IUserService
     public async Task<ResultT<List<UserDto>>> FindAllAsync(
         string? searchTerm,
         int pageNumber,
-        int pageSize)
+        int pageSize,
+        bool includeLockedUser)
     {
         try
         {
             List<UserDto> userData = [];
-
-
             List<ApplicationUser>? usersList = [];
+
             if (string.IsNullOrEmpty(searchTerm))
             {
-                usersList = await _userManager.Users
-                    .Include(u => u.Department)
-                    .Include(u => u.UserTitle)
-                    .Where(u => u.UserName != "sysadmin")
-                    .OrderBy(u => u.UserName)
-                    .Skip((pageNumber - 1) * pageSize)
-                    .Take(pageSize)
-                    .AsNoTracking()
-                    .ToListAsync();
+                if (includeLockedUser)
+                {
+                    usersList = await _userManager.Users
+                        .Where(u => u.UserName != "sysadmin")
+                        .Include(u => u.Department)
+                        .Include(u => u.UserTitle)
+                        .OrderBy(u => u.UserName)
+                        .Skip((pageNumber - 1) * pageSize)
+                        .Take(pageSize)
+                        .AsNoTracking()
+                        .ToListAsync();
+                }
+                else
+                {
+                    usersList = await _userManager.Users
+                        .Where(u => u.UserName != "sysadmin" &&
+                            (u.LockoutEnd == null || u.LockoutEnd <= DateTime.UtcNow))
+                        .Include(u => u.Department)
+                        .Include(u => u.UserTitle)
+                        .OrderBy(u => u.UserName)
+                        .Skip((pageNumber - 1) * pageSize)
+                        .Take(pageSize)
+                        .AsNoTracking()
+                        .ToListAsync();
+                }
             }
             else
             {
                 var searchWords = searchTerm.Split(' ');
-                usersList = await _userManager.Users
-                    .Include(u => u.Department)
-                    .Include(u => u.UserTitle)
-                    .Where(u => u.UserName != "sysadmin" &&
-                        (
-                            searchWords.Any(word =>
+
+                if (includeLockedUser)
+                {
+                    usersList = await _userManager.Users
+                        .Where(u => u.UserName != "sysadmin"
+                            && searchWords.Any(word =>
                                 u.UserCode.Contains(word) ||
                                 u.UserName!.Contains(word) ||
                                 u.FullName.Contains(word) ||
                                 u.Department.DepartmentName.Contains(word)
-                            )
-                        )
-                    )
-                    .OrderBy(u => u.UserName)
-                    .AsNoTracking()
-                    .ToListAsync();
+                                ))
+                        .Include(u => u.Department)
+                        .Include(u => u.UserTitle)
+                        .OrderBy(u => u.UserName)
+                        .AsNoTracking()
+                        .ToListAsync();
+                }
+                else
+                {
+                    usersList = await _userManager.Users
+                        .Where(u => u.UserName != "sysadmin"
+                            && (u.LockoutEnd == null || u.LockoutEnd <= DateTime.UtcNow)
+                            && searchWords.Any(word =>
+                                    u.UserCode.Contains(word) ||
+                                    u.UserName!.Contains(word) ||
+                                    u.FullName.Contains(word) ||
+                                    u.Department.DepartmentName.Contains(word)
+                            ))
+                        .Include(u => u.Department)
+                        .Include(u => u.UserTitle)
+                        .OrderBy(u => u.UserName)
+                        .AsNoTracking()
+                        .ToListAsync();
+                }
             }
             if (usersList != null)
             {

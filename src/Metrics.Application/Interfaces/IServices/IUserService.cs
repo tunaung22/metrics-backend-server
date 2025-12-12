@@ -39,7 +39,8 @@ public interface IUserService
     Task<ResultT<List<UserDto>>> FindAllAsync(
         string? searchTerm,
         int pageNumber = 1,
-        int pageSize = 50);
+        int pageSize = 50,
+        bool includeLockedUser = false);
     Task<ResultT<List<UserClaimDto>>> GetUserClaimsAsync(List<string> userIDs);
     // Task<ResultT<List<UserClaimDto>>> GetUserClaimsAsync(string userId);
 
