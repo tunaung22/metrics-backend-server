@@ -1,4 +1,5 @@
 using Metrics.Application.DTOs.Department;
+using Metrics.Application.DTOs.Role;
 using Metrics.Application.DTOs.UserGroup;
 
 namespace Metrics.Application.DTOs.User;
@@ -15,5 +16,6 @@ public record UserDto(
     DepartmentDto Department,
     bool LockoutEnabled,
     DateTimeOffset? LockoutEnd
+// RoleDto UserRole
 )
 { }

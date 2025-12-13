@@ -23,7 +23,11 @@
 <div class="container-fluid">
 
     <div class="filter-toolbar mb-4 d-flex align-items-center justify-content-between">
-        <span class="d-flex flex-grow-1 align-items-center"></span>
+        <span class="d-flex flex-grow-1 align-items-center">
+            <a asp-page="../Index"
+                class="btn btn-sm btn-outline-primary me-4">
+                <i class="bi bi-arrow-left"></i> Back</a>
+        </span>
         <span>
             @{ var infoDesc = "<div><strong>Import</strong> <br/>Select source period to copy from.<br/></div>";
             }
@@ -51,7 +55,7 @@
 
     @* table... *@
     <div id="mainContent" class="visually-hidden table-responsive p-0 px-2 mb-3 border rounded-2">
-        <table id="keyMetricTable" class="table table-bordered table-striped" style="width:100%">
+        <table id="keyMetricTable" class="table table-bordered table-striped table-hover" style="width:100%">
             <thead>
                 <tr>
                     <th>No.</th>

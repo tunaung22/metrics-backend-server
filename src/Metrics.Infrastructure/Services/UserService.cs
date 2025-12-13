@@ -11,7 +11,6 @@ using Metrics.Infrastructure.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Microsoft.VisualBasic;
 using Npgsql;
 using System.Security.Claims;
 
@@ -462,7 +461,6 @@ public class UserService : IUserService
                 // .Where(u => )
                 .Where(u =>
                     u.UserName != "sysadmin" &&
-                    u.LockoutEnabled == true &&
                     (u.LockoutEnd == null || u.LockoutEnd <= DateTimeOffset.UtcNow));
 
             var allRoles = await _roleManager.Roles.ToListAsync();
@@ -503,6 +501,45 @@ public class UserService : IUserService
         {
             _logger.LogError(ex, "Unexpected error while querying all users.");
             throw new Exception("An unexpected error occurred. Please try again later.");
+        }
+    }
+
+    public async Task<ResultT<List<UserDto>>> FindAll_Async(bool includeLockedUser)
+    {
+        try
+        {
+            List<UserDto> result = [];
+
+            if (includeLockedUser)
+            {
+                var q = await _userRepository.FindAllAsQueryable()
+                    .AsNoTracking()
+                    .Where(u => u.UserName != "sysadmin")
+                    .OrderBy(u => u.Department.DepartmentName)
+                        .ThenBy(u => u.UserTitle.TitleName)
+                    .Include(u => u.Department)
+                    .Include(u => u.UserTitle)
+                    .ToListAsync();
+                result = q.Select(u => u.MapToDto()).ToList();
+            }
+            else
+            {
+                var q = await _userRepository.FindAllAsQueryable()
+                .AsNoTracking()
+                .Where(u => u.UserName != "sysadmin")
+                .Include(u => u.Department)
+                .Include(u => u.UserTitle)
+                .ToListAsync();
+                result = q.Select(u => u.MapToDto()).ToList();
+
+            }
+            return ResultT<List<UserDto>>.Success(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to fetch users. {msg}", ex.Message);
+            return ResultT<List<UserDto>>.Fail("Failed to fetch users.", ErrorType.UnexpectedError);
+
         }
     }
 
@@ -625,7 +662,7 @@ public class UserService : IUserService
                 {
                     usersList = await _userManager.Users
                         .Where(u => u.UserName != "sysadmin" &&
-                            (u.LockoutEnd == null || u.LockoutEnd <= DateTime.UtcNow))
+                            (u.LockoutEnd == null || u.LockoutEnd <= DateTimeOffset.UtcNow))
                         .Include(u => u.Department)
                         .Include(u => u.UserTitle)
                         .OrderBy(u => u.UserName)
@@ -744,14 +781,32 @@ public class UserService : IUserService
         }
     }
 
-    public async Task<long> FindCountAsync()
+    public async Task<long> FindCountAsync(bool includeLockedUser)
     {
-        return await _userManager.Users
-            .Where(u =>
-                u.UserName != null &&
-                u.LockoutEnabled == false &&
-                !u.UserName.Contains("sysadmin"))
-            .CountAsync();
+        // return await _userManager.Users
+        //     .Where(u =>
+        //         u.UserName != null &&
+        //         (u.LockoutEnd == null || u.LockoutEnd <= DateTimeOffset.UtcNow) &&
+        //         u.UserName.ToLower() != "sysadmin")
+        //     .CountAsync();
+        if (includeLockedUser)
+        {
+            return await _context.Users
+                .Where(u =>
+                    u.UserName != null &&
+                    u.UserName.ToLower() != "sysadmin")
+                .CountAsync();
+        }
+        else
+        {
+            return await _context.Users
+                .Where(u =>
+                    u.UserName != null &&
+                    (u.LockoutEnd == null || u.LockoutEnd <= DateTimeOffset.UtcNow) &&
+                    u.UserName.ToLower() != "sysadmin")
+                .CountAsync();
+        }
+
     }
 
     public async Task<long> FindCountByDepartmentAsync(long departmentId)
@@ -760,6 +815,7 @@ public class UserService : IUserService
             .Where(u =>
                 u.UserName != null &&
                 //u.LockoutEnabled == false &&
+                (u.LockoutEnd == null || u.LockoutEnd <= DateTimeOffset.UtcNow) &&
                 !u.UserName.Contains("sysadmin") &&
                 u.DepartmentId == departmentId)
             .CountAsync();
@@ -772,7 +828,7 @@ public class UserService : IUserService
             var users = await _userManager.Users
                 .Where(u =>
                     u.UserName != null &&
-                    u.LockoutEnd == null &&
+                    (u.LockoutEnd == null || u.LockoutEnd <= DateTimeOffset.UtcNow) &&
                     !u.UserName.Contains("sysadmin") &&
                     // !_userManager.IsLockedOutAsync(u).Result &&
                     u.DepartmentId == departmentId)

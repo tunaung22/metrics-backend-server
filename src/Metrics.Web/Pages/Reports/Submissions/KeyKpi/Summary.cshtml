@@ -90,15 +90,15 @@
                 @* ---ALL--- *@
                 @if(Model.SelectedKeyDepartment == null)
                 {
-                    <table id="summaryReportTable_allKeyDepartment" class="table table-bordered table-striped">
+                    <table id="summaryReportTable_allKeyDepartment" class="table table-bordered">
                         <thead>
                             <tr>
                                 <th colspan="2">Key Issue Department</th>
                                 <th colspan="@Model.UserGroupList.Count">User Group</th> 
-                                <th rowspan="2">Departments</th>
+                                <th rowspan="2">Candidate Departments</th>
                                 <th rowspan="2">Submissions Received</th>
                                 <th rowspan="2">Score Received</th>
-                                @* <th rowspan="2">Total <small>(Score Received / No. of Candidate Department)</small></th> *@
+                                <th rowspan="2">Score/Submission</th> @*<small>(Score Received / No. of Candidate Department)</small>*@
                                 <th rowspan="2">Total Score</th>
                                 <th rowspan="2">Final Score</th>
                             </tr>
@@ -126,7 +126,7 @@
                                     {
                                         var submissionDetailJson = JsonSerializer.Serialize(item.SummaryReport_CandidateDepartmentScoreList);
 
-                                        <tr>
+                                        <tr class="@(finalScoreShown ? "" : "topCell")">
                                             <td>@item.KeyIssueDepartment.DepartmentName</td>
                                             <td>@item.KeyMetric.MetricTitle</td>
                                             @* loop user group here *@
@@ -135,10 +135,10 @@
                                                 var groupCount = item.SummaryReport_CandidateDepartmentScoreList
                                                     .SelectMany(e => e.SummaryReport_SubmissionDetails)
                                                     .Count(d => d.CandidateGroup.Equals(g.GroupName, StringComparison.OrdinalIgnoreCase));
-                                                <td class="font-monospace">@groupCount</td>
+                                                <td class="font-monospace text-secondary">@groupCount</td>
                                             }
-                                            <td class="font-monospace">@item.SummaryReport_CandidateDepartmentScoreList.Count</td>
-                                            <td class="font-monospace">@item.ReceivedSubmissions</td>
+                                            <td class="font-monospace text-secondary">@item.SummaryReport_CandidateDepartmentScoreList.Count</td>
+                                            <td class="font-monospace text-secondary">@item.ReceivedSubmissions</td>
                                             <td class="font-monospace">
                                                 <button class="btn btn-link" 
                                                     data-bs-toggle="modal" 
@@ -150,16 +150,19 @@
                                                 @item.ReceivedScore.ToString("0.00")</button>
                                             </td>
 
-                                            @* <td class="font-monospace">@item.AverageScore.ToString("0.00")</td> *@
-                                        
+                                            <td class="font-monospace text-secondary">@item.AverageScore.ToString("0.00")</td>
+
                                             @if(finalScoreShown == false)
                                             {
                                                 var rowsToSpan = @parent.SummaryReportItems.Count;
                                                 var averageTotal = parent.SummaryReportItems.Sum(i=>i.AverageScore);
                                                 @* var departmentCount = parent.SummaryReportItems.Count; *@
                                                 @* var totalScore = averageTotal / departmentCount; *@
+                                                @* <td class="text-center align-middle font-monospace"
+                                                    rowspan="@rowsToSpan">@averageTotal.ToString("0.00")</td> *@
                                                 <td class="text-center align-middle font-monospace"
                                                     rowspan="@rowsToSpan">@averageTotal.ToString("0.00")</td>
+
                                                 <td class="text-center align-middle fw-bold font-monospace"
                                                     rowspan="@parent.SummaryReportItems.Count">
                                                     @parent.FinalScore.ToString("0.00")
@@ -198,15 +201,16 @@
                 @* ---SELECTED--- *@
                 else
                 {
-                    <table id="summaryReportTable_singleKeyDepartment" class="table table-bordered table-striped"
+                    <table id="summaryReportTable_singleKeyDepartment" class="table table-bordered"
                             data-final-score="@Model.SummaryReport_Single?.FinalScore">
                         <thead>
                             <tr>
                                 <th colspan="2">Key Issue Department</th>
                                 <th colspan="@Model.UserGroupList.Count">User Group</th> 
-                                <th rowspan="2">Departments</th>
+                                <th rowspan="2">Candidate Departments</th>
                                 <th rowspan="2">Submissions Received</th>
                                 <th rowspan="2">Score Received</th>
+                                <th rowspan="2">Score/Submission</th> @*<small>(Score Received / No. of Candidate Department)</small>*@
                                 <th rowspan="2">Total Score</th>
                                 <th rowspan="2">Final Score</th>
                             </tr>
@@ -228,18 +232,20 @@
                                 {
                                     var jsonObj = JsonSerializer.Serialize(item.SummaryReport_CandidateDepartmentScoreList);
                                     <tr>
-                                        <td>@item.KeyIssueDepartment.DepartmentName @Model.SummaryReport_Single.SummaryReportItems.Count</td>
+                                        @* key count => @Model.SummaryReport_Single.SummaryReportItems.Count *@
+                                        <td>@item.KeyIssueDepartment.DepartmentName</td>
                                         <td>@item.KeyMetric.MetricTitle</td>
                                         @* loop user group here *@
                                         @foreach(var g in Model.UserGroupList.OrderBy(u=>u.GroupName))
                                         {
+                                            // each candidate department's submission count
                                             var groupCount = item.SummaryReport_CandidateDepartmentScoreList
                                                 .SelectMany(e => e.SummaryReport_SubmissionDetails)
                                                 .Count(d => d.CandidateGroup.Equals(g.GroupName, StringComparison.OrdinalIgnoreCase));
-                                            <td class="font-monospace">@groupCount</td>
+                                            <td class="font-monospace text-secondary">@groupCount</td>
                                         }
-                                        <td class="font-monospace">@item.SummaryReport_CandidateDepartmentScoreList.Count</td>
-                                        <td class="font-monospace">@item.ReceivedSubmissions</td>
+                                        <td class="font-monospace text-secondary">@item.SummaryReport_CandidateDepartmentScoreList.Count</td>
+                                        <td class="font-monospace text-secondary">@item.ReceivedSubmissions</td>
                                         <td class="font-monospace">
                                             <button class="btn btn-link" 
                                                     data-bs-toggle="modal" 
@@ -248,19 +254,27 @@
                                                     data-period-name="@item.PeriodName"
                                                     data-key-department-name="@item.KeyIssueDepartment.DepartmentName" 
                                                     data-key-title="@item.KeyMetric.MetricTitle">
-                                                @item.ReceivedScore.ToString("0.00")</button></td>
-                                        <td class="font-monospace">@item.AverageScore.ToString("0.00")</td>
+                                                @item.ReceivedScore.ToString("0.00")</button>
+                                        </td>
+                                        
+                                        <td class="font-monospace text-secondary">@item.AverageScore.ToString("0.00")</td>
                                         
                                         @if(finalScoreShown == false)
                                         {
+                                            var rowsToSpan = @Model.SummaryReport_Single.SummaryReportItems.Count;
                                             <td class="text-center align-middle fw-bold font-monospace"
-                                                rowspan="@Model.SummaryReport_Single.SummaryReportItems.Count">
+                                                rowspan="@rowsToSpan">
+                                                @Model.SummaryReport_Single.SummaryReportItems.Sum(i=>i.AverageScore).ToString("0.00")
+                                            </td>
+                                            <td class="text-center align-middle fw-bold font-monospace"
+                                                rowspan="@rowsToSpan">
                                                 @Model.SummaryReport_Single.FinalScore.ToString("0.00")
                                             </td>
                                             finalScoreShown = true;
                                         }
                                         else
                                         {
+                                            <td style="display: none;"></td>
                                             <td style="display: none;"></td>
                                         }
                                     </tr>
@@ -326,6 +340,14 @@
         </div>
     </div>
 </div>
+
+@section Styles {
+    <style>
+        .topCell {
+            border-top: 1px solid #b7b7b7;
+        }
+    </style>
+}
 
 
 @section Scripts {

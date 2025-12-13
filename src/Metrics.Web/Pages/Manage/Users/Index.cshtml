@@ -13,10 +13,24 @@
 <div class="sectionTitle">
     <div class="d-flex align-items-center">
         <h3 class="flex-grow-1"><i class="bi bi-person-lines-fill"></i> Manage Users</h3>
-        <span class="justify-content-end gap-2 me-4">
-            <a class="btn btn-success" 
+        <span class="d-flex justify-content-end gap-2 me-4">
+            <form method="post" asp-page-handler="ExportExcel">
+                @* @if(Model.SummaryReport_Single!= null  || Model.SummaryReport_Multiple.Count > 0) *@
+                @if(Model.UsersList.Count > 0)
+                {
+                    <button type="submit" class="btn btn-sm btn-outline-success">
+                        <i class="bi bi-file-earmark-spreadsheet"></i> Export</button>
+                }
+                else
+                {
+                    <button type="submit" 
+                        class="btn btn-sm btn-outline-success disabled">
+                    <i class="bi bi-file-earmark-spreadsheet"></i> Export</button>
+                }
+            </form>
+            <a class="btn btn-sm btn-success" 
                 asp-page="Register/Index"
-                asp-route-returnUrl="@Url.Page("Index")"><i class="bi bi-plus-lg"></i> Register</a>
+                asp-route-returnUrl="@Url.Page("Index")"><i class="bi bi-plus-circle"></i> Register</a>
         </span>
     </div>
     <nav aria-label="breadcrumb">
@@ -44,14 +58,19 @@
     @* =============== Filter Bar / Action Bar =============================================== *@
     <div id="filter-bar" class="px-4 pt-4">
         <div class="row mb-3 align-items-center">
-
-            <div class="col d-flex flex-grow-1">
-                <text class="me-2">Total: </text> <strong>@Model.TotalItems</strong>
+            <div class="d-flex align-items-center gap-4 flex-grow-1">
+                <span>Total:</span>
+                <div class="border px-4 py-2 rounded-2 text-secondary fw-bold">
+                    @Model.TotalUsers
+                </div>
+                <span>Active:</span>
+                <div class="border px-4 py-2 rounded-2 text-secondary fw-bold">
+                    @Model.ActiveUsers
+                </div>
             </div>
             
             
-            
-            <div class="col-10">
+            @* <div class="col-10">
                 <form method="get">
                     <div class="row g-2 align-items-center">
                         <div class="col-auto">
@@ -72,7 +91,6 @@
                             <label for="">Department:</label>
                         </div>
                         <div class="col-3 me-2">
-                            @* <input type="hidden" asp-for="Department"/> *@
                             <select 
                                 asp-for="Department"
                                 asp-items="Model.DepartmentList"
@@ -107,7 +125,7 @@
                         </div>
                     </div>
                 </form>
-            </div>
+            </div> *@
         </div>
 
         @if(isInSearchMode) {
@@ -126,78 +144,76 @@
         </div>
     </div>
 
-    <div id="mainContent" class="mt-4 visually-hidden">
-        <table id="userTable" class="table table-bordered table-striped">
-            <thead>
-                <tr>
-                    <th>No.</th>
-                    <th>User Code</th>
-                    <th>Account</th>
-                    <th>Name</th>
-                    <th>Group</th>
-                    <th>Department</th>
-                    <th>Role</th>
-                    @* <th>Address</th> *@
-                    @* <th>Phone Number</th> *@
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @if (Model.UsersList.Any())
-                {
-                    @foreach (var (e, idx) in Model.UsersList.Select((item, idx)=>(item, idx) ))
+    <div id="mainContent" class="mt-4 mx-4 visually-hidden">
+        <div class="table-container">
+            <table id="userTable" class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th>No.</th>
+                        <th>User Code</th>
+                        <th>Account</th>
+                        <th>Name</th>
+                        <th>Group</th>
+                        <th>Department</th>
+                        <th>Role</th>
+                        @* <th>Address</th> *@
+                        @* <th>Phone Number</th> *@
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.UsersList.Any())
                     {
-                        <tr class="align-middle">
-                            <td class="px-2">@(idx+1)</td>
-                            <td>@e.UserCode</td>
-                            <td class="ps-4">@e.UserName</td>
-                            <td class="ps-4">@e.FullName</td>
-                            <td class="ps-4 text-success">
-                                <strong>@e.UserTitleName</strong>
-                            </td>
-                            <td class="ps-4">@e.DepartmentName</td>
-                            <td class="ps-4">
-                                @foreach(var roleName in e.UserRoles)
-                                {
-                                    var color = roleName.StartsWith("Admin") ? "danger" : "success";
-                                    <span class="text-@color"><strong>@roleName</strong></span>
-                                    @* <span class="badge rounded-2 rounded-pill text-bg-@color">
-                                        @roleName</span> *@
-                                } </td>
-                            @* <td>@e.Address</td> *@
-                            @* <td>@e.PhoneNumber</td> *@
-                            <td>
-                                <div class="d-flex gap-2 justify-content-center">
-                                    <a asp-page="Edit" 
-                                        asp-route-userId="@e.Id"
-                                        asp-route-returnUrl="@Request.Path"
-                                        class="btn__actionButtons btn btn-sm btn-outline-primary my-2 my-lg-0 me-2">
-                                        <i class="bi bi-pencil-square"> </i>Edit</a>
-                                    <a asp-page="Lock" 
-                                        asp-route-userId="@e.Id"
-                                        asp-route-returnUrl="@Request.Path"
-                                        class="btn__actionButtons btn btn-sm btn-@(e.IsActive?"outline-success":"outline-danger") my-2 my-lg-0 me-2"
-                                        >
-                                            @if (@e.IsActive) 
-                                            { <i class="bi bi-lock-fill"></i> <text>Lock</text> }
-                                            else 
-                                            { <i class="bi bi-unlock-fill"></i> <text>Unlock</text> } 
-                                    </a>
-                                    <a asp-page="Reset" 
-                                        asp-route-userId="@e.Id"
-                                        asp-route-returnUrl="@Request.Path"
-                                        class="btn__actionButtons btn btn-sm btn-outline-primary my-2 my-lg-0 me-2">
-                                        <i class="bi bi-fingerprint"></i> Reset Password</a>
-                                </div>
-                            </td>
-                        </tr>
+                        @foreach (var (e, idx) in Model.UsersList.Select((item, idx)=>(item, idx) ))
+                        {
+                            <tr class="align-middle">
+                                <td class="px-2">@(idx+1)</td>
+                                <td>@e.UserCode</td>
+                                <td class="ps-4">@e.UserName</td>
+                                <td class="ps-4">@e.FullName</td>
+                                <td class="ps-4 text-success">
+                                    <strong>@e.UserTitleName</strong>
+                                </td>
+                                <td class="ps-4">@e.DepartmentName</td>
+                                <td class="ps-4">
+                                    @foreach(var roleName in e.UserRoles)
+                                    {
+                                        var color = roleName.StartsWith("Admin") ? "danger" : "secondary";
+                                        <span class="text-@color"><strong>@roleName</strong></span>
+                                    } </td>
+                                <td>
+                                    <div class="d-flex gap-2 justify-content-center">
+                                        <a asp-page="Edit" 
+                                            asp-route-userId="@e.Id"
+                                            asp-route-returnUrl="@Request.Path"
+                                            class="btn__actionButtons btn btn-sm btn-outline-primary my-2 my-lg-0 me-2">
+                                            <i class="bi bi-pencil-square"></i> Edit</a>
+                                        <a asp-page="Lock" 
+                                            asp-route-userId="@e.Id"
+                                            asp-route-returnUrl="@Request.Path"
+                                            class="btn__actionButtons btn btn-sm btn-@(e.IsActive?"outline-success":"outline-danger") my-2 my-lg-0 me-2"
+                                            >
+                                                @if (@e.IsActive) 
+                                                { <i class="bi bi-lock-fill"></i> <text>Lock</text> }
+                                                else 
+                                                { <i class="bi bi-unlock-fill"></i> <text>Unlock</text> } 
+                                        </a>
+                                        <a asp-page="Reset" 
+                                            asp-route-userId="@e.Id"
+                                            asp-route-returnUrl="@Request.Path"
+                                            class="btn__actionButtons btn btn-sm btn-outline-primary my-2 my-lg-0 me-2">
+                                            <i class="bi bi-fingerprint"></i> Reset Password</a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
                     }
-                }
-            </tbody>
-        </table>
+                </tbody>
+            </table>
+        </div>
     </div>
 
-    @if(!isInSearchMode)
+    @* @if(!isInSearchMode)
     {
         <div class="p-4">
             <nav aria-label="Page navigation">
@@ -212,8 +228,6 @@
 
                     @for(int i = 1; i <= Model.TotalPages; i++)
                     {
-                        @* Model.Pagination.Page = i; *@
-
                         <li class="page-item @(Model.CurrentPage == i ? "active" : "")">
                             <a class="page-link"
                                 asp-page="./Index"
@@ -236,13 +250,17 @@
                 </ul>
             </nav>
         </div>
-    }
+    } *@
 </div>
 
 @section Styles {
     <style>
         .btn__actionButtons {
             width: auto;
+        }
+        .table-container {
+            max-height: 80dvh;
+            overflow-y: auto;  /* Enable vertical scrolling */
         }
     </style>
 }
@@ -284,8 +302,9 @@
             var colActions = 5;
             new DataTable('#userTable', {
                 paging: false,
-                info: false,
-                searching: false,
+                //pageLength: 1000,
+                info: true,
+                searching: true,
                 autoWidth: true,
                 columnDefs: [
                 ],

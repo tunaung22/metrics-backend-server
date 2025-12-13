@@ -2,23 +2,28 @@ using Metrics.Application.Domains;
 using Metrics.Application.DTOs.User;
 using Metrics.Application.Interfaces.IServices;
 using Metrics.Application.Results;
+using Metrics.Web.Common.Mappers;
+using Metrics.Web.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using MiniExcelLibs;
+using MiniExcelLibs.Attributes;
+using MiniExcelLibs.OpenXml;
 using System.Security.Claims;
 
 namespace Metrics.Web.Pages.Manage.Users;
 
 public class IndexModel(
-    IConfiguration config,
+    Microsoft.Extensions.Configuration.IConfiguration config,
     UserManager<ApplicationUser> userManager,
     RoleManager<ApplicationRole> roleManager,
     IUserService userService,
     IDepartmentService departmentService
 ) : PageModel
 {
-    private readonly IConfiguration _config = config;
+    private readonly Microsoft.Extensions.Configuration.IConfiguration _config = config;
     private readonly IUserService _userService = userService;
     private readonly IDepartmentService _departmentService = departmentService;
     private readonly UserManager<ApplicationUser> _userManager = userManager;
@@ -61,9 +66,10 @@ public class IndexModel(
     [BindProperty(SupportsGet = true)]
     public int Show { get; set; }
     public int PageSize { get; set; } = 20;
-    public long TotalItems { get; set; } // Overall Count
+    public long TotalUsers { get; set; } // Overall Count
+    public long ActiveUsers { get; set; }
     public long QueryResultCount { get; set; } = 0; // Current page result Count
-    public int TotalPages => (int)Math.Ceiling(decimal.Divide(TotalItems, PageSize));
+    public int TotalPages => (int)Math.Ceiling(decimal.Divide(TotalUsers, PageSize));
     public bool ShowPrevious => CurrentPage > 1;
     public bool ShowNext => CurrentPage < TotalPages;
 
@@ -73,30 +79,26 @@ public class IndexModel(
 
 
     // =============== HANDLERS ================================================
-    public async Task<IActionResult> OnGetAsync(
-        [FromQuery] int currentPage,
-        [FromQuery] int show,
-        [FromQuery] string? searchQuery = "")
+    public async Task<IActionResult> OnGetAsync()
+    // [FromQuery] int currentPage,
+    // [FromQuery] int show,
+    // [FromQuery] string? searchQuery = "")
     {
-        currentPage = currentPage < 1 ? 1 : currentPage;
-        show = show < 1 ? 50 : show;
-        // CurrentPage = currentPage;
-        // Show = show;
-
+        // currentPage = currentPage < 1 ? 1 : currentPage;
+        // show = show < 1 ? 50 : show;
         var users = new ResultT<List<UserDto>>();
-
-
-
         // ===== Query ============================================
-        if (string.IsNullOrEmpty(searchQuery))
-            Search = searchQuery;
+        // if (string.IsNullOrEmpty(searchQuery))
+        //     Search = searchQuery;
 
 
-        users = await _userService.FindAllAsync(
-            searchTerm: Search,
-            pageNumber: currentPage,
-            pageSize: show,
-            includeLockedUser: true);
+        // users = await _userService.FindAllAsync(
+        //     searchTerm: Search,
+        //     pageNumber: currentPage,
+        //     pageSize: show,
+        //     includeLockedUser: true);
+        users = await _userService.FindAll_Async(includeLockedUser: true);
+
         // if (!string.IsNullOrEmpty(searchQuery))
         // {
         //     // search view
@@ -149,7 +151,8 @@ public class IndexModel(
             .ToList();
 
 
-        TotalItems = await _userService.FindCountAsync();
+        TotalUsers = await _userService.FindCountAsync(includeLockedUser: true);
+        ActiveUsers = await _userService.FindCountAsync(includeLockedUser: false);
         QueryResultCount = usersList.Count;
 
         if (usersList.Any())
@@ -177,7 +180,7 @@ public class IndexModel(
                     IsActive =
                         user.LockoutEnabled == true &&
                         (user.LockoutEnd == null ||
-                        user.LockoutEnd < DateTimeOffset.UtcNow)
+                        user.LockoutEnd <= DateTimeOffset.UtcNow)
                 };
                 UsersList.Add(userModel);
             }
@@ -186,5 +189,104 @@ public class IndexModel(
         return Page();
     }
 
+    public async Task<IActionResult> OnPostExportExcelAsync(bool includeLockedUser = false)
+    {
 
+        var result = await _userService.FindAll_Async(includeLockedUser);
+        if (!result.IsSuccess)
+        {
+            ModelState.AddModelError(string.Empty, "Failed to fetch users list.");
+            return Page();
+        }
+        else if (result.Data == null)
+        {
+            ModelState.AddModelError(string.Empty, "No usres found.");
+            return Page();
+        }
+
+        // dto to viewmodel
+        var usersList = result.Data.Select(u => u.MapToViewModel()).ToList();
+
+        string excelFileName = "";
+        var memStream = new MemoryStream();
+
+        if (includeLockedUser)
+        {
+            excelFileName = $"Export_UsersList_IncludesLockedUsers_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.xlsx";
+            memStream = await PrepareUserListExcelData(usersList);
+        }
+        else
+        {
+            excelFileName = $"Export_UsersList_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.xlsx";
+            memStream = await PrepareUserListExcelData(usersList);
+        }
+
+        return File(
+            memStream,
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            excelFileName
+        );
+
+    }
+
+    private static async Task<MemoryStream> PrepareUserListExcelData(
+        List<UserViewModel> users)
+    {
+        List<Dictionary<string, object>> excelData = [];
+        var colUserCode = "User Code";
+        var colUserName = "User Name";
+        var colUserFullName = "Full Name";
+        var colUserGroup = "User Group";
+        var colDepartment = "Department";
+        var colRole = "Role";
+        var colLockStatus = "Status";
+
+        var dynamicCols = new List<DynamicExcelColumn>()
+            .Concat(
+            [
+                new(colUserCode) { Width = 25 },
+                new(colUserName) { Width = 25 },
+                new(colUserFullName) { Width = 26 },
+                new(colUserGroup) { Width = 20 },
+                new(colDepartment) { Width = 30 },
+                new(colRole) { Width = 20 },
+            ]).ToList();
+
+        foreach (var user in users)
+        {
+            var isActive = user.LockoutEnd == null || user.LockoutEnd <= DateTimeOffset.UtcNow;
+            var row = new Dictionary<string, object>();
+            row[colUserCode] = user.UserCode;
+            row[colUserName] = user.UserName;
+            row[colUserFullName] = user.FullName;
+            row[colUserGroup] = user.UserGroup.GroupName;
+            row[colDepartment] = user.Department.DepartmentName;
+            // row[colRole] = user.UserRole.RoleName;
+            row[colLockStatus] = isActive ? "Active" : "Locked";
+            excelData.Add(row);
+        }
+
+        var newStream = new MemoryStream();
+        await MiniExcel.SaveAsAsync(
+            stream: newStream,
+            value: excelData,
+            configuration: new OpenXmlConfiguration
+            {
+                DynamicColumns = dynamicCols.ToArray(),
+                // TableStyles = TableStyles.None,
+            }
+        );
+        newStream.Position = 0;
+
+        return newStream;
+    }
+
+    // public class UserListExcelViewModel
+    // {
+    //     [ExcelColumnWidth(20)]
+    //     [ExcelColumn(Name = "Submitted By")]
+    //     public string UserName { get; set; }
+    //     public string userCode { get; set; }
+
+    // }
 }
