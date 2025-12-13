@@ -59,7 +59,7 @@
         </div>
 
         @* ================ Table =================================================== *@
-        <div class="px-4 pb-4">
+        <div class="table-container px-4 pb-4">
             <table id="departmentsTable" class="table table-bordered table-striped">
                 <thead>
                     <tr>
@@ -142,6 +142,17 @@
         }
     </div>
 </div>
+
+
+@section Styles {
+    <style>
+        .table-container {
+            max-height: 70dvh; /* Set the desired height */
+            overflow-y: auto;  /* Enable vertical scrolling */
+        }
+    </style>
+}
+
 
 @section Scripts {
     <script>

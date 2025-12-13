@@ -23,7 +23,11 @@
 <div class="container-fluid">
 
     <div class="filter-toolbar mb-4 d-flex align-items-center justify-content-between">
-        <span class="d-flex flex-grow-1 align-items-center"></span>
+        <span class="d-flex flex-grow-1 align-items-center">
+            <a asp-page="../Index"
+                class="btn btn-sm btn-outline-primary me-4">
+                <i class="bi bi-arrow-left"></i> Back</a>
+        </span>
         <span>
             @{ var infoDesc = "<div><strong>Import</strong> <br/>Select source period to copy from.<br/></div>";
             }

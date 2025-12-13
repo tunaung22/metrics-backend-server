@@ -21,6 +21,7 @@ public static class UserMapper
             UserGroup: model.UserGroup.MapToDto(),
             LockoutEnabled: model.LockoutEnabled,
             LockoutEnd: model.LockoutEnd
+        // UserRole: model.UserRole.MapToDto()
         );
     }
 
@@ -39,6 +40,8 @@ public static class UserMapper
             UserGroup = dto.UserGroup.MapToViewModel(),
             LockoutEnabled = dto.LockoutEnabled,
             LockoutEnd = dto.LockoutEnd
+            // UserRole = dto.UserRole.MapToViewModel()
+
         };
     }
 

@@ -18,7 +18,7 @@ public interface IUserService
     Task<ApplicationUser> FindByUsernameAsync(string username);
     Task<ApplicationUser?> FindByIdAsync(string userId);
 
-    Task<long> FindCountAsync();
+    Task<long> FindCountAsync(bool includeLockedUser);
     Task<long> FindCountByDepartmentAsync(long departmentId);
     // Task<long> FindCountByDepartmentExcludeGroupAsync(long departmentId, List<long> excludedGroupId);
     Task<ResultT<List<UserDto>>> FindByDepartmentAsync(long departmentId);
@@ -34,6 +34,7 @@ public interface IUserService
     // Task<IdentityResult> ToggleLockUserByIdAsync(string userId);
     Task<IEnumerable<ApplicationUser>> FindAllActiveAsync(string roleName);
     Task<IEnumerable<ApplicationUser>> FindAllAsync();
+    Task<ResultT<List<UserDto>>> FindAll_Async(bool includeLockedUser);
 
     Task<ResultT<List<UserDto>>> FindAllAsync(int pageNumber = 1, int pageSize = 50);
     Task<ResultT<List<UserDto>>> FindAllAsync(
