@@ -1,5 +1,6 @@
 using Metrics.Application.Domains;
 using Metrics.Application.Interfaces.IServices;
+using Metrics.Web.Common.Mappers;
 using Metrics.Web.Models;
 using Metrics.Web.Models.ReportViewModels;
 using Microsoft.AspNetCore.Mvc;
@@ -170,18 +171,18 @@ public class ViewModel : PageModel
             Group = "all";
         // ---------------------------------------------------------------------
         // ----------DEPARTMENT-------------------------------------------------
-        var departments = await _departmentService.FindAllAsync();
-        if (!departments.Any())
+        var excludedDepartmentIDs = new List<long>();
+        var cca = await _departmentService.FindByDepartmentNameAsync("cca");
+        if (cca != null)
+            excludedDepartmentIDs.Add(cca.Id);
+        // var departments = await _departmentService.FindAllAsync();
+        var departments = await _departmentService.FindAllAsync(excludedDepartmentIDs);
+        if (!departments.IsSuccess || departments.Data == null)
         {
             ModelState.AddModelError(string.Empty, "Department does not exist.");
             return Page();
         }
-        DepartmentList = departments.Select(d => new DepartmentViewModel
-        {
-            Id = d.Id,
-            DepartmentName = d.DepartmentName,
-            DepartmentCode = d.DepartmentCode
-        }).ToList();
+        DepartmentList = departments.Data.Select(d => d.MapToViewModel()).ToList();
 
 
         // ---------------------------------------------------------------------
@@ -464,18 +465,19 @@ public class ViewModel : PageModel
             Group = "all";
 
         // ----------DEPARTMENT-------------------------------------------------
-        var departments = await _departmentService.FindAllAsync();
-        if (!departments.Any())
+        var excludedDepartmentIDs = new List<long>();
+        var cca = await _departmentService.FindByDepartmentNameAsync("cca");
+        if (cca != null)
+            excludedDepartmentIDs.Add(cca.Id);
+        // var departments = await _departmentService.FindAllAsync();
+        var departments = await _departmentService.FindAllAsync(excludedDepartmentIDs);
+        if (!departments.IsSuccess || departments.Data == null)
         {
             ModelState.AddModelError(string.Empty, "Department does not exist.");
             return Page();
         }
-        DepartmentList = departments.Select(d => new DepartmentViewModel
-        {
-            Id = d.Id,
-            DepartmentName = d.DepartmentName,
-            DepartmentCode = d.DepartmentCode
-        }).ToList();
+        DepartmentList = departments.Data.Select(d => d.MapToViewModel()).ToList();
+
 
 
         // TODO: Does retrieving all items impact performance??

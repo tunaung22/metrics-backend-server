@@ -8,10 +8,12 @@ public interface IDepartmentService
 {
     Task<ResultT<List<DepartmentDto>>> FindAllAsync(int pageNumber = 1, int pageSize = 50);
     Task<ResultT<List<DepartmentDto>>> FindAll_R_Async();
-    Task<Result> CreateAsync(DepartmentCreateDto createDto);
+    Task<ResultT<List<DepartmentDto>>> FindAllAsync(List<long> excludedDepartmentIDs);
     Task<ResultT<DepartmentDto>> FindByCodeAsync(string departmentCode);
+    Task<ResultT<DepartmentDto>> FindByDepartmentName_Async(string departmentName);
 
 
+    Task<Result> CreateAsync(DepartmentCreateDto createDto);
     // Task<Department> CreateAsync(Department entity);
     Task<Department> UpdateAsync(string departmentCode, Department entity);
     Task<bool> DeleteAsync(string departmentCode);

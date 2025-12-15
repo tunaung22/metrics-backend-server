@@ -561,8 +561,8 @@ public class DetailModel(
                 .Where(user =>
                     // remove users with user title "Staff" 
                     !user.UserTitle.TitleName.Equals("sysadmin", StringComparison.OrdinalIgnoreCase)
-                    && !user.UserTitle.TitleName.Equals("staff", StringComparison.OrdinalIgnoreCase)
-                    && !user.UserTitle.TitleName.Equals("management", StringComparison.OrdinalIgnoreCase))
+                    && !user.UserTitle.TitleName.Equals("staff", StringComparison.OrdinalIgnoreCase))
+                // && !user.UserTitle.TitleName.Equals("management", StringComparison.OrdinalIgnoreCase))
                 .Select(user => new UserViewModel
                 {
                     Id = user.Id,

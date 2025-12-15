@@ -19,7 +19,7 @@ public class SubmitKeyKpiScoreHandler(
         SubmitKeyKpiScoreRequirement requirement)
     {
         // -----Check User Title-----
-        var allowedUserTitles = requirement.AllowedUserTitles;
+        var allowedUserTitles = requirement.AllowedUserGroups;
         var user = await _userManager.GetUserAsync(context.User);
         if (user == null) return;
 

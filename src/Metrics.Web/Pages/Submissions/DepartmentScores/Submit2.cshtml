@@ -1,5 +1,5 @@
-﻿@page "/Submissions/Department-Scores/{periodName}"
-@model Metrics.Web.Pages.Submissions.DepartmentScores.SubmitModel
+﻿@page "/Submissions/Department-Kpi/{periodName}"
+@model Metrics.Web.Pages.Submissions.DepartmentScores.Submit2Model
 @{
     ViewData["Title"] = "Submit Department Score";
     decimal[] scoreList = new decimal[] { 1M, 2M, 3M, 4M, 5M, 6M, 7M, 8M, 9M, 10M };
@@ -23,6 +23,120 @@
 
 <div class="container">
     <div class="bg-light rounded rounded-4 p-4">
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger text-danger"></div>
+
+        @if(Model.IsSubmissionValid)  @* Date is due or early. *@
+        {
+            @if(!Model.IsSubmissionsExist)  @* New Submission (No submission exist.) *@
+            {
+                @if (Model.DepartmentList.Count > 0)
+                {
+                    <form method="post">
+                        <div class="actionButtons row mb-4">
+                            <div class="form-group col-md d-flex justify-content-end align-items-center gap-2">
+                                <button type="button" class="btn btn-warning me-2" 
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#cancelDialogstaticBackdrop">
+                                    <i class="bi bi-x-circle"> </i>Cancel</button>
+                                <button type="button" class="btn btn-primary me-2" 
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#submitDialogBackdrop">
+                                    <i class="bi bi-check-circle"> </i>Submit</button>
+                            </div>
+                        </div>
+
+                        <div class="row mt-4">
+                            <div class="form-group col-md d-flex justify-content-between align-items-center">
+                                <div class="flex-item">KPI Period: <strong class="text-success">@Model.TargetKpiPeriodName</strong></div>
+                                <div class="flex-item">Departments: <strong class="text-success">@Model.DepartmentList.Count</strong></div>
+                            </div>
+                            <div class="form-group col-md d-flex justify-content-end align-items-center gap-2">
+                            </div>
+                        </div>
+                       
+                        @for(int i=0 ; i< Model.DepartmentList.Count; i++) @* ==== Cards ===== *@
+                        {
+                            <div class="card mt-2 px-4 py-2">
+                                <div class="row pb-2"> <!-- Department -->
+                                    <label class="col-3 col-sm-3 col-md-3 col-lg-2" asp-for="SubmissionInput[i].DepartmentId">Department:</label>
+                                    <div class="col-9 col-sm-9 col-md-9 col-lg-10">
+                                        <span class="d-flex">
+                                            <strong class="flex-grow-1 justify-content-start">@Model.DepartmentList[i].DepartmentName</strong>
+                                            <label class="justify-content-end"><strong>@(i+1)</strong>/@Model.DepartmentList.Count</label>
+                                        </span>
+                                    </div>
+                                    <input type="hidden" asp-for="SubmissionInput[i].DepartmentId" />
+                                </div>
+
+                                <div class="row pb-2"> <!-- radio Inputs -->
+                                    <label class="col-3 col-sm-3 col-md-3 col-lg-2 form-label" asp-for="SubmissionInput[i].KpiScore">KPI Score: </label>
+                                    <div class="radio__scoreValue form-check form-check-inline col d-flex flex-wrap gap-2">
+                                        <select asp-for="SubmissionInput[i].KpiScore" class="form-select">
+                                            <option selected>Select Score</option>
+                                            @for(int x = 0; x < scoreList.Length; x++) {
+                                                <option value="@scoreList[x]">
+                                                    @scoreList[x].ToString("0.00")
+                                                </option>
+                                            }
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <span asp-validation-for="SubmissionInput[i].KpiScore" class="text-danger"></span>
+                                    </div>
+                                        @* <input asp-for="SubmissionInput[i].KpiScore" name="@Model.DepartmentList[@i].Id" value="@Model.SubmissionInput[i].KpiScore" /> *@
+                                </div>
+
+                                @* Hide Aspect section, if User Group is Staff *@
+                                @* What if Staff was renamed to Employee?? *@
+                                @if(Model.CurrentUserTitleName?.ToLower() != "staff") @* ===== Check Staff or Others ===== *@
+                                {
+                                <div class="row pb-2"> <!-- Aspects -->
+                                    <label class="col-md-2 col-lg-2 form-label">Aspects: </label>
+                                    <div class="col-md-10 col-lg-10 d-flex gap-2">
+                                        <div class="col">
+                                            <div class="row pb-2">
+                                                <label asp-for="SubmissionInput[i].PositiveAspects" class="form-label">Positive: </label>
+                                                <div>
+                                                    <textarea asp-for="SubmissionInput[i].PositiveAspects" class="form-control" id="exampleFormControlTextarea1" rows="5"></textarea>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col">
+                                            <div class="row pb-2">
+                                                <label asp-for="SubmissionInput[i].NegativeAspects" class="form-label">Negative: </label>
+                                                <div>
+                                                    <textarea asp-for="SubmissionInput[i].NegativeAspects" 
+                                                                class="form-control" 
+                                                                id="exampleFormControlTextarea1" 
+                                                                rows="5"></textarea>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                }
+
+                                <div class="row pb-2">
+                                        <label asp-for="SubmissionInput[i].Comments" 
+                                                class="col-3 col-sm-3 col-md-3 col-lg-2 form-label">Comments: </label>
+                                    <div class="col-9 col-sm-9 col-md-9 col-lg-10">
+                                        <textarea asp-for="SubmissionInput[i].Comments" 
+                                                    class="form-control" 
+                                                    id="exampleFormControlTextarea1" 
+                                                    rows="5"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+
+                    </form>
+                }
+            }
+        }
+    </div>
+
+
+    <div class="bg-light rounded rounded-4 p-4">
         @if (!ModelState.IsValid && !Model.IsSubmissionsExist)
         {
             <div class="form bg-light p-4">
@@ -42,133 +156,21 @@
                 @if (Model.DepartmentList.Count > 0)
                 {
                     <form method="post">
-                            <div class="actionButtons row mb-4">
+                            
+
+                            <div class="row mt-4">
                                 <div class="form-group col-md d-flex justify-content-end align-items-center gap-2">
                                     <button type="button" class="btn btn-warning me-2" 
                                             data-bs-toggle="modal" 
                                             data-bs-target="#cancelDialogstaticBackdrop">
                                         <i class="bi bi-x-circle"> </i>Cancel</button>
-                                    @* <button type="button" class="btn btn-primary me-2" 
-                                            data-bs-toggle="modal" 
-                                            data-bs-target="#submitDialogBackdrop">
-                                        <i class="bi bi-check-circle"> </i>Submit</button> *@
-                                    <button type="submit" class="btn btn-primary me-2">
+                                    @* <button type="submit" class="btn btn-primary me-2">
                                         <i class="bi bi-check-circle"> </i>Submit
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div class="row mt-4">
-                                <div class="form-group col-md d-flex justify-content-between align-items-center">
-                                    <div class="flex-item">KPI Period: <strong class="text-success">@Model.TargetKpiPeriodName</strong></div>
-                                    <div class="flex-item">Departments: <strong class="text-success">@Model.DepartmentList.Count</strong></div>
-                                </div>
-                                <div class="form-group col-md d-flex justify-content-end align-items-center gap-2">
-                                    @* <button type="button" class="btn btn-warning me-2" 
-                                            data-bs-toggle="modal" 
-                                            data-bs-target="#cancelDialogstaticBackdrop">
-                                        <i class="bi bi-x-circle"> </i>Cancel</button>
+                                    </button> *@
                                     <button type="button" class="btn btn-primary me-2" 
                                             data-bs-toggle="modal" 
                                             data-bs-target="#submitDialogBackdrop">
-                                        <i class="bi bi-check-circle"> </i>Submit</button> *@
-                                </div>
-                            </div>
-
-                            @for(int i=0 ; i< Model.DepartmentList.Count; i++) @* ==== Cards ===== *@
-                            {
-                                <div class="card mt-2 px-4 py-2">
-                                    <div class="row pb-2 border-bottom">
-                                        <input type="hidden" asp-for="SubmissionInput[i].DepartmentId" />
-                                        <label class="col-12 col-sm-12 col-md-3 col-lg-2 fw-bold" asp-for="SubmissionInput[i].DepartmentId">Department:</label>
-                                        <div class="col-12 col-sm-12 col-md-9 col-lg-10">
-                                            <span class="d-flex text-primary fw-bold">
-                                                @* <strong class="flex-grow-1 justify-content-start"> *@
-                                                    @Model.DepartmentList[i].DepartmentName
-                                                @* <label class="justify-content-end"><strong>@(i+1)</strong>/@Model.DepartmentList.Count</label> *@
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    <div class="row py-4 border-bottom">
-                                        <label class="col-12 col-sm-3 col-md-3 col-lg-2 form-label fw-bold" asp-for="SubmissionInput[i].KpiScore">KPI Score: </label>
-                                        <div class="radio__scoreValue form-check form-check-inline col d-flex justify-content-between align-items-center flex-wrap gap-2">
-                                            @for(int x = 0; x < scoreList.Length; x++)
-                                            {
-                                                <label for="radio_[@i][@x]" 
-                                                        class="radioLabel__kpiscore 
-                                                                form-check-label
-                                                                rounded-3
-                                                                ps-2 pe-4">
-                                                    <input class="radioInput__kpiscore"
-                                                            type="radio" 
-                                                            asp-for="SubmissionInput[i].KpiScore" 
-                                                            value="@scoreList[x]" 
-                                                            id="radio_[@i][@x]" />
-                                                            @* name="submissionFormRadioButton_@i" /> *@
-                                                            @scoreList[x]
-                                                </label>
-                                            }
-                                            <span asp-validation-for="SubmissionInput[i].KpiScore" class="text-danger"></span>
-                                        </div>
-                                    </div>
-                                            @* <input asp-for="SubmissionInput[i].KpiScore" name="@Model.DepartmentList[@i].Id" value="@Model.SubmissionInput[i].KpiScore" /> *@
-
-                                    @* Hide Aspect section, if User Group is Staff *@
-                                    @* What if Staff was renamed to Employee?? *@
-                                    @if(Model.CurrentUserTitleName?.ToLower() != "staff") @* ===== Check Staff or Others ===== *@
-                                    {
-                                    <div class="row py-4 border-bottom">
-                                        <div class="col-12 col-md-6">
-                                            <div class="row pb-2">
-                                                <label asp-for="SubmissionInput[i].PositiveAspects" 
-                                                        class="form-label">Positive Aspects: </label>
-                                                <div>
-                                                    <textarea asp-for="SubmissionInput[i].PositiveAspects" 
-                                                        class="form-control" id="exampleFormControlTextarea1" rows="5"></textarea>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-12 col-md-6">
-                                            <div class="row pb-2">
-                                                <label asp-for="SubmissionInput[i].NegativeAspects" 
-                                                        class="form-label">Negative Aspects: </label>
-                                                <div>
-                                                    <textarea asp-for="SubmissionInput[i].NegativeAspects" 
-                                                                class="form-control" 
-                                                                id="exampleFormControlTextarea1" 
-                                                                rows="5"></textarea>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    }
-
-                                    <div class="row pb-2 py-4">
-                                        <label asp-for="SubmissionInput[i].Comments" 
-                                                class="form-label">Comments: </label>
-                                        <textarea asp-for="SubmissionInput[i].Comments" 
-                                                class="form-control" 
-                                                id="exampleFormControlTextarea1" 
-                                                rows="5"></textarea>
-                                    </div>
-                                </div>
-                            }
-
-                        @* -----Bottom Submit buttons--------------------------------------------------------------------------- *@
-                            <div class="row mt-4">
-                                <div class="form-group col-md d-flex justify-content-end align-items-center gap-2">
-                                    <button type="button" class="btn btn-warning me-2" 
-                                            data-bs-toggle="modal" 
-                                            data-bs-target="#cancelDialogstaticBackdrop">
-                                        <i class="bi bi-x-circle"> </i>Cancel</button>
-                                    <button type="submit" class="btn btn-primary me-2">
-                                        <i class="bi bi-check-circle"> </i>Submit
-                                    </button>
-                                    @* <button type="button" class="btn btn-primary me-2" 
-                                            data-bs-toggle="modal" 
-                                            data-bs-target="#submitDialogBackdrop">
-                                        <i class="bi bi-check-circle"> </i>Submit</button> *@
+                                        <i class="bi bi-check-circle"> </i>Submit</button>
                                 </div>
                             </div>
 
@@ -364,13 +366,10 @@
         .radioLabel__kpiscore {
             padding: 0.5rem;  /* Clickable area padding */
             transition: background-color 0.2s;  
-            @* background-color: #0087c1; *@
-            border: .1em solid #004a69;
+            border: .1em solid #fff;
         }
         .radioLabel__kpiscore:hover {
-            border: .1em solid #076d8100;
-            background-color: #0087c1;
-
+            border: .1em solid #007bff;
         }
 
         /* Align radio and text */
@@ -379,10 +378,7 @@
         }
 
         .radioLabel__kpiscore:has(.radioInput__kpiscore:checked) {
-            border: .1em solid #076d8100;
-            @* border: .1em solid #007bff; *@
-            background-color: #0087c1;
-            color:#fff;
+            border: .1em solid #007bff;
         }
 
     </style>

@@ -5,15 +5,13 @@ using Metrics.Infrastructure.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using System.Threading.Tasks;
 
 namespace Metrics.Infrastructure.Services;
 
 public class IdentityService(
     ILogger<IdentityService> logger,
     MetricsDbContext context,
-    UserManager<ApplicationUser> userManager
-) : IIdentityService
+    UserManager<ApplicationUser> userManager) : IIdentityService
 {
     private readonly ILogger<IdentityService> _logger = logger;
     private readonly UserManager<ApplicationUser> _userManager = userManager;
@@ -46,6 +44,32 @@ public class IdentityService(
     //     }
     // }
 
+    public async Task<ResultT<bool>> IsUserInDepartment(ApplicationUser user, List<string> departments)
+    {
+        try
+        {
+            if (departments == null || departments.Count <= 0)
+            {
+                // return ResultT<bool>.Fail("Departments cannot be null or empty.", ErrorType.InvalidArgument);
+                return ResultT<bool>.Success(false);
+            }
+
+            var userExists = await _userManager.Users
+                .AnyAsync(u =>
+                    u.Id == user.Id &&
+                    departments.Select(d => d.ToLower())
+                .Contains(u.UserTitle.TitleName.ToLower()));
+
+            return ResultT<bool>.Success(userExists);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("Checking failed Is User In Department. {msg}", ex.Message);
+            return ResultT<bool>.Fail("Failed to check user in department.", ErrorType.UnexpectedError);
+        }
+    }
+
+
     public async Task<ResultT<bool>> IsUserInTitle(ApplicationUser user, List<string> userTitles)
     {
         try
@@ -62,9 +86,9 @@ public class IdentityService(
 
             return ResultT<bool>.Success(userExists);
         }
-        catch (System.Exception)
+        catch (Exception ex)
         {
-            _logger.LogError("Checking failed Is User In Title.");
+            _logger.LogError("Checking failed Is User In Title.{msg}", ex.Message);
             return ResultT<bool>.Fail("Failed to check user in user title.", ErrorType.UnexpectedError);
         }
     }
