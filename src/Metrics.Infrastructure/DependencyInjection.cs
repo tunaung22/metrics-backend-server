@@ -78,28 +78,34 @@ public static class DependencyInjection
             // ==========KPI========================================
             options.AddPolicy(ApplicationPolicies.CanSubmit_KpiScore_Policy, policy =>
             {
-                // policy.RequireRole("Staff");
-                policy.AddRequirements(new StaffRoleRequirement());
-                policy.AddRequirements(new SubmitKpiScoreRequirement(new List<string>
+                // TODO: load from permission table instead
+                var allowedUserGroups = new List<string>
                 {
                     UserGroups.Staff,
                     UserGroups.HOD,
                     UserGroups.Management
-                }));
+                };
+                // var bannedDepartments = new List<string>{UserDepartments.CCA};
+
+                // policy.RequireRole("Staff");
+                policy.AddRequirements(new StaffRoleRequirement());
+                policy.AddRequirements(new SubmitKpiScoreRequirement(allowedUserGroups));
             });
 
             // ==========KEY KPI========================================
             options.AddPolicy(ApplicationPolicies.CanSubmit_KeyKpiScore_Policy, policy =>
             {
-                // policy.RequireRole("Staff");
-                policy.AddRequirements(new StaffRoleRequirement());
-                policy.AddRequirements(new SubmitKeyKpiScoreRequirement(new List<string>
+                var allowedUserGroups = new List<string>
                 {
                     // UserGroups.Staff, // staff not allowed
                     UserGroups.HOD,
                     UserGroups.Management,
                     UserGroups.CCA,
-                }));
+                };
+
+                // policy.RequireRole("Staff");
+                policy.AddRequirements(new StaffRoleRequirement());
+                policy.AddRequirements(new SubmitKeyKpiScoreRequirement(allowedUserGroups));
             });
 
             // ==========FEEDBACK========================================

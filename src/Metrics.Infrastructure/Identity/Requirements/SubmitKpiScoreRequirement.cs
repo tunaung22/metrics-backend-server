@@ -4,10 +4,13 @@ namespace Metrics.Infrastructure.Identity.Requirements;
 
 public class SubmitKpiScoreRequirement : IAuthorizationRequirement
 {
-    public List<string> AllowedUserTitles { get; } = [];
+    public List<string> AllowedUserGroups { get; } = [];
+    // public List<string> BannedDepartments { get; } = [];
 
-    public SubmitKpiScoreRequirement(List<string> allowedUserTitles)
+    public SubmitKpiScoreRequirement(List<string> allowedUserGroups)
+    // List<string> bannedDepartments)
     {
-        AllowedUserTitles = allowedUserTitles ?? [];
+        AllowedUserGroups = allowedUserGroups ?? [];
+        // BannedDepartments = bannedDepartments ?? [];
     }
 }

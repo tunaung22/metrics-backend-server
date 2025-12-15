@@ -44,11 +44,48 @@ public class DepartmentService(
         }
     }
 
+    public async Task<ResultT<List<DepartmentDto>>> FindAllAsync(List<long> excludedDepartmentIDs)
+    {
+        try
+        {
+            var data = await _departmentRepository.FindAllAsync();
+            var result = data
+                .Where(e =>
+                    !excludedDepartmentIDs.Contains(e.Id) &&
+                    e.IsDeleted == false)
+                .Select(e => e.MapToDto()).ToList();
+
+            return ResultT<List<DepartmentDto>>.Success(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error occured while fetching all departments with exluded ids. {msg}", ex.Message);
+            return ResultT<List<DepartmentDto>>.Fail("Failed to fetch departments.", ErrorType.UnexpectedError);
+        }
+    }
+
     public async Task<ResultT<DepartmentDto>> FindByCodeAsync(string departmentCode)
     {
         try
         {
             var department = await _departmentRepository.FindByDepartmentCodeAsync(departmentCode);
+            if (department == null)
+                return ResultT<DepartmentDto>.Fail("No department found.", ErrorType.NotFound);
+
+            return ResultT<DepartmentDto>.Success(department.MapToDto());
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error occured while fetching department. {msg}", ex.Message);
+            return ResultT<DepartmentDto>.Fail("Failed to fetch department.", ErrorType.UnexpectedError);
+        }
+    }
+
+    public async Task<ResultT<DepartmentDto>> FindByDepartmentName_Async(string departmentName)
+    {
+        try
+        {
+            var department = await _departmentRepository.FindByDepartmentNameAsync(departmentName);
             if (department == null)
                 return ResultT<DepartmentDto>.Fail("No department found.", ErrorType.NotFound);
 

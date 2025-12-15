@@ -45,7 +45,7 @@ html {
   font-variation-settings: "wdth" 100; */
   position: relative;
   min-height: 100%;
-  color-scheme: dark;
+  /* color-scheme: dark; */
 }
 
 html,
@@ -266,7 +266,7 @@ button#goToTop {
   display: none;
   position: fixed;
   bottom: 4em;
-  right: 2em;
+  left: 2em;
   z-index: 20;
 }
 
@@ -276,12 +276,12 @@ button#goToTop {
 }
 
 /* -----RADIO Element----- */
-.radio__kpiscore {
+/* .radio__kpiscore {
   user-select: none;
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
-}
+} */
 
 .no-select {
   user-select: none;
