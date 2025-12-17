@@ -58,7 +58,7 @@ public class IdentityService(
                 .AnyAsync(u =>
                     u.Id == user.Id &&
                     departments.Select(d => d.ToLower())
-                .Contains(u.UserTitle.TitleName.ToLower()));
+                .Contains(u.Department.DepartmentName.ToLower()));
 
             return ResultT<bool>.Success(userExists);
         }

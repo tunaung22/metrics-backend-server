@@ -85,11 +85,11 @@ public static class DependencyInjection
                     UserGroups.HOD,
                     UserGroups.Management
                 };
-                // var bannedDepartments = new List<string>{UserDepartments.CCA};
+                var bannedDepartments = new List<string> { UserDepartments.CCA };
 
                 // policy.RequireRole("Staff");
                 policy.AddRequirements(new StaffRoleRequirement());
-                policy.AddRequirements(new SubmitKpiScoreRequirement(allowedUserGroups));
+                policy.AddRequirements(new SubmitKpiScoreRequirement(allowedUserGroups, bannedDepartments));
             });
 
             // ==========KEY KPI========================================

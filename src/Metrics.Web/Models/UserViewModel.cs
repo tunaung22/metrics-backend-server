@@ -13,6 +13,7 @@ public class UserViewModel
     public required long DepartmentId { get; set; }
     // public long UserTitleId { get; set; }
     public RoleViewModel UserRole { get; set; } = null!;
+    public List<RoleViewModel> UserRoles { get; set; } = [];
     public DepartmentViewModel Department { get; set; } = null!;
     public UserGroupViewModel UserGroup { get; set; } = null!;
     public bool LockoutEnabled { get; set; }

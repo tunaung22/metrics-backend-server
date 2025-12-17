@@ -32,15 +32,15 @@ public class IndexModel(
     // =============== MODELS ==================================================
     public class UserModel
     {
-        public string? Id { get; set; } = string.Empty;
-        public string? UserName { get; set; } = string.Empty;
-        public string? UserCode { get; set; } = string.Empty;
+        public string Id { get; set; } = null!;
+        public string UserName { get; set; } = null!;
+        public string UserCode { get; set; } = null!;
         public string? FullName { get; set; } = string.Empty;
         public string? Address { get; set; } = string.Empty;
         public string? PhoneNumber { get; set; } = string.Empty;
         public long DepartmentId { get; set; }
-        public string? DepartmentName { get; set; } = string.Empty;
-        public string? UserTitleName { get; set; } = string.Empty;
+        public string DepartmentName { get; set; } = null!;
+        public string UserTitleName { get; set; } = null!;
         public List<string> UserRoles { get; set; } = [];
         public bool IsActive { get; set; }
         // public required string ApplicationUserId { get; set; }
@@ -122,7 +122,6 @@ public class IndexModel(
             ModelState.AddModelError(string.Empty, "Failed to load users.");
             return Page();
         }
-
         var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier); // self user id
 
 
@@ -149,22 +148,30 @@ public class IndexModel(
                 (!isDepartmentCodeCorrect || u.Department.DepartmentCode == departmentCode)
             )
             .ToList();
+        UsersList = await LoadUserListWithRoles(usersList);
 
 
         TotalUsers = await _userService.FindCountAsync(includeLockedUser: true);
         ActiveUsers = await _userService.FindCountAsync(includeLockedUser: false);
         QueryResultCount = usersList.Count;
 
-        if (usersList.Any())
+        return Page();
+    }
+
+    private async Task<List<UserModel>> LoadUserListWithRoles(List<UserDto> users)
+    {
+        List<UserModel> userList = [];
+
+        if (users.Count > 0)
         {
-            foreach (var user in usersList)
+            foreach (var user in users)
             {
-                // var roles = await _userManager.GetRolesAsync(user.ApplicationUser);
                 var roles = await _userManager.GetRolesAsync(new ApplicationUser
                 {
                     Id = user.Id,
                     UserName = user.UserName
                 });
+
                 var userModel = new UserModel
                 {
                     Id = user.Id,
@@ -179,33 +186,33 @@ public class IndexModel(
                     UserRoles = roles.ToList(),
                     IsActive =
                         user.LockoutEnabled == true &&
-                        (user.LockoutEnd == null ||
-                        user.LockoutEnd <= DateTimeOffset.UtcNow)
+                        (user.LockoutEnd == null || user.LockoutEnd <= DateTimeOffset.UtcNow)
                 };
-                UsersList.Add(userModel);
+                userList.Add(userModel);
             }
         }
-
-        return Page();
+        return userList;
     }
+
 
     public async Task<IActionResult> OnPostExportExcelAsync(bool includeLockedUser = false)
     {
 
-        var result = await _userService.FindAll_Async(includeLockedUser);
-        if (!result.IsSuccess)
+        var users = await _userService.FindAll_Async(includeLockedUser);
+        if (!users.IsSuccess || users.Data == null)
         {
-            ModelState.AddModelError(string.Empty, "Failed to fetch users list.");
+            ModelState.AddModelError(string.Empty, "Failed to load users.");
             return Page();
         }
-        else if (result.Data == null)
-        {
-            ModelState.AddModelError(string.Empty, "No usres found.");
-            return Page();
-        }
+        var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier); // self user id
 
         // dto to viewmodel
-        var usersList = result.Data.Select(u => u.MapToViewModel()).ToList();
+        // var usersList = result.Data.Select(u => u.MapToViewModel()).ToList();
+        var usersList = users.Data
+            .Where(u => u.Id != currentUserId)
+            .ToList();
+        UsersList = await LoadUserListWithRoles(usersList);
+
 
         string excelFileName = "";
         var memStream = new MemoryStream();
@@ -213,12 +220,12 @@ public class IndexModel(
         if (includeLockedUser)
         {
             excelFileName = $"Export_UsersList_IncludesLockedUsers_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.xlsx";
-            memStream = await PrepareUserListExcelData(usersList);
+            memStream = await PrepareUserListExcelData(UsersList);
         }
         else
         {
             excelFileName = $"Export_UsersList_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.xlsx";
-            memStream = await PrepareUserListExcelData(usersList);
+            memStream = await PrepareUserListExcelData(UsersList);
         }
 
         return File(
@@ -229,8 +236,7 @@ public class IndexModel(
 
     }
 
-    private static async Task<MemoryStream> PrepareUserListExcelData(
-        List<UserViewModel> users)
+    private static async Task<MemoryStream> PrepareUserListExcelData(List<UserModel> users)
     {
         List<Dictionary<string, object>> excelData = [];
         var colUserCode = "User Code";
@@ -254,15 +260,17 @@ public class IndexModel(
 
         foreach (var user in users)
         {
-            var isActive = user.LockoutEnd == null || user.LockoutEnd <= DateTimeOffset.UtcNow;
             var row = new Dictionary<string, object>();
             row[colUserCode] = user.UserCode;
             row[colUserName] = user.UserName;
-            row[colUserFullName] = user.FullName;
-            row[colUserGroup] = user.UserGroup.GroupName;
-            row[colDepartment] = user.Department.DepartmentName;
-            // row[colRole] = user.UserRole.RoleName;
-            row[colLockStatus] = isActive ? "Active" : "Locked";
+            row[colUserFullName] = user.FullName ?? string.Empty;
+            row[colUserGroup] = user.UserTitleName;
+            row[colDepartment] = user.DepartmentName;
+
+            var roles = string.Join(" ", user.UserRoles.Select(r => r).ToArray()).Trim();
+
+            row[colRole] = roles;
+            row[colLockStatus] = user.IsActive ? "Active" : "Locked";
             excelData.Add(row);
         }
 
@@ -280,13 +288,4 @@ public class IndexModel(
 
         return newStream;
     }
-
-    // public class UserListExcelViewModel
-    // {
-    //     [ExcelColumnWidth(20)]
-    //     [ExcelColumn(Name = "Submitted By")]
-    //     public string UserName { get; set; }
-    //     public string userCode { get; set; }
-
-    // }
 }

@@ -95,9 +95,10 @@ public class IndexModel : PageModel
     // =============== HELPER METHODS ==========================================
     private async Task<List<DepartmentViewModel>> LoadDepartments(int currentPage, int pageSize)
     {
-        var departments = await _departmentService.FindAllAsync(
-            pageNumber: currentPage,
-            pageSize: pageSize);
+        var departments = await _departmentService.FindAll_R_Async();
+        // var departments = await _departmentService.FindAllAsync(
+        //     pageNumber: currentPage,
+        //     pageSize: pageSize);
 
         if (departments.IsSuccess)
         {

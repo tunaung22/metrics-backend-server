@@ -5,6 +5,9 @@ using Metrics.Application.Interfaces.IServices;
 using Metrics.Application.Interfaces.IRepositories;
 using Metrics.Application.Exceptions;
 using Metrics.Application.Domains;
+using Metrics.Application.Results;
+using Metrics.Application.DTOs.KpiSubmissionDtos;
+using Metrics.Application.Common.Mappers;
 
 namespace Metrics.Infrastructure.Services;
 
@@ -24,6 +27,42 @@ public class KpiSubmissionService : IKpiSubmissionService
         _kpiSubmissionRepository = kpiSubmissionRepository;
     }
 
+
+    public async Task<ResultT<List<KpiSubmissionDto>>> FindByPeriod_Async(long kpiPeriodId, bool includeLockedUsers = false)
+    {
+        try
+        {
+            var query = _context.KpiSubmissions
+                .Where(e => e.KpiSubmissionPeriodId == kpiPeriodId)
+                .Include(e => e.TargetPeriod)
+                .Include(e => e.TargetDepartment)
+                .Include(e => e.SubmittedBy).ThenInclude(user => user.UserTitle)
+                .Include(e => e.SubmittedBy).ThenInclude(user => user.Department)
+                .OrderBy(e => e.SubmissionDate)
+                .AsQueryable();
+            List<KpiSubmissionDto> data = [];
+
+            if (includeLockedUsers)
+            {
+                var result = await query.AsNoTracking().ToListAsync();
+                data = result.Select(e => e.MapToDto()).ToList(); // entity to dto
+            }
+            else
+            {
+                var result = await query.AsNoTracking()
+                    .Where(s => s.SubmittedBy.LockoutEnd == null ||
+                        s.SubmittedBy.LockoutEnd <= DateTimeOffset.UtcNow)
+                    .ToListAsync();
+                data = result.Select(e => e.MapToDto()).ToList(); // entity to dto
+            }
+            return ResultT<List<KpiSubmissionDto>>.Success(data);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("Failed to load kpi submissions by period. {msg}", ex.Message);
+            return ResultT<List<KpiSubmissionDto>>.Fail("Failed to load kpi submissions by period.", ErrorType.UnexpectedError);
+        }
+    }
 
     // ========== Return Entity ================================================
     public async Task<KpiSubmission> CreateAsync(KpiSubmission submission)
@@ -437,6 +476,8 @@ public class KpiSubmissionService : IKpiSubmissionService
             throw new Exception("An unexpected error occurred. Please try again later.");
         }
     }
+
+
 
 
     // ========== Return DTO ===================================================

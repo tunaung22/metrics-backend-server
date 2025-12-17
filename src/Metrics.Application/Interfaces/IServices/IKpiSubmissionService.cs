@@ -1,10 +1,12 @@
 using Metrics.Application.DTOs.KpiSubmissionDtos;
 using Metrics.Application.Domains;
+using Metrics.Application.Results;
 
 namespace Metrics.Application.Interfaces.IServices;
 
 public interface IKpiSubmissionService
 {
+    Task<ResultT<List<KpiSubmissionDto>>> FindByPeriod_Async(long kpiPeriodId, bool includeLockedUsers = false);
     // ========== Return Entity ================================================
     Task<KpiSubmission> CreateAsync(KpiSubmission submission);
     Task<int> CreateRangeAsync(List<KpiSubmission> submissions);

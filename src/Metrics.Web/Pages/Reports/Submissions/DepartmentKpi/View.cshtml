@@ -29,6 +29,9 @@
 
 <div class="filter-toolbar mb-4 px-4 d-flex align-items-center justify-content-between">
     <div class="d-flex align-items-center gap-2">
+        <a asp-page="./Index"
+            class="btn btn-sm btn-outline-primary me-4">
+            <i class="bi bi-arrow-left"></i> Back</a>
         <form id="form__groupSelection" method="get" class="">
             <span class="d-flex align-items-center">
                 <div class="col-auto me-2">
@@ -65,8 +68,8 @@
 
     <div class="exportData">
         <form method="post" asp-page-handler="ExportExcel">
-                    <input type="hidden" asp-for="ViewMode">
-                    <input type="hidden" asp-for="Group">
+            <input type="hidden" asp-for="ViewMode">
+            <input type="hidden" asp-for="Group">
             @* 
                 **use single handler: ExportExcel
                 for all four models?
@@ -197,7 +200,7 @@
                         @* submitter, [department score], ..., score, totalScr *@
                         if (Model.Group.Equals("all", StringComparison.OrdinalIgnoreCase))
                         {
-                            @if(Model.AllUserGroupReportDetailList.Any())
+                            @if(Model.AllUserGroupReportDetailList.Count > 0)
                             {
                                 <table id="allUserGroupDetailTable" class="table table-bordered table-striped">
                                 <thead>
@@ -263,11 +266,15 @@
                                 </tfoot>
                                 </table>
                             }
+                            else
+                            {
+                                <p class="alert alert-danger text-danger text-center">No Data</p>
+                            }
                         }
                         else {
                             @* ===== SINGLE GROUP + DETAIL ===== *@
                             @* ???submitter, [department score], ..., score, totalScr *@
-                            if(Model.SingleUserGroupReportDetailList.Any())
+                            if(Model.SingleUserGroupReportDetailList.Count > 0)
                             {
                                 <table id="singleUserGroupDetailTable" class="table table-bordered table-striped">
                                 <thead>
@@ -349,7 +356,7 @@
         $(function() {
             if($("#allUserGroupSummaryTable").length) {
                 new DataTable('#allUserGroupSummaryTable', {
-                    paging: true,
+                    paging: false,
                     pageLength: 50,
                     info: true,
                     searching: false,
@@ -372,7 +379,7 @@
             }
             else if($("#singleUserGroupSummaryTable").length) {
                 new DataTable('#singleUserGroupSummaryTable', {
-                    paging: true,
+                    paging: false,
                     pageLength: 50,
                     info: true,
                     searching: false,
@@ -395,7 +402,7 @@
             }
             else if($("#allUserGroupDetailTable").length) {
                 new DataTable('#allUserGroupDetailTable', {
-                    paging: true,
+                    paging: false,
                     pageLength: 50,
                     info: true,
                     searching: false,
@@ -444,7 +451,7 @@
             }
             else if($("#singleUserGroupDetailTable").length) {
                 new DataTable('#singleUserGroupDetailTable', {
-                    paging: true,
+                    paging: false,
                     pageLength: 50,
                     info: true,
                     searching: false,

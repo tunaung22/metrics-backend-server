@@ -32,7 +32,7 @@
                 </tr>
             </thead>
             <tbody>
-                @if(Model.KpiSubmissionPeriods.Any())
+                @if(Model.KpiSubmissionPeriods.Count > 0)
                 {
                     @foreach(var period in Model.KpiSubmissionPeriods)
                     {

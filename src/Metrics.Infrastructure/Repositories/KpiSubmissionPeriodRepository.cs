@@ -64,6 +64,8 @@ public class KpiSubmissionPeriodRepository : IKpiSubmissionPeriodRepository
     public async Task<IEnumerable<KpiSubmissionPeriod>> FindAllAsync()
     {
         return await _context.KpiSubmissionPeriods
+            .AsNoTracking()
+            .Where(e => e.IsDeleted == false)
             .OrderBy(e => e.PeriodName)
             .ToListAsync();
     }

@@ -31,23 +31,29 @@
 
 <div class="filter-toolbar mb-4 px-4 d-flex align-items-center justify-content-between">
     <div class="d-flex align-items-center gap-2">
-      <form id="form__filter" method="get">
-            <span class="d-flex align-items-center">
-                <div class="col-auto me-2">
-                    <label asp-for="KeyDepartment" class="form-label m-0">
-                        <i class="bi bi-building-fill"></i> Key Issue Departments</label>
-                </div>
-                <div class="col-auto me-4">
-                    <select 
-                        asp-for="KeyDepartment"
-                        asp-items="Model.KeyIssueDepartmentSelectItems"
-                        onchange="this.form.submit()"
-                        class="form-select"
-                        aria-label="Select Department">
-                    </select>
-                </div>
-            </span>
-        </form>
+        <a asp-page="../Index"
+            class="btn btn-sm btn-outline-primary me-4">
+            <i class="bi bi-arrow-left"></i> Back</a>
+        @if(Model.KeyIssueDepartmentSelectItems.Count > 0)
+        {
+            <form id="form__filter" method="get">
+                <span class="d-flex align-items-center">
+                    <div class="col-auto me-2">
+                        <label asp-for="KeyDepartment" class="form-label m-0">
+                            <i class="bi bi-building-fill"></i> Key Issue Departments</label>
+                    </div>
+                    <div class="col-auto me-4">
+                        <select 
+                            asp-for="KeyDepartment"
+                            asp-items="Model.KeyIssueDepartmentSelectItems"
+                            onchange="this.form.submit()"
+                            class="form-select"
+                            aria-label="Select Department">
+                        </select>
+                    </div>
+                </span>
+            </form>
+        }
     </div>
 
     <div class="exportData">
