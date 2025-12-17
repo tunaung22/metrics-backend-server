@@ -34,6 +34,7 @@ public interface IUserService
     // Task<IdentityResult> ToggleLockUserByIdAsync(string userId);
     Task<IEnumerable<ApplicationUser>> FindAllActiveAsync(string roleName);
     Task<IEnumerable<ApplicationUser>> FindAllAsync();
+    Task<ResultT<List<UserDto>>> FindAllAsync(bool includeLockedUser);
     Task<ResultT<List<UserDto>>> FindAll_Async(bool includeLockedUser);
 
     Task<ResultT<List<UserDto>>> FindAllAsync(int pageNumber = 1, int pageSize = 50);
@@ -46,32 +47,7 @@ public interface IUserService
     // Task<ResultT<List<UserClaimDto>>> GetUserClaimsAsync(string userId);
 
 
-
-
-    // ========== Return Entity ================================================
-    // Task<ApplicationUser> CreateAsync(ApplicationUser entity);
-    // Task<ApplicationUser> UpdateAsync(string username, ApplicationUser entity);
-    // Task<bool> DeleteAsync(string username);
-    // Task<ApplicationUser?> FindByUserCodeAsync(string username);
-    // Task<IEnumerable<ApplicationUser>> FindAllAsync();
-
-
     Task<ResultT<UserDto>> FindByIdAsync_2(string userId);
-
-
-
-    // Task<ApplicationUser> FindByIdAsync(long id);
-    // ========== Return DTO ===================================================
-    // Task<EmployeeGetDto> CreateAsync(EmployeeCreateDto createDto);
-    // Task<EmployeeGetDto> UpdateAsync(string employeeCode, EmployeeUpdateDto updateDto);
-    // Task<bool> DeleteAsync(string employeeCode);
-    // Task<EmployeeGetDto> FindByIdAsync(long id);
-    // // Task<EmployeeGetDto?> GetByIdAsync(long id);
-    // Task<EmployeeGetDto> FindByEmployeeCodeAsync(string employeeCode);
-    // // Task<IEnumerable<Department>> FindAsync(string keyword); // Search feature
-    // Task<IEnumerable<EmployeeGetAllDto>> FindAllAsync();
-    // Task<long> FindByUserIdAsync(string userId);
-
 
     // **TODO
     /*

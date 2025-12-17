@@ -17,22 +17,24 @@ public class SubmitKpiScoreHandler(
         AuthorizationHandlerContext context,
         SubmitKpiScoreRequirement requirement)
     {
-        // var bannedDepartments = requirement.BannedDepartments;
-        // Banned (if user in banned department, then fail)
-        // var bannedResult = await _identityService.IsUserInDepartment(user, bannedDepartments);
-        // context.Fail();
-
-        // -----Check User Title-----
-        var allowedUserGroups = requirement.AllowedUserGroups;
         var user = await _userManager.GetUserAsync(context.User);
-        if (user == null) return;
 
-        var result = await _identityService.IsUserInTitle(
-            user,
-            allowedUserGroups);
+        if (user == null)
+            return;
 
+        // -----Banned Departments-----
+        var bannedDepartments = requirement.BannedDepartments;
+        // Banned (if user in banned department, then fail)
+        var bannedResult = await _identityService.IsUserInDepartment(user, bannedDepartments);
+        if (bannedResult.IsSuccess && bannedResult.Data == true)
+            context.Fail();
+
+        // -----Allowed User Groups-----
+        var allowedUserGroups = requirement.AllowedUserGroups;
+        var result = await _identityService.IsUserInTitle(user, allowedUserGroups);
         if (result.IsSuccess && result.Data == true)
             context.Succeed(requirement);
-
+        else
+            context.Fail();
     }
 }

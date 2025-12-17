@@ -1,5 +1,7 @@
 using Metrics.Application.Domains;
+using Metrics.Application.DTOs.KpiSubmissionDtos;
 using Metrics.Application.Interfaces.IServices;
+using Metrics.Infrastructure.Services;
 using Metrics.Web.Common.Mappers;
 using Metrics.Web.Models;
 using Metrics.Web.Models.ReportViewModels;
@@ -12,131 +14,20 @@ using MiniExcelLibs.OpenXml;
 
 namespace Metrics.Web.Pages.Reports.Submissions.DepartmentKpi;
 
-public class ViewModel : PageModel
+public class ViewModel(
+        IKpiSubmissionPeriodService kpiSubmissionPeriodService,
+        IUserService userService,
+        IUserTitleService userGroupService,
+        IDepartmentService departmentService,
+        IKpiSubmissionService kpiSubmissionService) : PageModel
 {
-    private readonly IKpiSubmissionPeriodService _kpiPeriodService;
-    private readonly IUserService _userService;
-    private readonly IUserTitleService _userGroupService;
-    private readonly IDepartmentService _departmentService;
-    private readonly IKpiSubmissionService _kpiSubmissionService;
+    private readonly IKpiSubmissionPeriodService _kpiPeriodService = kpiSubmissionPeriodService;
+    private readonly IUserService _userService = userService;
+    private readonly IUserTitleService _userGroupService = userGroupService;
+    private readonly IDepartmentService _departmentService = departmentService;
+    private readonly IKpiSubmissionService _kpiSubmissionService = kpiSubmissionService;
 
-    public ViewModel(
-            IKpiSubmissionPeriodService kpiSubmissionPeriodService,
-            IUserService userService,
-            IUserTitleService userGroupService,
-            IDepartmentService departmentService,
-            IKpiSubmissionService kpiSubmissionService)
-    {
-        _kpiPeriodService = kpiSubmissionPeriodService;
-        _userService = userService;
-        _userGroupService = userGroupService;
-        _departmentService = departmentService;
-        _kpiSubmissionService = kpiSubmissionService;
-    }
-
-    // =========================================================================
-    // ========== MODELS =======================================================
-    // =========================================================================
-
-    // ----------SUMMARY + ALL -------------------------------------------------
-    public class AllUserGroupReportSummaryViewModel
-    {
-        public string? PeriodName { get; set; }
-        public string? DepartmentName { get; set; }
-        public List<UserGroupSubmissionInfoViewModel> UserGroupSubmissions { get; set; } = [];
-        public long TotalSubmissions { get; set; }
-        public decimal TotalScore { get; set; }
-        public decimal KpiScore { get; set; }
-    }
-    public List<AllUserGroupReportSummaryViewModel> AllUserGroupReportSummaryList { get; set; } = [];
-    // -------------------------------------------------------------------------
-
-    // public class AllUserGroupReportDetailViewModel
-    // {
-    //     public string? PeriodName { get; set; }
-    //     public UserViewModel SubmittedBy { get; set; } = null!;
-    //     public string? DepartmentName { get; set; }
-    //     public decimal ScoreValue { get; set; }
-    // }
-
-    // DEPARTMENT SCORE for DETAILS VIEW
-    // for:  AllUserGroupReportDetailViewModel
-    //       SingleUserGroupReportDetailViewModel
-    public class DepartmentScoreViewModel
-    {
-        public string? DepartmentName { get; set; }
-        public decimal ScoreValue { get; set; }
-        public string? Comment { get; set; }
-    }
-
-    // ----------DETAIL + ALL---------------------------------------------------
-    public class AllUserGroupReportDetailViewModel
-    {
-        public string? PeriodName { get; set; }
-        public UserViewModel SubmittedBy { get; set; } = null!;
-        public List<DepartmentScoreViewModel> DepartmentScores { get; set; } = [];
-    }
-    public List<AllUserGroupReportDetailViewModel> AllUserGroupReportDetailList { get; set; } = [];
-
-
-    // ----------SUMMARY + SINGLE---------------------------------------------------------------
-    public class SingleUserGroupReportSummaryViewModel
-    {
-        public string? PeriodName { get; set; }
-        public string? GroupName { get; set; }
-        public string? DepartmentName { get; set; }
-        public long TotalSubmissions { get; set; }
-        public decimal TotalScore { get; set; }
-        public decimal KpiScore { get; set; }
-    }
-    public List<SingleUserGroupReportSummaryViewModel> SingleUserGroupReportSummaryList { get; set; } = [];
-
-    // ----------DETAIL + SINGLE---------------------------------------------------------------
-    public class SingleUserGroupReportDetailViewModel
-    {
-        public string? PeriodName { get; set; }
-        public UserViewModel SubmittedBy { get; set; } = null!;
-        public string? GroupName { get; set; }
-        public List<DepartmentScoreViewModel> DepartmentScores { get; set; } = [];
-    }
-    public List<SingleUserGroupReportDetailViewModel> SingleUserGroupReportDetailList { get; set; } = [];
-    // -------------------------------------------------------------------------
-
-    public List<KeyKpiSubmissionViewModel> KeyKpiSubmissions { get; set; } = [];
-
-    public KpiPeriodViewModel SelectedPeriod { get; set; } = null!;
-
-    // ----------Excel Models----------
-    // public class KeyKpiSubmissionExportViewModel
-    // {
-    // }
-
-    // public List<KeyKpiSubmissionExportViewModel>
-
-
-    public string SelectedPeriodName { get; set; } = null!;
-
-    // public string? Submitter { get; set; }
-    public List<DepartmentViewModel> DepartmentList { get; set; } = [];
-    public List<UserGroupViewModel> UserGroupList { get; set; } = [];
-    public List<UserViewModel> UserList { get; set; } = [];
-    // ----------Select/Options Data----------
-    [BindProperty]
-    public List<SelectListItem> UserGroupListItems { get; set; } = []; // for select element
-
-    [BindProperty(SupportsGet = true)]
-    public string? Group { get; set; } // selected item (for filter select element)
-
-    [BindProperty]
-    public List<SelectListItem> ViewModeListItems { get; set; } = [];
-
-    [BindProperty(SupportsGet = true)]
-    public string? ViewMode { get; set; } // selected item (for filter select element)
-
-    // =========================================================================
     // ========== HANDLERS =====================================================
-    // =========================================================================
-
     public async Task<IActionResult> OnGetAsync(string periodName)
     {
         // ----------PERIOD-----------------------------------------------------
@@ -153,12 +44,12 @@ public class ViewModel : PageModel
         }
         SelectedPeriod = period;
         SelectedPeriodName = period.PeriodName;
-        // ---------------------------------------------------------------------
+
         // ----------VIEW MODE--------------------------------------------------
         ViewModeListItems = InitViewModeListItems();
         if (string.IsNullOrEmpty(ViewMode))
             ViewMode = ViewModeListItems[0].Value.ToLower();
-        // ---------------------------------------------------------------------
+
         // ----------USER GROUPS------------------------------------------------
         UserGroupList = await LoadUserGroups();
         if (UserGroupList.Count == 0)
@@ -169,13 +60,12 @@ public class ViewModel : PageModel
         UserGroupListItems = LoadUserGroupListItems(UserGroupList);
         if (string.IsNullOrEmpty(Group))
             Group = "all";
-        // ---------------------------------------------------------------------
+
         // ----------DEPARTMENT-------------------------------------------------
         var excludedDepartmentIDs = new List<long>();
         var cca = await _departmentService.FindByDepartmentNameAsync("cca");
         if (cca != null)
             excludedDepartmentIDs.Add(cca.Id);
-        // var departments = await _departmentService.FindAllAsync();
         var departments = await _departmentService.FindAllAsync(excludedDepartmentIDs);
         if (!departments.IsSuccess || departments.Data == null)
         {
@@ -197,16 +87,24 @@ public class ViewModel : PageModel
         // detail + single
         // =====================================================================
 
-        // TODO: Does retrieving all items impact performance??
-        var submissionsByPeriod = await _kpiSubmissionService
-            .FindByKpiPeriodAsync(SelectedPeriod.Id);
+        var submissionQuery = await _kpiSubmissionService
+            .FindByPeriod_Async(SelectedPeriod.Id, true);
+        if (!submissionQuery.IsSuccess || submissionQuery.Data == null)
+        {
+            ModelState.AddModelError(string.Empty, "Failed to load submissions by period.");
+            return Page();
+        }
+        var submissionsByPeriod = submissionQuery.Data;
 
+
+        // ==========VIEW==============================================================================
         var MODE_SUMMARY = ViewMode.Equals("summary", StringComparison.OrdinalIgnoreCase);
         var MODE_DETAIL = ViewMode.Equals("detail", StringComparison.OrdinalIgnoreCase);
         var GROUP_ALL = Group.Equals("all", StringComparison.OrdinalIgnoreCase);
 
         if (MODE_SUMMARY)
         {
+            // SUMMARY ALL
             if (GROUP_ALL)
             {
                 AllUserGroupReportSummaryList = DepartmentList.Select(department =>
@@ -220,7 +118,7 @@ public class ViewModel : PageModel
                     {
                         // submissions to [Department] by [Group] -> eg: hod, 34, 272
                         var submissions = submissionToDepartment
-                            .Where(s => s.SubmittedBy.UserTitleId == group.Id)
+                            .Where(s => s.SubmittedBy.UserGroup.Id == group.Id)
                             .ToList();
 
                         return new UserGroupSubmissionInfoViewModel
@@ -250,7 +148,7 @@ public class ViewModel : PageModel
                     };
                 }).ToList();
             }
-            // SUMMARY
+            // SUMMARY SINGLE
             else
             {
                 // SINGLE + SUMMARY
@@ -260,33 +158,6 @@ public class ViewModel : PageModel
                                     Group, // group to show
                                     submissionsByPeriod, // source
                                     DepartmentList); // dpeartments to show
-
-
-                // var submissionsByGroup = submissionsByPeriod
-                //     .Where(s => s.SubmittedBy.UserTitle.TitleName.Equals(Group, StringComparison.OrdinalIgnoreCase))
-                //     .ToList();
-
-                // SingleUserGroupReportSummaryList = DepartmentList.Select(department =>
-                // {
-                //     var submissionToDepartment = submissionsByGroup
-                //         .Where(s => s.DepartmentId == department.Id)
-                //         .ToList();
-
-                //     // CALCULATE TOTAL SCORE (summarized score) 
-                //     var totalSubmissions = submissionToDepartment.Count;
-                //     var totalScore = submissionToDepartment.Sum(g => g.ScoreValue);
-                //     var kpiScore = (totalSubmissions > 0)
-                //             ? (totalScore / totalSubmissions) : 0M;
-
-                //     return new SingleUserGroupReportSummaryViewModel
-                //     {
-                //         PeriodName = SelectedPeriod.PeriodName,
-                //         DepartmentName = department.DepartmentName,
-                //         TotalSubmissions = totalSubmissions,
-                //         TotalScore = totalScore,
-                //         KpiScore = kpiScore
-                //     };
-                // }).ToList();
             }
         }
         // VIEWMODE: DETAIL
@@ -469,7 +340,6 @@ public class ViewModel : PageModel
         var cca = await _departmentService.FindByDepartmentNameAsync("cca");
         if (cca != null)
             excludedDepartmentIDs.Add(cca.Id);
-        // var departments = await _departmentService.FindAllAsync();
         var departments = await _departmentService.FindAllAsync(excludedDepartmentIDs);
         if (!departments.IsSuccess || departments.Data == null)
         {
@@ -479,14 +349,17 @@ public class ViewModel : PageModel
         DepartmentList = departments.Data.Select(d => d.MapToViewModel()).ToList();
 
 
+        var submissionQuery = await _kpiSubmissionService
+            .FindByPeriod_Async(SelectedPeriod.Id, true);
+        if (!submissionQuery.IsSuccess || submissionQuery.Data == null)
+        {
+            ModelState.AddModelError(string.Empty, "Failed to load submissions by period.");
+            return Page();
+        }
+        var submissionsByPeriod = submissionQuery.Data;
 
-        // TODO: Does retrieving all items impact performance??
-        // existing submissions
-        var submissionsByPeriod = await _kpiSubmissionService
-                    .FindByKpiPeriodAsync(SelectedPeriod.Id);
 
-
-
+        // ==========VIEW==============================================================================
         var MODE_SUMMARY = ViewMode.Equals("summary", StringComparison.OrdinalIgnoreCase);
         var MODE_DETAIL = ViewMode.Equals("detail", StringComparison.OrdinalIgnoreCase);
         var GROUP_ALL = Group.Equals("all", StringComparison.OrdinalIgnoreCase);
@@ -979,9 +852,7 @@ public class ViewModel : PageModel
     }
 
 
-
-
-    // ========== Methods ==================================================
+    // ========== METHODS ======================================================
     private async Task<KpiPeriodViewModel?> LoadKpiPeriods(string periodName)
     {
         var kpiPeriod = await _kpiPeriodService
@@ -1003,35 +874,19 @@ public class ViewModel : PageModel
 
     private async Task<List<UserViewModel>> LoadUserList(string roleName)
     {
-        var users = await _userService.FindAllActiveAsync(roleName);
+        // var users = await _userService.FindAllActiveAsync(roleName);
+        var users = await _userService.FindAllAsync(includeLockedUser: true);
 
-
-        if (users.Any())
+        if (users.IsSuccess && users.Data != null)
+        // if (users.Any())
         {
-            return users
-                .Select(user => new UserViewModel
-                {
-                    Id = user.Id,
-                    UserCode = user.UserCode,
-                    UserName = user.UserName ?? "unknown username",
-                    FullName = user.FullName,
-                    PhoneNumber = user.PhoneNumber,
-                    ContactAddress = user.ContactAddress,
-                    DepartmentId = user.DepartmentId,
-                    Department = new DepartmentViewModel
-                    {
-                        Id = user.Department.Id,
-                        DepartmentCode = user.Department.DepartmentCode,
-                        DepartmentName = user.Department.DepartmentName
-                    },
-                    UserGroup = new UserGroupViewModel
-                    {
-                        Id = user.UserTitle.Id,
-                        GroupCode = user.UserTitle.TitleCode,
-                        GroupName = user.UserTitle.TitleName,
-                        Description = user.UserTitle.Description
-                    }
-                }).ToList();
+            return users.Data
+                //.Where(user => !user.Department.DepartmentName.Equals("cca", StringComparison.OrdinalIgnoreCase))
+                .Select(user => user.MapToViewModel())
+                .ToList();
+            //         user.Department.DepartmentName.ToLower() != "cca")
+            //     // (user.LockoutEnd == null || user.LockoutEnd <= DateTimeOffset.UtcNow))
+
         }
 
         return [];
@@ -1107,7 +962,7 @@ public class ViewModel : PageModel
     /// <param name="DepartmentList"></param>
     /// <returns></returns>
     private List<AllUserGroupReportSummaryViewModel> LoadAllUserGroupSummaryList(
-        List<KpiSubmission> submissions,
+        List<KpiSubmissionDto> submissions,
         List<DepartmentViewModel> DepartmentList)
     {
         // ** loop department to include all department (rows)
@@ -1122,7 +977,7 @@ public class ViewModel : PageModel
             {
                 // submissions to [Department] by [Group] -> eg: hod, 34, 272
                 var submissions = submissionToDepartment
-                    .Where(s => s.SubmittedBy.UserTitleId == group.Id)
+                    .Where(s => s.SubmittedBy.UserGroup.Id == group.Id)
                     .ToList();
 
                 return new UserGroupSubmissionInfoViewModel
@@ -1164,12 +1019,12 @@ public class ViewModel : PageModel
     private static List<SingleUserGroupReportSummaryViewModel> Load_SingleUserGroup_SummaryList(
         string periodName,
         string selectedGroupName,
-        List<KpiSubmission> submissions,
+        List<KpiSubmissionDto> submissionsByPeriod, // or accept ViewModel
         List<DepartmentViewModel> departmentList)
     {
         // filter by selected Group first
-        var submissionsByGroup = submissions
-            .Where(s => s.SubmittedBy.UserTitle.TitleName
+        var submissionsByGroup = submissionsByPeriod
+            .Where(s => s.SubmittedBy.UserGroup.GroupName
                 .Equals(selectedGroupName, StringComparison.OrdinalIgnoreCase))
             .ToList();
 
@@ -1208,15 +1063,20 @@ public class ViewModel : PageModel
     /// <param name="departmentList"></param>
     /// <returns></returns>
     private List<AllUserGroupReportDetailViewModel> Load_AllUserGroup_DetailList(
-        List<KpiSubmission> submissionsByPeriod,
+        List<KpiSubmissionDto> submissionsByPeriod,
         List<UserViewModel> userList,
         List<DepartmentViewModel> departmentList)
     {
-        return userList
-            .Select(user =>
+        // Option 2: return only submitted records
+        // filter user who have submitted
+        var filteredUsers = userList
+            .Where(user => submissionsByPeriod.Any(s => s.SubmitterId == user.Id))
+            .ToList();
+
+        return filteredUsers.Select(user =>
         {
             var userSubmissions = submissionsByPeriod
-                .Where(s => s.ApplicationUserId == user.Id)
+                .Where(s => s.SubmitterId == user.Id)
                 // **note: sort by DepartmentName is required
                 .OrderBy(s => s.TargetDepartment.DepartmentName)
                 .ToList() ?? [];
@@ -1231,7 +1091,7 @@ public class ViewModel : PageModel
                     var submission = userSubmissions
                         .Where(s => s.DepartmentId == dpt.Id)
                         .FirstOrDefault();
-
+                    Console.WriteLine("##############################################", dpt.DepartmentName);
                     return new DepartmentScoreViewModel
                     {
                         DepartmentName = dpt.DepartmentName,
@@ -1261,17 +1121,21 @@ public class ViewModel : PageModel
     private static List<SingleUserGroupReportDetailViewModel> Load_SingleUserGroup_DetailList(
         string periodName,
         string selectedGroupName,
-        List<KpiSubmission> submissions,
+        List<KpiSubmissionDto> submissionsByPeriod,
         List<UserViewModel> userList,
         List<DepartmentViewModel> departmentList)
     {
-        return userList
+        var filteredUsers = userList
+            .Where(user => submissionsByPeriod.Any(s => s.SubmitterId == user.Id))
+            .ToList();
+
+        return filteredUsers
             .Where(user => user.UserGroup.GroupName.Equals(selectedGroupName, StringComparison.OrdinalIgnoreCase))
             .Select(user =>
             {
                 // submission by [user] of [group]
-                var submissionByUser = submissions
-                    .Where(s => s.ApplicationUserId == user.Id)
+                var submissionByUser = submissionsByPeriod
+                    .Where(s => s.SubmitterId == user.Id)
                     // .Where(s => s.SubmittedBy.UserTitle.TitleName.Equals(Group, StringComparison.OrdinalIgnoreCase)
                     //     && s.ApplicationUserId == user.Id)
                     // **note: sort by DepartmentName is required
@@ -1337,6 +1201,104 @@ public class ViewModel : PageModel
         }
     }
 
+
+    // ========== MODELS =======================================================
+    // =========================================================================
+
+    // ----------SUMMARY + ALL -------------------------------------------------
+    public class AllUserGroupReportSummaryViewModel
+    {
+        public string? PeriodName { get; set; }
+        public string? DepartmentName { get; set; }
+        public List<UserGroupSubmissionInfoViewModel> UserGroupSubmissions { get; set; } = [];
+        public long TotalSubmissions { get; set; }
+        public decimal TotalScore { get; set; }
+        public decimal KpiScore { get; set; }
+    }
+    public List<AllUserGroupReportSummaryViewModel> AllUserGroupReportSummaryList { get; set; } = [];
+    // -------------------------------------------------------------------------
+
+    // public class AllUserGroupReportDetailViewModel
+    // {
+    //     public string? PeriodName { get; set; }
+    //     public UserViewModel SubmittedBy { get; set; } = null!;
+    //     public string? DepartmentName { get; set; }
+    //     public decimal ScoreValue { get; set; }
+    // }
+
+    // DEPARTMENT SCORE for DETAILS VIEW
+    // for:  AllUserGroupReportDetailViewModel
+    //       SingleUserGroupReportDetailViewModel
+    public class DepartmentScoreViewModel
+    {
+        public string? DepartmentName { get; set; }
+        public decimal ScoreValue { get; set; }
+        public string? Comment { get; set; }
+    }
+
+    // ----------DETAIL + ALL---------------------------------------------------
+    public class AllUserGroupReportDetailViewModel
+    {
+        public string? PeriodName { get; set; }
+        public UserViewModel SubmittedBy { get; set; } = null!;
+        public List<DepartmentScoreViewModel> DepartmentScores { get; set; } = [];
+    }
+    public List<AllUserGroupReportDetailViewModel> AllUserGroupReportDetailList { get; set; } = [];
+
+
+    // ----------SUMMARY + SINGLE---------------------------------------------------------------
+    public class SingleUserGroupReportSummaryViewModel
+    {
+        public string? PeriodName { get; set; }
+        public string? GroupName { get; set; }
+        public string? DepartmentName { get; set; }
+        public long TotalSubmissions { get; set; }
+        public decimal TotalScore { get; set; }
+        public decimal KpiScore { get; set; }
+    }
+    public List<SingleUserGroupReportSummaryViewModel> SingleUserGroupReportSummaryList { get; set; } = [];
+
+    // ----------DETAIL + SINGLE---------------------------------------------------------------
+    public class SingleUserGroupReportDetailViewModel
+    {
+        public string? PeriodName { get; set; }
+        public UserViewModel SubmittedBy { get; set; } = null!;
+        public string? GroupName { get; set; }
+        public List<DepartmentScoreViewModel> DepartmentScores { get; set; } = [];
+    }
+    public List<SingleUserGroupReportDetailViewModel> SingleUserGroupReportDetailList { get; set; } = [];
+    // -------------------------------------------------------------------------
+
+    public List<KeyKpiSubmissionViewModel> KeyKpiSubmissions { get; set; } = [];
+
+    public KpiPeriodViewModel SelectedPeriod { get; set; } = null!;
+
+    // ----------Excel Models----------
+    // public class KeyKpiSubmissionExportViewModel
+    // {
+    // }
+
+    // public List<KeyKpiSubmissionExportViewModel>
+
+
+    public string SelectedPeriodName { get; set; } = null!;
+
+    // public string? Submitter { get; set; }
+    public List<DepartmentViewModel> DepartmentList { get; set; } = [];
+    public List<UserGroupViewModel> UserGroupList { get; set; } = [];
+    public List<UserViewModel> UserList { get; set; } = [];
+    // ----------Select/Options Data----------
+    [BindProperty]
+    public List<SelectListItem> UserGroupListItems { get; set; } = []; // for select element
+
+    [BindProperty(SupportsGet = true)]
+    public string? Group { get; set; } // selected item (for filter select element)
+
+    [BindProperty]
+    public List<SelectListItem> ViewModeListItems { get; set; } = [];
+
+    [BindProperty(SupportsGet = true)]
+    public string? ViewMode { get; set; } // selected item (for filter select element)
 
 }
 
