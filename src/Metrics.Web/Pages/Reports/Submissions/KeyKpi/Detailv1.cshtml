@@ -1,10 +1,10 @@
-﻿@page "/Reports/Submissions/Key-Kpi/{periodName}/View"
+﻿@page "/Reports/Submissions/Key-Kpi/{periodName}/Detailv1"
 @using Metrics.Application.Domains
 @using Metrics.Infrastructure.Services
 @using Microsoft.EntityFrameworkCore.Metadata.Internal
-@model Metrics.Web.Pages.Reports.Submissions.KeyKpi.ViewModel
+@model Metrics.Web.Pages.Reports.Submissions.KeyKpi.Detailv1Model
 @{
-    ViewData["Title"] = "Key KPI Report";
+    ViewData["Title"] = "Department Key KPI Detail Report";
     @* var ALL_DEPARTMENT = Group.Equals("all", StringComparison.OrdinalIgnoreCase); *@
 }
 
@@ -12,7 +12,7 @@
 <div class="sectionTitle">
     <div class="d-flex align-items-center my-2">
         <span class="d-flex align-items-center flex-grow-1">
-            <h4><i class="bi bi-table"></i> Key KPI Report for Period: @Model.SelectedPeriodName</h4>
+            <h4><i class="bi bi-table"></i> Key KPI Detail Report for Period @Model.SelectedPeriodName</h4>
             <span class="mx-4">
                 Period: <strong>@Model.SelectedPeriod.PeriodName</strong>
                 <small>(@Model.SelectedPeriod.SubmissionStartDate.ToString("MMM dd, yyyy") - @Model.SelectedPeriod.SubmissionEndDate.ToString("MMM dd, yyyy"))</small>
@@ -51,41 +51,27 @@
                 </div> *@
 
                 <div class="col-auto me-2">
-                    <label asp-for="KeyDepartment" class="form-label m-0">
-                        <i class="bi bi-people-fill"></i> Key Issue Departments</label>
-                </div>
-                <div class="col-auto me-4">
-                    <select 
-                        asp-for="KeyDepartment"
-                        asp-items="Model.KeyIssueDepartmentSelectItems"
-                        onchange="this.form.submit()"
-                        class="form-select"
-                        aria-label="Select Department">
-                    </select>
-                </div>
-
-                <div class="col-auto me-2">
                     <label asp-for="Group" class="form-label m-0">
-                        <i class="bi bi-people-fill"></i> Candidate Group</label>
+                        <i class="bi bi-people-fill"></i> Group</label>
                 </div>
                 <div class="col-auto me-4">
                     <select 
                         asp-for="Group"
-                        asp-items="Model.UserGroupSelectItems"
+                        asp-items="Model.UserGroupListItems"
                         onchange="this.form.submit()"
                         class="form-select"
-                        aria-label="Select Group">
+                        aria-label="Select User Group">
                     </select>
                 </div>
 
                 <div class="col-auto me-2">
-                    <label asp-for="CandidateDepartment" class="form-label m-0">
+                    <label asp-for="Department" class="form-label m-0">
                         <i class="bi bi-filter"></i> Candiate Department:</label>
                 </div>
                 <div class="col-auto me-4">
                     <select 
-                        asp-for="CandidateDepartment"
-                        asp-items="Model.CandidateDepartmentSelectItems"
+                        asp-for="Department"
+                        asp-items="Model.SubmitterDepartmentListItems"
                         onchange="this.form.submit()"
                         class="form-select"
                         aria-label="Select Department">
@@ -99,8 +85,8 @@
     <div class="exportData">
         <form method="post" asp-page-handler="ExportExcel">
                     @* <input type="hidden" asp-for="ViewMode"> *@
-                    @* <input type="hidden" asp-for="Group"> *@
-                    @* <input type="hidden" asp-for="Department"> *@
+                    <input type="hidden" asp-for="Group">
+                    <input type="hidden" asp-for="Department">
             @* 
                 **use single handler: ExportExcel
                 for all four models?
@@ -127,75 +113,196 @@
 
         <div class="table-responsive">
             @* =============ALL GROUP============================================ *@
-            @* @if (Model.Group.Equals("all", StringComparison.OrdinalIgnoreCase)) *@
-            
-            @if(Model.SummaryReportList != null && Model.SummaryReportList.Count > 0)
-            {       
-                @* =============ALL GROUP============================================ *@
-                @if (Model.Group.Equals("all", StringComparison.OrdinalIgnoreCase))
+            @if (Model.Group.Equals("all", StringComparison.OrdinalIgnoreCase))
+            {
+                @if(Model.KeyKpi_DetailReportList.Any())
                 {
                     <table id="allUserGroupDetailTable" class="allUserGroupDetailTable table table-bordered table-striped">
                         <thead>
                             <tr>
-                                <th>Key Issue Department</th>
-                                <th>Key Metrics</th>
-                                @* <th>Expected Submissions</th> *@
-                                <th>Submissions Received</th>
-                                <th>Received Score</th>
+                                <th colspan="4" data-dt-order="disable">Candidate</th>
+                                <th colspan="2">Key Metrics</th>
+                                <th rowspan="2">Score</th>
+                                <th rowspan="2">Comments</th>
+                            </tr>
+                            <tr>
+                                <th>Candidate ID</th>
+                                <th>Name</th>
+                                <th>Department</th>
+                                <th>Group</th>
+                                <th>Issue Department</th>
+                                <th>Key</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach(var item in Model.SummaryReportList) // loop all submitters
+                            @foreach(var user in Model.SubmitterList) // loop all submitters
                             {
-                                <tr>
-                                    @* <td>@item.KpiPeriodName</td> *@
-                                    <td>@item.KeyIssueDepartment.DepartmentName</td>
-                                    <td>@item.KeyMetric.MetricTitle</td>
-                                    @* <td>@item.ExpectedSubmission</td> *@
-                                    <td>@item.SubmissionReceived</td>
-                                    <td>@item.ReceivedScore.ToString("0.00")</td>
-                                </tr>
+                                // filter/find submissions by User
+                                if(Model.KeyKpi_DetailReportList.Any())
+                                {
+                                    var submissionsByUser = Model.KeyKpi_DetailReportList
+                                        .Where(s => s.SubmittedBy.Id == user.Id)
+                                        .ToList();
+
+                                    foreach(var entry in submissionsByUser)
+                                    {
+                                        if (entry.KeyKpi_DetailReportItems != null && entry.KeyKpi_DetailReportItems.Count > 0)
+                                        { 
+                                            var itemCount = entry.KeyKpi_DetailReportItems.Count;
+                                            @* var isFirstRow = true; *@
+                                            foreach(var item in entry.KeyKpi_DetailReportItems)
+                                            {
+                                                var submitterTextColor = "";
+                                                var submissionTextColor = item.ScoreValue>0.00M ? "" : "text-secondary";
+                                                <tr>
+                                                    <td class="@submitterTextColor">@entry.SubmittedBy.UserCode</td>
+                                                    <td class="@submitterTextColor">@entry.SubmittedBy.FullName</td>
+                                                    <td class="@submitterTextColor">@entry.SubmittedBy.Department.DepartmentName</td>
+                                                    <td class="@submitterTextColor">@entry.SubmittedBy.UserGroup.GroupName</td>
+
+                                                    <td class="@submissionTextColor">@item.DepartmentKeyMetric.KeyIssueDepartment.DepartmentName</td>
+                                                    <td class="@submissionTextColor">@item.DepartmentKeyMetric.KeyMetric.MetricTitle</td>
+                                                    <td class="@submissionTextColor">@item.ScoreValue.ToString("0.00")</td>
+                                                    <td class="@submissionTextColor">
+                                                        @if(!string.IsNullOrEmpty(@item.Comments)) {
+                                                            @if(@item.Comments.Length > 25) 
+                                                            {
+                                                                var comments = @item.Comments.Substring(0, 25) + "...";
+                                                                @comments <button data-details="@item.Comments" data-label="Positive Aspects" class="moreButton_positiveAspects btn btn-link p-0 pb-2">More</button>
+                                                            }
+                                                            else
+                                                            { 
+                                                                @item.Comments 
+                                                            }
+                                                        }
+                                                        else 
+                                                        { 
+                                                            @:None 
+                                                        }
+                                                    </td>
+                                                </tr>
+                                            }
+                                        }
+                                    }
+                                }
                             }
                         </tbody>
                         <tfoot>
                             <tr>
+                                <!-- For the Candidate column -->
+                                <th></th> @* candidate id *@
+                                <th></th> @* candidate name *@
+                                <th></th> @* candidate department *@ 
+                                <th></th> @* candidate group *@
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
                             </tr>
                         </tfoot>
                     </table>
                 }
-                @* =============SINGLE GROUP==================================== *@
                 else
                 {
+                    <p class="alert alert-danger text-danger text-center">No Data</p>
+                }
+            }
+            
+            @* =============SINGLE GROUP===== *@
+            else {
+                @if(Model.KeyKpi_DetailReportList.Any())
+                {
                     <table id="allUserGroupDetailTable" class="allUserGroupDetailTable table table-bordered table-striped">
                         <thead>
                             <tr>
-                                <th>Key Issue Department</th>
-                                <th>Key Metrics</th>
-                                <th>Submissions Received</th>
-                                <th>Received Score</th>
+                                <th colspan="4" data-dt-order="disable">Candidate</th>
+                                <th colspan="2">Key Metrics</th>
+                                <th rowspan="2">Score</th>
+                                <th rowspan="2">Comments</th>
+                            </tr>
+                            <tr>
+                                <th>Candidate ID</th>
+                                <th>Name</th>
+                                <th>Department</th>
+                                <th>Group</th>
+                                <th>Issue Department</th>
+                                <th>Key</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach(var item in Model.SummaryReportList) // loop all submitters
+                            @foreach(var user in Model.SubmitterList) // loop all submitters
                             {
-                                <tr>
-                                    <td>@item.KeyIssueDepartment.DepartmentName</td>
-                                    <td>@item.KeyMetric.MetricTitle</td>
-                                    <td>@item.SubmissionReceived</td>
-                                    <td>@item.ReceivedScore.ToString("0.00")</td>
-                                </tr>
+                                // filter/find submissions by User
+                                if(Model.KeyKpi_DetailReportList.Any())
+                                {
+                                    var submissionsByUser = Model.KeyKpi_DetailReportList
+                                        .Where(s => s.SubmittedBy.Id == user.Id)
+                                        .ToList();
+                                    @foreach(var entry in submissionsByUser)
+                                    {
+                                        @if (entry.KeyKpi_DetailReportItems != null && entry.KeyKpi_DetailReportItems.Count > 0)
+                                        { 
+                                            var itemCount = entry.KeyKpi_DetailReportItems.Count;
+                                            @* var isFirstRow = true; *@
+
+                                            @foreach(var item in entry.KeyKpi_DetailReportItems)
+                                            {
+                                                var submitterTextColor = "";
+                                                var submissionTextColor = item.ScoreValue>0.00M ? "" : "text-secondary";
+                                                <tr>
+                                                    <td class="@submitterTextColor">@entry.SubmittedBy.UserCode</td>
+                                                    <td class="@submitterTextColor">@entry.SubmittedBy.FullName</td>
+                                                    <td class="@submitterTextColor">@entry.SubmittedBy.Department.DepartmentName</td>
+                                                    <td class="@submitterTextColor">@entry.SubmittedBy.UserGroup.GroupName</td>
+
+                                                    <td class="@submissionTextColor">@item.DepartmentKeyMetric.KeyIssueDepartment.DepartmentName</td>
+                                                    <td class="@submissionTextColor">@item.DepartmentKeyMetric.KeyMetric.MetricTitle</td>
+                                                    <td class="@submissionTextColor">@item.ScoreValue.ToString("0.00")</td>
+                                                    <td class="@submissionTextColor">
+                                                        @if(@item.Comments != null && @item.Comments.Any()) {
+                                                            var comments = @item.Comments.Substring(0, 25) + "...";
+                                                            @if(@item.Comments.Length > 25) 
+                                                            {
+                                                                @comments
+                                                                <button data-details="@item.Comments" data-label="Positive Aspects"
+                                                                        class="moreButton_positiveAspects btn btn-link p-0 pb-2">More</button>
+                                                            }
+                                                            else 
+                                                            {
+                                                                @item.Comments
+                                                            }
+                                                        }
+                                                        else 
+                                                        {
+                                                            @:None
+                                                        }
+                                                    </td>
+                                                </tr>
+                                            }
+                                        }
+                                    }
+                                }
                             }
                         </tbody>
                         <tfoot>
                             <tr>
+                                <!-- For the Candidate column -->
+                                <th></th> @* candidate id *@
+                                <th></th> @* candidate name *@
+                                <th></th> @* candidate department *@ 
+                                <th></th> @* candidate group *@
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
                             </tr>
                         </tfoot>
                     </table>
                 }
-            }
-            else
-            {
-                <p class="alert alert-danger text-danger text-center">No Data</p>
+                else
+                {
+                    <p class="alert alert-danger text-danger text-center">No Data</p>
+                }
             }
         </div>
     </div>

@@ -9,6 +9,7 @@ public static class RoleMapper
     {
         return new RoleDto(Id: model.Id, RoleName: model.RoleName);
     }
+
     public static RoleViewModel MapToViewModel(this RoleDto dto)
     {
         return new RoleViewModel

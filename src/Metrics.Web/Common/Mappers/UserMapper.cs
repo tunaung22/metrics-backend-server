@@ -1,7 +1,5 @@
-using Metrics.Application.DTOs;
 using Metrics.Application.DTOs.User;
 using Metrics.Web.Models;
-using System.ComponentModel.DataAnnotations;
 
 namespace Metrics.Web.Common.Mappers;
 
@@ -40,9 +38,7 @@ public static class UserMapper
             UserGroup = dto.UserGroup.MapToViewModel(),
             LockoutEnabled = dto.LockoutEnabled,
             LockoutEnd = dto.LockoutEnd
-            // UserRole = dto.UserRole.MapToViewModel()
-
+            // UserRole = dto.UserRole.MapToViewModel(),
         };
     }
-
 }

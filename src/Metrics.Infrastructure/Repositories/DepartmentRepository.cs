@@ -73,19 +73,21 @@ public class DepartmentRepository(MetricsDbContext context) : IDepartmentReposit
     public async Task<IEnumerable<Department>> FindAllAsync()
     {
         return await _context.Departments
+            .AsNoTracking()
+            .Where(d => d.IsDeleted == false)
+            .Include(d => d.ApplicationUsers).ThenInclude(u => u.UserTitle)
             .Include(d => d.DepartmentKeyMetrics)
             .OrderBy(e => e.DepartmentName)
-            .AsNoTracking()
             .ToListAsync();
     }
 
     public async Task<IEnumerable<Department>> FindAllAsync(int pageNumber, int pageSize)
     {
         return await _context.Departments
+            .AsNoTracking()
             .Include(d => d.ApplicationUsers).ThenInclude(u => u.UserTitle)
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
-            .AsNoTracking()
             .ToListAsync();
     }
 
