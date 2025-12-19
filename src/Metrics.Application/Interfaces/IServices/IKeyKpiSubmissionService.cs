@@ -9,9 +9,11 @@ public interface IKeyKpiSubmissionService
     Task<Result> SubmitSubmissionsAsync(List<CreateKeyKpiSubmissionDto> createDtos);
     // Update
     // Delete
+    Task<Result> DeleteByPeriodByCandidateAsync(long periodId, string candidateId);
 
     // =====Retrieve=====
-    Task<ResultT<List<KeyKpiSubmissionDto>>> FindByPeriodAsync(long periodId);
+    Task<ResultT<List<KeyKpiSubmissionDto>>> FindByPeriodAsync(long periodId, bool includeLockedUser = true);
+
     Task<ResultT<List<KeyKpiSubmissionDto>>> FindByPeriodBySubmitterAsync(long periodId, string userId);
     Task<ResultT<List<KeyKpiSubmissionDto>>> FindByPeriodBySubmitterAsync(List<long> periodIds, string userId);
     Task<ResultT<List<KeyKpiSubmissionDto>>> FindByDepartmentKeyMetricsAsync(List<long> departmentKeyMetricIDs);

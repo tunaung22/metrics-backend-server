@@ -60,6 +60,25 @@ public class KeyKpiSubmissionService(
         }
     }
 
+    public async Task<Result> DeleteByPeriodByCandidateAsync(long periodId, string candidateId)
+    {
+        using var transaction = await _context.Database.BeginTransactionAsync();
+
+        try
+        {
+            await _keyKpiSubmissionRepo.DeleteByPeriodByCandidateAsync(periodId, candidateId);
+            await transaction.CommitAsync();
+            return Result.Success();
+        }
+        catch (Exception ex)
+        {
+            await transaction.RollbackAsync();
+            _logger.LogError("Failed to delete key kpi submissions by period id by user id. {msg}", ex.Message);
+            return Result.Fail("Failed to delete key kpi submissions by period by candidate.", ErrorType.UnexpectedError);
+        }
+    }
+
+
     // public async Task<ResultT<List<KeyKpiSubmissionDto>>> FindByPeriodAsync(long periodId)
     // {
     //     try
@@ -75,11 +94,11 @@ public class KeyKpiSubmissionService(
     //     }
     // }
 
-    public async Task<ResultT<List<KeyKpiSubmissionDto>>> FindByPeriodAsync(long periodId)
+    public async Task<ResultT<List<KeyKpiSubmissionDto>>> FindByPeriodAsync(long periodId, bool includeLockedUser = true)
     {
         try
         {
-            var data = await _keyKpiSubmissionRepo.FindByPeriodAsync(periodId);
+            var data = await _keyKpiSubmissionRepo.FindByPeriodAsync(periodId, includeLockedUser);
             var result = data.Select(submission => submission.MapToDto()).ToList();
 
             return ResultT<List<KeyKpiSubmissionDto>>.Success(result);
@@ -209,6 +228,8 @@ public class KeyKpiSubmissionService(
             return ResultT<Dictionary<long, int>>.Fail("Failed to get submission count by User by Period.", ErrorType.UnexpectedError);
         }
     }
+
+
 
 
 

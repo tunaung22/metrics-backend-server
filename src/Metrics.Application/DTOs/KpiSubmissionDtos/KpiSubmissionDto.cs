@@ -1,4 +1,5 @@
 using Metrics.Application.DTOs.Department;
+using Metrics.Application.DTOs.KpiPeriod;
 using Metrics.Application.DTOs.User;
 
 namespace Metrics.Application.DTOs.KpiSubmissionDtos;
@@ -22,7 +23,7 @@ public class KpiSubmissionDto
     public UserDto SubmittedBy { get; set; } = null!;
 
     // Reference Navigational Properties
-    // public KpiPeriod KpiPeriod { get; set; } = null!;
+    public KpiPeriodDto KpiPeriod { get; set; } = null!;
     // public Department TargetDepartment { get; set; } = null!;
 
 }

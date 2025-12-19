@@ -8,9 +8,15 @@ public interface IKpiSubmissionRepository
     void CreateRange(List<KpiSubmission> entities);
     void Update(KpiSubmission entity);
     void Delete(KpiSubmission entity);
+
+    Task DeleteByPeriodAsync(long periodId, bool includeLockedUsers = true);
+    Task DeleteByPeriodByCandidateAsync(long periodId, string candidateId);
+    Task<IEnumerable<KpiSubmission>> FindByPeriodByUserAsync(long periodId, string userId);
+
     Task<KpiSubmission> FindBySubmissionDateAsync(DateOnly submissionDate);
     Task<KpiSubmission> FindByIdAsync(long id);
     Task<IEnumerable<KpiSubmission>> FindAllAsync();
+    Task<IEnumerable<KpiSubmission>> FindByPeriodAsync(long periodId, bool includeLockedUsers = true);
     Task<bool> KpiSubmissionExistsAsync(long kpiPeriodId, long departmentId, string candidateId);
     Task<long> FindCountByUserIdByKpiPeriodIdAsync(string currentUserId, long kpiPeriodId);
 

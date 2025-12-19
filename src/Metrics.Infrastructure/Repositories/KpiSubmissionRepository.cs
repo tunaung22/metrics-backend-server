@@ -3,6 +3,7 @@ using Metrics.Application.Exceptions;
 using Metrics.Application.Interfaces.IRepositories;
 using Metrics.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
 
 namespace Metrics.Infrastructure.Repositories;
 
@@ -29,6 +30,35 @@ public class KpiSubmissionRepository : IKpiSubmissionRepository
     public void Delete(KpiSubmission entity)
     {
         _context.KpiSubmissions.Remove(entity);
+    }
+
+
+    public async Task DeleteByPeriodAsync(long periodId, bool includeLockedUsers = true)
+    {
+        var submissions = await FindByPeriodAsync(periodId, includeLockedUsers);
+        if (submissions.Any())
+        {
+            _context.KpiSubmissions.RemoveRange(submissions);
+            await _context.SaveChangesAsync();
+        }
+    }
+
+    public async Task DeleteByPeriodByCandidateAsync(long periodId, string candidateId)
+    {
+        var submissions = await FindByPeriodByUserAsync(periodId, candidateId);
+        if (submissions.Any())
+        {
+            _context.KpiSubmissions.RemoveRange(submissions);
+            await _context.SaveChangesAsync();
+        }
+    }
+
+    public async Task<IEnumerable<KpiSubmission>> FindByPeriodByUserAsync(long periodId, string userId)
+    {
+        return await _context.KpiSubmissions
+            .Where(s => s.KpiSubmissionPeriodId == periodId &&
+                s.ApplicationUserId.ToLower() == userId.ToLower())
+            .ToListAsync();
     }
 
     // public async Task<bool> KpiSubmissionExistsAsync_(DateOnly submissionDate)
@@ -92,6 +122,26 @@ public class KpiSubmissionRepository : IKpiSubmissionRepository
         return submission;
     }
 
+    public async Task<IEnumerable<KpiSubmission>> FindByPeriodAsync(long periodId, bool includeLockedUsers = true)
+    {
+        var query = _context.KpiSubmissions
+            .Where(s => s.KpiSubmissionPeriodId == periodId)
+            .AsQueryable();
+
+        if (includeLockedUsers)
+        {
+            return await query.ToListAsync();
+        }
+        else
+        {
+            return await query.Where(s =>
+                s.SubmittedBy.LockoutEnd == null ||
+                s.SubmittedBy.LockoutEnd <= DateTimeOffset.UtcNow)
+                .ToListAsync();
+        }
+    }
+
+
     public async Task<KpiSubmission> FindBySubmissionDateAsync(DateOnly submissionDate)
     {
         var submission = await _context.KpiSubmissions
@@ -118,4 +168,6 @@ public class KpiSubmissionRepository : IKpiSubmissionRepository
                 e.KpiSubmissionPeriodId == kpiPeriodId)
             .CountAsync();
     }
+
+
 }
