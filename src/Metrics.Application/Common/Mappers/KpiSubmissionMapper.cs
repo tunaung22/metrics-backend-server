@@ -16,6 +16,7 @@ public static class KpiSubmissionMapper
             PositiveAspects = e.PositiveAspects ?? string.Empty,
             NegativeAspects = e.NegativeAspects ?? string.Empty,
             KpiPeriodId = e.KpiSubmissionPeriodId,
+            KpiPeriod = e.TargetPeriod.MapToDto(),
             DepartmentId = e.DepartmentId,
             TargetDepartment = e.TargetDepartment.MapToDto(),
             SubmitterId = e.ApplicationUserId,

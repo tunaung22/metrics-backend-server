@@ -8,12 +8,13 @@ public interface IKeyKpiSubmissionRepository
     Task AddRangeAsync(List<KeyKpiSubmission> submisions);
     // Task UpdateAsync(long id, KeyKpiSubmission submission);
     // void Delete(long id);
-
+    Task DeleteByPeriodByCandidateAsync(long periodId, string candidateId);
+    Task<IEnumerable<KeyKpiSubmission>> FindByPeriodByUserAsync(long periodId, string userId);
     // =====Retrieve=====
     Task<KeyKpiSubmission?> FindByIdAsync(long id);
     Task<KeyKpiSubmission?> FindBySubmitterByDepartmentKeyMetricAsync(
         string submitterId, long departmentKeyMetricId);
-    Task<List<KeyKpiSubmission>> FindByPeriodAsync(long periodId);
+    Task<List<KeyKpiSubmission>> FindByPeriodAsync(long periodId, bool includeLockedUser = true);
     Task<List<KeyKpiSubmission>> FindBySubmitterAsync(string submitterId); // submissions by user
     Task<List<KeyKpiSubmission>> FindByDepartmentKeyMetricListAsync(List<long> departmentKeyMetricIDs); // submissions by user
     Task<List<KeyKpiSubmission>> FindByPeriodBySubmitterAsync(

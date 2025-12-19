@@ -1,0 +1,249 @@
+﻿@page
+@using Metrics.Web.Models.PartialViewModels
+@model Metrics.Web.Pages.Manage.Submissions.IndexModel
+@{
+    ViewData["Title"] = "Manage Submissions";
+}
+
+
+
+<div class="sectionTitle">
+    <div class="d-flex align-items-center my-2">
+        <h4 class="flex-grow-1"><i class="bi bi-table"></i> Manage Submissions</h4>
+        <span class="justify-content-end gap-2"></span>
+    </div>
+
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-page="/Dashboard/Index">Dashboard</a></li>
+            <li class="breadcrumb-item"><a asp-page="/Manage/Index">Manage</a></li>
+            <li class="breadcrumb-item active">Manage Submissions</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="filter-toolbar mb-4 px-4 d-flex align-items-center justify-content-between">
+    <div class="d-flex align-items-center gap-2">
+        <a asp-page="../Index"
+            class="btn btn-sm btn-outline-primary me-4">
+            <i class="bi bi-arrow-left"></i> Back</a>
+        
+        <form id="form__filter" method="get">
+            <span class="d-flex align-items-center">
+                <div class="col-auto me-2">
+                    <label asp-for="Period" class="form-label m-0">
+                        <i class="bi bi-calendar2-week-fill"></i> Period</label>
+                </div>
+                <div class="col-auto me-4">
+                    <select
+                        asp-for="Period"
+                        asp-items="Model.PeriodSelectItems"
+                        onchange="this.form.submit()"
+                        class="form-select"
+                        aria-label="Select Period">
+                    </select>
+                </div>
+
+                <div class="col-auto me-2">
+                    <label asp-for="Type" class="form-label m-0">
+                        <i class="bi bi-ui-checks"></i> Submission Type</label>
+                </div>
+                <div class="col-auto me-4">
+                    <select 
+                        asp-for="Type"
+                        asp-items="Model.SubmissionTypeSelectItems"
+                        onchange="this.form.submit()"
+                        class="form-select"
+                        aria-label="Select Submission Type">
+                    </select>
+                </div>
+            </span>
+        </form>
+    </div>
+</div>
+
+
+<div class="container-fluid">
+
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div id="loadingScreen" class="d-flex justify-content-center mb-4">
+        <strong role="status" class="me-3">Loading...</strong>
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
+
+    @if(!String.IsNullOrEmpty(Model.StatusMessage)) {
+        var statusMessageClass = Model.StatusSuccess ? "success" : "danger"; 
+        <div class="status-message row mb-3 d-flex justify-content-center align-items-center">
+            <div class="col-12 col-md-10">
+                <div class="alert alert-@statusMessageClass alert-dismissible fade show" role="alert">
+                    @Model.StatusMessage
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            </div>
+        </div>
+    } 
+
+
+    <div id="mainContent" class="visually-hidden p-4 rounded-2">
+        @if(Model.PeriodList.Count > 0)
+        {
+            <div class="px-4 pb-4">
+                <table id="submissionTable" class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th colspan="4">Candidate</th>
+                            <th rowspan="2">Actions</th>
+                        </tr>
+                        <tr>
+                            <th>ID</th>
+                            <th>Username</th>
+                            <th>Name</th>
+                            <th>Department</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                            @* ========KPI====================================================================== *@
+                            @if(Model.KpiSubmissions.Count > 0) 
+                            {
+                                foreach(var submission in Model.KpiSubmissions)
+                                {
+                                <tr>
+                                    <td>@submission.SubmittedBy.UserCode</td>
+                                    <td>@submission.SubmittedBy.UserName</td>
+                                    <td>@submission.SubmittedBy.FullName</td>
+                                    <td>@submission.SubmittedBy.Department.DepartmentName</td>
+                                    <td class="text-center">
+                                        <form method="post" asp-page-handler="Delete"style="display:inline;">
+                                            @{ var uId = $"u__{submission.KpiPeriod.Id}__{@submission.SubmittedBy.Id}"; }
+
+                                            <input type="hidden" asp-for="Period" value="@Model.Period" />
+                                            <input type="hidden" asp-for="PeriodId" value="@submission.KpiPeriod.Id" />
+                                            <input type="text" asp-for="UserId" value="@submission.SubmittedBy.Id" />
+                                            <input type="hidden" asp-for="Type" value="@Model.Type" /> 
+
+                                            <button type="button"  data-bs-toggle="modal" data-bs-target="#confirmDialogBackdrop_@uId"
+                                                class="btn__actionButtons btn btn-sm btn-outline-danger my-2 my-lg-0 me-2">
+                                                <i class="bi bi-trash3"></i> Delete
+                                            </button>
+
+                                            <div class="modal modal-lg fade" id="confirmDialogBackdrop_@uId" 
+                                                    data-bs-backdrop="static" 
+                                                    data-bs-keyboard="false" 
+                                                    tabindex="-1" 
+                                                    aria-labelledby="confirmDialogStaticBackdropLabel" 
+                                                    aria-hidden="true">
+                                                <div class="modal-dialog modal-dialog-centered">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h1 class="modal-title fs-5" id="submitDialogStaticBackdropLabel">Confirmation</h1>
+                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                        </div>
+                                                        <div class="modal-body text-start">
+                                                            Confirm delete kpi submissions of <strong>@submission.SubmittedBy.FullName</strong> (@submission.SubmittedBy.UserName) on <strong>@submission.KpiPeriod.PeriodName</strong> ?
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" 
+                                                                    class="btn btn-secondary"
+                                                                    data-bs-dismiss="modal">
+                                                                <i class="bi bi-x-circle"> </i>No</button>
+                                                            <button type="submit"
+                                                                    class="btn btn-danger me-2">
+                                                                <i class="bi bi-trash3"></i> Delete</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </td>
+                                </tr>
+                                }
+                            }
+                            @* ========KEY KPI====================================================================== *@
+                            else
+                            {
+                                foreach(var submission in Model.KeyKpiSubmissions)
+                                {
+                                <tr>
+                                    <td>@submission.SubmittedBy.UserCode</td>
+                                    <td>@submission.SubmittedBy.UserName</td>
+                                    <td>@submission.SubmittedBy.FullName</td>
+                                    <td>@submission.SubmittedBy.Department.DepartmentName</td>
+                                    <td class="text-center">
+                                        <form method="post" asp-page-handler="Delete" style="display:inline;">
+                                            @{ var uId = $"u__{submission.KpiPeriod.Id}__{@submission.SubmittedBy.Id}"; }
+
+                                            <input type="hidden" asp-for="Period" value="@Model.Period" />
+                                            <input type="hidden" asp-for="PeriodId" value="@submission.KpiPeriod.Id" />
+                                            <input type="text" asp-for="UserId" value="@submission.SubmittedBy.Id" />
+                                            <input type="hidden" asp-for="Type" value="@Model.Type" /> 
+                                         
+                                            <button type="button"  data-bs-toggle="modal" data-bs-target="#confirmDialogBackdrop_@uId"
+                                                class="btn__actionButtons btn btn-sm btn-outline-danger my-2 my-lg-0 me-2">
+                                                <i class="bi bi-trash3"></i> Delete
+                                            </button>
+
+                                            <div class="modal modal-lg fade" id="confirmDialogBackdrop_@uId" 
+                                                    data-bs-backdrop="static" 
+                                                    data-bs-keyboard="false" 
+                                                    tabindex="-1" 
+                                                    aria-labelledby="confirmDialogStaticBackdropLabel" 
+                                                    aria-hidden="true">
+                                                <div class="modal-dialog modal-dialog-centered">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h1 class="modal-title fs-5" id="submitDialogStaticBackdropLabel">Confirmation</h1>
+                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                        </div>
+                                                        <div class="modal-body text-start">
+                                                            Confirm delete key kpi submissions of <strong>@submission.SubmittedBy.FullName</strong> (@submission.SubmittedBy.UserName) on <strong>@submission.KpiPeriod.PeriodName</strong> ?
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" 
+                                                                    class="btn btn-secondary"
+                                                                    data-bs-dismiss="modal">
+                                                                <i class="bi bi-x-circle"> </i>No</button>
+                                                            <button type="submit"
+                                                                    class="btn btn-danger me-2">
+                                                                <i class="bi bi-trash3"></i> Delete</button>
+                                                        
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </td>
+                                </tr>
+                                }
+                            }
+                    </tbody>
+                </table>
+            </div>
+        }
+     </div>
+</div>
+
+
+@section Scripts {
+    <script>
+        $(function() {
+            new DataTable('#submissionTable', {
+                paging: false,
+                info: false,
+                searching: false,
+                autoWidth: true,
+                columnDefs: [
+                    @* { width: '35%', targets: [1] }, *@
+
+                ],
+                initComplete: function() {
+                    $('thead th').addClass('text-light text-center align-middle');
+                    $('thead th').addClass('bg-brand-color');
+                }
+            });
+        });
+    </script>
+}

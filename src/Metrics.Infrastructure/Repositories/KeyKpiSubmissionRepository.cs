@@ -20,6 +20,25 @@ public class KeyKpiSubmissionRepository(MetricsDbContext context) : IKeyKpiSubmi
         await _context.AddRangeAsync(submisions);
     }
 
+    public async Task DeleteByPeriodByCandidateAsync(long periodId, string candidateId)
+    {
+        var submissions = await FindByPeriodByUserAsync(periodId, candidateId);
+        if (submissions.Any())
+        {
+            _context.KeyKpiSubmissions.RemoveRange(submissions);
+            await _context.SaveChangesAsync();
+        }
+    }
+
+    public async Task<IEnumerable<KeyKpiSubmission>> FindByPeriodByUserAsync(long periodId, string userId)
+    {
+        return await _context.KeyKpiSubmissions.Where(s =>
+            s.DepartmentKeyMetric.KpiSubmissionPeriodId == periodId &&
+            s.SubmitterId.ToLower() == userId.ToLower()
+        ).ToListAsync();
+    }
+
+
     public async Task<KeyKpiSubmission?> FindByIdAsync(long id)
     {
         return await _context.KeyKpiSubmissions
@@ -43,18 +62,28 @@ public class KeyKpiSubmissionRepository(MetricsDbContext context) : IKeyKpiSubmi
             .FirstOrDefaultAsync();
     }
 
-    public async Task<List<KeyKpiSubmission>> FindByPeriodAsync(long periodId)
+    public async Task<List<KeyKpiSubmission>> FindByPeriodAsync(long periodId, bool includeLockedUser = true)
     {
-        return await _context.KeyKpiSubmissions
+        var query = _context.KeyKpiSubmissions
+            .AsNoTracking()
             .Where(e => e.DepartmentKeyMetric.KpiSubmissionPeriodId == periodId)
             .OrderBy(e => e.SubmittedAt)
             .Include(e => e.SubmittedBy).ThenInclude(submitter => submitter.Department)
             .Include(e => e.SubmittedBy).ThenInclude(group => group.UserTitle)
             .Include(e => e.DepartmentKeyMetric).ThenInclude(e => e.KpiSubmissionPeriod)
             .Include(e => e.DepartmentKeyMetric).ThenInclude(e => e.KeyIssueDepartment)
-            .Include(e => e.DepartmentKeyMetric).ThenInclude(e => e.KeyMetric)
-            .AsNoTracking()
-            .ToListAsync();
+            .Include(e => e.DepartmentKeyMetric).ThenInclude(e => e.KeyMetric);
+        if (!includeLockedUser)
+        {
+            return await query.Where(s =>
+                    s.SubmittedBy.LockoutEnd == null ||
+                    s.SubmittedBy.LockoutEnd <= DateTimeOffset.UtcNow)
+                .ToListAsync();
+        }
+        else
+        {
+            return await query.ToListAsync();
+        }
     }
 
     public async Task<List<KeyKpiSubmission>> FindBySubmitterAsync(string submitterId)
@@ -193,5 +222,6 @@ public class KeyKpiSubmissionRepository(MetricsDbContext context) : IKeyKpiSubmi
             .Select(e => new { PeriodId = e.Key, Count = e.Count() })
             .ToDictionaryAsync(e => e.PeriodId, e => e.Count);
     }
+
 
 }

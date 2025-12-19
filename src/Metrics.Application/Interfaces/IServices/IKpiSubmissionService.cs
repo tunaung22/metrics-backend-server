@@ -6,12 +6,14 @@ namespace Metrics.Application.Interfaces.IServices;
 
 public interface IKpiSubmissionService
 {
-    Task<ResultT<List<KpiSubmissionDto>>> FindByPeriod_Async(long kpiPeriodId, bool includeLockedUsers = false);
+    Task<ResultT<List<KpiSubmissionDto>>> FindByPeriod_Async(long kpiPeriodId, bool includeLockedUsers = true);
     // ========== Return Entity ================================================
     Task<KpiSubmission> CreateAsync(KpiSubmission submission);
     Task<int> CreateRangeAsync(List<KpiSubmission> submissions);
     Task<KpiSubmission> UpdateAsync(DateOnly submissionDate, KpiSubmission submission);
     Task<bool> DeleteBySubmissionDateAsync(DateOnly submissionDate);
+    Task<Result> DeleteByPeriodAsync(long periodId, bool includeLockedUsers = true);
+    Task<Result> DeleteByPeriodByCandidateAsync(long periodId, string candidateId);
     Task<KpiSubmission> FindByIdAsync(long id);
     Task<KpiSubmission> FindBySubmissionDateAsync(DateOnly submissionDate);
     Task<List<KpiSubmission>> FindByKpiPeriodAsync(long kpiPeriodId); // find all by kpiPeriod

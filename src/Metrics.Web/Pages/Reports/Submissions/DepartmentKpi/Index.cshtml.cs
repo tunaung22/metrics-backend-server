@@ -5,14 +5,9 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace Metrics.Web.Pages.Reports.Submissions.DepartmentKpi;
 
-public class IndexModel : PageModel
+public class IndexModel(IKpiSubmissionPeriodService kpiPeriodService) : PageModel
 {
-    private readonly IKpiSubmissionPeriodService _kpiPeriodService;
-
-    public IndexModel(IKpiSubmissionPeriodService kpiPeriodService)
-    {
-        _kpiPeriodService = kpiPeriodService;
-    }
+    private readonly IKpiSubmissionPeriodService _kpiPeriodService = kpiPeriodService;
 
     // ========== MODELS ==========
     public List<KpiPeriodViewModel> KpiPeriodList { get; set; } = [];
