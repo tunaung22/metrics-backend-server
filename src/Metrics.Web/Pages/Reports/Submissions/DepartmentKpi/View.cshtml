@@ -11,7 +11,7 @@
             <h4><i class="bi bi-table"></i> Score Submission Report (KPI)</h4>
             <span class="mx-4">
                 Period: <strong>@Model.SelectedPeriod.PeriodName</strong>
-                <small>(@Model.SelectedPeriod.SubmissionStartDate.ToString("MMM dd, yyyy") - @Model.SelectedPeriod.SubmissionEndDate.ToString("MMM dd, yyyy"))</small>
+                <small>(@Model.SelectedPeriod.SubmissionStartDate.ToLocalTime().ToString("MMM dd, yyyy") - @Model.SelectedPeriod.SubmissionEndDate.ToLocalTime().ToString("MMM dd, yyyy"))</small>
             </span>
         </span>
     </span>
@@ -61,6 +61,42 @@
                         aria-label="Select User Group">
                     </select>
                 </div>
+
+                
+                @if(Model.IsActivePeriod) 
+                {
+                    @if(!string.IsNullOrEmpty(Model.ViewMode) && !string.IsNullOrEmpty(Model.Group) &&
+                        Model.ViewMode.Equals("detail", StringComparison.OrdinalIgnoreCase))
+                    {
+                            <div class="col-auto me-2">
+                                <label for="Group" class="form-label m-0">
+                                    <i class="bi bi-filter"></i> Show</label>
+                            </div>
+                            <div class="col-auto me-4">
+                                <select 
+                                    asp-for="Show"
+                                    asp-items="Model.ShowSubmissionModeListItems"
+                                    onchange="this.form.submit()"
+                                    class="form-select"
+                                    aria-label="Select submissions to display">
+                                </select>
+                            </div>
+                    }
+                    else {
+                        <div class="col-auto me-2">
+                            <label for="Group" class="form-label m-0 text-secondary">
+                                <i class="bi bi-filter"></i> Show</label>
+                        </div>
+                        <div class="col-auto me-4">
+                            <select 
+                                class="form-select text-secondary"
+                                aria-label="Select submissions to display"
+                                disabled>
+                                    <option value="">All Submissions</option>
+                            </select>
+                        </div>
+                    }
+                }
             </span>
         </form>
         @* <button>Button</button> *@
@@ -70,6 +106,7 @@
         <form method="post" asp-page-handler="ExportExcel">
             <input type="hidden" asp-for="ViewMode">
             <input type="hidden" asp-for="Group">
+            <input type="hidden" asp-for="Show">
             @* 
                 **use single handler: ExportExcel
                 for all four models?
