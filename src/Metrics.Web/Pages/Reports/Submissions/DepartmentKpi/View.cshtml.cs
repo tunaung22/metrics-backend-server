@@ -1,7 +1,5 @@
-using Metrics.Application.Domains;
 using Metrics.Application.DTOs.KpiSubmissionDtos;
 using Metrics.Application.Interfaces.IServices;
-using Metrics.Infrastructure.Services;
 using Metrics.Web.Common.Mappers;
 using Metrics.Web.Models;
 using Metrics.Web.Models.ReportViewModels;
@@ -43,6 +41,7 @@ public class ViewModel(
             return Page();
         }
         SelectedPeriod = period;
+        IsActivePeriod = period.SubmissionEndDate >= DateTimeOffset.UtcNow;
         SelectedPeriodName = period.PeriodName;
 
         // ----------VIEW MODE--------------------------------------------------
@@ -60,6 +59,11 @@ public class ViewModel(
         UserGroupListItems = LoadUserGroupListItems(UserGroupList);
         if (string.IsNullOrEmpty(Group))
             Group = "all";
+
+        // ----------SHOW SUBMISSIONS-------------------------------------------
+        ShowSubmissionModeListItems = LoadShowSubmissionListItems();
+        if (string.IsNullOrEmpty(Show))
+            Show = ShowSubmissionModeListItems[0].Value.ToLower();
 
         // ----------DEPARTMENT-------------------------------------------------
         var excludedDepartmentIDs = new List<long>();
@@ -134,8 +138,7 @@ public class ViewModel(
                     // -> var totalSubmissions = groupScores.Sum(g => g.TotalSubmissions); // var totalScore = groupScores.Sum(g => g.TotalScore);
                     var totalSubmissions = submissionToDepartment.Count;
                     var totalScore = submissionToDepartment.Sum(g => g.ScoreValue);
-                    var kpiScore = (totalSubmissions > 0)
-                            ? (totalScore / totalSubmissions) : 0M;
+                    var kpiScore = (totalSubmissions > 0) ? (totalScore / totalSubmissions) : 0M;
 
                     return new AllUserGroupReportSummaryViewModel
                     {
@@ -154,22 +157,25 @@ public class ViewModel(
                 // SINGLE + SUMMARY
                 // ViewMode ~= hod, management, staff,...
                 SingleUserGroupReportSummaryList = Load_SingleUserGroup_SummaryList(
-                                    SelectedPeriod.PeriodName, //
-                                    Group, // group to show
-                                    submissionsByPeriod, // source
-                                    DepartmentList); // dpeartments to show
+                    SelectedPeriod.PeriodName, //
+                    Group, // group to show
+                    submissionsByPeriod, // source
+                    DepartmentList); // dpeartments to show
             }
         }
+
         // VIEWMODE: DETAIL
         else if (MODE_DETAIL)
         {
-            UserList = await LoadUserList("Staff");
+            UserList = await LoadAllUsers();
             if (UserList.Count == 0)
             {
                 ModelState.AddModelError(string.Empty, "No users found.");
                 return Page();
             }
 
+            // bool showAllSubmissions = Show.Equals("all", StringComparison.OrdinalIgnoreCase);
+            bool showAllSubmissions = Show.ToLower() == "all" ? true : false;
             if (GROUP_ALL)
             {
                 // ALL + 
@@ -185,7 +191,9 @@ public class ViewModel(
                 AllUserGroupReportDetailList = Load_AllUserGroup_DetailList(
                     submissionsByPeriod,
                     UserList,
-                    DepartmentList);
+                    DepartmentList,
+                    IsActivePeriod,
+                    showAllSubmissions);
             }
             // ---GROUP: SINGLE
             else
@@ -196,7 +204,9 @@ public class ViewModel(
                     Group,
                     submissionsByPeriod,
                     UserList,
-                    DepartmentList); // department to includes all department
+                    DepartmentList,
+                    IsActivePeriod,
+                    showAllSubmissions); // department to includes all department
             }
         }
 
@@ -317,6 +327,7 @@ public class ViewModel(
             return Page();
         }
         SelectedPeriod = period;
+        IsActivePeriod = period.SubmissionEndDate >= DateTimeOffset.UtcNow;
         SelectedPeriodName = period.PeriodName;
 
         // ----------VIEW MODE--------------------------------------------------
@@ -334,6 +345,11 @@ public class ViewModel(
         UserGroupListItems = LoadUserGroupListItems(UserGroupList);
         if (string.IsNullOrEmpty(Group))
             Group = "all";
+
+        // ----------SHOW SUBMISSIONS-------------------------------------------
+        ShowSubmissionModeListItems = LoadShowSubmissionListItems();
+        if (string.IsNullOrEmpty(Show))
+            Show = ShowSubmissionModeListItems[0].Value.ToLower();
 
         // ----------DEPARTMENT-------------------------------------------------
         var excludedDepartmentIDs = new List<long>();
@@ -505,15 +521,19 @@ public class ViewModel(
                 );
             }
         }
+
+        // VIEWMODE: DETAIL
         else if (MODE_DETAIL)
         {
-            UserList = await LoadUserList("Staff");
+            UserList = await LoadAllUsers();
             if (UserList.Count == 0)
             {
                 ModelState.AddModelError(string.Empty, "No users found.");
                 return Page();
             }
 
+            // bool showAllSubmissions = Show.Equals("all", StringComparison.OrdinalIgnoreCase);
+            bool showAllSubmissions = Show.ToLower() == "all" ? true : false;
             // DETAIL
             if (GROUP_ALL)
             {
@@ -521,8 +541,11 @@ public class ViewModel(
                 AllUserGroupReportDetailList = Load_AllUserGroup_DetailList(
                     submissionsByPeriod,
                     UserList,
-                    DepartmentList);
+                    DepartmentList,
+                    IsActivePeriod,
+                    showAllSubmissions);
 
+                // ==========EXCEL==============================================
                 // PREPARE FOR EXCEL FILE
                 var colPeriod = "Period";
                 var colCandidateID = "Candidate ID";
@@ -593,8 +616,11 @@ public class ViewModel(
                     Group,
                     submissionsByPeriod,
                     UserList,
-                    DepartmentList);
+                    DepartmentList,
+                    IsActivePeriod,
+                    showAllSubmissions); // department to includes all department
 
+                // ==========EXCEL==============================================
                 // PREPARE FOR EXCEL FILE
                 var colPeriod = "Period";
                 var colCandidateID = "Candidate ID";
@@ -872,7 +898,7 @@ public class ViewModel(
         return null;
     }
 
-    private async Task<List<UserViewModel>> LoadUserList(string roleName)
+    private async Task<List<UserViewModel>> LoadAllUsers()
     {
         // var users = await _userService.FindAllActiveAsync(roleName);
         var users = await _userService.FindAllAsync(includeLockedUser: true);
@@ -942,12 +968,21 @@ public class ViewModel(
         return [];
     }
 
-    private List<SelectListItem> InitViewModeListItems()
+    private static List<SelectListItem> InitViewModeListItems()
     {
         return new List<SelectListItem>
         {
             new() { Value = "summary", Text = "Summary" },
             new() { Value = "detail", Text = "Detail" }
+        };
+    }
+
+    private static List<SelectListItem> LoadShowSubmissionListItems()
+    {
+        return new List<SelectListItem>
+        {
+            new() { Value = "all", Text = "All Submissions" },
+            new() { Value = "received", Text = "Received Submissions" }
         };
     }
 
@@ -1064,58 +1099,137 @@ public class ViewModel(
     /// <returns></returns>
     private List<AllUserGroupReportDetailViewModel> Load_AllUserGroup_DetailList(
         List<KpiSubmissionDto> submissionsByPeriod,
-        List<UserViewModel> userList,
-        List<DepartmentViewModel> departmentList)
+        List<UserViewModel> userList, // all users
+        List<DepartmentViewModel> departmentList,
+        bool isActivePeriod,
+        bool showAllSubmissions = true)
     {
-        // Option 2: return only submitted records
-        // filter user who have submitted
-        var filteredUsers = userList
-            .Where(user => submissionsByPeriod.Any(s => s.SubmitterId == user.Id))
-            .ToList();
+        // active period -> based on received submissions, get no-locked user
+        //               -> all submissions, get no-locked user
+        // old    period -> based on received submissions, get locked user
+        //               -> **can't fetch all submissions (doing so will also gets submissions for new users added at later)
 
-        return filteredUsers.Select(user =>
+        // Active Period
+        if (isActivePeriod)
         {
-            var userSubmissions = submissionsByPeriod
-                .Where(s => s.SubmitterId == user.Id)
-                // **note: sort by DepartmentName is required
-                .OrderBy(s => s.TargetDepartment.DepartmentName)
-                .ToList() ?? [];
+            // 1. based on all submissions       + includes only active users
+            // 2. based on received submissions  + includes only active users
+            var activeUsers = userList.Where(u => u.LockoutEnd == null || u.LockoutEnd <= DateTimeOffset.UtcNow).ToList();
 
-            // WHY departments??
-            // > to get all department in the result 
-            //   even if there is no submissions
-            //   for some departments 
-            var departmentScores = departmentList
-                .Select(dpt =>
-                {
-                    var submission = userSubmissions
-                        .Where(s => s.DepartmentId == dpt.Id)
-                        .FirstOrDefault();
-                    Console.WriteLine("##############################################", dpt.DepartmentName);
-                    return new DepartmentScoreViewModel
+            // Active Period:: based on all submissions + includes only active users
+            if (showAllSubmissions)
+            {
+                return activeUsers
+                    .Select(user =>
                     {
-                        DepartmentName = dpt.DepartmentName,
-                        Comment = submission?.Comments ?? string.Empty,
-                        ScoreValue = submission?.ScoreValue ?? 0.00M
+                        var userSubmissions = submissionsByPeriod
+                            .Where(s => s.SubmitterId == user.Id)
+                            // **note: sort by DepartmentName is required
+                            .OrderBy(s => s.TargetDepartment.DepartmentName)
+                            .ToList();
+
+                        // WHY departments?? > to get all department in the result even if there is no submissions for some departments 
+                        var departmentScores = departmentList
+                            .Select(dpt =>
+                            {
+                                var submission = userSubmissions.FirstOrDefault(s => s.DepartmentId == dpt.Id);
+                                return new DepartmentScoreViewModel
+                                {
+                                    DepartmentName = dpt.DepartmentName,
+                                    Comment = submission?.Comments ?? string.Empty,
+                                    ScoreValue = submission?.ScoreValue ?? 0.00M
+                                };
+                            })
+                            .OrderBy(dpt => dpt.DepartmentName)
+                            .ToList();
+
+                        return new AllUserGroupReportDetailViewModel
+                        {
+                            PeriodName = SelectedPeriod.PeriodName,
+                            SubmittedBy = user,
+                            DepartmentScores = departmentScores
+                        };
+                    })
+                .ToList();
+            }
+            // Active Period:: based on received submissions + includes only active users
+            else
+            {
+                return activeUsers
+                    // users who actual submitted
+                    .Where(user => submissionsByPeriod.Any(s => s.SubmitterId == user.Id))
+                    .Select(user =>
+                    {
+                        var userSubmissions = submissionsByPeriod
+                            .Where(s => s.SubmitterId == user.Id)
+                            // **note: sort by DepartmentName is required
+                            .OrderBy(s => s.TargetDepartment.DepartmentName)
+                            .ToList() ?? [];
+
+                        // WHY departments?? > to get all department in the result even if there is no submissions for some departments 
+                        var departmentScores = departmentList
+                            .Select(dpt =>
+                            {
+                                var submission = userSubmissions.FirstOrDefault(s => s.DepartmentId == dpt.Id);
+                                return new DepartmentScoreViewModel
+                                {
+                                    DepartmentName = dpt.DepartmentName,
+                                    Comment = submission?.Comments ?? string.Empty,
+                                    ScoreValue = submission?.ScoreValue ?? 0.00M
+                                };
+                            })
+                            .OrderBy(dpt => dpt.DepartmentName)
+                            .ToList();
+
+                        return new AllUserGroupReportDetailViewModel
+                        {
+                            PeriodName = SelectedPeriod.PeriodName,
+                            SubmittedBy = user,
+                            DepartmentScores = departmentScores
+                        };
+                    })
+                .ToList();
+            }
+        }
+
+        // Old Period:: based on received submissions + all users
+        else
+        {
+            return userList
+                // users who actual submitted
+                .Where(user => submissionsByPeriod.Any(s => s.SubmitterId == user.Id))
+                .Select(user =>
+                {
+                    var userSubmissions = submissionsByPeriod
+                        .Where(s => s.SubmitterId == user.Id)
+                        // **note: sort by DepartmentName is required
+                        .OrderBy(s => s.TargetDepartment.DepartmentName)
+                        .ToList() ?? [];
+
+                    // WHY departments?? > to get all department in the result even if there is no submissions for some departments 
+                    var departmentScores = departmentList
+                        .Select(dpt =>
+                        {
+                            var submission = userSubmissions.FirstOrDefault(s => s.DepartmentId == dpt.Id);
+                            return new DepartmentScoreViewModel
+                            {
+                                DepartmentName = dpt.DepartmentName,
+                                Comment = submission?.Comments ?? string.Empty,
+                                ScoreValue = submission?.ScoreValue ?? 0.00M
+                            };
+                        })
+                        .OrderBy(dpt => dpt.DepartmentName)
+                        .ToList();
+
+                    return new AllUserGroupReportDetailViewModel
+                    {
+                        PeriodName = SelectedPeriod.PeriodName,
+                        SubmittedBy = user,
+                        DepartmentScores = departmentScores
                     };
                 })
-                .OrderBy(dpt => dpt.DepartmentName)
-                .ToList();
-
-            return new AllUserGroupReportDetailViewModel
-            {
-                PeriodName = SelectedPeriod.PeriodName,
-                SubmittedBy = user,
-                // DepartmentScores should includes all departments
-                // for consistency (set score to 0.00 if no submision) 
-                DepartmentScores = departmentScores
-                // DepartmentScores = userSubmissions.Select(submission => new DepartmentScoreViewModel
-                // {
-                //     DepartmentName = submission.TargetDepartment.DepartmentName,
-                //     ScoreValue = submission.ScoreValue
-                // }).ToList()
-            };
-        }).ToList();
+            .ToList();
+        }
     }
 
     private static List<SingleUserGroupReportDetailViewModel> Load_SingleUserGroup_DetailList(
@@ -1123,47 +1237,146 @@ public class ViewModel(
         string selectedGroupName,
         List<KpiSubmissionDto> submissionsByPeriod,
         List<UserViewModel> userList,
-        List<DepartmentViewModel> departmentList)
+        List<DepartmentViewModel> departmentList,
+        bool isActivePeriod,
+        bool showAllSubmissions = true)
     {
-        var filteredUsers = userList
-            .Where(user => submissionsByPeriod.Any(s => s.SubmitterId == user.Id))
-            .ToList();
+        // active Period -> baesd on all submissions       + includes only active users
+        //               -> based on received submissions  + includes only active users
+        // old    Period -> based on received submissions  + all users
 
-        return filteredUsers
-            .Where(user => user.UserGroup.GroupName.Equals(selectedGroupName, StringComparison.OrdinalIgnoreCase))
-            .Select(user =>
+        // Active Period
+        if (isActivePeriod)
+        {
+            // 1. based on all submissions       + includes only active users
+            // 2. based on received submissions  + includes only active users
+            var activeUsers = userList.Where(u => u.LockoutEnd == null || u.LockoutEnd <= DateTimeOffset.UtcNow).ToList();
+
+            // Active Period:: based on ALL submissions + includes only ACTIVE users
+            if (showAllSubmissions)
             {
-                // submission by [user] of [group]
-                var submissionByUser = submissionsByPeriod
-                    .Where(s => s.SubmitterId == user.Id)
-                    // .Where(s => s.SubmittedBy.UserTitle.TitleName.Equals(Group, StringComparison.OrdinalIgnoreCase)
-                    //     && s.ApplicationUserId == user.Id)
-                    // **note: sort by DepartmentName is required
-                    .OrderBy(s => s.TargetDepartment.DepartmentName)
-                    .ToList();
-
-                return new SingleUserGroupReportDetailViewModel
-                {
-                    PeriodName = periodName,
-                    SubmittedBy = user,
-                    GroupName = selectedGroupName,
-                    DepartmentScores = departmentList.Select(dpt =>
+                return activeUsers
+                    .Where(user => user.UserGroup.GroupName.Equals(selectedGroupName, StringComparison.OrdinalIgnoreCase))
+                    .Select(user =>
                     {
-                        var submissions = submissionByUser
-                            .Where(s => s.DepartmentId == dpt.Id)
-                            .FirstOrDefault();
+                        // submission by [user] of [group]
+                        var submissionByUser = submissionsByPeriod
+                            .Where(s => s.SubmitterId == user.Id)
+                            // .Where(s => s.SubmittedBy.UserTitle.TitleName.Equals(Group, StringComparison.OrdinalIgnoreCase)
+                            //     && s.ApplicationUserId == user.Id)
+                            // **note: sort by DepartmentName is required
+                            .OrderBy(s => s.TargetDepartment.DepartmentName)
+                            .ToList();
 
-                        return new DepartmentScoreViewModel
+                        return new SingleUserGroupReportDetailViewModel
                         {
-                            DepartmentName = dpt.DepartmentName,
-                            Comment = submissions?.Comments ?? string.Empty,
-                            ScoreValue = submissions?.ScoreValue ?? 0.00M
+                            PeriodName = periodName,
+                            SubmittedBy = user,
+                            GroupName = selectedGroupName,
+                            DepartmentScores = departmentList.Select(dpt =>
+                            {
+                                var submissions = submissionByUser.FirstOrDefault(s => s.DepartmentId == dpt.Id);
+
+                                return new DepartmentScoreViewModel
+                                {
+                                    DepartmentName = dpt.DepartmentName,
+                                    Comment = submissions?.Comments ?? string.Empty,
+                                    ScoreValue = submissions?.ScoreValue ?? 0.00M
+                                };
+                            })
+                            .OrderBy(dpt => dpt.DepartmentName)
+                            .ToList()
                         };
-                    })
-                    .OrderBy(dpt => dpt.DepartmentName)
-                    .ToList()
-                };
-            }).ToList();
+                    }
+                ).ToList();
+            }
+            // Active Period:: based on RECEIVED submissions + includes only ACTIVE users
+            else
+            {
+                return activeUsers
+                    .Where(user =>
+                        // users who actual submitted
+                        submissionsByPeriod.Any(s => s.SubmitterId == user.Id) &&
+                        user.UserGroup.GroupName.Equals(selectedGroupName, StringComparison.OrdinalIgnoreCase))
+                    .Select(user =>
+                    {
+                        // submission by [user] of [group]
+                        var submissionByUser = submissionsByPeriod
+                            .Where(s => s.SubmitterId == user.Id)
+                            // .Where(s => s.SubmittedBy.UserTitle.TitleName.Equals(Group, StringComparison.OrdinalIgnoreCase)
+                            //     && s.ApplicationUserId == user.Id)
+                            // **note: sort by DepartmentName is required
+                            .OrderBy(s => s.TargetDepartment.DepartmentName)
+                            .ToList();
+
+                        return new SingleUserGroupReportDetailViewModel
+                        {
+                            PeriodName = periodName,
+                            SubmittedBy = user,
+                            GroupName = selectedGroupName,
+                            DepartmentScores = departmentList.Select(dpt =>
+                            {
+                                var submissions = submissionByUser
+                                    .Where(s => s.DepartmentId == dpt.Id)
+                                    .FirstOrDefault();
+
+                                return new DepartmentScoreViewModel
+                                {
+                                    DepartmentName = dpt.DepartmentName,
+                                    Comment = submissions?.Comments ?? string.Empty,
+                                    ScoreValue = submissions?.ScoreValue ?? 0.00M
+                                };
+                            })
+                            .OrderBy(dpt => dpt.DepartmentName)
+                            .ToList()
+                        };
+                    }
+                ).ToList();
+            }
+        }
+        // Old Period:: based on received submissions  + all users
+        else
+        {
+            return userList
+                .Where(user =>
+                    // users who actual submitted
+                    submissionsByPeriod.Any(s => s.SubmitterId == user.Id) &&
+                    user.UserGroup.GroupName.Equals(selectedGroupName, StringComparison.OrdinalIgnoreCase))
+                .Select(user =>
+                {
+                    // submission by [user] of [group]
+                    var submissionByUser = submissionsByPeriod
+                        .Where(s => s.SubmitterId == user.Id)
+                        // .Where(s => s.SubmittedBy.UserTitle.TitleName.Equals(Group, StringComparison.OrdinalIgnoreCase)
+                        //     && s.ApplicationUserId == user.Id)
+                        // **note: sort by DepartmentName is required
+                        .OrderBy(s => s.TargetDepartment.DepartmentName)
+                        .ToList();
+
+                    return new SingleUserGroupReportDetailViewModel
+                    {
+                        PeriodName = periodName,
+                        SubmittedBy = user,
+                        GroupName = selectedGroupName,
+                        DepartmentScores = departmentList.Select(dpt =>
+                        {
+                            var submissions = submissionByUser
+                                .Where(s => s.DepartmentId == dpt.Id)
+                                .FirstOrDefault();
+
+                            return new DepartmentScoreViewModel
+                            {
+                                DepartmentName = dpt.DepartmentName,
+                                Comment = submissions?.Comments ?? string.Empty,
+                                ScoreValue = submissions?.ScoreValue ?? 0.00M
+                            };
+                        })
+                        .OrderBy(dpt => dpt.DepartmentName)
+                        .ToList()
+                    };
+                })
+            .ToList();
+        }
     }
 
 
@@ -1271,29 +1484,32 @@ public class ViewModel(
 
     public List<KeyKpiSubmissionViewModel> KeyKpiSubmissions { get; set; } = [];
 
+    // -----Period-----
     public KpiPeriodViewModel SelectedPeriod { get; set; } = null!;
-
-    // ----------Excel Models----------
-    // public class KeyKpiSubmissionExportViewModel
-    // {
-    // }
-
-    // public List<KeyKpiSubmissionExportViewModel>
-
-
     public string SelectedPeriodName { get; set; } = null!;
+    public bool IsActivePeriod { get; set; }
+    // ----------------
 
     // public string? Submitter { get; set; }
     public List<DepartmentViewModel> DepartmentList { get; set; } = [];
     public List<UserGroupViewModel> UserGroupList { get; set; } = [];
     public List<UserViewModel> UserList { get; set; } = [];
     // ----------Select/Options Data----------
+    // ---Group---
     [BindProperty]
     public List<SelectListItem> UserGroupListItems { get; set; } = []; // for select element
 
     [BindProperty(SupportsGet = true)]
     public string? Group { get; set; } // selected item (for filter select element)
 
+    // ---Show Submission Mode---
+    [BindProperty]
+    public List<SelectListItem> ShowSubmissionModeListItems { get; set; } = [];
+
+    [BindProperty(SupportsGet = true)]
+    public string? Show { get; set; } // selected item (for filter select element)
+
+    // ---View Mode---
     [BindProperty]
     public List<SelectListItem> ViewModeListItems { get; set; } = [];
 

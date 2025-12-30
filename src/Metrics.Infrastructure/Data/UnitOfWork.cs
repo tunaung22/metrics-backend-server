@@ -1,8 +1,7 @@
 ﻿using Metrics.Application.Common;
 using Metrics.Application.Interfaces.IRepositories;
-using Metrics.Infrastructure.Data;
 
-namespace Metrics.Infrastructure.Services;
+namespace Metrics.Infrastructure.Data;
 
 public class UnitOfWork : IUnitOfWork, IDisposable
 {

@@ -68,7 +68,9 @@ public class EditModel(IKpiSubmissionPeriodService kpiPeriodService) : PageModel
             {
                 PeriodName = FormInput.PeriodName.Trim(),
                 SubmissionStartDate = FormInput.SubmissionStartDate.UtcDateTime,
-                SubmissionEndDate = FormInput.SubmissionEndDate.UtcDateTime
+                SubmissionEndDate = FormInput.SubmissionEndDate.UtcDateTime.AddDays(1).AddSeconds(-1)
+                // var endDate = new DateTimeOffset(FormInput.SubmissionEndDate.Date.AddDays(1).AddSeconds(-1)); // end of the day
+
             };
 
             var result = await _kpiPeriodService.UpdateAsync(PeriodName, updateDto);

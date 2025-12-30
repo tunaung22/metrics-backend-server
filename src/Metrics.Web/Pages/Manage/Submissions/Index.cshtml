@@ -122,7 +122,7 @@
 
                                             <input type="hidden" asp-for="Period" value="@Model.Period" />
                                             <input type="hidden" asp-for="PeriodId" value="@submission.KpiPeriod.Id" />
-                                            <input type="text" asp-for="UserId" value="@submission.SubmittedBy.Id" />
+                                            <input type="hidden" asp-for="UserId" value="@submission.SubmittedBy.Id" />
                                             <input type="hidden" asp-for="Type" value="@Model.Type" /> 
 
                                             <button type="button"  data-bs-toggle="modal" data-bs-target="#confirmDialogBackdrop_@uId"
@@ -178,7 +178,7 @@
 
                                             <input type="hidden" asp-for="Period" value="@Model.Period" />
                                             <input type="hidden" asp-for="PeriodId" value="@submission.KpiPeriod.Id" />
-                                            <input type="text" asp-for="UserId" value="@submission.SubmittedBy.Id" />
+                                            <input type="hidden" asp-for="UserId" value="@submission.SubmittedBy.Id" />
                                             <input type="hidden" asp-for="Type" value="@Model.Type" /> 
                                          
                                             <button type="button"  data-bs-toggle="modal" data-bs-target="#confirmDialogBackdrop_@uId"
@@ -233,7 +233,7 @@
             new DataTable('#submissionTable', {
                 paging: false,
                 info: false,
-                searching: false,
+                searching: true,
                 autoWidth: true,
                 columnDefs: [
                     @* { width: '35%', targets: [1] }, *@

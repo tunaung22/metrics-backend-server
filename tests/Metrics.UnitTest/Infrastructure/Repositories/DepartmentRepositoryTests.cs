@@ -5,9 +5,8 @@ using Metrics.Shared.Configurations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Moq;
-using System.Globalization;
 
-namespace Metrics.Tests.UnitTests.Infrastructure.Repositories;
+namespace Metrics.UnitTest.Infrastructure.Repositories;
 
 public class DepartmentRepositoryTests
 {

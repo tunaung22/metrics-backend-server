@@ -5,7 +5,6 @@ using Metrics.Shared.Configurations;
 using Metrics.Shared.Utils;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.Options;
 
 namespace Metrics.Infrastructure.Data;

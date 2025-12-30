@@ -4,31 +4,27 @@ using Metrics.Web.Common.Mappers;
 using Metrics.Web.Models;
 using Metrics.Web.Models.DepartmentKeyMetric;
 using Metrics.Web.Models.KeyKpiSubmissionConstraint;
-using Metrics.Web.Models.KeyMetric;
+using Metrics.Web.Models.ReportViewModels.KeyKpiSummaryReports;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using MiniExcelLibs;
-using MiniExcelLibs.Attributes;
-using MiniExcelLibs.OpenXml;
 
 namespace Metrics.Web.Pages.Reports.Submissions.KeyKpi;
 
 public class SummaryModel(
     IKpiSubmissionPeriodService kpiPeriodService,
-    IUserService userService,
     IUserTitleService userGroupService,
     IKeyKpiSubmissionService keyKpiSubmissionService,
     IKeyKpiSubmissionConstraintService submissionConstraintService,
-    IDepartmentKeyMetricService departmentKeyMetricService) : PageModel
+    IDepartmentKeyMetricService departmentKeyMetricService,
+    IKeyKpiReportService reportService) : PageModel
 {
     private readonly IKpiSubmissionPeriodService _kpiPeriodService = kpiPeriodService;
-    private readonly IUserService _userService = userService;
     private readonly IUserTitleService _userGroupService = userGroupService;
     private readonly IKeyKpiSubmissionService _keyKpiSubmissionService = keyKpiSubmissionService;
     private readonly IKeyKpiSubmissionConstraintService _submissionConstraintService = submissionConstraintService;
     public readonly IDepartmentKeyMetricService _departmentKeyMetricService = departmentKeyMetricService;
-
+    public readonly IKeyKpiReportService _reportService = reportService;
 
     // ========== HANDLERS =====================================================
     public async Task<IActionResult> OnGetAsync(string periodName)
@@ -130,8 +126,7 @@ public class SummaryModel(
                     .ToList();
 
 
-                // List<SummaryReport_RowDetail_ViewModel> summaryReportRowDetail = [];
-                List<SummaryReportItem__ViewModel> SummaryReportItems = [];
+                List<KeyKpi_SummaryReportItem_ViewModel> SummaryReportItems_ex = [];
 
                 foreach (var keyMetric in keyMetrics)
                 {
@@ -139,8 +134,7 @@ public class SummaryModel(
                         .Where(s => s.DepartmentKeyMetric.KeyMetricId == keyMetric.Id)
                         .ToList();
 
-                    // List<CandidateDepartmentScoreDetail> candidateDepartmentScoreDetails = [];
-                    List<SummaryReport_CandidateDepartmentScore__ViewModel> SummaryReport_CandidateDepartmentScoreList = [];
+                    List<KeyKpi_SummaryReport_Submission_ViewModel> Submissions = [];
 
                     var candidateDepartmentList = submissionsOnKey.DistinctBy(s => s.SubmittedBy.DepartmentId).Select(s => s.SubmittedBy.Department).ToList();
                     foreach (var department in candidateDepartmentList)
@@ -148,61 +142,52 @@ public class SummaryModel(
                         // for each candidate department, get submission score total
                         var scoreTotal = submissionsOnKey.Where(s => s.SubmittedBy.DepartmentId == department.Id).Sum(s => s.ScoreValue);
                         var submitters = submissionsOnKey.Select(s => s.SubmittedBy).Where(u => u.DepartmentId == department.Id);
-
-                        // candidateDepartmentScoreDetails.Add(new CandidateDepartmentScoreDetail
-                        SummaryReport_CandidateDepartmentScoreList.Add(new SummaryReport_CandidateDepartmentScore__ViewModel
+                        Submissions.Add(new KeyKpi_SummaryReport_Submission_ViewModel
                         {
                             CandidateDepartment = department.MapToViewModel(),
                             TotalScoreByCandidateDepartment = scoreTotal,
-                            SummaryReport_SubmissionDetails = submitters.Select(user =>
+                            SubmissionDetails = submitters.Select(user => new KeyKpi_SummaryReport_SubmissionDetail_ViewModel
                             {
-                                return new SummaryReport_SubmissionDetail__ViewModel
-                                {
-                                    CandidateUserCode = user.UserCode,
-                                    CandidateUserName = user.UserName,
-                                    CandidateName = user.FullName,
-                                    CandidateGroup = user.UserGroup.GroupName,
-                                };
-                            }).ToList()
+                                CandidateUserCode = user.UserCode,
+                                CandidateUserName = user.UserName,
+                                CandidateName = user.FullName,
+                                CandidateGroup = user.UserGroup.GroupName
+                            }).ToList(),
                         });
                     }
-
-
-                    var submissionCountPerKey = submissionsOnKey.Count;
-                    var scoreTotalPerKey = submissionsOnKey.Sum(s => s.ScoreValue);
 
                     var candidateDepartmentCount = submissionsPerKeyDepartment
                         .DistinctBy(s => s.SubmittedBy.DepartmentId).Count();
                     // var averageScore = scoreTotalPerKey / candidateDepartmentCount; // scoreTotalPerKey / no. of candidate department with actual score submitted 
-                    var averageScore = scoreTotalPerKey / submissionCountPerKey;
+
+                    var submissionCountPerKey = submissionsOnKey.Count;
+                    var scoreTotalPerKey = submissionsOnKey.Sum(s => s.ScoreValue);
+                    var averageScore = (submissionCountPerKey > 0) ? (scoreTotalPerKey / submissionCountPerKey) : 0M;
 
                     // for each department for each key => var row = new SummaryReport_RowDetail_ViewModel
-                    var row = new SummaryReportItem__ViewModel
+                    var row_ex = new KeyKpi_SummaryReportItem_ViewModel
                     {
                         PeriodName = SelectedPeriodName,
                         KeyIssueDepartment = keyDpt,
                         KeyMetric = keyMetric.MapToViewModel(),
                         // CandidateDepartmentScoreDetails = candidateDepartmentScoreDetails,
-                        SummaryReport_CandidateDepartmentScoreList = SummaryReport_CandidateDepartmentScoreList,
+                        Submissions = Submissions,
                         ReceivedSubmissions = submissionCountPerKey, //count
                         ReceivedScore = scoreTotalPerKey, //sum
                         AverageScore = averageScore,
                     };
-                    SummaryReportItems.Add(row);
+                    SummaryReportItems_ex.Add(row_ex);
                 }
 
                 // department's total key's total score
                 // -> find final score
                 // total / keys count (where submissions present)
-                // SummaryReport_MultiKeyDepartments.Add(new SummaryReport_ViewModel
-                // {
-                //     SummaryReportRow_Details = summaryReportRowDetail,
-                //     FinalScore = 0,
-                // });
-                SummaryReport_Multiple.Add(new SummaryReport__ViewModel
+                var itemSum = SummaryReportItems_ex.Sum(i => i.AverageScore);
+                var itemCount = SummaryReportItems_ex.Count;
+                SummaryReportList_All.Add(new KeyKpi_SummaryReport_ViewModel
                 {
-                    SummaryReportItems = SummaryReportItems,
-                    FinalScore = SummaryReportItems.Sum(i => i.AverageScore) / SummaryReportItems.Count,
+                    SummaryReportItems = SummaryReportItems_ex,
+                    FinalScore = (itemCount > 0) ? (itemSum / itemCount) : 0,
                 });
             }
         }
@@ -235,27 +220,30 @@ public class SummaryModel(
                     .Select(s => s.DepartmentKeyMetric.KeyMetric)
                     .ToList();
 
-                //List<SummaryReport_RowDetail_ViewModel> summaryReportRowDetail = [];
-                List<SummaryReportItem__ViewModel> summaryReportItems = [];
+
+                List<KeyKpi_SummaryReportItem_ViewModel> SummaryReportItems = [];
+
                 foreach (var keyMetric in keyMetrics) // keys
                 {
                     // score total of each key
                     var submissionsOnKey = submissionsPerKeyDepartment
                         .Where(s => s.DepartmentKeyMetric.KeyMetricId == keyMetric.Id)
                         .ToList();
-                    var submissionCountPerKey = submissionsOnKey.Count;
-                    var scoreTotalPerKey = submissionsOnKey.Sum(s => s.ScoreValue);
 
                     var candidateDepartmentCount = submissionsPerKeyDepartment
                         .DistinctBy(s => s.SubmittedBy.DepartmentId).Count();
                     // var averageScore = scoreTotalPerKey / candidateDepartmentCount; // scoreTotalPerKey / no. of candidate department with actual score submitted 
-                    var averageScore = scoreTotalPerKey / submissionCountPerKey;
+
+                    var submissionCountPerKey = submissionsOnKey.Count;
+                    var scoreTotalPerKey = submissionsOnKey.Sum(s => s.ScoreValue);
+                    var averageScore = (submissionCountPerKey > 0) ? (scoreTotalPerKey / submissionCountPerKey) : 0M;
+
 
                     //  total score details submitted by each candidate department 
                     // sum of candidate department score on key of selected key department
 
                     // List<CandidateDepartmentScoreDetail> candidateDepartmentScoreDetails = [];
-                    List<SummaryReport_CandidateDepartmentScore__ViewModel> SummaryReport_CandidateDepartmentScoreList = [];
+                    List<KeyKpi_SummaryReport_Submission_ViewModel> Submissions = [];
                     var candidateDptList = submissionsOnKey.DistinctBy(s => s.SubmittedBy.DepartmentId).Select(s => s.SubmittedBy.Department).ToList();
                     foreach (var department in candidateDptList)
                     {
@@ -264,37 +252,34 @@ public class SummaryModel(
                         var submitters = submissionsOnKey.Select(s => s.SubmittedBy).Where(u => u.DepartmentId == department.Id);
 
                         // candidateDepartmentScoreDetails.Add(new CandidateDepartmentScoreDetail
-                        SummaryReport_CandidateDepartmentScoreList.Add(new SummaryReport_CandidateDepartmentScore__ViewModel
+                        Submissions.Add(new KeyKpi_SummaryReport_Submission_ViewModel
                         {
                             CandidateDepartment = department.MapToViewModel(),
                             TotalScoreByCandidateDepartment = scoreTotal,
-                            SummaryReport_SubmissionDetails = submitters.Select(user =>
+                            SubmissionDetails = submitters.Select(user => new KeyKpi_SummaryReport_SubmissionDetail_ViewModel
                             {
-                                return new SummaryReport_SubmissionDetail__ViewModel
-                                {
-                                    CandidateUserCode = user.UserCode,
-                                    CandidateUserName = user.UserName,
-                                    CandidateName = user.FullName,
-                                    CandidateGroup = user.UserGroup.GroupName,
-                                };
+                                CandidateUserCode = user.UserCode,
+                                CandidateUserName = user.UserName,
+                                CandidateName = user.FullName,
+                                CandidateGroup = user.UserGroup.GroupName,
                             }).ToList()
                         });
                     }
 
                     // for each department for each key => 
-                    var row = new SummaryReportItem__ViewModel //SummaryReport_RowDetail_ViewModel
+                    var row = new KeyKpi_SummaryReportItem_ViewModel
                     {
                         PeriodName = SelectedPeriodName,
                         KeyIssueDepartment = SelectedKeyDepartment,
                         KeyMetric = keyMetric.MapToViewModel(),
                         //CandidateDepartmentScoreDetails = candidateDepartmentScoreDetails,
-                        SummaryReport_CandidateDepartmentScoreList = SummaryReport_CandidateDepartmentScoreList,
+                        Submissions = Submissions,
                         ReceivedSubmissions = submissionCountPerKey, //count
                         ReceivedScore = scoreTotalPerKey, //sum
                         AverageScore = averageScore,
                     };
-                    //summaryReportRowDetail.Add(row);
-                    summaryReportItems.Add(row);
+
+                    SummaryReportItems.Add(row);
                 }
 
                 // department's total key's total score
@@ -305,11 +290,12 @@ public class SummaryModel(
                 //     SummaryReportRow_Details = summaryReportRowDetail,
                 //     FinalScore = 0,
                 // };
-                SummaryReport_Single = new SummaryReport__ViewModel
+                var itemSum = SummaryReportItems.Sum(i => i.AverageScore);
+                var itemCount = SummaryReportItems.Count;
+                SummaryReportList_Single = new KeyKpi_SummaryReport_ViewModel
                 {
-                    SummaryReportItems = summaryReportItems,
-                    //TotalScore =  summaryReportItems.Sum(i => i.AverageScore);
-                    FinalScore = summaryReportItems.Sum(i => i.AverageScore) / summaryReportItems.Count,
+                    SummaryReportItems = SummaryReportItems,
+                    FinalScore = (itemCount > 0) ? (itemSum / itemCount) : 0,
                 };
             }
             else
@@ -419,8 +405,7 @@ public class SummaryModel(
                     .ToList();
 
 
-                // List<SummaryReport_RowDetail_ViewModel> summaryReportRowDetail = [];
-                List<SummaryReportItem__ViewModel> SummaryReportItems = [];
+                List<KeyKpi_SummaryReportItem_ViewModel> SummaryReportItems_ex = [];
 
                 foreach (var keyMetric in keyMetrics)
                 {
@@ -428,8 +413,7 @@ public class SummaryModel(
                         .Where(s => s.DepartmentKeyMetric.KeyMetricId == keyMetric.Id)
                         .ToList();
 
-                    // List<CandidateDepartmentScoreDetail> candidateDepartmentScoreDetails = [];
-                    List<SummaryReport_CandidateDepartmentScore__ViewModel> SummaryReport_CandidateDepartmentScoreList = [];
+                    List<KeyKpi_SummaryReport_Submission_ViewModel> Submissions = [];
 
                     var candidateDepartmentList = submissionsOnKey.DistinctBy(s => s.SubmittedBy.DepartmentId).Select(s => s.SubmittedBy.Department).ToList();
                     foreach (var department in candidateDepartmentList)
@@ -437,60 +421,52 @@ public class SummaryModel(
                         // for each candidate department, get submission score total
                         var scoreTotal = submissionsOnKey.Where(s => s.SubmittedBy.DepartmentId == department.Id).Sum(s => s.ScoreValue);
                         var submitters = submissionsOnKey.Select(s => s.SubmittedBy).Where(u => u.DepartmentId == department.Id);
-                        // candidateDepartmentScoreDetails.Add(new CandidateDepartmentScoreDetail
-                        SummaryReport_CandidateDepartmentScoreList.Add(new SummaryReport_CandidateDepartmentScore__ViewModel
+                        Submissions.Add(new KeyKpi_SummaryReport_Submission_ViewModel
                         {
                             CandidateDepartment = department.MapToViewModel(),
                             TotalScoreByCandidateDepartment = scoreTotal,
-                            SummaryReport_SubmissionDetails = submitters.Select(user =>
+                            SubmissionDetails = submitters.Select(user => new KeyKpi_SummaryReport_SubmissionDetail_ViewModel
                             {
-                                return new SummaryReport_SubmissionDetail__ViewModel
-                                {
-                                    CandidateUserCode = user.UserCode,
-                                    CandidateUserName = user.UserName,
-                                    CandidateName = user.FullName,
-                                    CandidateGroup = user.UserGroup.GroupName,
-                                };
-                            }).ToList()
+                                CandidateUserCode = user.UserCode,
+                                CandidateUserName = user.UserName,
+                                CandidateName = user.FullName,
+                                CandidateGroup = user.UserGroup.GroupName
+                            }).ToList(),
                         });
                     }
-
-
-                    var submissionCountPerKey = submissionsOnKey.Count;
-                    var scoreTotalPerKey = submissionsOnKey.Sum(s => s.ScoreValue);
 
                     var candidateDepartmentCount = submissionsPerKeyDepartment
                         .DistinctBy(s => s.SubmittedBy.DepartmentId).Count();
                     // var averageScore = scoreTotalPerKey / candidateDepartmentCount; // scoreTotalPerKey / no. of candidate department with actual score submitted 
-                    var averageScore = scoreTotalPerKey / submissionCountPerKey;
+
+                    var submissionCountPerKey = submissionsOnKey.Count;
+                    var scoreTotalPerKey = submissionsOnKey.Sum(s => s.ScoreValue);
+                    var averageScore = (submissionCountPerKey > 0) ? (scoreTotalPerKey / submissionCountPerKey) : 0M;
 
                     // for each department for each key => var row = new SummaryReport_RowDetail_ViewModel
-                    var row = new SummaryReportItem__ViewModel
+                    var row_ex = new KeyKpi_SummaryReportItem_ViewModel
                     {
                         PeriodName = SelectedPeriodName,
                         KeyIssueDepartment = keyDpt,
                         KeyMetric = keyMetric.MapToViewModel(),
                         // CandidateDepartmentScoreDetails = candidateDepartmentScoreDetails,
-                        SummaryReport_CandidateDepartmentScoreList = SummaryReport_CandidateDepartmentScoreList,
+                        Submissions = Submissions,
                         ReceivedSubmissions = submissionCountPerKey, //count
                         ReceivedScore = scoreTotalPerKey, //sum
-                        AverageScore = averageScore, // Score Received/Submissions Count
+                        AverageScore = averageScore,
                     };
-                    SummaryReportItems.Add(row);
+                    SummaryReportItems_ex.Add(row_ex);
                 }
 
                 // department's total key's total score
                 // -> find final score
                 // total / keys count (where submissions present)
-                // SummaryReport_MultiKeyDepartments.Add(new SummaryReport_ViewModel
-                // {
-                //     SummaryReportRow_Details = summaryReportRowDetail,
-                //     FinalScore = 0,
-                // });
-                SummaryReport_Multiple.Add(new SummaryReport__ViewModel
+                var itemSum = SummaryReportItems_ex.Sum(i => i.AverageScore);
+                var itemCount = SummaryReportItems_ex.Count;
+                SummaryReportList_All.Add(new KeyKpi_SummaryReport_ViewModel
                 {
-                    SummaryReportItems = SummaryReportItems,
-                    FinalScore = SummaryReportItems.Sum(i => i.AverageScore) / SummaryReportItems.Count,
+                    SummaryReportItems = SummaryReportItems_ex,
+                    FinalScore = (itemCount > 0) ? (itemSum / itemCount) : 0,
                 });
             }
         }
@@ -523,8 +499,9 @@ public class SummaryModel(
                     .Select(s => s.DepartmentKeyMetric.KeyMetric)
                     .ToList();
 
-                //List<SummaryReport_RowDetail_ViewModel> summaryReportRowDetail = [];
-                List<SummaryReportItem__ViewModel> summaryReportItems = [];
+
+                List<KeyKpi_SummaryReportItem_ViewModel> SummaryReportItems = [];
+
                 foreach (var keyMetric in keyMetrics) // keys
                 {
                     // score total of each key
@@ -532,45 +509,54 @@ public class SummaryModel(
                         .Where(s => s.DepartmentKeyMetric.KeyMetricId == keyMetric.Id)
                         .ToList();
                     var submissionCountPerKey = submissionsOnKey.Count;
-                    var scoreTotalPerKey = submissionsOnKey.Sum(s => s.ScoreValue);
 
+                    var scoreTotalPerKey = submissionsOnKey.Sum(s => s.ScoreValue);
                     var candidateDepartmentCount = submissionsPerKeyDepartment
                         .DistinctBy(s => s.SubmittedBy.DepartmentId).Count();
-                    var averageScore = scoreTotalPerKey / candidateDepartmentCount; // scoreTotalPerKey / no. of candidate department with actual score submitted 
+                    var averageScore = (candidateDepartmentCount > 0) ? (scoreTotalPerKey / candidateDepartmentCount) : 0M;
+
+                    // scoreTotalPerKey / no. of candidate department with actual score submitted 
 
                     //  total score details submitted by each candidate department 
                     // sum of candidate department score on key of selected key department
 
-                    // List<CandidateDepartmentScoreDetail> candidateDepartmentScoreDetails = [];
-                    List<SummaryReport_CandidateDepartmentScore__ViewModel> SummaryReport_CandidateDepartmentScoreList = [];
+                    List<KeyKpi_SummaryReport_Submission_ViewModel> Submissions = [];
                     var candidateDptList = submissionsOnKey.DistinctBy(s => s.SubmittedBy.DepartmentId).Select(s => s.SubmittedBy.Department).ToList();
-                    foreach (var dpt in candidateDptList)
+                    foreach (var department in candidateDptList)
                     {
                         // for each candidate department, get submission score total
-                        var scoreTotal = submissionsOnKey.Where(s => s.SubmittedBy.DepartmentId == dpt.Id).Sum(s => s.ScoreValue);
+                        var scoreTotal = submissionsOnKey.Where(s => s.SubmittedBy.DepartmentId == department.Id).Sum(s => s.ScoreValue);
+                        var submitters = submissionsOnKey.Select(s => s.SubmittedBy).Where(u => u.DepartmentId == department.Id);
 
                         // candidateDepartmentScoreDetails.Add(new CandidateDepartmentScoreDetail
-                        SummaryReport_CandidateDepartmentScoreList.Add(new SummaryReport_CandidateDepartmentScore__ViewModel
+                        Submissions.Add(new KeyKpi_SummaryReport_Submission_ViewModel
                         {
-                            CandidateDepartment = dpt.MapToViewModel(),
+                            CandidateDepartment = department.MapToViewModel(),
                             TotalScoreByCandidateDepartment = scoreTotal,
+                            SubmissionDetails = submitters.Select(user => new KeyKpi_SummaryReport_SubmissionDetail_ViewModel
+                            {
+                                CandidateUserCode = user.UserCode,
+                                CandidateUserName = user.UserName,
+                                CandidateName = user.FullName,
+                                CandidateGroup = user.UserGroup.GroupName,
+                            }).ToList()
                         });
                     }
 
                     // for each department for each key => 
-                    var row = new SummaryReportItem__ViewModel //SummaryReport_RowDetail_ViewModel
+                    var row = new KeyKpi_SummaryReportItem_ViewModel
                     {
                         PeriodName = SelectedPeriodName,
                         KeyIssueDepartment = SelectedKeyDepartment,
                         KeyMetric = keyMetric.MapToViewModel(),
                         //CandidateDepartmentScoreDetails = candidateDepartmentScoreDetails,
-                        SummaryReport_CandidateDepartmentScoreList = SummaryReport_CandidateDepartmentScoreList,
+                        Submissions = Submissions,
                         ReceivedSubmissions = submissionCountPerKey, //count
                         ReceivedScore = scoreTotalPerKey, //sum
                         AverageScore = averageScore,
                     };
                     //summaryReportRowDetail.Add(row);
-                    summaryReportItems.Add(row);
+                    SummaryReportItems.Add(row);
                 }
 
                 // department's total key's total score
@@ -581,10 +567,12 @@ public class SummaryModel(
                 //     SummaryReportRow_Details = summaryReportRowDetail,
                 //     FinalScore = 0,
                 // };
-                SummaryReport_Single = new SummaryReport__ViewModel
+                var itemSum = SummaryReportItems.Sum(i => i.AverageScore);
+                var itemCount = SummaryReportItems.Count;
+                SummaryReportList_Single = new KeyKpi_SummaryReport_ViewModel
                 {
-                    SummaryReportItems = summaryReportItems,
-                    FinalScore = summaryReportItems.Sum(i => i.AverageScore) / summaryReportItems.Count,
+                    SummaryReportItems = SummaryReportItems,
+                    FinalScore = (itemCount > 0) ? (itemSum / itemCount) : 0,
                 };
             }
             else
@@ -595,23 +583,23 @@ public class SummaryModel(
 
         // ==========EXCEL========================================================================
         // Prepare Data
-        string excelFileName = "";
-        var memStream = new MemoryStream();
+        var userGroupDtoList = UserGroupList.Select(g => g.MapToDto()).ToList();
+        var summaryReportDto = SummaryReportList_All.Select(r => r.MapToDto()).ToList();
 
+        string excelFileName = "";
+        var stream = new MemoryStream();
         if (KEY_DEPARTMENT__ALL)
         {
             excelFileName = $"Report_KeyKPI_Summary_All_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.xlsx";
-            memStream = await PrepareSummaryReportAllKeyDepartmentData(UserGroupList, SummaryReport_Multiple);
+            stream = await _reportService.ExportExcel_KeyKpiSummaryReport(userGroupDtoList, summaryReportDto);
         }
         else
         {
             // SummaryReport_Single
-            // excelFileName = $"Report_KeyKPI_Summary_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.xlsx";
-            // memStream = await PrepareSummaryReportSingleKeyDepartmentData(UserGroupList, SummaryReport_Single);
         }
 
         return File(
-            memStream,
+            stream,
             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             excelFileName
         );
@@ -725,155 +713,6 @@ public class SummaryModel(
         return [];
     }
 
-    private async Task<MemoryStream> PrepareSummaryReportAllKeyDepartmentData(
-        List<UserGroupViewModel> userGroupList,
-        List<SummaryReport__ViewModel> summaryReportData_Multiple)
-    {
-        List<Dictionary<string, object>> excelData = [];
-
-        // SummaryReport_Multiple
-        var colPeriod = "Period Name";
-        var colKeyDepartment = "Key Departments";
-        var colKpiKey = "KPI Key";
-        var colCandidateDepartmentCount = "No. of Candidate Departments";
-        var colReceivedSubmission = "Submission Received";
-        var colReceivedScore = "Score Received";
-        var colTotal = "Score/Submission";
-        var colTotalScore = "Total Score";
-        var colFinalScore = "Final Score";
-
-        var dynamicCols = new List<DynamicExcelColumn>();
-        dynamicCols = new List<DynamicExcelColumn>()
-            .Concat(
-            [
-                new(colPeriod) { Width = 20 },
-                new(colKeyDepartment) { Width = 25 },
-                new(colKpiKey) { Width = 38 },
-            ])
-            .Concat(userGroupList.SelectMany(g => new DynamicExcelColumn[]
-            {
-                // new($"{g.GroupName}_Name") { Width= 20, Name = $"Group" },
-                // new($"{g.GroupName}_Submission") { Width= 18, Name = $"Submissions" },
-                // new($"{g.GroupName}_Score") { Width= 18, Name = "Score" },
-
-                new($"{g.GroupName}_Submissions") { Width= 18, Name = $"Submissions by {g.GroupName}" },
-            }))
-            .Concat(
-            [
-                new(colReceivedSubmission) { Width = 20 },
-                new(colReceivedScore) { Width = 20 },
-                new(colTotal) { Width = 20 },
-                new(colTotalScore) { Width = 20 },
-                new(colFinalScore) { Width = 20 },
-            ]).ToList();
-
-        foreach (var parent in summaryReportData_Multiple)
-        {
-            // Add @merge row       before each parent
-            // Add @endmerge row    after each parent
-            // the row value between the @merge and @endmerge will be merged by  MergeSameCells or MergeSameCellsAsyncAsync
-            // *****@merge**************************************************
-            var mergeRow = new Dictionary<string, object>();
-            mergeRow[colPeriod] = string.Empty;
-            mergeRow[colKeyDepartment] = "@merge";
-            mergeRow[colKpiKey] = string.Empty;
-            foreach (var g in userGroupList)
-                mergeRow[$"{g.GroupName}_Submissions"] = string.Empty;
-            mergeRow[colCandidateDepartmentCount] = string.Empty;
-            mergeRow[colReceivedSubmission] = string.Empty;
-            mergeRow[colReceivedScore] = string.Empty;
-            mergeRow[colTotal] = string.Empty;
-            mergeRow[colTotalScore] = "@merge";
-            mergeRow[colFinalScore] = "@merge";
-            excelData.Add(mergeRow);
-            // *****************************************************************
-            // var firstRow = true;
-
-            foreach (var item in parent.SummaryReportItems)
-            {
-                var excelRow = new Dictionary<string, object>();
-
-                excelRow[colPeriod] = item.PeriodName;
-                excelRow[colKeyDepartment] = item.KeyIssueDepartment.DepartmentName;
-                excelRow[colKpiKey] = item.KeyMetric.MetricTitle;
-                // user group columns (group name as column name)
-                foreach (var g in userGroupList)
-                {
-                    // item => period, list of SummaryReport_CandidateDepartmentScore
-                    // item.SummaryReport_CandidateDepartmentScoreList => canidate department, score total, list of submissions details
-                    // ---to get number of submission by candidate group---
-                    // from::CandidateDepartmentScoreList, get::list of submission details
-                    var submissionDetails = item.SummaryReport_CandidateDepartmentScoreList
-                        .SelectMany(e => e.SummaryReport_SubmissionDetails)
-                        .Count(d => d.CandidateGroup.Equals(g.GroupName, StringComparison.OrdinalIgnoreCase));
-                    excelRow[$"{g.GroupName}_Submissions"] = submissionDetails;
-                }
-                excelRow[colCandidateDepartmentCount] = item.SummaryReport_CandidateDepartmentScoreList.Count;
-                excelRow[colReceivedSubmission] = item.ReceivedSubmissions;
-                excelRow[colReceivedScore] = item.ReceivedScore;
-                excelRow[colTotal] = item.AverageScore;
-                // merge cells
-                // NOTE: duplicate cells will be merged by MergeSameCellsAsync()
-                excelRow[colTotalScore] = parent.SummaryReportItems.Sum(i => i.AverageScore);
-                excelRow[colFinalScore] = parent.FinalScore;
-                // if (firstRow)
-                // {excelRow[colTotalScore] = parent.SummaryReportItems.Sum(i => i.AverageScore);
-                //     excelRow[colFinalScore] = parent.FinalScore;
-                // firstRow = false;
-                // }
-                // else
-                // {
-                //     excelRow[colTotalScore] = "";
-                //     excelRow[colFinalScore] = "";
-                // }
-                excelData.Add(excelRow);
-            }
-            // *****@endmerge*********************************************
-            var endMerge = new Dictionary<string, object>();
-            endMerge[colPeriod] = string.Empty;
-            endMerge[colKeyDepartment] = "@endmerge";
-            endMerge[colKpiKey] = string.Empty;
-            foreach (var g in UserGroupList)
-                // endMerge[$"{g.GroupName}"] = string.Empty;
-                endMerge[$"{g.GroupName}_Submissions"] = string.Empty;
-            endMerge[colCandidateDepartmentCount] = string.Empty;
-            endMerge[colReceivedSubmission] = string.Empty;
-            endMerge[colReceivedScore] = string.Empty;
-            endMerge[colTotal] = string.Empty;
-            endMerge[colTotalScore] = "@endmerge";
-            endMerge[colFinalScore] = "@endmerge";
-            excelData.Add(endMerge);
-        }
-
-        // **********Handle for @merge @endmerge*********************************
-        // 1. save into temp file with @merge and @endmerge rows
-        // 2. mege same cells from temp file and set into memory stream
-        // 3. delete temp file.
-        // 4. return new file from memeory stream
-        var tempExcelPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid().ToString()}.xlsx");
-
-        // TODO: move to Service
-        // excelService.SaveAsync();
-        // input: path, data, config
-        // output: stream
-
-        MiniExcel.SaveAs(
-            path: tempExcelPath,  // Use path instead of stream
-            value: excelData,
-            configuration: new OpenXmlConfiguration
-            {
-                DynamicColumns = dynamicCols.ToArray(),
-                // TableStyles = TableStyles.None,
-            }
-        );
-        var newStream = new MemoryStream();
-        // MiniExcel.MergeSameCells(newStream, tempExcelPath);
-        await newStream.MergeSameCellsAsync(tempExcelPath, ExcelType.XLSX);
-        newStream.Position = 0;
-        System.IO.File.Delete(tempExcelPath);
-        return newStream;
-    }
-
 
     // ========== Binding ======================================================
     // ---Period---
@@ -903,214 +742,6 @@ public class SummaryModel(
 
 
     // ========== MODELS CLASSES ===============================================
-    public SummaryReport__ViewModel SummaryReport_Single { get; set; } = new();
-    public List<SummaryReport__ViewModel> SummaryReport_Multiple { get; set; } = [];
-
-
-    public class SummaryReport__ViewModel
-    {
-        public List<SummaryReportItem__ViewModel> SummaryReportItems { get; set; } = [];
-        public decimal FinalScore { get; set; }
-    }
-
-    public class SummaryReportItem__ViewModel
-    {
-        public string PeriodName { get; set; } = null!;
-        public DepartmentViewModel KeyIssueDepartment { get; set; } = null!;
-        public KeyMetricViewModel KeyMetric { get; set; } = null!;
-        public List<SummaryReport_CandidateDepartmentScore__ViewModel> SummaryReport_CandidateDepartmentScoreList { get; set; } = [];
-        public long ReceivedSubmissions { get; set; }
-        public decimal ReceivedScore { get; set; } // total score received on each department's key
-        public decimal AverageScore { get; set; } // scoreTotalPerKey / no. of candidate department with actual score submitted 
-
-    }
-    public class SummaryReport_CandidateDepartmentScore__ViewModel
-    {
-        public DepartmentViewModel CandidateDepartment { get; set; } = null!;
-        public decimal TotalScoreByCandidateDepartment { get; set; }
-        public List<SummaryReport_SubmissionDetail__ViewModel> SummaryReport_SubmissionDetails { get; set; } = [];
-    }
-
-    public class SummaryReport_SubmissionDetail__ViewModel
-    {
-        public string CandidateUserCode { get; set; } = string.Empty;
-        public string CandidateUserName { get; set; } = string.Empty;
-        public string CandidateName { get; set; } = string.Empty;
-        public string CandidateGroup { get; set; } = string.Empty;
-        // public decimal SubmittedScore { get; set; }
-
-    }
-
+    public KeyKpi_SummaryReport_ViewModel SummaryReportList_Single { get; set; } = new();
+    public List<KeyKpi_SummaryReport_ViewModel> SummaryReportList_All { get; set; } = [];
 }
-
-
-
-// // SummaryReport_Multiple
-// var colPeriod = "Period Name";
-// var colKeyDepartment = "Key Departments";
-// var colKpiKey = "KPI Key";
-// var colCandidateDepartmentCount = "No. of Candidate Departments";
-// var colReceivedSubmission = "Total Submission Received";
-// var colReceivedScore = "Total Submission Score";
-// var colTotal = "Total (Score/Departments)";
-// var colTotalScore = "Total Score";
-// var colFinalScore = "Final Score";
-
-// // generate dynamic user group columns
-// // ...
-
-// dynamicCols = new List<DynamicExcelColumn>()
-// .Concat(
-// [
-//     new(colPeriod) { Width = 20 },
-//     new(colKeyDepartment) { Width = 25 },
-//     new(colKpiKey) { Width = 38 },
-// ])
-// .Concat(UserGroupList.SelectMany(g => new DynamicExcelColumn[]
-// {
-//     // new($"{g.GroupName}_Name") { Width= 20, Name = $"Group" },
-//     // new($"{g.GroupName}_Submission") { Width= 18, Name = $"Submissions" },
-//     // new($"{g.GroupName}_Score") { Width= 18, Name = "Score" },
-
-//     new($"{g.GroupName}_Submissions") { Width= 18, Name = $"Submissions by {g.GroupName}" },
-// }))
-// .Concat(
-// [
-//     new(colReceivedSubmission) { Width = 20 },
-//     new(colReceivedScore) { Width = 20 },
-//     new(colTotal) { Width = 20 },
-//     new(colTotalScore) { Width = 20 },
-//     new(colFinalScore) { Width = 20 },
-// ]).ToList();
-// // excelData = SummaryReport_Multiple.Select(i=>
-// // {
-// //     var dict = new Dictionary<string, object>
-// //     {
-// //         [colPeriod] = i.SummaryReportItems.First().PeriodName,
-// //         [colKeyDepartment] = i.
-// //     }
-// // }).ToList();
-
-
-// foreach (var parent in SummaryReport_Multiple)
-// {
-
-//     // *****@merge**************************************************
-//     {
-//         var mergeRow = new Dictionary<string, object>();
-//         mergeRow[colPeriod] = string.Empty;
-//         mergeRow[colKeyDepartment] = "@merge";
-//         mergeRow[colKpiKey] = string.Empty;
-//         // for (int g = 0; g < UserGroupList.Count; g++) mergeRow[$"{UserGroupList[g]}"] = string.Empty;
-//         foreach (var g in UserGroupList)
-//             // mergeRow[$"{g.GroupName}"] = string.Empty;
-//             mergeRow[$"{g.GroupName}_Submissions"] = string.Empty;
-//         mergeRow[colCandidateDepartmentCount] = string.Empty;
-//         mergeRow[colReceivedSubmission] = string.Empty;
-//         mergeRow[colReceivedScore] = string.Empty;
-//         mergeRow[colTotal] = string.Empty;
-//         mergeRow[colTotalScore] = "@merge";
-//         mergeRow[colFinalScore] = "@merge";
-//         excelData.Add(mergeRow);
-//     }
-//     // *****************************************************************
-//     // var firstRow = true;
-
-//     foreach (var item in parent.SummaryReportItems)
-//     {
-//         var excelRow = new Dictionary<string, object>();
-
-//         excelRow[colPeriod] = item.PeriodName;
-//         excelRow[colKeyDepartment] = item.KeyIssueDepartment.DepartmentName;
-//         excelRow[colKpiKey] = item.KeyMetric.MetricTitle;
-
-//         // user group columns (group name as column name)
-//         foreach (var g in UserGroupList)
-//         {
-//             // ---item---
-//             // period, list of SummaryReport_CandidateDepartmentScore
-//             // ---item.SummaryReport_CandidateDepartmentScoreList---
-//             // canidate department, score total, list of submissions details
-//             // ---to get number of submission by candidate group---
-//             // from     CandidateDepartmentScoreList
-//             // get      list of submission details
-//             var submissionDetails = item.SummaryReport_CandidateDepartmentScoreList
-//                 .SelectMany(e => e.SummaryReport_SubmissionDetails)
-//                 .Count(d => d.CandidateGroup.Equals(g.GroupName, StringComparison.OrdinalIgnoreCase));
-//             // to filter by group
-//             // excelRow[$"{g.GroupName}"] = submissionDetails;
-//             excelRow[$"{g.GroupName}_Submissions"] = submissionDetails;
-//         }
-
-//         excelRow[colCandidateDepartmentCount] = item.SummaryReport_CandidateDepartmentScoreList.Count;
-//         excelRow[colReceivedSubmission] = item.ReceivedSubmissions;
-//         excelRow[colReceivedScore] = item.ReceivedScore;
-//         excelRow[colTotal] = item.AverageScore;
-
-//         // TODO: merge cells
-//         // Note: duplicate cells will be merged by MergeSameCellsAsync()
-//         excelRow[colTotalScore] = parent.SummaryReportItems.Sum(i => i.AverageScore);
-//         excelRow[colFinalScore] = parent.FinalScore;
-//         // if (firstRow)
-//         // {
-//         //     excelRow[colTotalScore] = parent.SummaryReportItems.Sum(i => i.AverageScore);
-//         //     excelRow[colFinalScore] = parent.FinalScore;
-//         // firstRow = false;
-//         // }
-//         // else
-//         // {
-//         //     excelRow[colTotalScore] = "";
-//         //     excelRow[colFinalScore] = "";
-//         // }
-
-//         excelData.Add(excelRow);
-//     }
-
-//     // *****@endmerge*********************************************
-//     {
-//         var endMerge = new Dictionary<string, object>();
-//         endMerge[colPeriod] = string.Empty;
-//         endMerge[colKeyDepartment] = "@endmerge";
-//         endMerge[colKpiKey] = string.Empty;
-//         foreach (var g in UserGroupList)
-//             // endMerge[$"{g.GroupName}"] = string.Empty;
-//             endMerge[$"{g.GroupName}_Submissions"] = string.Empty;
-//         endMerge[colCandidateDepartmentCount] = string.Empty;
-//         endMerge[colReceivedSubmission] = string.Empty;
-//         endMerge[colReceivedScore] = string.Empty;
-//         endMerge[colTotal] = string.Empty;
-//         endMerge[colTotalScore] = "@endmerge";
-//         endMerge[colFinalScore] = "@endmerge";
-//         excelData.Add(endMerge);
-//     }
-//     // ********************************************************
-// }
-
-// // **********Handle for @merge @endmerge*********************************
-// // 1. save into temp file with @merge and @endmerge rows
-// // 2. mege same cells from temp file and set into memory stream
-// // 3. delete temp file.
-// // 4. return new file from memeory stream
-// var tempExcelPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid().ToString()}.xlsx");
-// MiniExcel.SaveAs(
-//     path: tempExcelPath,  // Use path instead of stream
-//     value: excelData,
-//     configuration: new OpenXmlConfiguration
-//     {
-//         DynamicColumns = dynamicCols.ToArray(),
-//     }
-// );
-// var newStream = new MemoryStream();
-// // MiniExcel.MergeSameCells(newStream, tempExcelPath);
-// await newStream.MergeSameCellsAsync(tempExcelPath, ExcelType.XLSX);
-// newStream.Position = 0;
-// System.IO.File.Delete(tempExcelPath);
-// // ------------------------------------------------------
-// // **********EXPORT******************************************************
-// string fileName_merged = $"Report_KeyKPI_Summary_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.xlsx";
-// return File(
-//     newStream,
-//     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-//     fileName_merged
-// );
-// // *******************************************************************

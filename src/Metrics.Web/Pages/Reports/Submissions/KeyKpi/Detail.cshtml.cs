@@ -4,7 +4,6 @@ using Metrics.Web.Common.Mappers;
 using Metrics.Web.Models;
 using Metrics.Web.Models.DepartmentKeyMetric;
 using Metrics.Web.Models.KeyKpiSubmissionConstraint;
-using Metrics.Web.Models.KeyMetric;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -663,49 +662,7 @@ public class DetailModel(
 
 
     // ========== MODELS CLASSES ===============================================
-    public SummaryReport__ViewModel SummaryReport_Single { get; set; } = new();
-    public List<SummaryReport__ViewModel> SummaryReport_Multiple { get; set; } = [];
-
-
-    public class SummaryReport__ViewModel
-    {
-        public List<SummaryReportItem__ViewModel> SummaryReportItems { get; set; } = [];
-        public decimal FinalScore { get; set; }
-    }
-
-    public class SummaryReportItem__ViewModel
-    {
-        public string PeriodName { get; set; } = null!;
-        public DepartmentViewModel KeyIssueDepartment { get; set; } = null!;
-        public KeyMetricViewModel KeyMetric { get; set; } = null!;
-        public List<SummaryReport_CandidateDepartmentScore__ViewModel> SummaryReport_CandidateDepartmentScoreList { get; set; } = [];
-        public long ReceivedSubmissions { get; set; }
-        public decimal ReceivedScore { get; set; } // total score received on each department's key
-        public decimal AverageScore { get; set; } // scoreTotalPerKey / no. of candidate department with actual score submitted 
-
-    }
-    public class SummaryReport_CandidateDepartmentScore__ViewModel
-    {
-        public DepartmentViewModel CandidateDepartment { get; set; } = null!;
-        public decimal TotalScoreByCandidateDepartment { get; set; }
-        public List<SummaryReport_SubmissionDetail__ViewModel> SummaryReport_SubmissionDetails { get; set; } = [];
-    }
-
-    public class SummaryReport_SubmissionDetail__ViewModel
-    {
-        public string CandidateUserCode { get; set; } = string.Empty;
-        public string CandidateUserName { get; set; } = string.Empty;
-        public string CandidateName { get; set; } = string.Empty;
-        public string CandidateGroup { get; set; } = string.Empty;
-        // public decimal SubmittedScore { get; set; }
-
-    }
-
-
     public List<DetailReport__Model> DetailReportData { get; set; } = [];
-    public List<DetailReport__Model> DetailReport_AllKeyDepartment { get; set; } = [];
-
-    public List<DetailReport__Model> DetailReport_SingeKeyDepartment { get; set; } = [];
 
     public class DetailReport__Model
     {
@@ -714,17 +671,20 @@ public class DetailModel(
         public SubmissionDetail__Model SubmissionDetails { get; set; } = null!;
 
     }
+
     public class KeyIssueDepartment__Model // key department, key title
     {
         public string KeyIssueDepartmentName { get; set; } = null!;
         public string KeyTitle { get; set; } = null!;
     }
+
     public class SubmissionDetail__Model
     {
         public Candidate__Model CandidateInfo { get; set; } = null!;
         public decimal ScoreValue { get; set; }
         public string? Comments { get; set; }
     }
+
     public class Candidate__Model
     {
         public string CandidateCode { get; set; } = null!;
@@ -732,5 +692,4 @@ public class DetailModel(
         public string CandidateDepartmentName { get; set; } = null!;
         public string CandidateGroupName { get; set; } = null!;
     }
-
 }
