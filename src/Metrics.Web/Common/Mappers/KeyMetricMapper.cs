@@ -16,4 +16,16 @@ public static class KeyMetricMapper
             IsDeleted = dto.IsDeleted,
         };
     }
+
+    public static KeyMetricDto MapToDto(this KeyMetricViewModel model)
+    {
+        return new KeyMetricDto
+        {
+            Id = model.Id,
+            MetricCode = model.LookupId,
+            MetricTitle = model.MetricTitle,
+            Description = model.Description,
+            IsDeleted = model.IsDeleted,
+        };
+    }
 }

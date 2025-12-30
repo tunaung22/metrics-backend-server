@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using MiniExcelLibs;
 using MiniExcelLibs.Attributes;
 using MiniExcelLibs.OpenXml;
-using Serilog.Sinks.File;
 
 namespace Metrics.Web.Pages.Reports.Submissions.DepartmentKpi;
 
@@ -139,8 +138,7 @@ public class ViewModel(
                     // -> var totalSubmissions = groupScores.Sum(g => g.TotalSubmissions); // var totalScore = groupScores.Sum(g => g.TotalScore);
                     var totalSubmissions = submissionToDepartment.Count;
                     var totalScore = submissionToDepartment.Sum(g => g.ScoreValue);
-                    var kpiScore = (totalSubmissions > 0)
-                            ? (totalScore / totalSubmissions) : 0M;
+                    var kpiScore = (totalSubmissions > 0) ? (totalScore / totalSubmissions) : 0M;
 
                     return new AllUserGroupReportSummaryViewModel
                     {
@@ -159,12 +157,13 @@ public class ViewModel(
                 // SINGLE + SUMMARY
                 // ViewMode ~= hod, management, staff,...
                 SingleUserGroupReportSummaryList = Load_SingleUserGroup_SummaryList(
-                                    SelectedPeriod.PeriodName, //
-                                    Group, // group to show
-                                    submissionsByPeriod, // source
-                                    DepartmentList); // dpeartments to show
+                    SelectedPeriod.PeriodName, //
+                    Group, // group to show
+                    submissionsByPeriod, // source
+                    DepartmentList); // dpeartments to show
             }
         }
+
         // VIEWMODE: DETAIL
         else if (MODE_DETAIL)
         {
@@ -328,6 +327,7 @@ public class ViewModel(
             return Page();
         }
         SelectedPeriod = period;
+        IsActivePeriod = period.SubmissionEndDate >= DateTimeOffset.UtcNow;
         SelectedPeriodName = period.PeriodName;
 
         // ----------VIEW MODE--------------------------------------------------
@@ -521,6 +521,8 @@ public class ViewModel(
                 );
             }
         }
+
+        // VIEWMODE: DETAIL
         else if (MODE_DETAIL)
         {
             UserList = await LoadAllUsers();
@@ -530,7 +532,8 @@ public class ViewModel(
                 return Page();
             }
 
-            bool showAllSubmissions = Show.Equals("all", StringComparison.OrdinalIgnoreCase);
+            // bool showAllSubmissions = Show.Equals("all", StringComparison.OrdinalIgnoreCase);
+            bool showAllSubmissions = Show.ToLower() == "all" ? true : false;
             // DETAIL
             if (GROUP_ALL)
             {
@@ -539,8 +542,10 @@ public class ViewModel(
                     submissionsByPeriod,
                     UserList,
                     DepartmentList,
+                    IsActivePeriod,
                     showAllSubmissions);
 
+                // ==========EXCEL==============================================
                 // PREPARE FOR EXCEL FILE
                 var colPeriod = "Period";
                 var colCandidateID = "Candidate ID";
@@ -615,6 +620,7 @@ public class ViewModel(
                     IsActivePeriod,
                     showAllSubmissions); // department to includes all department
 
+                // ==========EXCEL==============================================
                 // PREPARE FOR EXCEL FILE
                 var colPeriod = "Period";
                 var colCandidateID = "Candidate ID";

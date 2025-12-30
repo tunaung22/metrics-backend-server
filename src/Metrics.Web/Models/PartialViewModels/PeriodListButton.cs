@@ -4,5 +4,6 @@ public class PeriodListButton
 {
     public string Page { get; set; } = string.Empty;
     public string Text { get; set; } = string.Empty;
-    public string? IconClass { get; set; }
+    public string? IconClass { get; set; } = string.Empty;
+    public string? BootstrapButton { get; set; } = string.Empty;
 }

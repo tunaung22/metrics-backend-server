@@ -1,17 +1,18 @@
 ﻿@page "/Reports/Submissions/Department-Kpi/{periodName}/Detail"
 @model Metrics.Web.Pages.Reports.Submissions.DepartmentKpi.DetailModel
 @{
-    ViewData["Title"] = "Score Submission Report Details";
+    ViewData["Title"] = "Department KPI Report Details";
 }
+
 
 <div class="sectionTitle">
     <div class="d-flex align-items-center">
         <span class="d-flex align-items-center">
-            <h4 class="flex-grow-1">Department Score Report Details (KPI)</h4>
+            <h4 class="flex-grow-1">Department KPI Report Details (KPI)</h4>
             @* <h4>Score Submission Report (KPI)</h4> *@
             <span class="mx-4">
                 Period: <strong>@Model.SelectedPeriod.PeriodName</strong>
-                <small>(@Model.SelectedPeriod.SubmissionStartDate.ToString("MMM dd, yyyy") - @Model.SelectedPeriod.SubmissionEndDate.ToString("MMM dd, yyyy"))</small>
+                <small>(@Model.SelectedPeriod.SubmissionStartDate.ToLocalTime().ToString("MMM dd, yyyy") - @Model.SelectedPeriod.SubmissionEndDate.ToLocalTime().ToString("MMM dd, yyyy"))</small>
             </span>
         </span>
         <span class="justify-content-end gap-2">
@@ -29,126 +30,255 @@
 </div>
 
 
-<div class="container-fluid">
-    <div class="bg-light p-4 rounded-2">
-        <div class="filter-toolbar mb-4 d-flex justify-content-between">
-            <span class="d-flex align-items-center gap-2">
-                @* <h3>@Model.SelectedPeriod.PeriodName</h3>
-                @if(Model.Submitter!= null)
-                {
-                    <button class="btn btn-primary">Filter</button>
-                }
-                <form id="form__userSelection" method="get">
+<div class="filter-toolbar mb-4 px-4 d-flex align-items-center justify-content-between">
+    <div class="d-flex align-items-center gap-2">
+        <a asp-page="./Index"
+            class="btn btn-sm btn-outline-primary me-4">
+            <i class="bi bi-arrow-left"></i> Back</a>
+        <form id="form__groupSelection" method="get" class="">
+            <span class="d-flex align-items-center">
+                <div class="col-auto me-2">
+                    <label for="Group" class="form-label m-0">
+                        <i class="bi bi-people-fill"></i> User Group</label>
+                </div>
+                <div class="col-auto me-4">
                     <select 
                         asp-for="Group"
                         asp-items="Model.UserGroupListItems"
                         onchange="this.form.submit()"
                         class="form-select"
                         aria-label="Select User Group">
-                            <option value="All">All</option>
                     </select>
-                </form>
-                <span class="d-flex align-items-center m-2">
-                    <input type="text" id="input__searchUser" class="form-control ms-2" placeholder="Search by User Name" />
-                </span> *@
-            </span>
-            <div class="exportData">
-                <form method="post" asp-page-handler="ExportExcel">
-                    <input type="hidden" asp-for="Submitter" />
-                    <button type="submit" class="btn btn-success">
-                        <i class="bi bi-file-earmark-spreadsheet"></i> Export</button>
-                </form>
-            </div>
-        </div>
+                </div>
 
+                @if(Model.IsActivePeriod) 
+                {
+                    @if(!string.IsNullOrEmpty(Model.Group))
+                    {
+                            <div class="col-auto me-2">
+                                <label for="Group" class="form-label m-0">
+                                    <i class="bi bi-filter"></i> Show</label>
+                            </div>
+                            <div class="col-auto me-4">
+                                <select 
+                                    asp-for="Show"
+                                    asp-items="Model.ShowSubmissionModeListItems"
+                                    onchange="this.form.submit()"
+                                    class="form-select"
+                                    aria-label="Select submissions to display">
+                                </select>
+                            </div>
+                    }
+                    else {
+                        <div class="col-auto me-2">
+                            <label for="Group" class="form-label m-0 text-secondary">
+                                <i class="bi bi-filter"></i> Show</label>
+                        </div>
+                        <div class="col-auto me-4">
+                            <select 
+                                class="form-select text-secondary"
+                                aria-label="Select submissions to display"
+                                disabled>
+                                    <option value="">All Submissions</option>
+                            </select>
+                        </div>
+                    }
+                }
+            </span>
+        </form>
+    </div>
+
+    @* <div class="exportData">
+        <form method="post" asp-page-handler="ExportExcel">
+            <input type="hidden" asp-for="Group">
+            <input type="hidden" asp-for="Show">
+
+            @if(Model.AllUserGroupReportDetailList.Any() ||
+                Model.SingleUserGroupReportDetailList.Any())
+            {
+                <button type="submit" class="btn btn-success">
+                    <i class="bi bi-file-earmark-spreadsheet"></i> Export</button>   
+            }
+            else
+            {
+                <button type="submit" class="btn btn-success disabled">
+                    <i class="bi bi-file-earmark-spreadsheet"></i> Export</button>
+            }
+        </form>
+    </div> *@
+</div>
+
+<div class="container-fluid ">
         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
+        <div id="loadingScreen" class="d-flex justify-content-center mb-4">
+            <strong role="status" class="me-3">Loading...</strong>
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+        
+        <div id="mainContent" class="mt-4 mx-4 visually-hidden">
 
-        <div class="table-responsive">
-            <table id="reportTable" class="table table-bordered table-striped">
-                <thead>
-                    @* @if(Model.ScoreSubmissionDetailReports.Any())
-                    { *@
-                        <tr>    
-                            <th class="px-4 colUser">User</th>
-                            <th class="px-4 colDepartment">Department</th>
-                            <th class="px-4 colScoreValue">Given Score</th>
-                            <th class="px-4 colPositiveAspects">Positive Aspects</th>
-                            <th class="px-4 colNegativeAspects">Negative Aspects</th>
-                            <th class="px-4 colComments">Comments</th>
-                        </tr>
-                    @* } *@
-                    @* else
+            <div class="table-responsive">
+                @* =====ALL GROUP===== *@
+                @* submitter, [department score], ..., score, totalScr *@
+                @if(!string.IsNullOrEmpty(Model.Group) ) 
+                {
+                    @if (Model.Group.Equals("all", StringComparison.OrdinalIgnoreCase))
                     {
-                        <tr>
-                            <th>No Data</th>
-                        </tr>
-                    } *@
-                </thead>
-                <tbody>
-                    @if(Model.ScoreSubmissionDetailReports.Any())
-                    {
-                        @foreach(var e in Model.ScoreSubmissionDetailReports)
+                        @if(Model.AllUserGroupReportDetailList.Count > 0)
                         {
-                            <tr>
-                                <td><strong><a asp-page="">@e.UserFullName</a></strong></td>
-                                <td>@e.DepartmentName</td>
-                                <td class="text-center"><strong>@e.GivenScore</strong></td>
-                                <td>
-                                    @if(e.PositiveAspects != null && e.PositiveAspects.Any()) {
-                                        @if(e.PositiveAspects.Length > 80) {
-                                            @(e.PositiveAspects.Substring(0, 80) + "...")
-                                            <button data-details="@e.PositiveAspects" data-label="Positive Aspects"
-                                                    class="moreButton_positiveAspects btn btn-link p-0 pb-2">More</button>
-                                        }
-                                        else {
-                                            @e.PositiveAspects
-                                        }
+                            <table id="allUserGroupTable" class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th colspan="4">Candidate</th>
+                                    @foreach(var department in Model.DepartmentList)
+                                    {
+                                        <th>@department.DepartmentName</th>
                                     }
-                                    else {
-                                        @:None
+                                </tr>
+                                <tr>
+                                    <th>Candidate ID</th>
+                                    <th>Name</th>
+                                    <th>Department</th>
+                                    <th>Group</th>
+                                    @foreach(var department in Model.DepartmentList)
+                                    {
+                                        <th>Score</th>
                                     }
-                                </td>
-                                <td>
-                                    @if(e.NegativeAspects != null && e.NegativeAspects.Any()) {
-                                        @if(e.NegativeAspects.Length > 80) {
-                                            @(e.NegativeAspects.Substring(0, 80) + "...")
-                                            <button data-details="@e.NegativeAspects" data-label="Negative Aspects"
-                                                    class="moreButton_negativeAspects btn btn-link p-0 pb-2">More</button>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach(var entry in Model.AllUserGroupReportDetailList) 
+                                {
+                                    <tr>
+                                        <td>@entry.SubmittedBy.UserCode</td>
+                                        <td>@entry.SubmittedBy.FullName</td>
+                                        <td>@entry.SubmittedBy.Department.DepartmentName</td>
+                                        <td>@entry.SubmittedBy.UserGroup.GroupName.ToUpper()</td>
+                                        @foreach(var d in Model.DepartmentList)
+                                        {
+                                            // if Department == DepartmentScores.Department
+                                            // **likely contains only 1 if exist
+                                            var item = entry.DepartmentScores
+                                                .Where(dc => dc.DepartmentName!= null && dc.DepartmentName.Equals(d.DepartmentName, StringComparison.OrdinalIgnoreCase))
+                                                .FirstOrDefault();
+                                            if (item != null)
+                                            {
+                                                if (item.ScoreValue > 0) {
+                                                    <td>@item.ScoreValue</td>
+                                                } else {
+                                                    <td class="text-secondary">@(0M.ToString("0.00"))</td>
+                                                }
+                                            }
+                                            else {
+                                                <td class="text-secondary">@(0M.ToString("0.00"))</td>
+                                            }
                                         }
-                                        else {
-                                            @e.NegativeAspects
-                                        }
+                                    </tr>
+                                }
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th></th>
+                                    <th></th> <!-- For the Candidate column -->
+                                    <th></th>
+                                    <th></th>
+                                    @foreach(var department in Model.DepartmentList)
+                                    {
+                                        <th></th> <!-- Empty cells that will be filled by footerCallback -->
                                     }
-                                    else {
-                                        @:None
-                                    }
-                                </td>
-                                <td>
-                                    @if(e.Comments != null && e.Comments.Any()) {
-                                        @if(e.Comments.Length > 80) {
-                                            @(e.Comments.Substring(0, 80) + "...")
-                                            <button data-details="@e.Comments" data-label="Positive Aspects"
-                                                    class="moreButton_comments btn btn-link p-0 pb-2">More</button>
-                                        }
-                                        else {
-                                            @e.Comments
-                                        }
-                                    }
-                                    else {
-                                        @:None
-                                    }
-                                </td>
-                            </tr>
+                                </tr>
+                            </tfoot>
+                            </table>
+                        }
+                        else
+                        {
+                            <p class="alert alert-danger text-danger text-center">No Data</p>
                         }
                     }
-                </tbody>
-            </table>
+                    @* =====SINGLE GROUP===== *@
+                    else {
+                        @* ???submitter, [department score], ..., score, totalScr *@
+                        if(Model.SingleUserGroupReportDetailList.Count > 0)
+                        {
+                            <table id="singleUserGroupTable" class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th colspan="3">Candidate</th>
+                                    @foreach(var department in Model.DepartmentList)
+                                    {
+                                        <th>@department.DepartmentName</th>
+                                    }
+                                </tr>
+                                <tr>
+                                    <th>Candidate ID</th>
+                                    <th>Name</th>
+                                    <th>Department</th>
+                                    @* <th>Group</th> *@
+                                    @foreach(var department in Model.DepartmentList)
+                                    {
+                                        <th>Score</th>
+                                    }
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach(var entry in Model.SingleUserGroupReportDetailList) 
+                                {
+                                    <tr>
+                                        <td>@entry.SubmittedBy.UserCode</td>
+                                        <td>@entry.SubmittedBy.FullName</td>
+                                        <td>@entry.SubmittedBy.Department.DepartmentName</td>
+                                        @* <td>@(entry.GroupName != null ? entry.GroupName.ToUpper() : "N/A")</td> *@
+                                        @foreach(var d in Model.DepartmentList)
+                                        {
+                                            // if Department == DepartmentScores.Department
+                                            // **likely contains only 1 if exist
+                                            var item = entry.DepartmentScores
+                                                .Where(dc => dc.DepartmentName!= null && dc.DepartmentName.Equals(d.DepartmentName, StringComparison.OrdinalIgnoreCase))
+                                                .FirstOrDefault();
+                                            if (item != null && item.ScoreValue > 0)
+                                            {
+                                                <td>@item.ScoreValue</td>
+                                            }
+                                            else
+                                            {
+                                                <td class="text-secondary">@(0M.ToString("0.00"))</td>
+                                            }
+                                        }
+                                    </tr>
+                                }
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th></th>
+                                    <th></th> <!-- For the Candidate column -->
+                                    <th></th>
+                                    @foreach(var department in Model.DepartmentList)
+                                    {
+                                        <th></th> <!-- Empty cells that will be filled by footerCallback -->
+                                    }
+                                </tr>
+                            </tfoot>
+                            </table>
+                        }
+                        else
+                        {
+                            <p class="alert alert-danger text-danger text-center">No Data</p>
+                        }
+                    }
+                }
+                else
+                {
+                    <p class="alert alert-danger text-danger text-center">Invalid group selected.</p>
+                }
+            </div>
         </div>
     </div>
 </div>
 
-<!--Modal Dialog -->
+@* ----------Modal Dialog---------- *@
 <div id="dialog_textDetail" class="modal" tabindex="-1" aria-labelledby="dialogTitle" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -167,44 +297,15 @@
 </div>
 
 
-@section Styles {
-    <style>
-        @* .dt-column-title {
-            padding-right: .5em;
-        }
-        .dt-column-title {
-        }
-        .valign-middle {
-            vertical-align: middle;
-        } *@
-        .valign-middle {
-            vertical-align: middle;
-        }
-    </style>
-}
-
-
 @section Scripts {
     <script>
         $(function() {
-            new DataTable('#reportTable', {
-                paging: false,
-                info: false,
-                searching: false,
-                @* autoWidth: true, *@
-                columnDefs: [
-                    { width: "15%", targets: [0, 1] },
-                    { width: "10%", targets: [2] },
-                    { width: "15%", targets: [3, 4] },
-                    { width: "20%", targets: [5] },
-                    @* { orderable: false, targets: [colActions] }, *@
-                ],
-                initComplete: function() {
-                    $('thead th').addClass('text-light text-center ');
-                    $('#reportTable thead th').addClass('valign-middle bg-brand-color');
-                    @* $('#reportTable tbody td').addClass('valign-middle'); *@
-                }
-            });
+            if($('#allUserGroupTable').length > 0) {
+
+            }
+            else if($('singleUserGroupTable').length > 0) {
+
+            }
 
             // ------------------- Show Dialog ---------------------------------
             $('.moreButton_positiveAspects, .moreButton_negativeAspects, .moreButton_comments').click(function() {
@@ -220,10 +321,6 @@
                 }
             });
 
-
-            $('#input__searchUser').on('input', function() {
-                var searchValue = $(this).val().toLowerCase();
-            })
         });
     </script>
 }

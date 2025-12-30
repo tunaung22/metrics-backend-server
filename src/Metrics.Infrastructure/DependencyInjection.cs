@@ -2,6 +2,7 @@ using Metrics.Application.Authorization;
 using Metrics.Application.Common;
 using Metrics.Application.Interfaces.IRepositories;
 using Metrics.Application.Interfaces.IServices;
+using Metrics.Infrastructure.Data;
 using Metrics.Infrastructure.Identity;
 using Metrics.Infrastructure.Identity.RequirementHandlers;
 using Metrics.Infrastructure.Identity.Requirements;
@@ -53,6 +54,9 @@ public static class DependencyInjection
             .AddScoped<IDepartmentKeyImportService, DepartmentKeyImportService>()
             .AddScoped<IKeyKpiAssignmentImportService, KeyKpiAssignmentImportService>()
             .AddScoped<IAppPermissionService, AppPermissionService>()
+
+            // Excel Report Services
+            .AddScoped<IKeyKpiReportService, KeyKpiReportService>()
         ;
 
         return services;

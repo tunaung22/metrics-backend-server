@@ -60,17 +60,17 @@
         <form method="post" asp-page-handler="ExportExcel">
 
             @* @if(Model.SummaryReport_Single!= null  || Model.SummaryReport_Multiple.Count > 0) *@
-            @if(Model.SummaryReport_Multiple.Count > 0)
+            @if(Model.SummaryReportList_All.Count > 0)
             {
                 <button type="submit" class="btn btn-success">
                     <i class="bi bi-file-earmark-spreadsheet"></i> Export</button>
             }
-            else
+            @* else
             {
                 <button type="submit" 
                     class="btn btn-success disabled">
                 <i class="bi bi-file-earmark-spreadsheet"></i> Export</button>
-            }
+            } *@
         </form>
     </div>
 </div>
@@ -119,9 +119,9 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @if(Model.SummaryReport_Multiple != null)
+                            @if(Model.SummaryReportList_All != null)
                             {
-                                @foreach(var parent in Model.SummaryReport_Multiple)
+                                @foreach(var parent in Model.SummaryReportList_All)
                                 {
                                     @* var a = Model.SummaryReport_Multiple
                                         .OrderBy(r=>r.SummaryReportItems)
@@ -130,7 +130,7 @@
                                     bool finalScoreShown = false;
                                     @foreach(var item in parent.SummaryReportItems)
                                     {
-                                        var submissionDetailJson = JsonSerializer.Serialize(item.SummaryReport_CandidateDepartmentScoreList);
+                                        var submissionDetailJson = JsonSerializer.Serialize(item.Submissions);
 
                                         <tr class="@(finalScoreShown ? "" : "topCell")">
                                             <td>@item.KeyIssueDepartment.DepartmentName</td>
@@ -138,12 +138,12 @@
                                             @* loop user group here *@
                                             @foreach(var g in Model.UserGroupList)
                                             {
-                                                var groupCount = item.SummaryReport_CandidateDepartmentScoreList
-                                                    .SelectMany(e => e.SummaryReport_SubmissionDetails)
+                                                var groupCount = item.Submissions
+                                                    .SelectMany(e => e.SubmissionDetails)
                                                     .Count(d => d.CandidateGroup.Equals(g.GroupName, StringComparison.OrdinalIgnoreCase));
                                                 <td class="font-monospace text-secondary">@groupCount</td>
                                             }
-                                            <td class="font-monospace text-secondary">@item.SummaryReport_CandidateDepartmentScoreList.Count</td>
+                                            <td class="font-monospace text-secondary">@item.Submissions.Count</td>
                                             <td class="font-monospace text-secondary">@item.ReceivedSubmissions</td>
                                             <td class="font-monospace">
                                                 <button class="btn btn-link" 
@@ -208,7 +208,7 @@
                 else
                 {
                     <table id="summaryReportTable_singleKeyDepartment" class="table table-bordered"
-                            data-final-score="@Model.SummaryReport_Single?.FinalScore">
+                            data-final-score="@Model.SummaryReportList_Single?.FinalScore">
                         <thead>
                             <tr>
                                 <th colspan="2">Key Issue Department</th>
@@ -231,26 +231,26 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @if(Model.SummaryReport_Single != null)
+                            @if(Model.SummaryReportList_Single != null)
                             {
                                 bool finalScoreShown = false;
-                                @foreach(var item in Model.SummaryReport_Single.SummaryReportItems)
+                                @foreach(var item in Model.SummaryReportList_Single.SummaryReportItems)
                                 {
-                                    var jsonObj = JsonSerializer.Serialize(item.SummaryReport_CandidateDepartmentScoreList);
+                                    var jsonObj = JsonSerializer.Serialize(item.Submissions);
                                     <tr>
-                                        @* key count => @Model.SummaryReport_Single.SummaryReportItems.Count *@
+                                        @* key count => @Model.SummaryReportList_Single.SummaryReportItems.Count *@
                                         <td>@item.KeyIssueDepartment.DepartmentName</td>
                                         <td>@item.KeyMetric.MetricTitle</td>
                                         @* loop user group here *@
                                         @foreach(var g in Model.UserGroupList.OrderBy(u=>u.GroupName))
                                         {
                                             // each candidate department's submission count
-                                            var groupCount = item.SummaryReport_CandidateDepartmentScoreList
-                                                .SelectMany(e => e.SummaryReport_SubmissionDetails)
+                                            var groupCount = item.Submissions
+                                                .SelectMany(e => e.SubmissionDetails)
                                                 .Count(d => d.CandidateGroup.Equals(g.GroupName, StringComparison.OrdinalIgnoreCase));
                                             <td class="font-monospace text-secondary">@groupCount</td>
                                         }
-                                        <td class="font-monospace text-secondary">@item.SummaryReport_CandidateDepartmentScoreList.Count</td>
+                                        <td class="font-monospace text-secondary">@item.Submissions.Count</td>
                                         <td class="font-monospace text-secondary">@item.ReceivedSubmissions</td>
                                         <td class="font-monospace">
                                             <button class="btn btn-link" 
@@ -267,14 +267,14 @@
                                         
                                         @if(finalScoreShown == false)
                                         {
-                                            var rowsToSpan = @Model.SummaryReport_Single.SummaryReportItems.Count;
+                                            var rowsToSpan = @Model.SummaryReportList_Single.SummaryReportItems.Count;
                                             <td class="text-center align-middle fw-bold font-monospace"
                                                 rowspan="@rowsToSpan">
-                                                @Model.SummaryReport_Single.SummaryReportItems.Sum(i=>i.AverageScore).ToString("0.00")
+                                                @Model.SummaryReportList_Single.SummaryReportItems.Sum(i=>i.AverageScore).ToString("0.00")
                                             </td>
                                             <td class="text-center align-middle fw-bold font-monospace"
                                                 rowspan="@rowsToSpan">
-                                                @Model.SummaryReport_Single.FinalScore.ToString("0.00")
+                                                @Model.SummaryReportList_Single.FinalScore.ToString("0.00")
                                             </td>
                                             finalScoreShown = true;
                                         }

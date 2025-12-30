@@ -27,6 +27,7 @@
     </nav>
 </div>
 
+
 <div class="filter-toolbar mb-4 px-4 d-flex align-items-center justify-content-between">
     <div class="d-flex align-items-center gap-2">
         <a asp-page="./Index"
@@ -274,13 +275,9 @@
                                                 var item = entry.DepartmentScores
                                                     .Where(dc => dc.DepartmentName!= null && dc.DepartmentName.Equals(d.DepartmentName, StringComparison.OrdinalIgnoreCase))
                                                     .FirstOrDefault();
-                                                if (item != null)
+                                                if (item != null && item.ScoreValue > 0)
                                                 {
-                                                    if (item.ScoreValue > 0) {
-                                                        <td>@item.ScoreValue</td>
-                                                    } else {
-                                                        <td class="text-secondary">@(0M.ToString("0.00"))</td>
-                                                    }
+                                                    <td>@item.ScoreValue</td>
                                                 }
                                                 else {
                                                     <td class="text-secondary">@(0M.ToString("0.00"))</td>
@@ -348,12 +345,12 @@
                                                 var item = entry.DepartmentScores
                                                     .Where(dc => dc.DepartmentName!= null && dc.DepartmentName.Equals(d.DepartmentName, StringComparison.OrdinalIgnoreCase))
                                                     .FirstOrDefault();
-                                                if (item != null)
+                                                if (item != null && item.ScoreValue > 0)
                                                 {
                                                     <td>@item.ScoreValue</td>
                                                 }
                                                 else {
-                                                    <td>@(0M.ToString("0.00"))</td>
+                                                    <td class="text-secondary">@(0M.ToString("0.00"))</td>
                                                 }
                                             }
                                         </tr>
